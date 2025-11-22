@@ -1,0 +1,87 @@
+0:<pocetni_nezavrsni_znak>
+    1:<definicija_funkcije>
+        2:KR_INT , int
+        2:<izravni_deklarator>
+            3:IDN , main
+            3:L_ZAGRADA , (
+            3:KR_VOID , void
+            3:D_ZAGRADA , )
+        2:<slozena_naredba>
+            3:L_VIT_ZAGRADA , {
+            3:<lista_deklaracija>
+                4:<lista_deklaracija>
+                    5:<lista_deklaracija>
+                        6:<deklaracija>
+                            7:KR_INT , int
+                            7:<lista_init_deklaratora>
+                                8:IDN , a
+                                8:ZAREZ , ,
+                                8:IDN , b
+                            7:TOCKAZAREZ , ;
+                        6:<deklaracija>
+                            7:KR_CHAR , char
+                            7:IDN , dokins
+                            7:TOCKAZAREZ , ;
+                    5:<deklaracija>
+                        6:KR_INT , int
+                        6:IDN , g
+                        6:TOCKAZAREZ , ;
+                4:<deklaracija>
+                    5:KR_INT , int
+                    5:<init_deklarator>
+                        6:IDN , c
+                        6:OP_PRIDRUZI , =
+                        6:BROJ , 0
+                    5:TOCKAZAREZ , ;
+            3:<lista_naredbi>
+                4:<lista_naredbi>
+                    5:<lista_naredbi>
+                        6:<lista_naredbi>
+                            7:<izraz_naredba>
+                                8:<izraz_pridruzivanja>
+                                    9:IDN , a
+                                    9:OP_PRIDRUZI , =
+                                    9:BROJ , 2
+                                8:TOCKAZAREZ , ;
+                            7:<izraz_naredba>
+                                8:<izraz_pridruzivanja>
+                                    9:IDN , b
+                                    9:OP_PRIDRUZI , =
+                                    9:BROJ , 3
+                                8:TOCKAZAREZ , ;
+                        6:<naredba_grananja>
+                            7:KR_IF , if
+                            7:L_ZAGRADA , (
+                            7:<odnosni_izraz>
+                                8:IDN , a
+                                8:OP_GT , >
+                                8:IDN , b
+                            7:D_ZAGRADA , )
+                            7:<izraz_naredba>
+                                8:<izraz_pridruzivanja>
+                                    9:IDN , g
+                                    9:OP_PRIDRUZI , =
+                                    9:<postfiks_izraz>
+                                        10:IDN , b
+                                        10:OP_INC , ++
+                                8:TOCKAZAREZ , ;
+                    5:<izraz_naredba>
+                        6:<izraz_pridruzivanja>
+                            7:IDN , c
+                            7:OP_PRIDRUZI , =
+                            7:<aditivni_izraz>
+                                8:IDN , a
+                                8:PLUS , +
+                                8:IDN , b
+                        6:TOCKAZAREZ , ;
+                4:<naredba_skoka>
+                    5:KR_RETURN , return
+                    5:<primarni_izraz>
+                        6:L_ZAGRADA , (
+                        6:<aditivni_izraz>
+                            7:IDN , c
+                            7:PLUS , +
+                            7:IDN , a
+                        6:D_ZAGRADA , )
+                    5:TOCKAZAREZ , ;
+            3:D_VIT_ZAGRADA , }

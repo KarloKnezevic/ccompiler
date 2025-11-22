@@ -1,0 +1,25 @@
+tablica znakova:
+indeks   uniformni znak   izvorni tekst
+     0   KR_CHAR           char         
+     1   IDN               main         
+     2   L_ZAGRADA         (            
+     3   KR_VOID           void         
+     4   D_ZAGRADA         )            
+     5   L_VIT_ZAGRADA     {            
+     6   KR_RETURN         return       
+     7   BROJ              2.5          
+     8   TOCKAZAREZ        ;            
+     9   D_VIT_ZAGRADA     }            
+
+niz uniformnih znakova:
+uniformni znak    redak    indeks u tablicu znakova
+KR_CHAR              1       0
+IDN                  1       1
+L_ZAGRADA            1       2
+KR_VOID              1       3
+D_ZAGRADA            1       4
+L_VIT_ZAGRADA        1       5
+KR_RETURN            2       6
+BROJ                 2       7
+TOCKAZAREZ           2       8
+D_VIT_ZAGRADA        3       9

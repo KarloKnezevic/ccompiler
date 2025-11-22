@@ -1,0 +1,69 @@
+tablica znakova:
+indeks   uniformni znak   izvorni tekst
+     0   KR_INT            int          
+     1   IDN               f            
+     2   L_ZAGRADA         (            
+     3   D_ZAGRADA         )            
+     4   TOCKAZAREZ        ;            
+     5   IDN               main         
+     6   KR_VOID           void         
+     7   L_VIT_ZAGRADA     {            
+     8   KR_RETURN         return       
+     9   BROJ              0            
+    10   D_VIT_ZAGRADA     }            
+    11   IDN               a            
+    12   ZAREZ             ,            
+    13   IDN               b            
+    14   KR_CHAR           char         
+    15   IDN               c            
+    16   KR_FLOAT          float        
+    17   IDN               d            
+
+niz uniformnih znakova:
+uniformni znak    redak    indeks u tablicu znakova
+KR_INT               1       0
+IDN                  1       1
+L_ZAGRADA            1       2
+KR_INT               1       0
+D_ZAGRADA            1       3
+TOCKAZAREZ           1       4
+KR_INT               3       0
+IDN                  3       5
+L_ZAGRADA            3       2
+KR_VOID              3       6
+D_ZAGRADA            3       3
+L_VIT_ZAGRADA        3       7
+KR_RETURN            5       8
+IDN                  5       1
+L_ZAGRADA            5       2
+BROJ                 5       9
+D_ZAGRADA            5       3
+TOCKAZAREZ           5       4
+D_VIT_ZAGRADA        7      10
+KR_INT              11       0
+IDN                 11       1
+L_ZAGRADA           11       2
+KR_INT              11       0
+IDN                 11      11
+ZAREZ               11      12
+KR_INT              11       0
+IDN                 11      13
+ZAREZ               11      12
+KR_CHAR             11      14
+IDN                 11      15
+ZAREZ               11      12
+KR_FLOAT            11      16
+IDN                 11      17
+D_ZAGRADA           11       3
+TOCKAZAREZ          11       4
+KR_INT              13       0
+IDN                 13       1
+L_ZAGRADA           13       2
+KR_INT              13       0
+IDN                 13      13
+D_ZAGRADA           13       3
+L_VIT_ZAGRADA       13       7
+KR_RETURN           15       8
+IDN                 15      13
+TOCKAZAREZ          15       4
+D_VIT_ZAGRADA       17      10

@@ -1,0 +1,15 @@
+0:<pocetni_nezavrsni_znak>
+    1:<definicija_funkcije>
+        2:KR_CHAR , char
+        2:<izravni_deklarator>
+            3:IDN , main
+            3:L_ZAGRADA , (
+            3:KR_VOID , void
+            3:D_ZAGRADA , )
+        2:<slozena_naredba>
+            3:L_VIT_ZAGRADA , {
+            3:<naredba_skoka>
+                4:KR_RETURN , return
+                4:BROJ , 2.5
+                4:TOCKAZAREZ , ;
+            3:D_VIT_ZAGRADA , }

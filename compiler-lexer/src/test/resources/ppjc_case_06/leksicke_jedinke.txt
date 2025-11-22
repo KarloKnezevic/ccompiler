@@ -1,0 +1,84 @@
+tablica znakova:
+indeks   uniformni znak   izvorni tekst
+     0   KR_INT            int          
+     1   IDN               main         
+     2   L_ZAGRADA         (            
+     3   KR_VOID           void         
+     4   D_ZAGRADA         )            
+     5   L_VIT_ZAGRADA     {            
+     6   IDN               a            
+     7   ZAREZ             ,            
+     8   IDN               b            
+     9   TOCKAZAREZ        ;            
+    10   KR_CHAR           char         
+    11   IDN               dokins       
+    12   IDN               g            
+    13   IDN               c            
+    14   OP_PRIDRUZI       =            
+    15   BROJ              0            
+    16   BROJ              2            
+    17   BROJ              3            
+    18   KR_IF             if           
+    19   OP_GT             >            
+    20   OP_INC            ++           
+    21   PLUS              +            
+    22   KR_RETURN         return       
+    23   D_VIT_ZAGRADA     }            
+
+niz uniformnih znakova:
+uniformni znak    redak    indeks u tablicu znakova
+KR_INT               1       0
+IDN                  1       1
+L_ZAGRADA            1       2
+KR_VOID              1       3
+D_ZAGRADA            1       4
+L_VIT_ZAGRADA        1       5
+KR_INT               2       0
+IDN                  2       6
+ZAREZ                2       7
+IDN                  2       8
+TOCKAZAREZ           2       9
+KR_CHAR              3      10
+IDN                  3      11
+TOCKAZAREZ           3       9
+KR_INT               4       0
+IDN                  4      12
+TOCKAZAREZ           4       9
+KR_INT               6       0
+IDN                  6      13
+OP_PRIDRUZI          6      14
+BROJ                 6      15
+TOCKAZAREZ           6       9
+IDN                  8       6
+OP_PRIDRUZI          8      14
+BROJ                 8      16
+TOCKAZAREZ           8       9
+IDN                  9       8
+OP_PRIDRUZI          9      14
+BROJ                 9      17
+TOCKAZAREZ           9       9
+KR_IF               11      18
+L_ZAGRADA           11       2
+IDN                 11       6
+OP_GT               11      19
+IDN                 11       8
+D_ZAGRADA           11       4
+IDN                 12      12
+OP_PRIDRUZI         12      14
+IDN                 12       8
+OP_INC              12      20
+TOCKAZAREZ          12       9
+IDN                 13      13
+OP_PRIDRUZI         13      14
+IDN                 13       6
+PLUS                13      21
+IDN                 13       8
+TOCKAZAREZ          13       9
+KR_RETURN           15      22
+L_ZAGRADA           15       2
+IDN                 15      13
+PLUS                15      21
+IDN                 15       6
+D_ZAGRADA           15       4
+TOCKAZAREZ          15       9
+D_VIT_ZAGRADA       16      23

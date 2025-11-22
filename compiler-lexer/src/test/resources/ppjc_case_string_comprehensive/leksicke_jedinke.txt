@@ -1,0 +1,30 @@
+tablica znakova:
+indeks   uniformni znak   izvorni tekst
+     0   NIZ_ZNAKOVA        "a"
+     1   TOCKAZAREZ         ;
+     2   IDN                x
+     3   PLUS               +
+     4   NIZ_ZNAKOVA        "b"
+     5   OP_I               &&
+     6   OP_EQ               ==
+     7   NIZ_ZNAKOVA        ""
+
+niz uniformnih znakova:
+uniformni znak    redak    indeks u tablicu znakova
+NIZ_ZNAKOVA           1       0
+TOCKAZAREZ            1       1
+NIZ_ZNAKOVA           2       0
+TOCKAZAREZ            2       1
+IDN                   2       2
+NIZ_ZNAKOVA           3       0
+PLUS                  3       3
+NIZ_ZNAKOVA           3       4
+NIZ_ZNAKOVA           4       0
+OP_I                  4       5
+NIZ_ZNAKOVA           4       4
+NIZ_ZNAKOVA           5       0
+OP_EQ                 5       6
+NIZ_ZNAKOVA           5       4
+NIZ_ZNAKOVA           6       7
+TOCKAZAREZ            6       1
+

@@ -1,0 +1,855 @@
+0:<pocetni_nezavrsni_znak>
+    1:<prijevodna_jedinica>
+        2:<prijevodna_jedinica>
+            3:<vanjska_deklaracija>
+                4:<deklaracija>
+                    5:<specifikatori_deklaracije>
+                        6:<specifikator_tipa>
+                            7:<struct_specifikator>
+                                8:KR_STRUCT , struct
+                                8:IDN , S
+                                8:L_VIT_ZAGRADA , {
+                                8:<struct_lista_deklaracija>
+                                    9:<struct_lista_deklaracija>
+                                        10:<struct_deklaracija>
+                                            11:<lista_specifikatora_kvalifikatora>
+                                                12:<specifikator_tipa>
+                                                    13:KR_CHAR , char
+                                            11:<struct_lista_deklaratora>
+                                                12:<struct_deklarator>
+                                                    13:<deklarator>
+                                                        14:<izravni_deklarator>
+                                                            15:IDN , t
+                                            11:TOCKAZAREZ , ;
+                                    9:<struct_deklaracija>
+                                        10:<lista_specifikatora_kvalifikatora>
+                                            11:<specifikator_tipa>
+                                                12:KR_INT , int
+                                        10:<struct_lista_deklaratora>
+                                            11:<struct_deklarator>
+                                                12:<deklarator>
+                                                    13:<izravni_deklarator>
+                                                        14:IDN , x
+                                        10:TOCKAZAREZ , ;
+                                8:D_VIT_ZAGRADA , }
+                    5:TOCKAZAREZ , ;
+        2:<vanjska_deklaracija>
+            3:<definicija_funkcije>
+                4:<specifikatori_deklaracije>
+                    5:<specifikator_tipa>
+                        6:KR_VOID , void
+                4:<deklarator>
+                    5:<izravni_deklarator>
+                        6:<izravni_deklarator>
+                            7:IDN , fun
+                        6:L_ZAGRADA , (
+                        6:<lista_parametara>
+                            7:<deklaracija_parametra>
+                                8:<specifikatori_deklaracije>
+                                    9:<specifikator_tipa>
+                                        10:KR_INT , int
+                                8:<deklarator>
+                                    9:<izravni_deklarator>
+                                        10:IDN , xYz
+                        6:D_ZAGRADA , )
+                4:<slozena_naredba>
+                    5:L_VIT_ZAGRADA , {
+                    5:<lista_naredbi>
+                        6:<naredba>
+                            7:<naredba_skoka>
+                                8:KR_RETURN , return
+                                8:TOCKAZAREZ , ;
+                    5:D_VIT_ZAGRADA , }
+    1:<specifikatori_deklaracije>
+        2:<specifikator_tipa>
+            3:KR_INT , int
+    1:<deklarator>
+        2:<izravni_deklarator>
+            3:<izravni_deklarator>
+                4:IDN , main
+            3:L_ZAGRADA , (
+            3:<lista_parametara>
+                4:<deklaracija_parametra>
+                    5:<specifikatori_deklaracije>
+                        6:<specifikator_tipa>
+                            7:KR_VOID , void
+            3:D_ZAGRADA , )
+    1:L_VIT_ZAGRADA , {
+    1:<lista_deklaracija>
+        2:<lista_deklaracija>
+            3:<lista_deklaracija>
+                4:<lista_deklaracija>
+                    5:<lista_deklaracija>
+                        6:<lista_deklaracija>
+                            7:<lista_deklaracija>
+                                8:<lista_deklaracija>
+                                    9:<deklaracija>
+                                        10:<specifikatori_deklaracije>
+                                            11:<specifikator_tipa>
+                                                12:KR_INT , int
+                                        10:<lista_init_deklaratora>
+                                            11:<init_deklarator>
+                                                12:<deklarator>
+                                                    13:<izravni_deklarator>
+                                                        14:<izravni_deklarator>
+                                                            15:IDN , A
+                                                        14:L_UGL_ZAGRADA , [
+                                                        14:<log_ili_izraz>
+                                                            15:<log_i_izraz>
+                                                                16:<bin_ili_izraz>
+                                                                    17:<bin_xili_izraz>
+                                                                        18:<bin_i_izraz>
+                                                                            19:<jednakosni_izraz>
+                                                                                20:<odnosni_izraz>
+                                                                                    21:<aditivni_izraz>
+                                                                                        22:<multiplikativni_izraz>
+                                                                                            23:<cast_izraz>
+                                                                                                24:<unarni_izraz>
+                                                                                                    25:<postfiks_izraz>
+                                                                                                        26:<primarni_izraz>
+                                                                                                            27:BROJ , 512
+                                                        14:D_UGL_ZAGRADA , ]
+                                        10:TOCKAZAREZ , ;
+                                8:<deklaracija>
+                                    9:<specifikatori_deklaracije>
+                                        10:<specifikator_tipa>
+                                            11:KR_INT , int
+                                    9:<lista_init_deklaratora>
+                                        10:<init_deklarator>
+                                            11:<deklarator>
+                                                12:<izravni_deklarator>
+                                                    13:<izravni_deklarator>
+                                                        14:IDN , t
+                                                    13:L_UGL_ZAGRADA , [
+                                                    13:D_UGL_ZAGRADA , ]
+                                            11:OP_PRIDRUZI , =
+                                            11:<inicijalizator>
+                                                12:L_VIT_ZAGRADA , {
+                                                12:<lista_izraza_pridruzivanja>
+                                                    13:<lista_izraza_pridruzivanja>
+                                                        14:<lista_izraza_pridruzivanja>
+                                                            15:<izraz_pridruzivanja>
+                                                                16:<log_ili_izraz>
+                                                                    17:<log_i_izraz>
+                                                                        18:<bin_ili_izraz>
+                                                                            19:<bin_xili_izraz>
+                                                                                20:<bin_i_izraz>
+                                                                                    21:<jednakosni_izraz>
+                                                                                        22:<odnosni_izraz>
+                                                                                            23:<aditivni_izraz>
+                                                                                                24:<multiplikativni_izraz>
+                                                                                                    25:<cast_izraz>
+                                                                                                        26:<unarni_izraz>
+                                                                                                            27:<postfiks_izraz>
+                                                                                                                28:<primarni_izraz>
+                                                                                                                    29:BROJ , 1
+                                                        14:ZAREZ , ,
+                                                        14:<izraz_pridruzivanja>
+                                                            15:<log_ili_izraz>
+                                                                16:<log_i_izraz>
+                                                                    17:<bin_ili_izraz>
+                                                                        18:<bin_xili_izraz>
+                                                                            19:<bin_i_izraz>
+                                                                                20:<jednakosni_izraz>
+                                                                                    21:<odnosni_izraz>
+                                                                                        22:<aditivni_izraz>
+                                                                                            23:<multiplikativni_izraz>
+                                                                                                24:<cast_izraz>
+                                                                                                    25:<unarni_izraz>
+                                                                                                        26:<postfiks_izraz>
+                                                                                                            27:<primarni_izraz>
+                                                                                                                28:BROJ , 2
+                                                    13:ZAREZ , ,
+                                                    13:<izraz_pridruzivanja>
+                                                        14:<log_ili_izraz>
+                                                            15:<log_i_izraz>
+                                                                16:<bin_ili_izraz>
+                                                                    17:<bin_xili_izraz>
+                                                                        18:<bin_i_izraz>
+                                                                            19:<jednakosni_izraz>
+                                                                                20:<odnosni_izraz>
+                                                                                    21:<aditivni_izraz>
+                                                                                        22:<multiplikativni_izraz>
+                                                                                            23:<cast_izraz>
+                                                                                                24:<unarni_izraz>
+                                                                                                    25:<postfiks_izraz>
+                                                                                                        26:<primarni_izraz>
+                                                                                                            27:BROJ , 3
+                                                12:D_VIT_ZAGRADA , }
+                                    9:TOCKAZAREZ , ;
+                            7:<deklaracija>
+                                8:<specifikatori_deklaracije>
+                                    9:<specifikator_tipa>
+                                        10:KR_CHAR , char
+                                8:<lista_init_deklaratora>
+                                    9:<init_deklarator>
+                                        10:<deklarator>
+                                            11:<izravni_deklarator>
+                                                12:<izravni_deklarator>
+                                                    13:IDN , tmp
+                                                12:L_UGL_ZAGRADA , [
+                                                12:D_UGL_ZAGRADA , ]
+                                        10:OP_PRIDRUZI , =
+                                        10:<inicijalizator>
+                                            11:<izraz_pridruzivanja>
+                                                12:<log_ili_izraz>
+                                                    13:<log_i_izraz>
+                                                        14:<bin_ili_izraz>
+                                                            15:<bin_xili_izraz>
+                                                                16:<bin_i_izraz>
+                                                                    17:<jednakosni_izraz>
+                                                                        18:<odnosni_izraz>
+                                                                            19:<aditivni_izraz>
+                                                                                20:<multiplikativni_izraz>
+                                                                                    21:<cast_izraz>
+                                                                                        22:<unarni_izraz>
+                                                                                            23:<postfiks_izraz>
+                                                                                                24:<primarni_izraz>
+                                                                                                    25:NIZ_ZNAKOVA , "te\nst"
+                                8:TOCKAZAREZ , ;
+                        6:<deklaracija>
+                            7:<specifikatori_deklaracije>
+                                8:KR_CONST , const
+                                8:<specifikatori_deklaracije>
+                                    9:<specifikator_tipa>
+                                        10:KR_CHAR , char
+                            7:<lista_init_deklaratora>
+                                8:<init_deklarator>
+                                    9:<deklarator>
+                                        10:<pokazivac>
+                                            11:ASTERISK , *
+                                        10:<izravni_deklarator>
+                                            11:IDN , x
+                                    9:OP_PRIDRUZI , =
+                                    9:<inicijalizator>
+                                        10:<izraz_pridruzivanja>
+                                            11:<log_ili_izraz>
+                                                12:<log_i_izraz>
+                                                    13:<bin_ili_izraz>
+                                                        14:<bin_xili_izraz>
+                                                            15:<bin_i_izraz>
+                                                                16:<jednakosni_izraz>
+                                                                    17:<odnosni_izraz>
+                                                                        18:<aditivni_izraz>
+                                                                            19:<multiplikativni_izraz>
+                                                                                20:<cast_izraz>
+                                                                                    21:<unarni_izraz>
+                                                                                        22:<postfiks_izraz>
+                                                                                            23:<primarni_izraz>
+                                                                                                24:NIZ_ZNAKOVA , "\"tes\"t2\""
+                            7:TOCKAZAREZ , ;
+                    5:<deklaracija>
+                        6:<specifikatori_deklaracije>
+                            7:<specifikator_tipa>
+                                8:KR_INT , int
+                        6:<lista_init_deklaratora>
+                            7:<lista_init_deklaratora>
+                                8:<init_deklarator>
+                                    9:<deklarator>
+                                        10:<izravni_deklarator>
+                                            11:IDN , xYz
+                            7:ZAREZ , ,
+                            7:<init_deklarator>
+                                8:<deklarator>
+                                    9:<pokazivac>
+                                        10:ASTERISK , *
+                                    9:<izravni_deklarator>
+                                        10:IDN , abc
+                        6:TOCKAZAREZ , ;
+                4:<deklaracija>
+                    5:<specifikatori_deklaracije>
+                        6:<specifikator_tipa>
+                            7:KR_FLOAT , float
+                    5:<lista_init_deklaratora>
+                        6:<init_deklarator>
+                            7:<deklarator>
+                                8:<izravni_deklarator>
+                                    9:IDN , a_B1
+                            7:OP_PRIDRUZI , =
+                            7:<inicijalizator>
+                                8:<izraz_pridruzivanja>
+                                    9:<log_ili_izraz>
+                                        10:<log_i_izraz>
+                                            11:<bin_ili_izraz>
+                                                12:<bin_xili_izraz>
+                                                    13:<bin_i_izraz>
+                                                        14:<jednakosni_izraz>
+                                                            15:<odnosni_izraz>
+                                                                16:<aditivni_izraz>
+                                                                    17:<aditivni_izraz>
+                                                                        18:<aditivni_izraz>
+                                                                            19:<aditivni_izraz>
+                                                                                20:<aditivni_izraz>
+                                                                                    21:<aditivni_izraz>
+                                                                                        22:<multiplikativni_izraz>
+                                                                                            23:<cast_izraz>
+                                                                                                24:<unarni_izraz>
+                                                                                                    25:<postfiks_izraz>
+                                                                                                        26:<primarni_izraz>
+                                                                                                            27:BROJ , 10.23
+                                                                                    21:PLUS , +
+                                                                                    21:<multiplikativni_izraz>
+                                                                                        22:<cast_izraz>
+                                                                                            23:<unarni_izraz>
+                                                                                                24:<postfiks_izraz>
+                                                                                                    25:<primarni_izraz>
+                                                                                                        26:BROJ , .12
+                                                                                20:PLUS , +
+                                                                                20:<multiplikativni_izraz>
+                                                                                    21:<cast_izraz>
+                                                                                        22:<unarni_izraz>
+                                                                                            23:<postfiks_izraz>
+                                                                                                24:<primarni_izraz>
+                                                                                                    25:BROJ , 1.43e-3
+                                                                            19:PLUS , +
+                                                                            19:<multiplikativni_izraz>
+                                                                                20:<cast_izraz>
+                                                                                    21:<unarni_izraz>
+                                                                                        22:<postfiks_izraz>
+                                                                                            23:<primarni_izraz>
+                                                                                                24:BROJ , .43E3
+                                                                        18:PLUS , +
+                                                                        18:<multiplikativni_izraz>
+                                                                            19:<cast_izraz>
+                                                                                20:<unarni_izraz>
+                                                                                    21:<postfiks_izraz>
+                                                                                        22:<primarni_izraz>
+                                                                                            23:BROJ , .46E+134
+                                                                    17:PLUS , +
+                                                                    17:<multiplikativni_izraz>
+                                                                        18:<cast_izraz>
+                                                                            19:<unarni_izraz>
+                                                                                20:<postfiks_izraz>
+                                                                                    21:<primarni_izraz>
+                                                                                        22:BROJ , 0.47E-123
+                    5:TOCKAZAREZ , ;
+            3:<deklaracija>
+                4:<specifikatori_deklaracije>
+                    5:<specifikator_tipa>
+                        6:KR_INT , int
+                4:<lista_init_deklaratora>
+                    5:<init_deklarator>
+                        6:<deklarator>
+                            7:<izravni_deklarator>
+                                8:IDN , i
+                4:TOCKAZAREZ , ;
+        2:<deklaracija>
+            3:<specifikatori_deklaracije>
+                4:<specifikator_tipa>
+                    5:<struct_specifikator>
+                        6:KR_STRUCT , struct
+                        6:IDN , S
+            3:<lista_init_deklaratora>
+                4:<init_deklarator>
+                    5:<deklarator>
+                        6:<izravni_deklarator>
+                            7:IDN , strct
+            3:TOCKAZAREZ , ;
+    1:<lista_naredbi>
+        2:<lista_naredbi>
+            3:<lista_naredbi>
+                4:<lista_naredbi>
+                    5:<lista_naredbi>
+                        6:<lista_naredbi>
+                            7:<lista_naredbi>
+                                8:<lista_naredbi>
+                                    9:<lista_naredbi>
+                                        10:<lista_naredbi>
+                                            11:<lista_naredbi>
+                                                12:<naredba>
+                                                    13:<izraz_naredba>
+                                                        14:<izraz>
+                                                            15:<izraz_pridruzivanja>
+                                                                16:<unarni_izraz>
+                                                                    17:<postfiks_izraz>
+                                                                        18:<postfiks_izraz>
+                                                                            19:<primarni_izraz>
+                                                                                20:IDN , strct
+                                                                        18:TOCKA , .
+                                                                        18:IDN , t
+                                                                16:OP_PRIDRUZI , =
+                                                                16:<izraz_pridruzivanja>
+                                                                    17:<log_ili_izraz>
+                                                                        18:<log_i_izraz>
+                                                                            19:<bin_ili_izraz>
+                                                                                20:<bin_xili_izraz>
+                                                                                    21:<bin_i_izraz>
+                                                                                        22:<jednakosni_izraz>
+                                                                                            23:<odnosni_izraz>
+                                                                                                24:<aditivni_izraz>
+                                                                                                    25:<multiplikativni_izraz>
+                                                                                                        26:<cast_izraz>
+                                                                                                            27:<unarni_izraz>
+                                                                                                                28:<postfiks_izraz>
+                                                                                                                    29:<primarni_izraz>
+                                                                                                                        30:ZNAK , 'b'
+                                                        14:TOCKAZAREZ , ;
+                                            11:<naredba>
+                                                12:<izraz_naredba>
+                                                    13:<izraz>
+                                                        14:<izraz_pridruzivanja>
+                                                            15:<unarni_izraz>
+                                                                16:<postfiks_izraz>
+                                                                    17:<postfiks_izraz>
+                                                                        18:<primarni_izraz>
+                                                                            19:IDN , strct
+                                                                    17:TOCKA , .
+                                                                    17:IDN , x
+                                                            15:OP_PRIDRUZI , =
+                                                            15:<izraz_pridruzivanja>
+                                                                16:<log_ili_izraz>
+                                                                    17:<log_i_izraz>
+                                                                        18:<bin_ili_izraz>
+                                                                            19:<bin_xili_izraz>
+                                                                                20:<bin_i_izraz>
+                                                                                    21:<jednakosni_izraz>
+                                                                                        22:<odnosni_izraz>
+                                                                                            23:<aditivni_izraz>
+                                                                                                24:<multiplikativni_izraz>
+                                                                                                    25:<cast_izraz>
+                                                                                                        26:<unarni_izraz>
+                                                                                                            27:<postfiks_izraz>
+                                                                                                                28:<primarni_izraz>
+                                                                                                                    29:BROJ , 4321
+                                                    13:TOCKAZAREZ , ;
+                                        10:<naredba>
+                                            11:<izraz_naredba>
+                                                12:<izraz>
+                                                    13:<izraz_pridruzivanja>
+                                                        14:<unarni_izraz>
+                                                            15:<postfiks_izraz>
+                                                                16:<primarni_izraz>
+                                                                    17:IDN , xYz
+                                                        14:OP_PRIDRUZI , =
+                                                        14:<izraz_pridruzivanja>
+                                                            15:<log_ili_izraz>
+                                                                16:<log_i_izraz>
+                                                                    17:<bin_ili_izraz>
+                                                                        18:<bin_xili_izraz>
+                                                                            19:<bin_i_izraz>
+                                                                                20:<jednakosni_izraz>
+                                                                                    21:<odnosni_izraz>
+                                                                                        22:<aditivni_izraz>
+                                                                                            23:<multiplikativni_izraz>
+                                                                                                24:<cast_izraz>
+                                                                                                    25:<unarni_izraz>
+                                                                                                        26:<postfiks_izraz>
+                                                                                                            27:<primarni_izraz>
+                                                                                                                28:BROJ , 12345
+                                                12:TOCKAZAREZ , ;
+                                    9:<naredba>
+                                        10:<izraz_naredba>
+                                            11:<izraz>
+                                                12:<izraz_pridruzivanja>
+                                                    13:<unarni_izraz>
+                                                        14:<postfiks_izraz>
+                                                            15:<primarni_izraz>
+                                                                16:IDN , abc
+                                                    13:OP_PRIDRUZI , =
+                                                    13:<izraz_pridruzivanja>
+                                                        14:<log_ili_izraz>
+                                                            15:<log_i_izraz>
+                                                                16:<bin_ili_izraz>
+                                                                    17:<bin_xili_izraz>
+                                                                        18:<bin_i_izraz>
+                                                                            19:<jednakosni_izraz>
+                                                                                20:<odnosni_izraz>
+                                                                                    21:<aditivni_izraz>
+                                                                                        22:<multiplikativni_izraz>
+                                                                                            23:<cast_izraz>
+                                                                                                24:<unarni_izraz>
+                                                                                                    25:<unarni_operator>
+                                                                                                        26:AMPERSAND , &
+                                                                                                    25:<cast_izraz>
+                                                                                                        26:<unarni_izraz>
+                                                                                                            27:<postfiks_izraz>
+                                                                                                                28:<primarni_izraz>
+                                                                                                                    29:IDN , xYz
+                                            11:TOCKAZAREZ , ;
+                                8:<naredba>
+                                    9:<izraz_naredba>
+                                        10:<izraz>
+                                            11:<izraz_pridruzivanja>
+                                                12:<unarni_izraz>
+                                                    13:<postfiks_izraz>
+                                                        14:<primarni_izraz>
+                                                            15:IDN , abc
+                                                12:OP_PRIDRUZI , =
+                                                12:<izraz_pridruzivanja>
+                                                    13:<log_ili_izraz>
+                                                        14:<log_i_izraz>
+                                                            15:<bin_ili_izraz>
+                                                                16:<bin_xili_izraz>
+                                                                    17:<bin_i_izraz>
+                                                                        18:<jednakosni_izraz>
+                                                                            19:<odnosni_izraz>
+                                                                                20:<aditivni_izraz>
+                                                                                    21:<multiplikativni_izraz>
+                                                                                        22:<cast_izraz>
+                                                                                            23:<unarni_izraz>
+                                                                                                24:<postfiks_izraz>
+                                                                                                    25:<primarni_izraz>
+                                                                                                        26:L_ZAGRADA , (
+                                                                                                        26:<izraz>
+                                                                                                            27:<izraz_pridruzivanja>
+                                                                                                                28:<log_ili_izraz>
+                                                                                                                    29:<log_i_izraz>
+                                                                                                                        30:<bin_ili_izraz>
+                                                                                                                            31:<bin_xili_izraz>
+                                                                                                                                32:<bin_i_izraz>
+                                                                                                                                    33:<jednakosni_izraz>
+                                                                                                                                        34:<odnosni_izraz>
+                                                                                                                                            35:<aditivni_izraz>
+                                                                                                                                                36:<multiplikativni_izraz>
+                                                                                                                                                    37:<cast_izraz>
+                                                                                                                                                        38:<unarni_izraz>
+                                                                                                                                                            39:<unarni_operator>
+                                                                                                                                                                40:AMPERSAND , &
+                                                                                                                                                            39:<cast_izraz>
+                                                                                                                                                                40:<unarni_izraz>
+                                                                                                                                                                    41:<postfiks_izraz>
+                                                                                                                                                                        42:<primarni_izraz>
+                                                                                                                                                                            43:IDN , xYz
+                                                                                                        26:D_ZAGRADA , )
+                                        10:TOCKAZAREZ , ;
+                            7:<naredba>
+                                8:<izraz_naredba>
+                                    9:<izraz>
+                                        10:<izraz_pridruzivanja>
+                                            11:<unarni_izraz>
+                                                12:<unarni_operator>
+                                                    13:ASTERISK , *
+                                                12:<cast_izraz>
+                                                    13:<unarni_izraz>
+                                                        14:<postfiks_izraz>
+                                                            15:<primarni_izraz>
+                                                                16:IDN , abc
+                                            11:OP_PRIDRUZI , =
+                                            11:<izraz_pridruzivanja>
+                                                12:<log_ili_izraz>
+                                                    13:<log_i_izraz>
+                                                        14:<bin_ili_izraz>
+                                                            15:<bin_xili_izraz>
+                                                                16:<bin_i_izraz>
+                                                                    17:<jednakosni_izraz>
+                                                                        18:<odnosni_izraz>
+                                                                            19:<aditivni_izraz>
+                                                                                20:<aditivni_izraz>
+                                                                                    21:<multiplikativni_izraz>
+                                                                                        22:<cast_izraz>
+                                                                                            23:<unarni_izraz>
+                                                                                                24:<unarni_operator>
+                                                                                                    25:ASTERISK , *
+                                                                                                24:<cast_izraz>
+                                                                                                    25:<unarni_izraz>
+                                                                                                        26:<postfiks_izraz>
+                                                                                                            27:<postfiks_izraz>
+                                                                                                                28:<primarni_izraz>
+                                                                                                                    29:IDN , abc
+                                                                                                            27:OP_INC , ++
+                                                                                20:PLUS , +
+                                                                                20:<multiplikativni_izraz>
+                                                                                    21:<cast_izraz>
+                                                                                        22:<unarni_izraz>
+                                                                                            23:<postfiks_izraz>
+                                                                                                24:<primarni_izraz>
+                                                                                                    25:IDN , xYz
+                                    9:TOCKAZAREZ , ;
+                        6:<naredba>
+                            7:<izraz_naredba>
+                                8:<izraz>
+                                    9:<izraz_pridruzivanja>
+                                        10:<unarni_izraz>
+                                            11:<unarni_operator>
+                                                12:ASTERISK , *
+                                            11:<cast_izraz>
+                                                12:<unarni_izraz>
+                                                    13:<postfiks_izraz>
+                                                        14:<primarni_izraz>
+                                                            15:IDN , abc
+                                        10:OP_PRIDRUZI , =
+                                        10:<izraz_pridruzivanja>
+                                            11:<log_ili_izraz>
+                                                12:<log_i_izraz>
+                                                    13:<bin_ili_izraz>
+                                                        14:<bin_xili_izraz>
+                                                            15:<bin_i_izraz>
+                                                                16:<jednakosni_izraz>
+                                                                    17:<odnosni_izraz>
+                                                                        18:<aditivni_izraz>
+                                                                            19:<multiplikativni_izraz>
+                                                                                20:<multiplikativni_izraz>
+                                                                                    21:<cast_izraz>
+                                                                                        22:<unarni_izraz>
+                                                                                            23:<postfiks_izraz>
+                                                                                                24:<primarni_izraz>
+                                                                                                    25:BROJ , 054
+                                                                                20:OP_MOD , %
+                                                                                20:<cast_izraz>
+                                                                                    21:<unarni_izraz>
+                                                                                        22:<postfiks_izraz>
+                                                                                            23:<primarni_izraz>
+                                                                                                24:BROJ , 5
+                                8:TOCKAZAREZ , ;
+                    5:<naredba>
+                        6:<izraz_naredba>
+                            7:<izraz>
+                                8:<izraz_pridruzivanja>
+                                    9:<unarni_izraz>
+                                        10:<unarni_operator>
+                                            11:ASTERISK , *
+                                        10:<cast_izraz>
+                                            11:<unarni_izraz>
+                                                12:<postfiks_izraz>
+                                                    13:<primarni_izraz>
+                                                        14:IDN , abc
+                                    9:OP_PRIDRUZI , =
+                                    9:<izraz_pridruzivanja>
+                                        10:<log_ili_izraz>
+                                            11:<log_i_izraz>
+                                                12:<bin_ili_izraz>
+                                                    13:<bin_xili_izraz>
+                                                        14:<bin_i_izraz>
+                                                            15:<jednakosni_izraz>
+                                                                16:<odnosni_izraz>
+                                                                    17:<aditivni_izraz>
+                                                                        18:<multiplikativni_izraz>
+                                                                            19:<cast_izraz>
+                                                                                20:<unarni_izraz>
+                                                                                    21:<postfiks_izraz>
+                                                                                        22:<primarni_izraz>
+                                                                                            23:BROJ , 0xaafff
+                            7:TOCKAZAREZ , ;
+                4:<naredba>
+                    5:<izraz_naredba>
+                        6:<izraz>
+                            7:<izraz_pridruzivanja>
+                                8:<unarni_izraz>
+                                    9:<postfiks_izraz>
+                                        10:<primarni_izraz>
+                                            11:IDN , i
+                                8:OP_PRIDRUZI , =
+                                8:<izraz_pridruzivanja>
+                                    9:<log_ili_izraz>
+                                        10:<log_i_izraz>
+                                            11:<bin_ili_izraz>
+                                                12:<bin_ili_izraz>
+                                                    13:<bin_xili_izraz>
+                                                        14:<bin_i_izraz>
+                                                            15:<jednakosni_izraz>
+                                                                16:<odnosni_izraz>
+                                                                    17:<aditivni_izraz>
+                                                                        18:<aditivni_izraz>
+                                                                            19:<aditivni_izraz>
+                                                                                20:<multiplikativni_izraz>
+                                                                                    21:<multiplikativni_izraz>
+                                                                                        22:<cast_izraz>
+                                                                                            23:<unarni_izraz>
+                                                                                                24:<postfiks_izraz>
+                                                                                                    25:<primarni_izraz>
+                                                                                                        26:BROJ , 3
+                                                                                    21:ASTERISK , *
+                                                                                    21:<cast_izraz>
+                                                                                        22:<unarni_izraz>
+                                                                                            23:<postfiks_izraz>
+                                                                                                24:<primarni_izraz>
+                                                                                                    25:BROJ , 2
+                                                                            19:PLUS , +
+                                                                            19:<multiplikativni_izraz>
+                                                                                20:<cast_izraz>
+                                                                                    21:<unarni_izraz>
+                                                                                        22:<postfiks_izraz>
+                                                                                            23:<primarni_izraz>
+                                                                                                24:BROJ , 5
+                                                                        18:MINUS , -
+                                                                        18:<multiplikativni_izraz>
+                                                                            19:<cast_izraz>
+                                                                                20:<unarni_izraz>
+                                                                                    21:<postfiks_izraz>
+                                                                                        22:<primarni_izraz>
+                                                                                            23:BROJ , 3
+                                                12:OP_BIN_ILI , |
+                                                12:<bin_xili_izraz>
+                                                    13:<bin_xili_izraz>
+                                                        14:<bin_i_izraz>
+                                                            15:<bin_i_izraz>
+                                                                16:<jednakosni_izraz>
+                                                                    17:<odnosni_izraz>
+                                                                        18:<aditivni_izraz>
+                                                                            19:<multiplikativni_izraz>
+                                                                                20:<cast_izraz>
+                                                                                    21:<unarni_izraz>
+                                                                                        22:<postfiks_izraz>
+                                                                                            23:<primarni_izraz>
+                                                                                                24:BROJ , 3
+                                                            15:AMPERSAND , &
+                                                            15:<jednakosni_izraz>
+                                                                16:<odnosni_izraz>
+                                                                    17:<aditivni_izraz>
+                                                                        18:<multiplikativni_izraz>
+                                                                            19:<cast_izraz>
+                                                                                20:<unarni_izraz>
+                                                                                    21:<postfiks_izraz>
+                                                                                        22:<primarni_izraz>
+                                                                                            23:BROJ , 3
+                                                    13:OP_BIN_XILI , ^
+                                                    13:<bin_i_izraz>
+                                                        14:<jednakosni_izraz>
+                                                            15:<odnosni_izraz>
+                                                                16:<aditivni_izraz>
+                                                                    17:<multiplikativni_izraz>
+                                                                        18:<cast_izraz>
+                                                                            19:<unarni_izraz>
+                                                                                20:<postfiks_izraz>
+                                                                                    21:<primarni_izraz>
+                                                                                        22:BROJ , 3
+                        6:TOCKAZAREZ , ;
+            3:<naredba>
+                4:<izraz_naredba>
+                    5:<izraz>
+                        6:<izraz_pridruzivanja>
+                            7:<unarni_izraz>
+                                8:<postfiks_izraz>
+                                    9:<postfiks_izraz>
+                                        10:<primarni_izraz>
+                                            11:IDN , tmp
+                                    9:L_UGL_ZAGRADA , [
+                                    9:<izraz>
+                                        10:<izraz_pridruzivanja>
+                                            11:<log_ili_izraz>
+                                                12:<log_i_izraz>
+                                                    13:<bin_ili_izraz>
+                                                        14:<bin_xili_izraz>
+                                                            15:<bin_i_izraz>
+                                                                16:<jednakosni_izraz>
+                                                                    17:<odnosni_izraz>
+                                                                        18:<aditivni_izraz>
+                                                                            19:<multiplikativni_izraz>
+                                                                                20:<cast_izraz>
+                                                                                    21:<unarni_izraz>
+                                                                                        22:<postfiks_izraz>
+                                                                                            23:<primarni_izraz>
+                                                                                                24:BROJ , 1
+                                    9:D_UGL_ZAGRADA , ]
+                            7:OP_PRIDRUZI , =
+                            7:<izraz_pridruzivanja>
+                                8:<log_ili_izraz>
+                                    9:<log_i_izraz>
+                                        10:<bin_ili_izraz>
+                                            11:<bin_xili_izraz>
+                                                12:<bin_i_izraz>
+                                                    13:<jednakosni_izraz>
+                                                        14:<odnosni_izraz>
+                                                            15:<aditivni_izraz>
+                                                                16:<multiplikativni_izraz>
+                                                                    17:<cast_izraz>
+                                                                        18:<unarni_izraz>
+                                                                            19:<postfiks_izraz>
+                                                                                20:<primarni_izraz>
+                                                                                    21:ZNAK , 'b'
+                    5:TOCKAZAREZ , ;
+        2:<naredba>
+            3:<izraz_naredba>
+                4:<izraz>
+                    5:<izraz_pridruzivanja>
+                        6:<unarni_izraz>
+                            7:<postfiks_izraz>
+                                8:<postfiks_izraz>
+                                    9:<primarni_izraz>
+                                        10:IDN , tmp
+                                8:L_UGL_ZAGRADA , [
+                                8:<izraz>
+                                    9:<izraz_pridruzivanja>
+                                        10:<log_ili_izraz>
+                                            11:<log_i_izraz>
+                                                12:<bin_ili_izraz>
+                                                    13:<bin_xili_izraz>
+                                                        14:<bin_i_izraz>
+                                                            15:<jednakosni_izraz>
+                                                                16:<odnosni_izraz>
+                                                                    17:<aditivni_izraz>
+                                                                        18:<multiplikativni_izraz>
+                                                                            19:<cast_izraz>
+                                                                                20:<unarni_izraz>
+                                                                                    21:<postfiks_izraz>
+                                                                                        22:<primarni_izraz>
+                                                                                            23:BROJ , 2
+                                8:D_UGL_ZAGRADA , ]
+                        6:OP_PRIDRUZI , =
+                        6:<izraz_pridruzivanja>
+                            7:<log_ili_izraz>
+                                8:<log_i_izraz>
+                                    9:<bin_ili_izraz>
+                                        10:<bin_xili_izraz>
+                                            11:<bin_i_izraz>
+                                                12:<jednakosni_izraz>
+                                                    13:<odnosni_izraz>
+                                                        14:<aditivni_izraz>
+                                                            15:<multiplikativni_izraz>
+                                                                16:<cast_izraz>
+                                                                    17:<unarni_izraz>
+                                                                        18:<postfiks_izraz>
+                                                                            19:<primarni_izraz>
+                                                                                20:ZNAK , '\n'
+                4:TOCKAZAREZ , ;
+    1:<postfiks_izraz>
+        2:<primarni_izraz>
+            3:IDN , tmp
+    1:L_UGL_ZAGRADA , [
+    1:<izraz>
+        2:<izraz_pridruzivanja>
+            3:<log_ili_izraz>
+                4:<log_i_izraz>
+                    5:<bin_ili_izraz>
+                        6:<bin_xili_izraz>
+                            7:<bin_i_izraz>
+                                8:<jednakosni_izraz>
+                                    9:<odnosni_izraz>
+                                        10:<aditivni_izraz>
+                                            11:<multiplikativni_izraz>
+                                                12:<cast_izraz>
+                                                    13:<unarni_izraz>
+                                                        14:<postfiks_izraz>
+                                                            15:<primarni_izraz>
+                                                                16:BROJ , 3
+    1:<naredba>
+        2:<izraz_naredba>
+            3:TOCKAZAREZ , ;
+    1:<lista_naredbi>
+        2:<lista_naredbi>
+            3:<lista_naredbi>
+                4:<naredba>
+                    5:<izraz_naredba>
+                        6:TOCKAZAREZ , ;
+            3:<naredba>
+                4:<naredba_skoka>
+                    5:KR_BREAK , break
+                    5:TOCKAZAREZ , ;
+        2:<naredba>
+            3:<naredba_skoka>
+                4:KR_CONTINUE , continue
+                4:TOCKAZAREZ , ;
+    1:KR_RETURN , return
+    1:<izraz_pridruzivanja>
+        2:<log_ili_izraz>
+            3:<log_i_izraz>
+                4:<bin_ili_izraz>
+                    5:<bin_xili_izraz>
+                        6:<bin_i_izraz>
+                            7:<jednakosni_izraz>
+                                8:<odnosni_izraz>
+                                    9:<aditivni_izraz>
+                                        10:<multiplikativni_izraz>
+                                            11:<cast_izraz>
+                                                12:<unarni_izraz>
+                                                    13:<unarni_operator>
+                                                        14:ASTERISK , *
+                                                    13:<cast_izraz>
+                                                        14:<unarni_izraz>
+                                                            15:<unarni_operator>
+                                                                16:AMPERSAND , &
+                                                            15:<cast_izraz>
+                                                                16:<unarni_izraz>
+                                                                    17:<postfiks_izraz>
+                                                                        18:<primarni_izraz>
+                                                                            19:IDN , xYz

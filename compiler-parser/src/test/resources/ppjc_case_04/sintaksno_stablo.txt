@@ -1,0 +1,42 @@
+0:<pocetni_nezavrsni_znak>
+    1:<prijevodna_jedinica>
+        2:<prijevodna_jedinica>
+            3:<deklaracija>
+                4:KR_INT , int
+                4:<izravni_deklarator>
+                    5:IDN , f
+                    5:L_ZAGRADA , (
+                    5:KR_VOID , void
+                    5:D_ZAGRADA , )
+                4:TOCKAZAREZ , ;
+            3:<definicija_funkcije>
+                4:KR_CHAR , char
+                4:<izravni_deklarator>
+                    5:IDN , main
+                    5:L_ZAGRADA , (
+                    5:KR_VOID , void
+                    5:D_ZAGRADA , )
+                4:<slozena_naredba>
+                    5:L_VIT_ZAGRADA , {
+                    5:<naredba_skoka>
+                        6:KR_RETURN , return
+                        6:<postfiks_izraz>
+                            7:IDN , f
+                            7:L_ZAGRADA , (
+                            7:D_ZAGRADA , )
+                        6:TOCKAZAREZ , ;
+                    5:D_VIT_ZAGRADA , }
+        2:<definicija_funkcije>
+            3:KR_INT , int
+            3:<izravni_deklarator>
+                4:IDN , f
+                4:L_ZAGRADA , (
+                4:KR_VOID , void
+                4:D_ZAGRADA , )
+            3:<slozena_naredba>
+                4:L_VIT_ZAGRADA , {
+                4:<naredba_skoka>
+                    5:KR_RETURN , return
+                    5:BROJ , 0
+                    5:TOCKAZAREZ , ;
+                4:D_VIT_ZAGRADA , }

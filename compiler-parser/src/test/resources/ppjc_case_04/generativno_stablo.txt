@@ -1,0 +1,106 @@
+0:<pocetni_nezavrsni_znak>
+    1:<prijevodna_jedinica>
+        2:<prijevodna_jedinica>
+            3:<prijevodna_jedinica>
+                4:<vanjska_deklaracija>
+                    5:<deklaracija>
+                        6:<specifikatori_deklaracije>
+                            7:<specifikator_tipa>
+                                8:KR_INT , int
+                        6:<lista_init_deklaratora>
+                            7:<init_deklarator>
+                                8:<deklarator>
+                                    9:<izravni_deklarator>
+                                        10:<izravni_deklarator>
+                                            11:IDN , f
+                                        10:L_ZAGRADA , (
+                                        10:<lista_parametara>
+                                            11:<deklaracija_parametra>
+                                                12:<specifikatori_deklaracije>
+                                                    13:<specifikator_tipa>
+                                                        14:KR_VOID , void
+                                        10:D_ZAGRADA , )
+                        6:TOCKAZAREZ , ;
+            3:<vanjska_deklaracija>
+                4:<definicija_funkcije>
+                    5:<specifikatori_deklaracije>
+                        6:<specifikator_tipa>
+                            7:KR_CHAR , char
+                    5:<deklarator>
+                        6:<izravni_deklarator>
+                            7:<izravni_deklarator>
+                                8:IDN , main
+                            7:L_ZAGRADA , (
+                            7:<lista_parametara>
+                                8:<deklaracija_parametra>
+                                    9:<specifikatori_deklaracije>
+                                        10:<specifikator_tipa>
+                                            11:KR_VOID , void
+                            7:D_ZAGRADA , )
+                    5:<slozena_naredba>
+                        6:L_VIT_ZAGRADA , {
+                        6:<lista_naredbi>
+                            7:<naredba>
+                                8:<naredba_skoka>
+                                    9:KR_RETURN , return
+                                    9:<izraz>
+                                        10:<izraz_pridruzivanja>
+                                            11:<log_ili_izraz>
+                                                12:<log_i_izraz>
+                                                    13:<bin_ili_izraz>
+                                                        14:<bin_xili_izraz>
+                                                            15:<bin_i_izraz>
+                                                                16:<jednakosni_izraz>
+                                                                    17:<odnosni_izraz>
+                                                                        18:<aditivni_izraz>
+                                                                            19:<multiplikativni_izraz>
+                                                                                20:<cast_izraz>
+                                                                                    21:<unarni_izraz>
+                                                                                        22:<postfiks_izraz>
+                                                                                            23:<postfiks_izraz>
+                                                                                                24:<primarni_izraz>
+                                                                                                    25:IDN , f
+                                                                                            23:L_ZAGRADA , (
+                                                                                            23:D_ZAGRADA , )
+                                    9:TOCKAZAREZ , ;
+                        6:D_VIT_ZAGRADA , }
+        2:<vanjska_deklaracija>
+            3:<definicija_funkcije>
+                4:<specifikatori_deklaracije>
+                    5:<specifikator_tipa>
+                        6:KR_INT , int
+                4:<deklarator>
+                    5:<izravni_deklarator>
+                        6:<izravni_deklarator>
+                            7:IDN , f
+                        6:L_ZAGRADA , (
+                        6:<lista_parametara>
+                            7:<deklaracija_parametra>
+                                8:<specifikatori_deklaracije>
+                                    9:<specifikator_tipa>
+                                        10:KR_VOID , void
+                        6:D_ZAGRADA , )
+                4:<slozena_naredba>
+                    5:L_VIT_ZAGRADA , {
+                    5:<lista_naredbi>
+                        6:<naredba>
+                            7:<naredba_skoka>
+                                8:KR_RETURN , return
+                                8:<izraz>
+                                    9:<izraz_pridruzivanja>
+                                        10:<log_ili_izraz>
+                                            11:<log_i_izraz>
+                                                12:<bin_ili_izraz>
+                                                    13:<bin_xili_izraz>
+                                                        14:<bin_i_izraz>
+                                                            15:<jednakosni_izraz>
+                                                                16:<odnosni_izraz>
+                                                                    17:<aditivni_izraz>
+                                                                        18:<multiplikativni_izraz>
+                                                                            19:<cast_izraz>
+                                                                                20:<unarni_izraz>
+                                                                                    21:<postfiks_izraz>
+                                                                                        22:<primarni_izraz>
+                                                                                            23:BROJ , 0
+                                8:TOCKAZAREZ , ;
+                    5:D_VIT_ZAGRADA , }

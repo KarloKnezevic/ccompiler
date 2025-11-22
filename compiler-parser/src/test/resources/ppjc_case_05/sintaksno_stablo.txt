@@ -1,0 +1,71 @@
+0:<pocetni_nezavrsni_znak>
+    1:<prijevodna_jedinica>
+        2:<prijevodna_jedinica>
+            3:<prijevodna_jedinica>
+                4:<deklaracija>
+                    5:KR_INT , int
+                    5:<izravni_deklarator>
+                        6:IDN , f
+                        6:L_ZAGRADA , (
+                        6:KR_INT , int
+                        6:D_ZAGRADA , )
+                    5:TOCKAZAREZ , ;
+                4:<definicija_funkcije>
+                    5:KR_INT , int
+                    5:<izravni_deklarator>
+                        6:IDN , main
+                        6:L_ZAGRADA , (
+                        6:KR_VOID , void
+                        6:D_ZAGRADA , )
+                    5:<slozena_naredba>
+                        6:L_VIT_ZAGRADA , {
+                        6:<naredba_skoka>
+                            7:KR_RETURN , return
+                            7:<postfiks_izraz>
+                                8:IDN , f
+                                8:L_ZAGRADA , (
+                                8:BROJ , 0
+                                8:D_ZAGRADA , )
+                            7:TOCKAZAREZ , ;
+                        6:D_VIT_ZAGRADA , }
+            3:<deklaracija>
+                4:KR_INT , int
+                4:<izravni_deklarator>
+                    5:IDN , f
+                    5:L_ZAGRADA , (
+                    5:<lista_parametara>
+                        6:<lista_parametara>
+                            7:<lista_parametara>
+                                8:<deklaracija_parametra>
+                                    9:KR_INT , int
+                                    9:IDN , a
+                                8:ZAREZ , ,
+                                8:<deklaracija_parametra>
+                                    9:KR_INT , int
+                                    9:IDN , b
+                            7:ZAREZ , ,
+                            7:<deklaracija_parametra>
+                                8:KR_CHAR , char
+                                8:IDN , c
+                        6:ZAREZ , ,
+                        6:<deklaracija_parametra>
+                            7:KR_FLOAT , float
+                            7:IDN , d
+                    5:D_ZAGRADA , )
+                4:TOCKAZAREZ , ;
+        2:<definicija_funkcije>
+            3:KR_INT , int
+            3:<izravni_deklarator>
+                4:IDN , f
+                4:L_ZAGRADA , (
+                4:<deklaracija_parametra>
+                    5:KR_INT , int
+                    5:IDN , b
+                4:D_ZAGRADA , )
+            3:<slozena_naredba>
+                4:L_VIT_ZAGRADA , {
+                4:<naredba_skoka>
+                    5:KR_RETURN , return
+                    5:IDN , b
+                    5:TOCKAZAREZ , ;
+                4:D_VIT_ZAGRADA , }

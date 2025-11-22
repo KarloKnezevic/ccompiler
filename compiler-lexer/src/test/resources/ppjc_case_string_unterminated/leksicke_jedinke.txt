@@ -1,0 +1,12 @@
+tablica znakova:
+indeks   uniformni znak   izvorni tekst
+     0   KR_INT            int
+     1   IDN               x
+     2   TOCKAZAREZ        ;
+
+niz uniformnih znakova:
+uniformni znak    redak    indeks u tablicu znakova
+KR_INT               2       0
+IDN                  2       1
+TOCKAZAREZ           2       2
+
