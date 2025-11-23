@@ -198,23 +198,34 @@ public final class Main {
       }
     }
     
-    // TODO: Run syntax analysis and generate trees
-    // For now, create placeholder files
+    // Run syntax analysis using parser
     Path generativnoPath = binDir.resolve("generativno_stablo.txt");
     Path sintaksnoPath = binDir.resolve("sintaksno_stablo.txt");
     
-    try (PrintWriter writer = new PrintWriter(new FileWriter(generativnoPath.toFile()))) {
-      writer.println("Generative tree generation not yet implemented");
-      writer.println("This will contain the generative tree output once parser is fully implemented.");
+    try {
+      // Create parser config
+      hr.fer.ppj.parser.config.ParserConfig.Config parserConfig = 
+          hr.fer.ppj.parser.config.ParserConfig.Config.createDefault(
+              leksickePath,
+              binDir
+          );
+      
+      // Run parser
+      hr.fer.ppj.parser.Parser parser = new hr.fer.ppj.parser.Parser();
+      parser.parse(parserConfig);
+      
+      System.err.println("Lexical and syntax analysis completed. Output files generated in " + COMPILER_BIN_DIR + "/");
+    } catch (hr.fer.ppj.parser.Parser.ParserException e) {
+      System.err.println("Parse error: " + e.getMessage());
+      // Still create empty files to indicate failure
+      try (PrintWriter writer = new PrintWriter(new FileWriter(generativnoPath.toFile()))) {
+        writer.println("Parse error: " + e.getMessage());
+      }
+      try (PrintWriter writer = new PrintWriter(new FileWriter(sintaksnoPath.toFile()))) {
+        writer.println("Parse error: " + e.getMessage());
+      }
+      throw new Exception("Syntax analysis failed", e);
     }
-    
-    try (PrintWriter writer = new PrintWriter(new FileWriter(sintaksnoPath.toFile()))) {
-      writer.println("Syntax tree generation not yet implemented");
-      writer.println("This will contain the syntax tree output once parser is fully implemented.");
-    }
-    
-    System.err.println("Lexical analysis completed. Output files generated in " + COMPILER_BIN_DIR + "/");
-    System.err.println("Note: Syntax analysis is not yet fully implemented.");
   }
   
   /**

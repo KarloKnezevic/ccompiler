@@ -1,5 +1,6 @@
 package hr.fer.ppj.parser.table;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,7 +9,9 @@ import java.util.Map;
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */
-public final class LRTable {
+public final class LRTable implements Serializable {
+  
+  private static final long serialVersionUID = 1L;
   
   private final Map<Integer, Map<String, String>> actionTable = new HashMap<>();
   private final Map<Integer, Map<String, Integer>> gotoTable = new HashMap<>();

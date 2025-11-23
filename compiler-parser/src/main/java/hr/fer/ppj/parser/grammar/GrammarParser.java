@@ -33,21 +33,110 @@ public final class GrammarParser {
   public void parse(Reader reader) throws IOException {
     try (BufferedReader br = new BufferedReader(reader)) {
       String line;
+      String currentLHS = null;
+      boolean hasProductionsForCurrentLHS = false;
+      boolean lastLineWasEmpty = false;
+      
       while ((line = br.readLine()) != null) {
+        String originalLine = line;
+        boolean hasLeadingSpace = !originalLine.isEmpty() && Character.isWhitespace(originalLine.charAt(0));
         line = line.trim();
-        if (line.isEmpty()) {
+        boolean isEmpty = line.isEmpty();
+        
+        if (isEmpty) {
+          lastLineWasEmpty = true;
           continue;
         }
         
         if (line.startsWith("%V")) {
+          // Finish current LHS if any
+          if (currentLHS != null && !hasProductionsForCurrentLHS) {
+            addProduction(currentLHS, "$"); // Epsilon production
+          }
           parseNonTerminals(line);
+          currentLHS = null;
+          hasProductionsForCurrentLHS = false;
+          lastLineWasEmpty = false;
         } else if (line.startsWith("%T")) {
+          // Finish current LHS if any
+          if (currentLHS != null && !hasProductionsForCurrentLHS) {
+            addProduction(currentLHS, "$"); // Epsilon production
+          }
           parseTerminals(line);
+          currentLHS = null;
+          hasProductionsForCurrentLHS = false;
+          lastLineWasEmpty = false;
         } else if (line.startsWith("%Syn")) {
+          // Finish current LHS if any
+          if (currentLHS != null && !hasProductionsForCurrentLHS) {
+            addProduction(currentLHS, "$"); // Epsilon production
+          }
           parseSyncTokens(line);
+          currentLHS = null;
+          hasProductionsForCurrentLHS = false;
+          lastLineWasEmpty = false;
         } else if (line.startsWith("<")) {
-          parseProduction(line);
+          // Check if this is a non-terminal declaration (just <nt>)
+          int ntEnd = line.indexOf(">");
+          if (ntEnd != -1 && ntEnd == line.length() - 1) {
+            // This is just <nonterminal>
+            // Check if this is a new LHS or an alternative for current LHS
+            // Rule: If line has leading space, it's an alternative. Otherwise, it's a new LHS.
+            if (currentLHS != null && hasLeadingSpace) {
+              // This is an alternative for current LHS (starts with non-terminal, has leading space)
+              addProduction(currentLHS, line);
+              hasProductionsForCurrentLHS = true;
+            } else {
+              // This is a new LHS (no leading space, or no currentLHS)
+              // Finish previous LHS if any
+              if (currentLHS != null && !hasProductionsForCurrentLHS) {
+                addProduction(currentLHS, "$"); // Epsilon production
+              }
+              currentLHS = line;
+              hasProductionsForCurrentLHS = false;
+            }
+            lastLineWasEmpty = false;
+          } else {
+            // This line contains <nt> followed by something
+            // Split to get potential LHS and RHS
+            String[] parts = line.split("\\s+", 2);
+            if (parts.length >= 1 && parts[0].startsWith("<") && parts[0].endsWith(">")) {
+              String potentialLHS = parts[0];
+              String potentialRHS = parts.length > 1 ? parts[1] : "";
+              
+              // Check if this is a new LHS or an alternative for current LHS
+              // Rule: If line has leading space, it's an alternative. Otherwise, it's a new LHS.
+              if (currentLHS != null && hasLeadingSpace) {
+                // This is an alternative for current LHS (could start with non-terminal, has leading space)
+                addProduction(currentLHS, line); // Use entire line as RHS
+                hasProductionsForCurrentLHS = true;
+              } else {
+                // New LHS (blank line before, or no currentLHS)
+                // Finish previous LHS if any
+                if (currentLHS != null && !hasProductionsForCurrentLHS) {
+                  addProduction(currentLHS, "$"); // Epsilon production
+                }
+                currentLHS = potentialLHS;
+                hasProductionsForCurrentLHS = false;
+                if (!potentialRHS.isEmpty()) {
+                  addProduction(currentLHS, potentialRHS);
+                  hasProductionsForCurrentLHS = true;
+                }
+              }
+            }
+            lastLineWasEmpty = false;
+          }
+        } else if (currentLHS != null) {
+          // Continuation of production alternatives (doesn't start with <)
+          addProduction(currentLHS, line);
+          hasProductionsForCurrentLHS = true;
+          lastLineWasEmpty = false;
         }
+      }
+      
+      // Finish last LHS if any
+      if (currentLHS != null && !hasProductionsForCurrentLHS) {
+        addProduction(currentLHS, "$"); // Epsilon production
       }
     }
   }
@@ -79,25 +168,6 @@ public final class GrammarParser {
     }
   }
   
-  private void parseProduction(String line) {
-    int arrowPos = line.indexOf("::=");
-    if (arrowPos == -1) {
-      // Alternative format: <nt> followed by lines with alternatives
-      int ntEnd = line.indexOf(">");
-      if (ntEnd == -1) {
-        return;
-      }
-      String nt = line.substring(0, ntEnd + 1);
-      String rhs = line.substring(ntEnd + 1).trim();
-      if (!rhs.isEmpty()) {
-        addProduction(nt, rhs);
-      }
-    } else {
-      String lhs = line.substring(0, arrowPos).trim();
-      String rhs = line.substring(arrowPos + 3).trim();
-      addProduction(lhs, rhs);
-    }
-  }
   
   private void addProduction(String lhs, String rhs) {
     if (lhs.startsWith("<") && lhs.endsWith(">")) {
@@ -108,7 +178,18 @@ public final class GrammarParser {
   
   private List<String> parseRHS(String rhs) {
     List<String> symbols = new ArrayList<>();
-    String[] parts = rhs.trim().split("\\s+");
+    rhs = rhs.trim();
+    
+    // Handle epsilon ($)
+    if (rhs.equals("$")) {
+      return symbols; // Empty list for epsilon
+    }
+    
+    if (rhs.isEmpty()) {
+      return symbols;
+    }
+    
+    String[] parts = rhs.split("\\s+");
     for (String part : parts) {
       if (!part.isEmpty()) {
         symbols.add(part);

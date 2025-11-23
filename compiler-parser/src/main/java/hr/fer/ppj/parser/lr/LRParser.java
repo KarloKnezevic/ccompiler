@@ -1,104 +1,164 @@
 package hr.fer.ppj.parser.lr;
 
-import hr.fer.ppj.lexer.io.Token;
-import hr.fer.ppj.parser.ast.ASTNode;
-import hr.fer.ppj.parser.grammar.GrammarParser;
+import hr.fer.ppj.parser.grammar.Grammar;
 import hr.fer.ppj.parser.grammar.GrammarParser.Production;
+import hr.fer.ppj.parser.io.TokenReader.Token;
 import hr.fer.ppj.parser.table.LRTable;
+import hr.fer.ppj.parser.tree.ParseTree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.Logger;
 
 /**
  * LR(1) parser runtime.
  * 
- * <p>Uses ACTION/GOTO tables to parse tokens into an AST.
+ * <p>Uses ACTION/GOTO tables to parse tokens into a parse tree.
+ * 
+ * <p>Algorithm:
+ * <ol>
+ *   <li>Initialize with start state</li>
+ *   <li>For each token, look up ACTION</li>
+ *   <li>SHIFT: push state and create leaf node</li>
+ *   <li>REDUCE: pop RHS symbols, create parent node, perform GOTO</li>
+ *   <li>ACCEPT: return root of parse tree</li>
+ * </ol>
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */
 public final class LRParser {
   
-  private final LRTable table;
-  @SuppressWarnings("unused")
-  private final GrammarParser grammar;
+  private static final Logger LOG = Logger.getLogger(LRParser.class.getName());
+  private static final String END_MARKER = "#";
   
-  public LRParser(LRTable table, GrammarParser grammar) {
+  private final LRTable table;
+  private final Grammar grammar;
+  
+  public LRParser(LRTable table, Grammar grammar) {
     this.table = table;
     this.grammar = grammar;
   }
   
-  public ASTNode parse(List<Token> tokens) {
+  /**
+   * Parses a list of tokens into a parse tree.
+   * 
+   * @param tokens The input tokens
+   * @return The root of the parse tree
+   * @throws ParseException If parsing fails
+   */
+  public ParseTree parse(List<Token> tokens) throws ParseException {
     Stack<Integer> stateStack = new Stack<>();
-    Stack<ASTNode> symbolStack = new Stack<>();
+    Stack<ParseTree> treeStack = new Stack<>();
     
     stateStack.push(0); // Start state
     
     int tokenIndex = 0;
     
-    while (tokenIndex < tokens.size()) {
-      Token token = tokens.get(tokenIndex);
+    // Add end marker
+    List<Token> tokensWithEnd = new ArrayList<>(tokens);
+    tokensWithEnd.add(new Token(END_MARKER, tokens.isEmpty() ? 1 : tokens.get(tokens.size() - 1).line(), ""));
+    
+    while (tokenIndex < tokensWithEnd.size()) {
+      Token token = tokensWithEnd.get(tokenIndex);
       int currentState = stateStack.peek();
       
       String action = table.getAction(currentState, token.type());
       
       if (action == null) {
+        // Error - log details for debugging
+        LOG.warning(String.format(
+            "Parse error at line %d: no action for token %s in state %d. Stack size: %d",
+            token.line(), token.type(), currentState, stateStack.size()));
+        // Try to find what actions are available in this state
+        if (stateStack.size() < 5) {
+          LOG.info("Available actions in state " + currentState + " (sample):");
+          // This would require access to table internals, skip for now
+        }
         // Error - try recovery
-        handleError(token, stateStack, symbolStack);
+        handleError(token, currentState, stateStack, treeStack);
+        // After error recovery, continue with next token
+        tokenIndex++;
         continue;
       }
       
-      if (action.startsWith("s")) {
+      if (action.equals("acc")) {
+        // Accept
+        if (treeStack.size() != 1) {
+          throw new ParseException("Parse error: expected single root node on accept");
+        }
+        return treeStack.pop();
+      } else if (action.startsWith("s")) {
         // Shift
         int nextState = Integer.parseInt(action.substring(1));
         stateStack.push(nextState);
-        symbolStack.push(createLeafNode(token));
+        
+        // Create leaf node for terminal
+        ParseTree leaf = new ParseTree(token.type(), token.line(), token.lexicalUnit());
+        treeStack.push(leaf);
+        
         tokenIndex++;
       } else if (action.startsWith("r")) {
         // Reduce
         int productionIndex = Integer.parseInt(action.substring(1));
-        Production prod = getProduction(productionIndex);
+        Production prod = grammar.getAllProductions().get(productionIndex);
         
-        // Pop RHS symbols
-        List<ASTNode> children = new ArrayList<>();
-        for (int i = 0; i < prod.rhs().size(); i++) {
-          stateStack.pop();
-          children.add(0, symbolStack.pop()); // Reverse order
+        // Pop RHS symbols (in reverse order)
+        // Handle epsilon productions (empty RHS)
+        List<ParseTree> children = new ArrayList<>();
+        if (!prod.rhs().isEmpty() && !prod.rhs().get(0).equals("$")) {
+          for (int i = 0; i < prod.rhs().size(); i++) {
+            stateStack.pop();
+            children.add(0, treeStack.pop()); // Insert at beginning to reverse order
+          }
         }
+        // For epsilon productions, no nodes are popped
         
         // Create parent node
-        ASTNode parent = createNode(prod.lhs(), children);
-        symbolStack.push(parent);
+        ParseTree parent = new ParseTree(prod.lhs());
+        parent.addChildren(children);
+        treeStack.push(parent);
         
         // GOTO
         int gotoState = table.getGoto(stateStack.peek(), prod.lhs());
+        if (gotoState < 0) {
+          throw new ParseException("Parse error: invalid GOTO for " + prod.lhs());
+        }
         stateStack.push(gotoState);
-      } else if (action.equals("acc")) {
-        // Accept
-        return symbolStack.pop();
+        
+        // Don't advance token index - reduce doesn't consume input
+      } else {
+        throw new ParseException("Parse error: unknown action " + action);
       }
     }
     
-    return null; // Error
+    throw new ParseException("Parse error: end of input reached without accept");
   }
   
-  private ASTNode createLeafNode(Token token) {
-    // TODO: Create appropriate AST node based on token type
-    return null;
+  /**
+   * Handles parse errors using panic mode recovery with synchronization tokens.
+   */
+  private void handleError(Token token, int currentState, Stack<Integer> stateStack,
+                           Stack<ParseTree> treeStack) throws ParseException {
+    LOG.warning(String.format("Parse error at line %d, token %s", token.line(), token.type()));
+    
+    // Try to find a synchronization token
+    List<String> syncTokens = grammar.getSyncTokens();
+    
+    // Skip tokens until we find a sync token or end of input
+    // For now, just throw an exception
+    // TODO: Implement proper error recovery
+    throw new ParseException(String.format(
+        "Parse error at line %d: unexpected token %s",
+        token.line(), token.type()));
   }
   
-  private ASTNode createNode(String nonTerminal, List<ASTNode> children) {
-    // TODO: Create appropriate AST node based on non-terminal
-    return null;
-  }
-  
-  private Production getProduction(int index) {
-    // TODO: Map index to production
-    return null;
-  }
-  
-  private void handleError(Token token, Stack<Integer> stateStack, 
-                           Stack<ASTNode> symbolStack) {
-    // TODO: Implement error recovery using %Syn tokens
+  /**
+   * Exception thrown when parsing fails.
+   */
+  public static final class ParseException extends Exception {
+    public ParseException(String message) {
+      super(message);
+    }
   }
 }
 
