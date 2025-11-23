@@ -1,4 +1,4 @@
-int main() {
+int main(void) {
     int x;
     float f;
     x = 5;

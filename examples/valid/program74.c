@@ -9,7 +9,7 @@ int nested_if(int x, int y) {
     return 0;
 }
 
-int main() {
+int main(void) {
     return nested_if(5, 10);
 }
 

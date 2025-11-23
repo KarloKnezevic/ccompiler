@@ -8,7 +8,7 @@ int reverse_number(int n) {
     return reversed;
 }
 
-int main() {
+int main(void) {
     return reverse_number(123);
 }
 

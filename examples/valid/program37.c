@@ -5,7 +5,7 @@ int gcd(int a, int b) {
     return gcd(b, a % b);
 }
 
-int main() {
+int main(void) {
     return gcd(48, 18);
 }
 

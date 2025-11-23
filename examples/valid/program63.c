@@ -5,7 +5,7 @@ int sum_recursive(int arr[], int n) {
     return arr[n - 1] + sum_recursive(arr, n - 1);
 }
 
-int main() {
+int main(void) {
     int arr[4];
     arr[0] = 1;
     arr[1] = 2;

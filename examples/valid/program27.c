@@ -1,8 +1,8 @@
-void print_hello() {
+void print_hello(void) {
     return;
 }
 
-int main() {
+int main(void) {
     print_hello();
     return 0;
 }

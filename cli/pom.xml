@@ -75,6 +75,24 @@
                     <mainClass>hr.fer.ppj.cli.Main</mainClass>
                 </configuration>
             </plugin>
+            
+            <!-- Exec plugin configuration for ExamplesReportGenerator -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                    <execution>
+                        <id>generate-reports</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>hr.fer.ppj.examples.ExamplesReportGenerator</mainClass>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>

@@ -10,7 +10,7 @@ int find_max(int arr[], int n) {
     return max_val;
 }
 
-int main() {
+int main(void) {
     int arr[5];
     arr[0] = 3;
     arr[1] = 7;

@@ -13,7 +13,7 @@ int binary_search_recursive(int arr[], int left, int right, int key) {
     return binary_search_recursive(arr, mid + 1, right, key);
 }
 
-int main() {
+int main(void) {
     int arr[5];
     arr[0] = 1;
     arr[1] = 3;

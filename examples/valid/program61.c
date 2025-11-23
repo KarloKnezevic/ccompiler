@@ -8,7 +8,7 @@ int linear_search(int arr[], int n, int key) {
     return -1;
 }
 
-int main() {
+int main(void) {
     int arr[5];
     arr[0] = 10;
     arr[1] = 20;

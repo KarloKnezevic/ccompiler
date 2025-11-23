@@ -2,7 +2,7 @@ int multiply(int x, int y) {
     return x * y;
 }
 
-int main() {
+int main(void) {
     int a;
     int b;
     int product;

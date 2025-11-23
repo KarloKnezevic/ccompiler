@@ -2,7 +2,7 @@ int square(int x) {
     return x * x;
 }
 
-int main() {
+int main(void) {
     int n;
     int result;
     n = 5;

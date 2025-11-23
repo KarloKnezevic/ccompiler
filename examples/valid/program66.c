@@ -8,7 +8,7 @@ int count_digits(int n) {
     return count;
 }
 
-int main() {
+int main(void) {
     return count_digits(12345);
 }
 

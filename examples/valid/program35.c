@@ -8,7 +8,7 @@ int sum_array(int arr[], int n) {
     return sum;
 }
 
-int main() {
+int main(void) {
     int arr[5];
     arr[0] = 1;
     arr[1] = 2;

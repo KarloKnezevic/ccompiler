@@ -5,7 +5,7 @@ int min(int a, int b) {
     return b;
 }
 
-int main() {
+int main(void) {
     return min(15, 8);
 }
 

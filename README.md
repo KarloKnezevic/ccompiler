@@ -252,6 +252,35 @@ The parser definition file is located at `config/parser_definition.txt`. This fi
 
 The path can be customized via the `PARSER_DEFINITION_PATH` environment variable.
 
+## Test Programs
+
+The `examples/` directory contains a comprehensive collection of test programs:
+
+- **`examples/valid/`**: 80 valid C programs covering all language features
+- **`examples/invalid/`**: 70 invalid programs with various error types (lexical, syntax, semantic)
+
+Each directory includes a `README` file describing the programs.
+
+### Generating HTML Reports
+
+To generate HTML reports for all test programs:
+
+```bash
+java -cp "cli/target/classes:compiler-lexer/target/classes:compiler-parser/target/classes" \
+  hr.fer.ppj.examples.ExamplesReportGenerator
+```
+
+This generates:
+- `examples/report_valid.html` - Report for all valid programs
+- `examples/report_invalid.html` - Report for all invalid programs
+
+Each report shows:
+- Source code for each program
+- Lexical tokens output
+- Generative tree
+- Syntax tree
+- Error messages (if any)
+
 ## Documentation
 
 Comprehensive documentation is available in the `docs/` directory:

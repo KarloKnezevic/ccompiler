@@ -3,7 +3,7 @@ struct Complex {
     float imag;
 };
 
-int main() {
+int main(void) {
     struct Complex c1;
     struct Complex c2;
     c1.real = 1.0;

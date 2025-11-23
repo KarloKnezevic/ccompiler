@@ -1,8 +1,8 @@
-void f() {
+void f(void) {
     return 5;
 }
 
-int main() {
+int main(void) {
     f();
     return 0;
 }

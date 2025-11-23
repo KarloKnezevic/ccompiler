@@ -6,7 +6,7 @@ int max(int a, int b) {
     }
 }
 
-int main() {
+int main(void) {
     int x;
     int y;
     int m;

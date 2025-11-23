@@ -3,7 +3,7 @@ struct Node {
     int next;
 };
 
-int main() {
+int main(void) {
     struct Node node;
     node.value = 42;
     node.next = 0;

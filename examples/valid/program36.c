@@ -5,7 +5,7 @@ int power(int base, int exp) {
     return base * power(base, exp - 1);
 }
 
-int main() {
+int main(void) {
     return power(2, 4);
 }
 

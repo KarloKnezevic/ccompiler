@@ -11,7 +11,7 @@ int is_prime(int n) {
     return 1;
 }
 
-int main() {
+int main(void) {
     return is_prime(17);
 }
 
