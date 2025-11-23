@@ -221,8 +221,8 @@ mvn -q -pl cli -am exec:java -Dexec.mainClass=hr.fer.ppj.cli.Main -Dexec.args="s
 
 ## Documentation
 
-- **[LEXER_IMPLEMENTATION.md](LEXER_IMPLEMENTATION.md)**: Detailed technical documentation of the lexer implementation
-- **[LEXER_USER_GUIDE.md](LEXER_USER_GUIDE.md)**: User guide for writing lexer specifications and using the lexer
+- **[LEXER_IMPLEMENTATION.md](docs/LEXER_IMPLEMENTATION.md)**: Detailed technical documentation of the lexer implementation
+- **[LEXER_USER_GUIDE.md](docs/LEXER_USER_GUIDE.md)**: User guide for writing lexer specifications and using the lexer
 
 ## Status
 
