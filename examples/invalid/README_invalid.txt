@@ -79,6 +79,83 @@ This directory contains invalid C programs that should fail lexical, syntax, or 
 - Description: Identifier containing invalid character `#` (`x#`)
 - Location: Line 2, invalid character in identifier
 
+**program71.c**
+- Error Type: Lexical
+- Description: Identifier starting with digit (`2value`)
+- Location: Line 2, invalid identifier in declaration
+
+**program72.c**
+- Error Type: Lexical
+- Description: Identifier starting with digit (`9count`)
+- Location: Line 2, invalid identifier in declaration
+
+**program73.c**
+- Error Type: Lexical
+- Description: Identifier starting with digit (`123name`)
+- Location: Line 2, invalid identifier in declaration
+
+**program74.c**
+- Error Type: Lexical
+- Description: Identifier starting with digit (`7value`)
+- Location: Line 2, invalid identifier in condition
+
+**program75.c**
+- Error Type: Lexical
+- Description: Identifier starting with digit (`4ever`)
+- Location: Line 2, invalid identifier in declaration
+
+### Pointer Errors
+
+**program76.c**
+- Error Type: Semantic
+- Description: Assigning integer value directly to pointer variable
+- Location: Line 5, `pointer = value`
+
+**program77.c**
+- Error Type: Semantic
+- Description: Dereferencing integer variable instead of pointer
+- Location: Line 4, `value = *value`
+
+**program78.c**
+- Error Type: Semantic
+- Description: Adding two pointers together
+- Location: Line 7, `a = a + b`
+
+**program79.c**
+- Error Type: Semantic
+- Description: Assigning address of float to `int*`
+- Location: Line 5, `pointer = &value`
+
+**program80.c**
+- Error Type: Semantic
+- Description: Result of pointer subtraction stored in pointer variable
+- Location: Line 8, `result = second - first`
+
+**program81.c**
+- Error Type: Semantic
+- Description: Assigning address of int to `int **`
+- Location: Line 5, `pp = &value`
+
+**program82.c**
+- Error Type: Semantic
+- Description: Pointer assigned to address of itself (type mismatch)
+- Location: Line 3, `pointer = &pointer`
+
+**program83.c**
+- Error Type: Semantic
+- Description: Assigning address of struct to `int*`
+- Location: Line 9, `pointer = &item`
+
+**program84.c**
+- Error Type: Semantic
+- Description: Multiplying pointer by integer
+- Location: Line 6, `pointer = pointer * 2`
+
+**program85.c**
+- Error Type: Semantic
+- Description: Passing integer to function expecting pointer
+- Location: Line 8, `read_value(number)`
+
 ### Lexical Errors - Incomplete Literals
 
 **program14.c**

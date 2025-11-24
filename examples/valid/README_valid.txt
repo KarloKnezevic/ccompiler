@@ -217,24 +217,24 @@ This directory contains valid C programs that should pass lexical, syntax, and s
 - Tests: x = x - 1 pattern
 
 **program46.c**
-- Compound assignment +=
-- Tests: += operator
+- Addition via explicit assignment
+- Tests: x = x + value pattern
 
 **program47.c**
-- Compound assignment -=
-- Tests: -= operator
+- Subtraction via explicit assignment
+- Tests: x = x - value pattern
 
 **program48.c**
-- Compound assignment *=
-- Tests: *= operator
+- Multiplication via explicit assignment
+- Tests: x = x * value pattern
 
 **program49.c**
-- Compound assignment /=
-- Tests: /= operator
+- Division via explicit assignment
+- Tests: x = x / value pattern
 
 **program50.c**
-- Compound assignment %=
-- Tests: %= operator
+- Modulo via explicit assignment
+- Tests: x = x % value pattern
 
 ### Increment/Decrement Operators
 
@@ -349,4 +349,46 @@ This directory contains valid C programs that should pass lexical, syntax, and s
 **program80.c**
 - Function with four parameters
 - Tests: function with many parameters
+
+### Pointers
+
+**program81.c**
+- Pointer basic assignment
+- Tests: taking address and modifying through pointer
+
+**program82.c**
+- Pointer parameter usage
+- Tests: passing pointer into function
+
+**program83.c**
+- Pointer to pointer
+- Tests: double dereference
+
+**program84.c**
+- Pointer arithmetic over array
+- Tests: advancing pointer and dereferencing
+
+**program85.c**
+- Pointer difference computation
+- Tests: subtracting pointers to same array
+
+**program86.c**
+- Pointer-based increment helper
+- Tests: modifying value through pointer parameter
+
+**program87.c**
+- Pointer comparison
+- Tests: comparing addresses to choose value
+
+**program88.c**
+- Pointer iteration sum
+- Tests: iterating with pointer while loop
+
+**program89.c**
+- Pointer to struct with arrow operator
+- Tests: accessing struct fields through pointer
+
+**program90.c**
+- Pointer traversal with accumulation
+- Tests: summing array via pointer movement
 
