@@ -41,7 +41,7 @@ public final class ExamplesReportGenerator {
   private static final Pattern LEXER_ERROR_PATTERN = Pattern.compile(
       "(?i).*error.*line\\s+(\\d+).*", Pattern.DOTALL);
   private static final Pattern PARSER_ERROR_PATTERN = Pattern.compile(
-      "(?i).*parse\\s+error.*line\\s+(\\d+).*", Pattern.DOTALL);
+      "(?i).*sintaksna\\s+greška\\s+na\\s+retku\\s+(\\d+).*", Pattern.DOTALL);
   
   /**
    * Result of analyzing a single program.

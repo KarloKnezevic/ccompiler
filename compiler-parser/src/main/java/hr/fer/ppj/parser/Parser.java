@@ -85,7 +85,8 @@ public final class Parser {
     } catch (IOException e) {
       throw new ParserException("I/O error: " + e.getMessage(), e);
     } catch (LRParser.ParseException e) {
-      throw new ParserException("Parse error: " + e.getMessage(), e);
+      // Error message is already in Croatian, just pass it through
+      throw new ParserException(e.getMessage(), e);
     }
   }
   

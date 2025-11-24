@@ -40,5 +40,20 @@ public final class LRTable implements Serializable {
     Integer result = stateGotos.get(nonTerminal);
     return result != null ? result : -1;
   }
+  
+  /**
+   * Returns all available actions for a given state.
+   * Used for error reporting to show expected tokens.
+   * 
+   * @param state The state number
+   * @return Map of symbol -> action, or empty map if state has no actions
+   */
+  public Map<String, String> getAvailableActions(int state) {
+    Map<String, String> stateActions = actionTable.get(state);
+    if (stateActions == null) {
+      return new HashMap<>();
+    }
+    return new HashMap<>(stateActions);
+  }
 }
 

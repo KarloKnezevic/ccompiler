@@ -7,6 +7,7 @@ import hr.fer.ppj.parser.table.LRTable;
 import hr.fer.ppj.parser.tree.ParseTree;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 import java.util.logging.Logger;
 
@@ -136,20 +137,65 @@ public final class LRParser {
   
   /**
    * Handles parse errors using panic mode recovery with synchronization tokens.
+   * Generates detailed error message in Croatian.
    */
   private void handleError(Token token, int currentState, Stack<Integer> stateStack,
                            Stack<ParseTree> treeStack) throws ParseException {
     LOG.warning(String.format("Parse error at line %d, token %s", token.line(), token.type()));
     
+    // Get available actions for current state to determine expected tokens
+    Map<String, String> availableActions = table.getAvailableActions(currentState);
+    List<String> expectedTokens = new ArrayList<>();
+    
+    // Collect expected terminals (those that have actions in current state)
+    for (Map.Entry<String, String> entry : availableActions.entrySet()) {
+      String symbol = entry.getKey();
+      String action = entry.getValue();
+      
+      // Only include terminals that have valid actions (SHIFT, REDUCE, ACCEPT)
+      // Exclude non-terminals (which are in GOTO table, not ACTION table)
+      if (action != null && !action.isEmpty() && grammar.isTerminal(symbol)) {
+        expectedTokens.add(symbol);
+      }
+    }
+    
+    // Build error message in Croatian
+    StringBuilder errorMsg = new StringBuilder();
+    errorMsg.append("Sintaksna greška na retku ");
+    errorMsg.append(token.line());
+    errorMsg.append(".\n");
+    
+    errorMsg.append("Pročitan uniformni znak: ");
+    errorMsg.append(token.type());
+    if (token.lexicalUnit() != null && !token.lexicalUnit().isEmpty()) {
+      errorMsg.append(" (");
+      errorMsg.append(token.lexicalUnit());
+      errorMsg.append(")");
+    }
+    errorMsg.append(".\n");
+    
+    if (!expectedTokens.isEmpty()) {
+      errorMsg.append("Očekivani uniformni znakovi: ");
+      // Sort for consistent output
+      expectedTokens.sort(String::compareTo);
+      for (int i = 0; i < expectedTokens.size(); i++) {
+        if (i > 0) {
+          errorMsg.append(", ");
+        }
+        errorMsg.append(expectedTokens.get(i));
+      }
+      errorMsg.append(".\n");
+    } else {
+      errorMsg.append("Nema dostupnih očekivanih uniformnih znakova u trenutnom stanju.\n");
+    }
+    
     // Try to find a synchronization token
     List<String> syncTokens = grammar.getSyncTokens();
     
     // Skip tokens until we find a sync token or end of input
-    // For now, just throw an exception
+    // For now, just throw an exception with detailed message
     // TODO: Implement proper error recovery
-    throw new ParseException(String.format(
-        "Parse error at line %d: unexpected token %s",
-        token.line(), token.type()));
+    throw new ParseException(errorMsg.toString());
   }
   
   /**
