@@ -15,7 +15,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Encapsulates all grammar productions related to declarations, definitions, and initialization.
+ * Semantic rule implementations for all declaration-related productions defined in
+ * {@code config/semantics_definition.txt}.
+ * 
+ * <p>This class implements the semantic analysis for declarations, definitions, and type
+ * specifications in PPJ-C, including:
+ * <ul>
+ *   <li>Translation unit structure and external declarations</li>
+ *   <li>Function definitions and parameter declarations</li>
+ *   <li>Variable declarations and initialization</li>
+ *   <li>Type specifications (primitive types, const qualifiers)</li>
+ *   <li>Declarators (direct declarators, array declarators, function declarators)</li>
+ *   <li>Initializers and initializer lists</li>
+ * </ul>
+ * 
+ * <p>Each method in this class corresponds directly to one or more productions in the
+ * semantic definition and implements the symbol table management, type checking, and
+ * scope rules specified there.
+ * 
+ * @see SemanticChecker for the main semantic analysis coordinator
+ * @see ExpressionRules for expression-related semantic rules
+ * @see StatementRules for statement-related semantic rules
  */
 final class DeclarationRules {
 
@@ -41,11 +61,33 @@ final class DeclarationRules {
     checker.registerRule("<lista_izraza_pridruzivanja>", this::visitListaIzrazaPridruzivanja);
   }
 
+  /**
+   * Implements semantic rules for {@code <prijevodna_jedinica>} (translation unit).
+   * 
+   * <p>From {@code semantics_definition.txt}:
+   * <pre>
+   * &lt;prijevodna_jedinica&gt; ::= &lt;vanjska_deklaracija&gt;
+   *                          | &lt;prijevodna_jedinica&gt; &lt;vanjska_deklaracija&gt;
+   * </pre>
+   * 
+   * <p>Semantic rules:
+   * <ul>
+   *   <li>Single external declaration: process the declaration</li>
+   *   <li>Multiple declarations: process all declarations in sequence</li>
+   * </ul>
+   * 
+   * <p>This is the root production of a PPJ-C program and establishes the global scope
+   * for all external declarations and function definitions.
+   * 
+   * @param node the {@code <prijevodna_jedinica>} node to analyze
+   */
   private void visitPrijevodnaJedinica(NonTerminalNode node) {
     List<ParseNode> children = node.children();
     if (children.size() == 1) {
+      // <prijevodna_jedinica> ::= <vanjska_deklaracija>
       checker.visitNonTerminal(NodeUtils.asNonTerminal(children.get(0)));
     } else if (children.size() == 2) {
+      // <prijevodna_jedinica> ::= <prijevodna_jedinica> <vanjska_deklaracija>
       checker.visitNonTerminal(NodeUtils.asNonTerminal(children.get(0)));
       checker.visitNonTerminal(NodeUtils.asNonTerminal(children.get(1)));
     } else {
@@ -53,19 +95,68 @@ final class DeclarationRules {
     }
   }
 
+  /**
+   * Implements semantic rules for {@code <vanjska_deklaracija>} (external declaration).
+   * 
+   * <p>From {@code semantics_definition.txt}:
+   * <pre>
+   * &lt;vanjska_deklaracija&gt; ::= &lt;definicija_funkcije&gt;
+   *                          | &lt;deklaracija&gt;
+   * </pre>
+   * 
+   * <p>Semantic rules:
+   * <ul>
+   *   <li>Function definition: delegates to function definition handler</li>
+   *   <li>Variable declaration: delegates to declaration handler</li>
+   * </ul>
+   * 
+   * @param node the {@code <vanjska_deklaracija>} node to analyze
+   */
   private void visitVanjskaDeklaracija(NonTerminalNode node) {
     checker.visitNonTerminal(NodeUtils.asNonTerminal(node.children().get(0)));
   }
 
+  /**
+   * Implements semantic rules for {@code <definicija_funkcije>} (function definition).
+   * 
+   * <p>From {@code semantics_definition.txt}:
+   * <pre>
+   * &lt;definicija_funkcije&gt; ::= &lt;ime_tipa&gt; IDN L_ZAGRADA KR_VOID D_ZAGRADA &lt;slozena_naredba&gt;
+   *                         | &lt;ime_tipa&gt; IDN L_ZAGRADA &lt;lista_parametara&gt; D_ZAGRADA &lt;slozena_naredba&gt;
+   * </pre>
+   * 
+   * <p>Semantic rules:
+   * <ul>
+   *   <li>Return type must not be const-qualified</li>
+   *   <li>Function name must be a valid identifier</li>
+   *   <li>Function must not be redefined (multiple definitions are errors)</li>
+   *   <li>Parameters are declared in the function's local scope</li>
+   *   <li>Function body is analyzed in the function's scope with parameters visible</li>
+   * </ul>
+   * 
+   * <p>This method:
+   * <ol>
+   *   <li>Validates the return type and function signature</li>
+   *   <li>Registers the function definition in the global symbol table</li>
+   *   <li>Creates a new scope for the function body</li>
+   *   <li>Declares function parameters in the local scope</li>
+   *   <li>Analyzes the function body</li>
+   * </ol>
+   * 
+   * @param node the {@code <definicija_funkcije>} node to analyze
+   */
   private void visitDefinicijaFunkcije(NonTerminalNode node) {
     List<ParseNode> children = node.children();
+    
+    // Analyze return type
     NonTerminalNode typeNode = NodeUtils.asNonTerminal(children.get(0));
     checker.visitNonTerminal(typeNode);
     Type returnType = typeNode.attributes().type();
     if (returnType == null || returnType instanceof ConstType) {
-      checker.fail(node);
+      checker.fail(node); // Return type cannot be const-qualified
     }
 
+    // Analyze function declarator (name and parameters)
     NonTerminalNode declarator = NodeUtils.asNonTerminal(children.get(1));
     declarator.attributes().inheritedType(returnType);
     checker.visitNonTerminal(declarator);
@@ -79,23 +170,47 @@ final class DeclarationRules {
       checker.fail(node);
     }
 
+    // Register function definition and set current function context
     checker.registerFunctionDefinition(name, functionType, node);
     FunctionType previousFunction = checker.currentFunction();
     checker.setCurrentFunction(functionType);
 
+    // Analyze function body in new scope with parameters
     NonTerminalNode body = NodeUtils.asNonTerminal(children.get(children.size() - 1));
     SymbolTable previousScope = checker.currentScope();
     checker.setCurrentScope(checker.currentScope().enterChildScope());
     try {
+      // Declare function parameters in the local scope
       checker.declareFunctionParameters(
           declarator.attributes().parameterNames(), functionType.parameterTypes(), node);
+      // Analyze function body
       checker.processBlock(body);
     } finally {
+      // Restore previous scope and function context
       checker.setCurrentScope(previousScope);
       checker.setCurrentFunction(previousFunction);
     }
   }
 
+  /**
+   * Performs semantic analysis for the nonterminal &lt;deklaracija&gt;.
+   *
+   * <p>This method implements the semantic rules for:
+   * <pre>
+   * &lt;deklaracija&gt; ::= &lt;ime_tipa&gt; TOCKAZAREZ
+   * &lt;deklaracija&gt; ::= &lt;ime_tipa&gt; &lt;lista_init_deklaratora&gt; TOCKAZAREZ
+   * </pre>
+   *
+   * <p>Semantic rules from semantics_definition.txt:
+   * <ul>
+   *   <li>1. provjeri(&lt;ime_tipa&gt;)</li>
+   *   <li>2. &lt;ime_tipa&gt;.tip != void</li>
+   *   <li>3. &lt;lista_init_deklaratora&gt;.ntype := &lt;ime_tipa&gt;.tip</li>
+   *   <li>4. provjeri(&lt;lista_init_deklaratora&gt;)</li>
+   * </ul>
+   *
+   * @param node the &lt;deklaracija&gt; node to analyze
+   */
   private void visitDeklaracija(NonTerminalNode node) {
     List<ParseNode> children = node.children();
     NonTerminalNode typeNode = NodeUtils.asNonTerminal(children.get(0));
@@ -104,11 +219,13 @@ final class DeclarationRules {
     if (baseType == null) {
       checker.fail(node);
     }
+    // Rule 2: <ime_tipa>.tip != void
     if (TypeSystem.stripConst(baseType) == PrimitiveType.VOID) {
       checker.fail(node);
     }
     if (children.size() == 3) {
       NonTerminalNode list = NodeUtils.asNonTerminal(children.get(1));
+      // Rule 3: <lista_init_deklaratora>.ntype := <ime_tipa>.tip
       list.attributes().inheritedType(baseType);
       checker.visitNonTerminal(list);
     }
@@ -196,11 +313,33 @@ final class DeclarationRules {
     }
   }
 
+  /**
+   * Performs semantic analysis for the nonterminal &lt;izravni_deklarator&gt;.
+   *
+   * <p>This method implements the semantic rules for:
+   * <pre>
+   * &lt;izravni_deklarator&gt; ::= IDN
+   * &lt;izravni_deklarator&gt; ::= IDN L_UGL_ZAGRADA BROJ D_UGL_ZAGRADA
+   * &lt;izravni_deklarator&gt; ::= IDN L_ZAGRADA KR_VOID D_ZAGRADA
+   * &lt;izravni_deklarator&gt; ::= IDN L_ZAGRADA &lt;lista_parametara&gt; D_ZAGRADA
+   * &lt;izravni_deklarator&gt; ::= L_ZAGRADA &lt;deklarator&gt; D_ZAGRADA
+   * </pre>
+   *
+   * <p>Semantic rules from semantics_definition.txt:
+   * <ul>
+   *   <li>For IDN: &lt;izravni_deklarator&gt;.tip := &lt;izravni_deklarator&gt;.ntype</li>
+   *   <li>For arrays: &lt;izravni_deklarator&gt;.tip := niz(&lt;izravni_deklarator&gt;.ntype)</li>
+   *   <li>For functions: &lt;izravni_deklarator&gt;.tip := funkcija(&lt;izravni_deklarator&gt;.ntype, params)</li>
+   * </ul>
+   *
+   * @param node the &lt;izravni_deklarator&gt; node to analyze
+   */
   private void visitIzravniDeklarator(NonTerminalNode node) {
     List<ParseNode> children = node.children();
     if (children.isEmpty()) {
       checker.fail(node);
     }
+    // Rule: <izravni_deklarator> ::= IDN
     if (children.size() == 1 && children.get(0) instanceof TerminalNode id) {
       Type inherited = node.attributes().inheritedType();
       if (inherited == null) {
@@ -309,7 +448,7 @@ final class DeclarationRules {
     List<Type> parameterTypes = List.of();
     List<String> parameterNames = List.of();
     if (children.size() == 4 && children.get(2) instanceof TerminalNode voidToken) {
-      if (!"KR_VOID".equals(voidToken.symbol())) {
+      if (!SemanticConstants.KR_VOID.equals(voidToken.symbol())) {
         checker.fail(node);
       }
     } else {
@@ -335,7 +474,7 @@ final class DeclarationRules {
     List<String> parameterNames = List.of();
     ParseNode paramsNode = children.get(2);
     if (paramsNode instanceof TerminalNode voidToken) {
-      if (!"KR_VOID".equals(voidToken.symbol())) {
+      if (!SemanticConstants.KR_VOID.equals(voidToken.symbol())) {
         checker.fail(node);
       }
     } else {
@@ -363,6 +502,23 @@ final class DeclarationRules {
     node.attributes().lValue(inner.attributes().isLValue());
   }
 
+  /**
+   * Performs semantic analysis for the nonterminal &lt;ime_tipa&gt;.
+   *
+   * <p>This method implements the semantic rules for:
+   * <pre>
+   * &lt;ime_tipa&gt; ::= &lt;specifikator_tipa&gt;
+   * &lt;ime_tipa&gt; ::= KR_CONST &lt;specifikator_tipa&gt;
+   * </pre>
+   *
+   * <p>Semantic rules from semantics_definition.txt:
+   * <ul>
+   *   <li>For &lt;specifikator_tipa&gt;: &lt;ime_tipa&gt;.tip := &lt;specifikator_tipa&gt;.tip</li>
+   *   <li>For KR_CONST: &lt;specifikator_tipa&gt;.tip != void, &lt;ime_tipa&gt;.tip := const(&lt;specifikator_tipa&gt;.tip)</li>
+   * </ul>
+   *
+   * @param node the &lt;ime_tipa&gt; node to analyze
+   */
   private void visitImeTipa(NonTerminalNode node) {
     List<ParseNode> children = node.children();
     if (children.size() == 1) {
@@ -372,15 +528,17 @@ final class DeclarationRules {
       return;
     }
     if (children.size() == 2 && children.get(0) instanceof TerminalNode constToken) {
-      if (!"KR_CONST".equals(constToken.symbol())) {
+      if (!SemanticConstants.KR_CONST.equals(constToken.symbol())) {
         checker.fail(node);
       }
       NonTerminalNode spec = NodeUtils.asNonTerminal(children.get(1));
       checker.visitNonTerminal(spec);
       Type base = spec.attributes().type();
+      // Rule: <specifikator_tipa>.tip != void
       if (base == null || base.isVoid()) {
         checker.fail(node);
       }
+      // Rule: <ime_tipa>.tip := const(<specifikator_tipa>.tip)
       node.attributes().type(new ConstType(base));
       return;
     }
@@ -429,7 +587,7 @@ final class DeclarationRules {
     }
     if (children.size() == 2) {
       if (children.get(0) instanceof TerminalNode constToken
-          && "KR_CONST".equals(constToken.symbol())
+          && SemanticConstants.KR_CONST.equals(constToken.symbol())
           && children.get(1) instanceof NonTerminalNode spec) {
         checker.visitNonTerminal(spec);
         Type base = spec.attributes().type();
@@ -443,12 +601,31 @@ final class DeclarationRules {
     checker.fail(node);
   }
 
+  /**
+   * Performs semantic analysis for the nonterminal &lt;specifikator_tipa&gt;.
+   *
+   * <p>This method implements the semantic rules for:
+   * <pre>
+   * &lt;specifikator_tipa&gt; ::= KR_VOID
+   * &lt;specifikator_tipa&gt; ::= KR_CHAR
+   * &lt;specifikator_tipa&gt; ::= KR_INT
+   * </pre>
+   *
+   * <p>Semantic rules from semantics_definition.txt:
+   * <ul>
+   *   <li>KR_VOID: &lt;specifikator_tipa&gt;.tip := void</li>
+   *   <li>KR_CHAR: &lt;specifikator_tipa&gt;.tip := char</li>
+   *   <li>KR_INT: &lt;specifikator_tipa&gt;.tip := int</li>
+   * </ul>
+   *
+   * @param node the &lt;specifikator_tipa&gt; node to analyze
+   */
   private void visitSpecifikatorTipa(NonTerminalNode node) {
     TerminalNode token = (TerminalNode) node.children().get(0);
     switch (token.symbol()) {
-      case "KR_VOID" -> node.attributes().type(PrimitiveType.VOID);
-      case "KR_CHAR" -> node.attributes().type(PrimitiveType.CHAR);
-      case "KR_INT" -> node.attributes().type(PrimitiveType.INT);
+      case SemanticConstants.KR_VOID -> node.attributes().type(PrimitiveType.VOID);
+      case SemanticConstants.KR_CHAR -> node.attributes().type(PrimitiveType.CHAR);
+      case SemanticConstants.KR_INT -> node.attributes().type(PrimitiveType.INT);
       default -> checker.fail(node);
     }
   }

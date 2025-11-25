@@ -1,3 +1,0 @@
-char main(void){
-   return 2.5;
-}

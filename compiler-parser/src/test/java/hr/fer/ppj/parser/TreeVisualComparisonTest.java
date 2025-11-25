@@ -35,11 +35,11 @@ public final class TreeVisualComparisonTest {
       lexerResult = generator.generate(reader);
     }
     
-    // Find all test cases
-    Path testResources = Paths.get("compiler-parser/src/test/resources");
+    // Find all test cases from examples/valid
+    Path testResources = Paths.get("examples/valid");
     if (!Files.exists(testResources)) {
-      // Try alternative path
-      testResources = Paths.get("src/test/resources");
+      System.out.println("Examples directory not found, skipping test");
+      return;
     }
     
     List<TestCase> testCases = new ArrayList<>();

@@ -2223,7 +2223,7 @@ semantic error
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
-        <span class="badge badge-error">Semantic error at line 7</span>
+        <span class="badge badge-error">Semantic error</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -2621,7 +2621,7 @@ D_VIT_ZAGRADA          9       11
       </details>
       <details>
         <summary>Semantic Analysis</summary>
-        <pre><code>&lt;postfiks_izraz&gt; ::= &lt;postfiks_izraz&gt; L_ZAGRADA(7,() &lt;lista_argumenata&gt; D_ZAGRADA(7,))
+        <pre><code>&lt;deklaracija_parametra&gt; ::= &lt;specifikatori_deklaracije&gt; &lt;deklarator&gt;
 
 </code></pre>
       </details>
@@ -2638,7 +2638,7 @@ semantic error
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
-        <span class="badge badge-error">Semantic error at line 7</span>
+        <span class="badge badge-error">Semantic error</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -3033,7 +3033,7 @@ D_VIT_ZAGRADA          9       8
       </details>
       <details>
         <summary>Semantic Analysis</summary>
-        <pre><code>&lt;postfiks_izraz&gt; ::= &lt;postfiks_izraz&gt; L_ZAGRADA(7,() &lt;lista_argumenata&gt; D_ZAGRADA(7,))
+        <pre><code>&lt;deklaracija_parametra&gt; ::= &lt;specifikatori_deklaracije&gt; &lt;deklarator&gt;
 
 </code></pre>
       </details>
@@ -3162,7 +3162,7 @@ semantic error
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
-        <span class="badge badge-error">Semantic error at line 2</span>
+        <span class="badge badge-error">Semantic error at line 1</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -3438,7 +3438,7 @@ D_VIT_ZAGRADA          8       8
       </details>
       <details>
         <summary>Semantic Analysis</summary>
-        <pre><code>&lt;naredba_skoka&gt; ::= KR_RETURN(2,return) &lt;izraz&gt; TOCKAZAREZ(2,;)
+        <pre><code>&lt;izravni_deklarator&gt; ::= IDN(1,f)
 
 </code></pre>
       </details>
@@ -4335,7 +4335,7 @@ semantic error
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
-        <span class="badge badge-error">Semantic error at line 3</span>
+        <span class="badge badge-error">Semantic error</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -4709,12 +4709,6 @@ D_VIT_ZAGRADA          8       16
 </code></pre>
       </details>
       <details>
-        <summary>Semantic Analysis</summary>
-        <pre><code>&lt;specifikator_tipa&gt; ::= KR_FLOAT(3,float)
-
-</code></pre>
-      </details>
-      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
@@ -5003,7 +4997,7 @@ semantic error
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
-        <span class="badge badge-error">Semantic error at line 3</span>
+        <span class="badge badge-ok">Semantic: OK</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -5257,16 +5251,7 @@ D_VIT_ZAGRADA          5       15
       </details>
       <details>
         <summary>Semantic Analysis</summary>
-        <pre><code>&lt;izraz_pridruzivanja&gt; ::= &lt;unarni_izraz&gt; OP_PRIDRUZI(3,=) &lt;izraz_pridruzivanja&gt;
-
-</code></pre>
-      </details>
-      <details>
-        <summary>Analysis Errors</summary>
-        <pre><code>
-SEMANTIC ERRORS:
-semantic error
-        </code></pre>
+        <pre><code>No semantic errors found.</code></pre>
       </details>
     </section>
     <section id="program31" class="program-card">
@@ -6669,7 +6654,7 @@ semantic error
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
-        <span class="badge badge-error">Semantic error at line 7</span>
+        <span class="badge badge-error">Semantic error</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -6992,7 +6977,7 @@ D_VIT_ZAGRADA          9       8
       </details>
       <details>
         <summary>Semantic Analysis</summary>
-        <pre><code>&lt;postfiks_izraz&gt; ::= &lt;postfiks_izraz&gt; L_ZAGRADA(7,() D_ZAGRADA(7,))
+        <pre><code>&lt;deklaracija_parametra&gt; ::= &lt;specifikatori_deklaracije&gt; &lt;deklarator&gt;
 
 </code></pre>
       </details>
@@ -8279,7 +8264,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
-        <span class="badge badge-ok">Semantic: OK</span>
+        <span class="badge badge-error">Semantic error at line 3</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -8574,7 +8559,16 @@ D_VIT_ZAGRADA          5       15
       </details>
       <details>
         <summary>Semantic Analysis</summary>
-        <pre><code>No semantic errors found.</code></pre>
+        <pre><code>&lt;postfiks_izraz&gt; ::= &lt;postfiks_izraz&gt; L_UGL_ZAGRADA(3,[) &lt;izraz&gt; D_UGL_ZAGRADA(3,])
+
+</code></pre>
+      </details>
+      <details>
+        <summary>Analysis Errors</summary>
+        <pre><code>
+SEMANTIC ERRORS:
+semantic error
+        </code></pre>
       </details>
     </section>
     <section id="program43" class="program-card">
@@ -8700,7 +8694,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
-        <span class="badge badge-error">Semantic error at line 7</span>
+        <span class="badge badge-error">Semantic error</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -9174,7 +9168,7 @@ D_VIT_ZAGRADA          9       12
       </details>
       <details>
         <summary>Semantic Analysis</summary>
-        <pre><code>&lt;postfiks_izraz&gt; ::= &lt;postfiks_izraz&gt; L_ZAGRADA(7,() &lt;lista_argumenata&gt; D_ZAGRADA(7,))
+        <pre><code>&lt;deklaracija_parametra&gt; ::= &lt;specifikatori_deklaracije&gt; &lt;deklarator&gt;
 
 </code></pre>
       </details>
@@ -9191,7 +9185,7 @@ semantic error
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
-        <span class="badge badge-error">Semantic error at line 7</span>
+        <span class="badge badge-error">Semantic error</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -9660,7 +9654,7 @@ D_VIT_ZAGRADA          9       8
       </details>
       <details>
         <summary>Semantic Analysis</summary>
-        <pre><code>&lt;postfiks_izraz&gt; ::= &lt;postfiks_izraz&gt; L_ZAGRADA(7,() &lt;lista_argumenata&gt; D_ZAGRADA(7,))
+        <pre><code>&lt;deklaracija_parametra&gt; ::= &lt;specifikatori_deklaracije&gt; &lt;deklarator&gt;
 
 </code></pre>
       </details>
@@ -11547,7 +11541,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
-        <span class="badge badge-ok">Semantic: OK</span>
+        <span class="badge badge-error">Semantic error at line 4</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -11862,7 +11856,16 @@ D_VIT_ZAGRADA          6       14
       </details>
       <details>
         <summary>Semantic Analysis</summary>
-        <pre><code>No semantic errors found.</code></pre>
+        <pre><code>&lt;slozena_naredba&gt; ::= L_VIT_ZAGRADA(3,{) D_VIT_ZAGRADA(4,})
+
+</code></pre>
+      </details>
+      <details>
+        <summary>Analysis Errors</summary>
+        <pre><code>
+SEMANTIC ERRORS:
+semantic error
+        </code></pre>
       </details>
     </section>
     <section id="program65" class="program-card">
@@ -13992,7 +13995,7 @@ semantic error
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
-        <span class="badge badge-error">Semantic error</span>
+        <span class="badge badge-ok">Semantic: OK</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -14273,16 +14276,7 @@ D_VIT_ZAGRADA          6       12
       </details>
       <details>
         <summary>Semantic Analysis</summary>
-        <pre><code>&lt;unarni_izraz&gt; ::= &lt;unarni_operator&gt; &lt;cast_izraz&gt;
-
-</code></pre>
-      </details>
-      <details>
-        <summary>Analysis Errors</summary>
-        <pre><code>
-SEMANTIC ERRORS:
-semantic error
-        </code></pre>
+        <pre><code>No semantic errors found.</code></pre>
       </details>
     </section>
     <section id="program78" class="program-card">
@@ -14784,7 +14778,7 @@ semantic error
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
-        <span class="badge badge-error">Semantic error at line 2</span>
+        <span class="badge badge-error">Semantic error</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -15103,12 +15097,6 @@ D_VIT_ZAGRADA          7       15
                                                                                                 IDN , pointer
                             TOCKAZAREZ , ;
                 D_VIT_ZAGRADA , }
-</code></pre>
-      </details>
-      <details>
-        <summary>Semantic Analysis</summary>
-        <pre><code>&lt;specifikator_tipa&gt; ::= KR_FLOAT(2,float)
-
 </code></pre>
       </details>
       <details>
@@ -16493,7 +16481,7 @@ D_VIT_ZAGRADA         11       6
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
-Semantic analysis failed: class hr.fer.ppj.semantics.tree.NonTerminalNode cannot be cast to class hr.fer.ppj.semantics.tree.TerminalNode (hr.fer.ppj.semantics.tree.NonTerminalNode and hr.fer.ppj.semantics.tree.TerminalNode are in unnamed module of loader &#39;app&#39;)
+Semantic analysis failed: class hr.fer.ppj.semantics.tree.NonTerminalNode cannot be cast to class hr.fer.ppj.semantics.tree.TerminalNode (hr.fer.ppj.semantics.tree.NonTerminalNode and hr.fer.ppj.semantics.tree.TerminalNode are in unnamed module of loader org.codehaus.mojo.exec.URLClassLoaderBuilder$ExecJavaClassLoader @4f3e7344)
         </code></pre>
       </details>
     </section>
