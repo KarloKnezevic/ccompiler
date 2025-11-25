@@ -11,7 +11,9 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
+    <groupId>hr.fer.ppj</groupId>
     <artifactId>compiler-parser</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Compiler Parser</name>

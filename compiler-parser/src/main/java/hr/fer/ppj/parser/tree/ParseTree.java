@@ -113,11 +113,10 @@ public final class ParseTree {
   private int toGenerativeTreeString(StringBuilder sb, int nodeNumber, int depth) {
     int currentNumber = nodeNumber;
     
-    // Print this node
+    // Print this node (without the numeric prefix)
     for (int i = 0; i < depth; i++) {
       sb.append("    ");
     }
-    sb.append(currentNumber).append(":");
     
     if (isTerminal) {
       sb.append(symbol);
@@ -170,11 +169,10 @@ public final class ParseTree {
     
     int currentNumber = nodeNumber;
     
-    // Print this node
+    // Print this node (without numeric prefix)
     for (int i = 0; i < depth; i++) {
       sb.append("    ");
     }
-    sb.append(currentNumber).append(":");
     
     if (isTerminal) {
       sb.append(symbol);

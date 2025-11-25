@@ -42,7 +42,7 @@ public final class ParserSimpleTest {
   @Test
   void testSimpleProgram(@TempDir Path tempDir) throws Exception {
     // Very simple program
-    String program = "int main() { return 0; }";
+    String program = "int main(void) { return 0; }";
     
     // Tokenize
     Lexer lexer = new Lexer(lexerGeneratorResult);
@@ -93,7 +93,7 @@ public final class ParserSimpleTest {
     ParseTree parseTree = lrParser.parse(parserTokens);
     
     assertNotNull(parseTree, "Should produce parse tree");
-    assertEquals("<pocetni_nezavrsni_znak>", parseTree.getSymbol(), "Root should be augmented start symbol");
+    assertEquals("<prijevodna_jedinica>", parseTree.getSymbol(), "Root should be start symbol");
   }
   
   private String formatLexerOutput(Lexer lexer, List<Token> tokens) {

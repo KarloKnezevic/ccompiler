@@ -66,7 +66,7 @@ public final class Lexer {
    */
   private final LexerGeneratorResult generatorResult;
   
-  /** 
+  /**
    * Symbol table - list of all unique tokens (type + text pairs).
    * Tokens with the same type and text share the same index, enabling efficient storage.
    */

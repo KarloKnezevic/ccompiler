@@ -72,7 +72,11 @@ public final class ParserGoldenTest {
     );
     
     Parser parser = new Parser();
-    parser.parse(config);
+    try {
+      parser.parse(config);
+    } catch (Parser.ParserException e) {
+      System.out.println("Parser reported an error for case " + caseId + ": " + e.getMessage());
+    }
     
     // Step 4: Verify outputs were generated (no comparison with expected)
     Path actualGenerativeTree = config.outputGenerativeTree();

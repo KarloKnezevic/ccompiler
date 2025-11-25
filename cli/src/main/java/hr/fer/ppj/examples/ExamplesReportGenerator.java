@@ -7,10 +7,15 @@ import hr.fer.ppj.lexer.io.Lexer.SymbolTableEntry;
 import hr.fer.ppj.lexer.io.Token;
 import hr.fer.ppj.parser.Parser;
 import hr.fer.ppj.parser.config.ParserConfig;
+import hr.fer.ppj.parser.io.TokenReader;
+import hr.fer.ppj.parser.tree.ParseTree;
+import hr.fer.ppj.semantics.analysis.SemanticAnalyzer;
+import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,13 +28,14 @@ import java.util.stream.Stream;
 /**
  * Generates HTML reports for test programs in examples/valid and examples/invalid directories.
  * 
- * <p>For each .c program, runs lexer and parser, collects outputs, and generates
- * comprehensive HTML reports showing:
+ * <p>For each .c program, runs lexer, parser, and semantic analyzer, collects outputs, 
+ * and generates comprehensive HTML reports showing:
  * <ul>
  *   <li>Source code</li>
  *   <li>Lexical tokens output</li>
  *   <li>Generative tree</li>
  *   <li>Syntax tree</li>
+ *   <li>Semantic analysis results</li>
  *   <li>Error messages (if any)</li>
  * </ul>
  * 
@@ -42,6 +48,8 @@ public final class ExamplesReportGenerator {
       "(?i).*error.*line\\s+(\\d+).*", Pattern.DOTALL);
   private static final Pattern PARSER_ERROR_PATTERN = Pattern.compile(
       "(?i).*sintaksna\\s+greška\\s+na\\s+retku\\s+(\\d+).*", Pattern.DOTALL);
+  private static final Pattern SEMANTIC_ERROR_PATTERN = Pattern.compile(
+      "(?i).*::=\\s+.*\\(\\s*(\\d+)\\s*,.*", Pattern.DOTALL);
   
   /**
    * Result of analyzing a single program.
@@ -56,13 +64,18 @@ public final class ExamplesReportGenerator {
     final String syntaxTree;
     final String parserErrors;
     final Integer parserErrorLine;
+    final String semanticOutput;
+    final String semanticErrors;
+    final Integer semanticErrorLine;
     final boolean lexerSuccess;
     final boolean parserSuccess;
+    final boolean semanticSuccess;
     
     ProgramResult(String programName, String sourceCode, String lexerOutput, 
                   String lexerErrors, Integer lexerErrorLine, String generativeTree,
                   String syntaxTree, String parserErrors, Integer parserErrorLine,
-                  boolean lexerSuccess, boolean parserSuccess) {
+                  String semanticOutput, String semanticErrors, Integer semanticErrorLine,
+                  boolean lexerSuccess, boolean parserSuccess, boolean semanticSuccess) {
       this.programName = programName;
       this.sourceCode = sourceCode;
       this.lexerOutput = lexerOutput;
@@ -72,8 +85,12 @@ public final class ExamplesReportGenerator {
       this.syntaxTree = syntaxTree;
       this.parserErrors = parserErrors;
       this.parserErrorLine = parserErrorLine;
+      this.semanticOutput = semanticOutput;
+      this.semanticErrors = semanticErrors;
+      this.semanticErrorLine = semanticErrorLine;
       this.lexerSuccess = lexerSuccess;
       this.parserSuccess = parserSuccess;
+      this.semanticSuccess = semanticSuccess;
     }
   }
   
@@ -150,6 +167,10 @@ public final class ExamplesReportGenerator {
             "",
             "Analysis failed: " + e.getMessage(),
             null,
+            "",
+            "Analysis failed: " + e.getMessage(),
+            null,
+            false,
             false,
             false
         ));
@@ -179,9 +200,12 @@ public final class ExamplesReportGenerator {
       String lexerErrors = "";
       Integer lexerErrorLine = null;
       boolean lexerSuccess = false;
+      List<Token> lexerTokens = null;
       
       try {
-        lexerOutput = runLexer(programFile);
+        LexicalAnalysisResult lexResult = runLexerWithTokens(programFile);
+        lexerOutput = lexResult.output();
+        lexerTokens = lexResult.tokens();
         lexerSuccess = true;
       } catch (Exception e) {
         lexerErrors = e.getMessage();
@@ -203,6 +227,7 @@ public final class ExamplesReportGenerator {
       String parserErrors = "";
       Integer parserErrorLine = null;
       boolean parserSuccess = false;
+      ParseTree parseTree = null;
       
       if (lexerSuccess) {
         try {
@@ -232,6 +257,15 @@ public final class ExamplesReportGenerator {
             syntaxTree = Files.readString(sintaksnoPath);
           }
           
+          // Convert lexer tokens to parser tokens and get parse tree for semantic analysis
+          if (lexerTokens != null) {
+            List<TokenReader.Token> parserTokens = new ArrayList<>(lexerTokens.size());
+            for (Token token : lexerTokens) {
+              parserTokens.add(new TokenReader.Token(token.type(), token.line(), token.value()));
+            }
+            parseTree = parser.parseTokens(parserTokens);
+          }
+          
           parserSuccess = true;
         } catch (Exception e) {
           parserErrors = e.getMessage();
@@ -259,6 +293,48 @@ public final class ExamplesReportGenerator {
         }
       }
       
+      // Run semantic analysis if parser succeeded
+      String semanticOutput = "";
+      String semanticErrors = "";
+      Integer semanticErrorLine = null;
+      boolean semanticSuccess = false;
+      
+      if (parserSuccess && parseTree != null) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream printStream = new PrintStream(outputStream, true, StandardCharsets.UTF_8);
+        
+        try {
+          SemanticAnalyzer analyzer = new SemanticAnalyzer();
+          analyzer.analyze(parseTree, printStream);
+          printStream.flush();
+          semanticOutput = outputStream.toString(StandardCharsets.UTF_8);
+          semanticSuccess = true;
+        } catch (hr.fer.ppj.semantics.analysis.SemanticException e) {
+          // Semantic error occurred - output was already written to printStream
+          printStream.flush();
+          semanticOutput = outputStream.toString(StandardCharsets.UTF_8);
+          semanticErrors = "semantic error";
+          
+          // Try to extract line number from semantic output
+          if (!semanticOutput.isEmpty()) {
+            Matcher m = SEMANTIC_ERROR_PATTERN.matcher(semanticOutput);
+            if (m.find()) {
+              try {
+                semanticErrorLine = Integer.parseInt(m.group(1));
+              } catch (NumberFormatException ex) {
+                // Ignore
+              }
+            }
+          }
+        } catch (Exception e) {
+          printStream.flush();
+          semanticOutput = outputStream.toString(StandardCharsets.UTF_8);
+          semanticErrors = "Semantic analysis failed: " + e.getMessage();
+        } finally {
+          printStream.close();
+        }
+      }
+      
       return new ProgramResult(
           programName,
           sourceCode,
@@ -269,8 +345,12 @@ public final class ExamplesReportGenerator {
           syntaxTree,
           parserErrors,
           parserErrorLine,
+          semanticOutput,
+          semanticErrors,
+          semanticErrorLine,
           lexerSuccess,
-          parserSuccess
+          parserSuccess,
+          semanticSuccess
       );
     } finally {
       // Cleanup temp directory
@@ -279,10 +359,15 @@ public final class ExamplesReportGenerator {
   }
   
   /**
-   * Runs lexer on a program file and returns the output.
+   * Result of lexical analysis.
+   */
+  private static record LexicalAnalysisResult(String output, List<Token> tokens) {}
+  
+  /**
+   * Runs lexer on a program file and returns the output and tokens.
    * Captures stderr to detect errors.
    */
-  private static String runLexer(Path programFile) throws Exception {
+  private static LexicalAnalysisResult runLexerWithTokens(Path programFile) throws Exception {
     // Capture stderr
     java.io.ByteArrayOutputStream errStream = new java.io.ByteArrayOutputStream();
     PrintStream originalErr = System.err;
@@ -332,7 +417,7 @@ public final class ExamplesReportGenerator {
             token.symbolTableIndex()));
       }
       
-      return sb.toString();
+      return new LexicalAnalysisResult(sb.toString(), tokens);
     } finally {
       System.setErr(originalErr);
     }
@@ -399,6 +484,17 @@ public final class ExamplesReportGenerator {
         } else {
           writer.println("        <span class=\"badge badge-skip\">Parser: Skipped (lexer failed)</span>");
         }
+        
+        if (result.semanticSuccess) {
+          writer.println("        <span class=\"badge badge-ok\">Semantic: OK</span>");
+        } else if (result.parserSuccess) {
+          String errorMsg = result.semanticErrorLine != null
+              ? "Semantic error at line " + result.semanticErrorLine
+              : "Semantic error";
+          writer.println("        <span class=\"badge badge-error\">" + errorMsg + "</span>");
+        } else {
+          writer.println("        <span class=\"badge badge-skip\">Semantic: Skipped (parser failed)</span>");
+        }
         writer.println("      </div>");
         
         // Source code
@@ -431,8 +527,23 @@ public final class ExamplesReportGenerator {
           writer.println("      </details>");
         }
         
+        // Semantic analysis output
+        if (result.parserSuccess) {
+          if (result.semanticSuccess && result.semanticOutput.isEmpty()) {
+            writer.println("      <details>");
+            writer.println("        <summary>Semantic Analysis</summary>");
+            writer.println("        <pre><code>No semantic errors found.</code></pre>");
+            writer.println("      </details>");
+          } else if (!result.semanticOutput.isEmpty()) {
+            writer.println("      <details>");
+            writer.println("        <summary>Semantic Analysis</summary>");
+            writer.println("        <pre><code>" + escapeHtml(result.semanticOutput) + "</code></pre>");
+            writer.println("      </details>");
+          }
+        }
+        
         // Errors
-        if (!result.lexerErrors.isEmpty() || !result.parserErrors.isEmpty()) {
+        if (!result.lexerErrors.isEmpty() || !result.parserErrors.isEmpty() || !result.semanticErrors.isEmpty()) {
           writer.println("      <details>");
           writer.println("        <summary>Analysis Errors</summary>");
           writer.println("        <pre><code>");
@@ -446,6 +557,13 @@ public final class ExamplesReportGenerator {
             }
             writer.println("PARSER ERRORS:");
             writer.println(escapeHtml(result.parserErrors));
+          }
+          if (!result.semanticErrors.isEmpty()) {
+            if (!result.lexerErrors.isEmpty() || !result.parserErrors.isEmpty()) {
+              writer.println("\n---\n");
+            }
+            writer.println("SEMANTIC ERRORS:");
+            writer.println(escapeHtml(result.semanticErrors));
           }
           writer.println("        </code></pre>");
           writer.println("      </details>");

@@ -5,14 +5,20 @@ import hr.fer.ppj.lexer.gen.LexerGeneratorResult;
 import hr.fer.ppj.lexer.io.Lexer;
 import hr.fer.ppj.lexer.io.Lexer.SymbolTableEntry;
 import hr.fer.ppj.lexer.io.Token;
+import hr.fer.ppj.parser.Parser;
+import hr.fer.ppj.parser.Parser.ParserException;
+import hr.fer.ppj.parser.io.TokenReader;
+import hr.fer.ppj.parser.tree.ParseTree;
+import hr.fer.ppj.semantics.analysis.SemanticAnalyzer;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,6 +44,10 @@ import java.util.List;
 public final class Main {
   
   private static final String COMPILER_BIN_DIR = "compiler-bin";
+  
+  private record LexicalResult(List<Token> tokens, List<SymbolTableEntry> symbolTable) {}
+  
+  private record CompilationArtifacts(LexicalResult lexical, ParseTree parseTree) {}
   
   public static void main(String[] args) {
     if (args.length == 0) {
@@ -103,7 +113,6 @@ public final class Main {
   }
   
   private static void runFullCompilation(String filePath) throws Exception {
-    // For now, full compilation is the same as semantic analysis
     runSemantic(filePath);
   }
   
@@ -112,34 +121,18 @@ public final class Main {
    * Output is written to stdout in the standard format.
    */
   private static void runLexer(String filePath) throws Exception {
-    // Load lexer definition from centralized configuration
-    Path specPath = hr.fer.ppj.lexer.config.LexerConfig.getLexerDefinitionPath();
-    LexerGenerator generator = new LexerGenerator();
-    LexerGeneratorResult result;
-    try (FileReader reader = new FileReader(specPath.toFile())) {
-      result = generator.generate(reader);
-    }
-    
-    // Tokenize input file
-    Lexer lexer = new Lexer(result);
-    List<Token> tokens;
-    try (FileReader reader = new FileReader(filePath)) {
-      tokens = lexer.tokenize(reader);
-    }
-    
-    // Output symbol table
+    LexicalResult lexical = performLexicalAnalysis(filePath);
     System.out.println("tablica znakova:");
     System.out.println("indeks   uniformni znak   izvorni tekst");
-    List<SymbolTableEntry> symbolTable = lexer.getSymbolTable();
-    for (int i = 0; i < symbolTable.size(); i++) {
-      SymbolTableEntry entry = symbolTable.get(i);
+    for (int i = 0; i < lexical.symbolTable().size(); i++) {
+      SymbolTableEntry entry = lexical.symbolTable().get(i);
       System.out.printf("     %d   %-18s %s%n", i, entry.token(), entry.text());
     }
     
     // Output token stream
     System.out.println("\nniz uniformnih znakova:");
     System.out.println("uniformni znak    redak    indeks u tablicu znakova");
-    for (Token token : tokens) {
+    for (Token token : lexical.tokens()) {
       System.out.printf("%-18s %5d       %d%n", 
           token.type(), 
           token.line(), 
@@ -155,77 +148,9 @@ public final class Main {
    * - sintaksno_stablo.txt
    */
   private static void runSyntax(String filePath) throws Exception {
-    // Ensure compiler-bin directory exists
-    Path binDir = Paths.get(COMPILER_BIN_DIR);
-    if (!Files.exists(binDir)) {
-      Files.createDirectories(binDir);
-    }
-    
-    // Run lexical analysis
-    Path specPath = hr.fer.ppj.lexer.config.LexerConfig.getLexerDefinitionPath();
-    LexerGenerator generator = new LexerGenerator();
-    LexerGeneratorResult result;
-    try (FileReader reader = new FileReader(specPath.toFile())) {
-      result = generator.generate(reader);
-    }
-    
-    Lexer lexer = new Lexer(result);
-    List<Token> tokens;
-    try (FileReader reader = new FileReader(filePath)) {
-      tokens = lexer.tokenize(reader);
-    }
-    
-    // Generate leksicke_jedinke.txt
-    Path leksickePath = binDir.resolve("leksicke_jedinke.txt");
-    try (PrintWriter writer = new PrintWriter(new FileWriter(leksickePath.toFile()))) {
-      // Output symbol table
-      writer.println("tablica znakova:");
-      writer.println("indeks   uniformni znak   izvorni tekst");
-      List<SymbolTableEntry> symbolTable = lexer.getSymbolTable();
-      for (int i = 0; i < symbolTable.size(); i++) {
-        SymbolTableEntry entry = symbolTable.get(i);
-        writer.printf("     %d   %-18s %s%n", i, entry.token(), entry.text());
-      }
-      
-      // Output token stream
-      writer.println("\nniz uniformnih znakova:");
-      writer.println("uniformni znak    redak    indeks u tablicu znakova");
-      for (Token token : tokens) {
-        writer.printf("%-18s %5d       %d%n", 
-            token.type(), 
-            token.line(), 
-            token.symbolTableIndex());
-      }
-    }
-    
-    // Run syntax analysis using parser
-    Path generativnoPath = binDir.resolve("generativno_stablo.txt");
-    Path sintaksnoPath = binDir.resolve("sintaksno_stablo.txt");
-    
-    try {
-      // Create parser config
-      hr.fer.ppj.parser.config.ParserConfig.Config parserConfig = 
-          hr.fer.ppj.parser.config.ParserConfig.Config.createDefault(
-              leksickePath,
-              binDir
-          );
-      
-      // Run parser
-      hr.fer.ppj.parser.Parser parser = new hr.fer.ppj.parser.Parser();
-      parser.parse(parserConfig);
-      
-      System.err.println("Lexical and syntax analysis completed. Output files generated in " + COMPILER_BIN_DIR + "/");
-    } catch (hr.fer.ppj.parser.Parser.ParserException e) {
-      System.err.println("Parse error: " + e.getMessage());
-      // Still create empty files to indicate failure
-      try (PrintWriter writer = new PrintWriter(new FileWriter(generativnoPath.toFile()))) {
-        writer.println("Parse error: " + e.getMessage());
-      }
-      try (PrintWriter writer = new PrintWriter(new FileWriter(sintaksnoPath.toFile()))) {
-        writer.println("Parse error: " + e.getMessage());
-      }
-      throw new Exception("Syntax analysis failed", e);
-    }
+    Path binDir = ensureOutputDirectory();
+    compileToParseTree(filePath, binDir, true);
+    System.err.println("Lexical and syntax analysis completed. Output files generated in " + COMPILER_BIN_DIR + "/");
   }
   
   /**
@@ -233,10 +158,100 @@ public final class Main {
    * Generates all output files in compiler-bin/ directory.
    */
   private static void runSemantic(String filePath) throws Exception {
-    // For now, semantic is the same as syntax
-    // TODO: Add code generation when implemented
-    runSyntax(filePath);
-    
-    System.err.println("Note: Code generation is not yet implemented.");
+    Path binDir = ensureOutputDirectory();
+    CompilationArtifacts artifacts = compileToParseTree(filePath, binDir, true);
+    SemanticAnalyzer analyzer = new SemanticAnalyzer();
+    try {
+      analyzer.analyze(artifacts.parseTree(), System.out);
+      System.err.println("Semantic analysis completed.");
+    } catch (hr.fer.ppj.semantics.analysis.SemanticException e) {
+      // Production already printed by SemanticChecker.fail()
+      // Print error message and exit without stack trace
+      System.err.println("Error: semantic error");
+      System.exit(1);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
+
+  private static CompilationArtifacts compileToParseTree(String filePath, Path outputDir, boolean writeOutputs)
+      throws Exception {
+    LexicalResult lexical = performLexicalAnalysis(filePath);
+    if (writeOutputs) {
+      writeLexerOutputFile(lexical, outputDir.resolve("leksicke_jedinke.txt"));
+    }
+
+    ParseTree parseTree = runParser(lexical.tokens());
+
+    if (writeOutputs) {
+      writeParseOutputs(parseTree,
+          outputDir.resolve("generativno_stablo.txt"),
+          outputDir.resolve("sintaksno_stablo.txt"));
+    }
+
+    return new CompilationArtifacts(lexical, parseTree);
+  }
+
+  private static LexicalResult performLexicalAnalysis(String filePath) throws Exception {
+    Path specPath = hr.fer.ppj.lexer.config.LexerConfig.getLexerDefinitionPath();
+    LexerGenerator generator = new LexerGenerator();
+    LexerGeneratorResult result;
+    try (FileReader reader = new FileReader(specPath.toFile())) {
+      result = generator.generate(reader);
+    }
+
+    Lexer lexer = new Lexer(result);
+    List<Token> tokens;
+    try (Reader reader = new FileReader(filePath)) {
+      tokens = lexer.tokenize(reader);
+    }
+
+    return new LexicalResult(List.copyOf(tokens), lexer.getSymbolTable());
+  }
+
+  private static Path ensureOutputDirectory() throws IOException {
+    Path binDir = Paths.get(COMPILER_BIN_DIR);
+    if (!Files.exists(binDir)) {
+      Files.createDirectories(binDir);
+    }
+    return binDir;
+  }
+
+  private static void writeLexerOutputFile(LexicalResult lexical, Path outputPath) throws IOException {
+    try (PrintWriter writer = new PrintWriter(new FileWriter(outputPath.toFile()))) {
+      writer.println("tablica znakova:");
+      writer.println("indeks   uniformni znak   izvorni tekst");
+      List<SymbolTableEntry> symbolTable = lexical.symbolTable();
+      for (int i = 0; i < symbolTable.size(); i++) {
+        SymbolTableEntry entry = symbolTable.get(i);
+        writer.printf("     %d   %-18s %s%n", i, entry.token(), entry.text());
+      }
+
+      writer.println("\nniz uniformnih znakova:");
+      writer.println("uniformni znak    redak    indeks u tablicu znakova");
+      for (Token token : lexical.tokens()) {
+        writer.printf("%-18s %5d       %d%n",
+            token.type(),
+            token.line(),
+            token.symbolTableIndex());
+      }
+    }
+  }
+
+  private static ParseTree runParser(List<Token> lexerTokens) throws ParserException {
+    List<TokenReader.Token> parserTokens = new ArrayList<>(lexerTokens.size());
+    for (Token token : lexerTokens) {
+      parserTokens.add(new TokenReader.Token(token.type(), token.line(), token.value()));
+    }
+    Parser parser = new Parser();
+    return parser.parseTokens(parserTokens);
+  }
+
+  private static void writeParseOutputs(ParseTree parseTree, Path generativePath, Path syntaxPath)
+      throws IOException {
+    Files.writeString(generativePath, parseTree.toGenerativeTreeString());
+    Files.writeString(syntaxPath, parseTree.toSyntaxTreeString());
   }
 }

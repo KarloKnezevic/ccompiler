@@ -1,0 +1,143 @@
+<prijevodna_jedinica>
+    <vanjska_deklaracija>
+        <definicija_funkcije>
+            <specifikatori_deklaracije>
+                <specifikator_tipa>
+                    KR_INT , int
+            <deklarator>
+                <izravni_deklarator>
+                    <izravni_deklarator>
+                        IDN , main
+                    L_ZAGRADA , (
+                    <lista_parametara>
+                        <deklaracija_parametra>
+                            <specifikatori_deklaracije>
+                                <specifikator_tipa>
+                                    KR_VOID , void
+                    D_ZAGRADA , )
+            <slozena_naredba>
+                L_VIT_ZAGRADA , {
+                <lista_deklaracija>
+                    <deklaracija>
+                        <specifikatori_deklaracije>
+                            <specifikator_tipa>
+                                KR_INT , int
+                        <lista_init_deklaratora>
+                            <init_deklarator>
+                                <deklarator>
+                                    <izravni_deklarator>
+                                        IDN , i
+                        TOCKAZAREZ , ;
+                <lista_naredbi>
+                    <lista_naredbi>
+                        <naredba>
+                            <naredba_petlje>
+                                KR_FOR , for
+                                L_ZAGRADA , (
+                                <izraz_naredba>
+                                    <izraz>
+                                        <izraz_pridruzivanja>
+                                            <unarni_izraz>
+                                                <postfiks_izraz>
+                                                    <primarni_izraz>
+                                                        IDN , i
+                                            OP_PRIDRUZI , =
+                                            <izraz_pridruzivanja>
+                                                <log_ili_izraz>
+                                                    <log_i_izraz>
+                                                        <bin_ili_izraz>
+                                                            <bin_xili_izraz>
+                                                                <bin_i_izraz>
+                                                                    <jednakosni_izraz>
+                                                                        <odnosni_izraz>
+                                                                            <aditivni_izraz>
+                                                                                <multiplikativni_izraz>
+                                                                                    <cast_izraz>
+                                                                                        <unarni_izraz>
+                                                                                            <postfiks_izraz>
+                                                                                                <primarni_izraz>
+                                                                                                    BROJ , 0
+                                    TOCKAZAREZ , ;
+                                <izraz_naredba>
+                                    <izraz>
+                                        <izraz_pridruzivanja>
+                                            <log_ili_izraz>
+                                                <log_i_izraz>
+                                                    <bin_ili_izraz>
+                                                        <bin_xili_izraz>
+                                                            <bin_i_izraz>
+                                                                <jednakosni_izraz>
+                                                                    <odnosni_izraz>
+                                                                        <odnosni_izraz>
+                                                                            <aditivni_izraz>
+                                                                                <multiplikativni_izraz>
+                                                                                    <cast_izraz>
+                                                                                        <unarni_izraz>
+                                                                                            <postfiks_izraz>
+                                                                                                <primarni_izraz>
+                                                                                                    IDN , i
+                                                                        OP_LT , <
+                                                                        <aditivni_izraz>
+                                                                            <multiplikativni_izraz>
+                                                                                <cast_izraz>
+                                                                                    <unarni_izraz>
+                                                                                        <postfiks_izraz>
+                                                                                            <primarni_izraz>
+                                                                                                BROJ , 10
+                                    TOCKAZAREZ , ;
+                                <izraz>
+                                    <izraz_pridruzivanja>
+                                        <unarni_izraz>
+                                            <postfiks_izraz>
+                                                <primarni_izraz>
+                                                    IDN , i
+                                        OP_PRIDRUZI , =
+                                        <izraz_pridruzivanja>
+                                            <log_ili_izraz>
+                                                <log_i_izraz>
+                                                    <bin_ili_izraz>
+                                                        <bin_xili_izraz>
+                                                            <bin_i_izraz>
+                                                                <jednakosni_izraz>
+                                                                    <odnosni_izraz>
+                                                                        <aditivni_izraz>
+                                                                            <aditivni_izraz>
+                                                                                <multiplikativni_izraz>
+                                                                                    <cast_izraz>
+                                                                                        <unarni_izraz>
+                                                                                            <postfiks_izraz>
+                                                                                                <primarni_izraz>
+                                                                                                    IDN , i
+                                                                            PLUS , +
+                                                                            <multiplikativni_izraz>
+                                                                                <cast_izraz>
+                                                                                    <unarni_izraz>
+                                                                                        <postfiks_izraz>
+                                                                                            <primarni_izraz>
+                                                                                                BROJ , 1
+                                D_ZAGRADA , )
+                                <naredba>
+                                    <slozena_naredba>
+                                        L_VIT_ZAGRADA , {
+                                        D_VIT_ZAGRADA , }
+                    <naredba>
+                        <naredba_skoka>
+                            KR_RETURN , return
+                            <izraz>
+                                <izraz_pridruzivanja>
+                                    <log_ili_izraz>
+                                        <log_i_izraz>
+                                            <bin_ili_izraz>
+                                                <bin_xili_izraz>
+                                                    <bin_i_izraz>
+                                                        <jednakosni_izraz>
+                                                            <odnosni_izraz>
+                                                                <aditivni_izraz>
+                                                                    <multiplikativni_izraz>
+                                                                        <cast_izraz>
+                                                                            <unarni_izraz>
+                                                                                <postfiks_izraz>
+                                                                                    <primarni_izraz>
+                                                                                        IDN , i
+                            TOCKAZAREZ , ;
+                D_VIT_ZAGRADA , }

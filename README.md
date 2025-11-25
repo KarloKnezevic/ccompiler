@@ -78,7 +78,7 @@ ppj-compiler/
 
 - **compiler-lexer**: Implements a lexer generator that reads specification files and produces DFAs for tokenization
 - **compiler-parser**: Implements a canonical LR(1) parser generator that builds parsing tables from grammar definitions
-- **compiler-semantics**: (In development) Type system, symbol tables, and semantic analysis
+- **compiler-semantics**: Type system, semantic rules, and PPJ-specific diagnostics (now fully aligned with `config/semantics_definition.txt`)
 - **compiler-codegen**: (In development) FRISC instruction emitter and code generation
 - **cli**: Provides a unified command-line interface for all compiler phases
 
@@ -307,6 +307,10 @@ Comprehensive documentation is available in the `docs/` directory:
 - **[TESTING_STATUS.md](docs/TESTING_STATUS.md)**: Testing status and coverage information
 - **[LEXER_CONSISTENCY_CHECK.md](docs/LEXER_CONSISTENCY_CHECK.md)**: Lexer consistency checks and validation
 
+### Semantic Analyzer Documentation
+- **[semantic_analyzer.md](docs/semantic_analyzer.md)**: High-level overview of the semantic phase, pipeline integration, diagnostics format, and current configurability story.
+- **[semantic_analyzer_implementation.md](docs/semantic_analyzer_implementation.md)**: Low-level reference covering algorithms, data structures, and extension points inside `compiler-semantics/`.
+
 ## Development
 
 ### Key Constraints
@@ -379,32 +383,27 @@ The project uses a strict dependency hierarchy:
   - Generative and syntax tree generation
   - LR table caching for performance
   - Error recovery with synchronization tokens
+- **Semantics Module**:
+  - Hierarchical symbol tables (`SymbolTable`, `VariableSymbol`, `FunctionSymbol`)
+  - Exhaustive coverage of `config/semantics_definition.txt` via `DeclarationRules`, `ExpressionRules`, and `StatementRules`
+  - Type system with `PrimitiveType`, `ArrayType`, `FunctionType`, `ConstType`, and `TypeSystem` helpers
+  - Verified support for empty blocks, array parameters (`int arr[]`), `arr[i]` indexing, and `void` functions with `return;`
+  - Golden tests (`compiler-semantics/src/test/resources/ppjc_case_10`–`ppjc_case_15`) plus HTML report integration through `ExamplesReportGenerator`
 - **CLI**: Command-line interface for all compiler phases
 
 ### 🚧 In Progress
 
 - Parser: Enhanced error recovery
-- Semantics: Type system implementation
-- Semantics: Symbol tables with scopes
 - Codegen: FRISC instruction emitter
 
 ### 📋 TODO
 
-- Semantics: Semantic analysis visitors
 - Codegen: Register allocation and function ABI
 - Codegen: Short-circuit evaluation
 - Tests: Integration tests for full compilation pipeline
-
-## License
-
-This project is part of the PPJ (Prevođenje Programskih Jezika / Compiler Construction) course at the University of Zagreb, Faculty of Electrical Engineering and Computing.
 
 ## References
 
 1. Srbljić, Siniša (2007). *Prevođenje programskih jezika*. Element, Zagreb. ISBN 978-953-197-625-1.
 
 2. Aho, A. V., Lam, M. S., Sethi, R., & Ullman, J. D. (2006). *Compilers: Principles, Techniques, and Tools* (2nd ed.). Pearson Education.
-
-## Contributing
-
-This is an academic project. For questions or issues, please contact the course instructors.

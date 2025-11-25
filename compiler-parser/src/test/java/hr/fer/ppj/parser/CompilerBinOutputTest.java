@@ -144,13 +144,13 @@ public final class CompilerBinOutputTest {
     String generativnoContent = Files.readString(generativnoPath);
     String sintaksnoContent = Files.readString(sintaksnoPath);
     
-    // Generative tree should start with node 0
-    assertTrue(generativnoContent.contains("0:"), 
-        "Generative tree should start with node 0");
+    // Generative tree should start with the root non-terminal
+    assertTrue(generativnoContent.stripLeading().startsWith("<"), 
+        "Generative tree should start with a non-terminal symbol");
     
-    // Syntax tree should also start with node 0
-    assertTrue(sintaksnoContent.contains("0:"), 
-        "Syntax tree should start with node 0");
+    // Syntax tree should also start with the root non-terminal
+    assertTrue(sintaksnoContent.stripLeading().startsWith("<"), 
+        "Syntax tree should start with a non-terminal symbol");
     
     // Both should contain the start symbol
     assertTrue(generativnoContent.contains("<pocetni_nezavrsni_znak>") || 
@@ -204,8 +204,10 @@ public final class CompilerBinOutputTest {
       
       // Verify format
       String content = Files.readString(generativnoPath);
-      assertTrue(content.contains("0:"), 
-          "generativno_stablo.txt should start with node 0");
+      String trimmed = content.stripLeading();
+      boolean looksValid = trimmed.startsWith("<") || trimmed.startsWith("Parse error");
+      assertTrue(looksValid, 
+          "generativno_stablo.txt should start with a non-terminal symbol or a parse error message");
       assertTrue(!content.contains("Parse error"), 
           "generativno_stablo.txt should not contain parse errors");
       
@@ -224,8 +226,10 @@ public final class CompilerBinOutputTest {
       
       // Verify format
       String content = Files.readString(sintaksnoPath);
-      assertTrue(content.contains("0:"), 
-          "sintaksno_stablo.txt should start with node 0");
+      String trimmed = content.stripLeading();
+      boolean looksValid = trimmed.startsWith("<") || trimmed.startsWith("Parse error");
+      assertTrue(looksValid, 
+          "sintaksno_stablo.txt should start with a non-terminal symbol or a parse error message");
       assertTrue(!content.contains("Parse error"), 
           "sintaksno_stablo.txt should not contain parse errors");
       

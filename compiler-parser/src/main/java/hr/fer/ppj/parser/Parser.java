@@ -54,38 +54,46 @@ public final class Parser {
    */
   public void parse(ParserConfig.Config config) throws ParserException {
     try {
-      // Step 1: Parse grammar
-      LOG.info("Parsing grammar from " + config.grammarDefinition());
-      Grammar grammar = parseGrammar(config.grammarDefinition());
-      
-      // Step 2: Build FIRST sets
-      LOG.info("Computing FIRST sets");
-      FirstSetComputer firstComputer = new FirstSetComputer(grammar);
-      
-      // Step 3: Build LR(1) parsing table (use cache to avoid regenerating)
-      LOG.info("Building LR(1) parsing table");
-      LRTable table = hr.fer.ppj.parser.table.LRTableCache.getOrBuild(grammar, firstComputer);
-      LOG.info("Using LR(1) table");
-      
-      // Step 4: Read input tokens
       LOG.info("Reading tokens from " + config.inputTokens());
       List<Token> tokens = readTokens(config.inputTokens());
-      
-      // Step 5: Parse tokens
-      LOG.info("Parsing " + tokens.size() + " tokens");
-      LRParser parser = new LRParser(table, grammar);
-      ParseTree parseTree = parser.parse(tokens);
-      
-      // Step 6: Generate output files
+      ParseTree parseTree = parseTokens(config.grammarDefinition(), tokens);
       LOG.info("Generating output files");
       writeGenerativeTree(parseTree, config.outputGenerativeTree());
       writeSyntaxTree(parseTree, config.outputSyntaxTree());
-      
       LOG.info("Parsing completed successfully");
     } catch (IOException e) {
       throw new ParserException("I/O error: " + e.getMessage(), e);
+    } catch (ParserException e) {
+      writeParseError(config, e.getMessage());
+      throw e;
+    }
+  }
+
+  /**
+   * Parses already tokenized input using the default grammar definition.
+   */
+  public ParseTree parseTokens(List<TokenReader.Token> tokens) throws ParserException {
+    return parseTokens(ParserConfig.getParserDefinitionPath(), tokens);
+  }
+
+  /**
+   * Parses already tokenized input using the provided grammar definition path.
+   */
+  public ParseTree parseTokens(Path grammarDefinition, List<TokenReader.Token> tokens)
+      throws ParserException {
+    try {
+      LOG.info("Parsing grammar from " + grammarDefinition);
+      Grammar grammar = parseGrammar(grammarDefinition);
+      LOG.info("Computing FIRST sets");
+      FirstSetComputer firstComputer = new FirstSetComputer(grammar);
+      LOG.info("Building LR(1) parsing table");
+      LRTable table = hr.fer.ppj.parser.table.LRTableCache.getOrBuild(grammar, firstComputer);
+      LOG.info("Parsing " + tokens.size() + " tokens");
+      LRParser parser = new LRParser(table, grammar);
+      return parser.parse(tokens);
+    } catch (IOException e) {
+      throw new ParserException("I/O error: " + e.getMessage(), e);
     } catch (LRParser.ParseException e) {
-      // Error message is already in Croatian, just pass it through
       throw new ParserException(e.getMessage(), e);
     }
   }
@@ -125,6 +133,16 @@ public final class Parser {
   private void writeSyntaxTree(ParseTree tree, Path outputPath) throws IOException {
     String output = tree.toSyntaxTreeString();
     Files.writeString(outputPath, output);
+  }
+
+  private void writeParseError(ParserConfig.Config config, String message) {
+    String output = "Parse error: " + message;
+    try {
+      Files.writeString(config.outputGenerativeTree(), output);
+      Files.writeString(config.outputSyntaxTree(), output);
+    } catch (IOException e) {
+      LOG.warning("Failed to write parse error outputs: " + e.getMessage());
+    }
   }
   
   /**
