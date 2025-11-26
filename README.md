@@ -35,7 +35,7 @@ flowchart LR
     B --> F[leksicke_jedinke.txt]
     C --> G[generativno_stablo.txt<br/>sintaksno_stablo.txt]
     D --> H[tablica_simbola.txt<br/>semanticko_stablo.txt]
-    E --> I[assembly.frisc]
+    E --> I[a.frisc]
     
     style A fill:#e1f5fe
     style E fill:#c8e6c9
@@ -48,7 +48,7 @@ flowchart LR
 1. **Lexical Analysis**: Tokenizes source code using hand-built deterministic finite automata (DFAs) constructed from formal regular expressions
 2. **Syntax Analysis**: Parses token streams into parse trees using canonical LR(1) parsing with automatically generated parsing tables
 3. **Semantic Analysis**: Validates program semantics including type checking, scope resolution, and control flow analysis
-4. **Code Generation**: Produces FRISC assembly code with register allocation and optimization
+4. **Code Generation**: Produces human-readable FRISC assembly code with proper calling conventions, stack management, and comprehensive language construct support
 
 Each phase is implemented as an independent module with well-defined interfaces, enabling modular development and testing.
 
@@ -213,10 +213,13 @@ graph LR
 - Modular rule system aligned with formal semantic specification
 
 **Code Generation Module** (`compiler-codegen`):
-- FRISC assembly instruction generation
-- Register allocation and optimization
-- Function calling convention implementation
-- Memory management and stack frame handling
+- FRISC assembly instruction generation with human-readable output
+- Stack-based expression evaluation and register management
+- Standard function calling convention with caller-cleans-stack
+- Comprehensive memory management and activation record handling
+- Short-circuit evaluation for logical operators (&&, ||)
+- Complete control flow implementation (if/else, while, for loops)
+- Global variable initialization and local variable allocation
 
 ## Prerequisites
 
@@ -342,7 +345,7 @@ Convenient wrapper scripts are provided:
 
 # Complete compilation
 ./run.sh examples/valid/program1.c
-# Output: All above files plus generated assembly
+# Output: All above files plus compiler-bin/a.frisc
 ```
 
 ## Output Files
@@ -557,6 +560,12 @@ Comprehensive technical documentation is available in the `docs/` directory:
 - **[semantic_analyzer.md](docs/semantic_analyzer.md)**: High-level overview of semantic analysis phase, including pipeline integration, responsibilities, and usage examples
 - **[semantic_analyzer_implementation.md](docs/semantic_analyzer_implementation.md)**: Detailed technical reference covering algorithms, data structures, and implementation details
 
+### Code Generation Documentation
+
+- **[frisc_architecture.md](docs/frisc_architecture.md)**: Complete FRISC processor architecture reference including instruction set, addressing modes, memory model, and assembly directives
+- **[code_generation_overview.md](docs/code_generation_overview.md)**: High-level overview of code generation strategy, runtime model, and implementation approach
+- **[code_generation_implementation.md](docs/code_generation_implementation.md)**: Comprehensive technical documentation covering algorithms, data structures, optimization techniques, and implementation details
+
 ### Lexer Documentation
 
 - **[lexer_implementation.md](docs/lexer_implementation.md)**: Complete technical documentation of lexer implementation including regex parsing, NFA/DFA conversion algorithms
@@ -722,6 +731,7 @@ Each report includes:
 - Parse tree visualization
 - Semantic analysis results
 - Symbol table dumps
+- Generated FRISC assembly code (for valid programs)
 - Error diagnostics (for invalid programs)
 
 ## Status
@@ -750,38 +760,43 @@ Each report includes:
 - Debug output generation (symbol table and semantic tree dumps)
 - Comprehensive coverage of semantic specification
 
+**Code Generation**:
+- Complete FRISC assembly code generation for all PPJ-C constructs
+- Stack-based expression evaluation with proper register management
+- Standard function calling convention with caller-cleans-stack model
+- Comprehensive control flow implementation (if/else, while, for loops)
+- Local and global variable management with proper stack frames
+- Short-circuit evaluation for logical operators (&&, ||)
+- Pre/post increment and decrement operators with correct semantics
+- Human-readable assembly output with extensive comments
+- Integration with HTML report generation for complete analysis
+
 **Command Line Interface**:
 - Unified CLI for all compilation phases
 - Multiple execution modes (lexer-only, syntax-only, semantic-only, full)
 - Comprehensive error reporting and status codes
 - Integration with build and test infrastructure
 
-### 🚧 In Development
-
-**Code Generation**:
-- FRISC assembly instruction generation
-- Register allocation algorithms
-- Function calling convention implementation
-- Memory management and optimization
-
-### 📋 Planned Features
+### 📋 Future Enhancements
 
 **Advanced Optimizations**:
-- Dead code elimination
-- Constant folding and propagation
-- Loop optimization techniques
-- Register allocation improvements
+- Dead code elimination and unreachable code removal
+- Constant folding and propagation optimizations
+- Loop optimization techniques (loop unrolling, strength reduction)
+- Advanced register allocation with graph coloring
+- Peephole optimization for instruction sequences
 
 **Enhanced Diagnostics**:
-- Multiple error reporting with recovery
-- Warning system for potential issues
-- Detailed error location reporting
-- Suggested fixes for common errors
+- Multiple error reporting with intelligent recovery
+- Warning system for potential runtime issues
+- Detailed error location reporting with source context
+- Suggested fixes and code improvement recommendations
 
 **Development Tools**:
 - Interactive debugger for compilation phases
-- Visualization tools for automata and parse trees
+- Visualization tools for automata, parse trees, and control flow
 - Performance profiling and analysis tools
-- Enhanced IDE integration
+- Enhanced IDE integration with language server protocol
+- FRISC simulator integration for code testing
 
-The PPJ Compiler represents a complete implementation of formal compiler construction techniques, providing both educational value and practical functionality for C program compilation.
+The PPJ Compiler represents a complete implementation of formal compiler construction techniques, providing both educational value and practical functionality for C program compilation. The compiler successfully transforms high-level PPJ-C programs into executable FRISC assembly code, demonstrating all phases of modern compiler design from lexical analysis through code generation.
