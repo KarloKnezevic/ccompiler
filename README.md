@@ -1,12 +1,12 @@
 # PPJ Compiler
 
-A complete C compiler implementation for a subset of the C programming language, including lexical analysis, syntax analysis, semantic analysis, and code generation. The compiler generates FRISC assembly code from C source files.
+A complete implementation of a C compiler for the PPJ-C language subset, featuring lexical analysis, syntax analysis, semantic analysis, and code generation. The compiler generates FRISC assembly code from C source files using formal compiler construction techniques.
 
 ## Table of Contents
 
 - [Overview](#overview)
-- [Features](#features)
-- [Project Structure](#project-structure)
+- [Language Specification](#language-specification)
+- [Project Architecture](#project-architecture)
 - [Prerequisites](#prerequisites)
 - [Building the Project](#building-the-project)
 - [Running the Compiler](#running-the-compiler)
@@ -14,396 +14,539 @@ A complete C compiler implementation for a subset of the C programming language,
 - [Configuration](#configuration)
 - [Documentation](#documentation)
 - [Development](#development)
+- [Testing](#testing)
 - [Status](#status)
 
 ## Overview
 
-The PPJ Compiler is a multi-phase compiler that translates a subset of the C programming language into FRISC assembly code. The compiler consists of four main phases:
+The PPJ Compiler implements a complete compilation pipeline for the PPJ-C language, a carefully designed subset of C that includes all essential language constructs while maintaining formal semantic specifications. The compiler is built using rigorous compiler construction principles and modern Java features.
 
-1. **Lexical Analysis**: Tokenizes source code using deterministic finite automata (DFAs)
-2. **Syntax Analysis**: Parses tokens into an abstract syntax tree (AST) using canonical LR(1) parsing
-3. **Semantic Analysis**: Performs type checking and semantic validation
-4. **Code Generation**: Generates FRISC assembly code
+### Compilation Pipeline
 
-The project is implemented in Java 21 using modern language features (records, sealed classes, pattern matching) and follows strict code quality standards.
+The compiler operates through four distinct phases:
 
-## Features
+1. **Lexical Analysis**: Tokenizes source code using hand-built deterministic finite automata (DFAs) constructed from formal regular expressions
+2. **Syntax Analysis**: Parses token streams into parse trees using canonical LR(1) parsing with automatically generated parsing tables
+3. **Semantic Analysis**: Validates program semantics including type checking, scope resolution, and control flow analysis
+4. **Code Generation**: Produces FRISC assembly code with register allocation and optimization
 
-### Lexical Analysis
-- Manual regex parsing (no regex libraries) following formal specifications
-- ε-NFA → DFA conversion with subset construction
-- Multi-state support (comments, string literals)
-- Maximal munch with rule priority
-- Comprehensive error recovery
-- Symbol table generation
+Each phase is implemented as an independent module with well-defined interfaces, enabling modular development and testing.
 
-### Syntax Analysis
-- Canonical LR(1) parser generator
-- Grammar augmentation and FIRST set computation
-- CLOSURE and GOTO algorithms
-- ACTION and GOTO table generation (~823 states for PPJ grammar)
-- Conflict resolution (SHIFT/REDUCE, REDUCE/REDUCE)
-- Generative and syntax tree generation
-- Error recovery with synchronization tokens
+## Language Specification
 
-### Language Subset
+PPJ-C supports a comprehensive subset of C programming language features:
 
-The compiler supports a subset of C with:
+### Data Types
+- **Primitive Types**: `void`, `char`, `int`
+- **Composite Types**: Arrays (`type[]`, `type[size]`), Functions (`returnType(paramTypes)`)
+- **Type Qualifiers**: `const` for immutable values
 
-- **Keywords**: `break`, `char`, `const`, `continue`, `else`, `float`, `for`, `if`, `int`, `return`, `struct`, `void`, `while`
-- **Operators**: Arithmetic (`+`, `-`, `*`, `/`, `%`), comparison (`<`, `>`, `<=`, `>=`, `==`, `!=`), logical (`&&`, `||`, `!`), bitwise (`&`, `|`, `^`, `~`), increment/decrement (`++`, `--`), assignment (`=`)
-- **Identifiers**: Start with letter or underscore, followed by letters, digits, or underscores
-- **Literals**: Integers, floating-point numbers, character literals, string literals
-- **Comments**: Single-line (`//`) and multi-line (`/* */`)
+### Language Constructs
+- **Control Flow**: `if`/`else`, `while`, `for`, `break`, `continue`, `return`
+- **Operators**: Arithmetic (`+`, `-`, `*`, `/`, `%`), Relational (`<`, `>`, `<=`, `>=`, `==`, `!=`), Logical (`&&`, `||`, `!`), Bitwise (`&`, `|`, `^`, `~`), Assignment (`=`), Increment/Decrement (`++`, `--`)
+- **Declarations**: Variable declarations, Function declarations and definitions, Array declarations
+- **Expressions**: Primary expressions, Postfix expressions (array indexing, function calls), Unary expressions, Binary expressions, Assignment expressions
 
-## Project Structure
+### Semantic Rules
+- **Type System**: Static typing with implicit conversions between `char` and `int`
+- **Scope Rules**: Lexical scoping with block-level scope management
+- **Function Semantics**: Mandatory `int main(void)` entry point, Function prototype matching, Parameter type checking
+- **Array Semantics**: Zero-based indexing, Array-to-pointer decay in function parameters, Bounds checking (compile-time for constant indices)
 
-This is a Maven multi-module project:
+## Project Architecture
+
+The compiler is implemented as a Maven multi-module project with strict dependency hierarchy:
 
 ```
 ppj-compiler/
-├── compiler-lexer/      # Lexer generator and runtime
+├── compiler-lexer/      # Lexical analysis engine
 ├── compiler-parser/     # LR(1) parser generator and runtime
-├── compiler-semantics/  # Type system and semantic analysis
-├── compiler-codegen/   # FRISC assembly code generation
-├── cli/                # Command-line interface
-├── test-fixtures/      # Test resources
-├── config/             # Configuration files
-│   ├── lexer_definition.txt
-│   └── parser_definition.txt
-└── docs/               # Documentation
+├── compiler-semantics/  # Semantic analysis and type system
+├── compiler-codegen/    # FRISC assembly code generation
+├── cli/                 # Unified command-line interface
+├── config/              # Compiler specification files
+│   ├── lexer_definition.txt      # Lexical rules and DFA specification
+│   ├── parser_definition.txt     # Context-free grammar definition
+│   └── semantics_definition.txt  # Semantic rules specification
+├── examples/            # Test programs and validation suite
+│   ├── valid/          # Semantically correct programs
+│   └── invalid/        # Programs with various error types
+└── docs/               # Comprehensive technical documentation
 ```
 
-### Module Descriptions
+### Module Dependencies
 
-- **compiler-lexer**: Implements a lexer generator that reads specification files and produces DFAs for tokenization
-- **compiler-parser**: Implements a canonical LR(1) parser generator that builds parsing tables from grammar definitions
-- **compiler-semantics**: Type system, semantic rules, and PPJ-specific diagnostics (now fully aligned with `config/semantics_definition.txt`)
-- **compiler-codegen**: (In development) FRISC instruction emitter and code generation
-- **cli**: Provides a unified command-line interface for all compiler phases
+The project maintains a strict layered architecture:
+
+```
+cli
+├── compiler-codegen
+│   └── compiler-semantics
+│       └── compiler-parser
+│           └── compiler-lexer
+```
+
+Each module has well-defined responsibilities and interfaces, enabling independent development and testing.
+
+### Core Components
+
+**Lexer Module** (`compiler-lexer`):
+- Manual regular expression parser (no external regex libraries)
+- ε-NFA to DFA conversion using subset construction algorithm
+- Multi-state lexer support for context-sensitive tokenization
+- Maximal munch tokenization with rule priority resolution
+- Comprehensive error recovery and reporting
+
+**Parser Module** (`compiler-parser`):
+- Canonical LR(1) parser generator from grammar specifications
+- FIRST set computation and grammar augmentation
+- CLOSURE and GOTO algorithm implementations
+- Automatic parsing table generation (~823 states for PPJ grammar)
+- Conflict resolution for SHIFT/REDUCE and REDUCE/REDUCE conflicts
+- Parse tree and abstract syntax tree generation
+
+**Semantics Module** (`compiler-semantics`):
+- Hierarchical symbol table with lexical scoping
+- Comprehensive type system with const-qualification support
+- Expression type checking and implicit conversion handling
+- Control flow validation and jump statement analysis
+- Modular rule system aligned with formal semantic specification
+
+**Code Generation Module** (`compiler-codegen`):
+- FRISC assembly instruction generation
+- Register allocation and optimization
+- Function calling convention implementation
+- Memory management and stack frame handling
 
 ## Prerequisites
 
-- **Java 21** or higher
-- **Maven 3.8+**
-- **Bash** (for build scripts)
+- **Java 21** or higher (uses modern language features: records, sealed classes, pattern matching)
+- **Maven 3.8+** for build management
+- **Bash** for build and run scripts (Unix-like environment recommended)
 
 ## Building the Project
 
 ### Quick Build
 
-The simplest way to build the entire project into a single executable JAR:
+Build the entire project into a single executable JAR:
 
 ```bash
 ./build.sh
 ```
 
-This will:
-- Clean and compile all modules
-- Run tests and static analysis
-- Create a single executable JAR file at `cli/target/ccompiler.jar`
-- Include all dependencies (fat JAR with all modules bundled)
+This script performs:
+- Clean compilation of all modules
+- Execution of comprehensive test suite
+- Static analysis (Checkstyle, SpotBugs, Error Prone)
+- Code formatting verification (Spotless)
+- Generation of executable JAR with all dependencies
 
 ### Manual Build
 
-Alternatively, you can use Maven directly:
+Using Maven directly:
 
 ```bash
-# Full build with tests
+# Complete build with all checks
 mvn clean verify
 
-# Quick build without tests (for faster iteration)
-mvn clean package -DskipTests -Dspotbugs.skip=true -Dcheckstyle.skip=true -Dspotless.check.skip=true
-```
+# Fast build for development (skip checks)
+mvn clean package -DskipTests -Dspotbugs.skip=true -Dcheckstyle.skip=true
 
-The JAR file will be created at: `cli/target/ccompiler.jar`
-
-### Building Individual Modules
-
-```bash
-# Build only the lexer module
+# Build specific modules
 mvn clean install -pl compiler-lexer -am
-
-# Build only the parser module
 mvn clean install -pl compiler-parser -am
-
-# Build CLI with all dependencies
-mvn clean package -pl cli -am
+mvn clean install -pl compiler-semantics -am
 ```
+
+The executable JAR is generated at: `cli/target/ccompiler.jar`
 
 ## Running the Compiler
 
-### Using the Run Script (Recommended)
+### Command Line Interface
 
-```bash
-# Lexical analysis only (output to stdout)
-./run.sh lexer <file.c>
-
-# Lexical and syntax analysis (output to compiler-bin/)
-./run.sh syntax <file.c>
-
-# Full compilation (lexical + syntax + semantic + codegen)
-./run.sh semantic <file.c>
-# or simply:
-./run.sh <file.c>
-```
-
-### Using Java Directly
+The compiler provides multiple execution modes:
 
 ```bash
 # Lexical analysis only
-java -jar cli/target/ccompiler.jar lexer <file.c>
+java -jar cli/target/ccompiler.jar lexer program.c
 
-# Lexical and syntax analysis
-java -jar cli/target/ccompiler.jar syntax <file.c>
+# Syntax analysis (lexer + parser)
+java -jar cli/target/ccompiler.jar syntax program.c
 
-# Full compilation
-java -jar cli/target/ccompiler.jar <file.c>
+# Semantic analysis (lexer + parser + semantics)
+java -jar cli/target/ccompiler.jar semantic program.c
+
+# Full compilation (all phases)
+java -jar cli/target/ccompiler.jar program.c
 ```
 
-### Using Maven (for Development)
+### Using Run Scripts
+
+Convenient wrapper scripts are provided:
 
 ```bash
-# Lexer only
-mvn -q -pl cli -am exec:java -Dexec.mainClass=hr.fer.ppj.cli.Main -Dexec.args="lexer <file.c>"
-
-# Syntax analysis
-mvn -q -pl cli -am exec:java -Dexec.mainClass=hr.fer.ppj.cli.Main -Dexec.args="syntax <file.c>"
-```
-
-### Examples
-
-```bash
-# Analyze a C source file lexically
-./run.sh lexer compiler-parser/src/test/resources/ppjc_case_01/program.c
-
-# Perform full syntax analysis
-./run.sh syntax compiler-parser/src/test/resources/ppjc_case_01/program.c
-# Output files will be in compiler-bin/:
-#   - leksicke_jedinke.txt
-#   - generativno_stablo.txt
-#   - sintaksno_stablo.txt
+# Individual phases
+./run.sh lexer program.c
+./run.sh syntax program.c
+./run.sh semantic program.c
 
 # Full compilation
-./run.sh compiler-parser/src/test/resources/ppjc_case_01/program.c
+./run.sh program.c
+```
+
+### Example Usage
+
+```bash
+# Analyze lexical structure
+./run.sh lexer examples/valid/program1.c
+
+# Generate parse trees
+./run.sh syntax examples/valid/program1.c
+# Output: compiler-bin/leksicke_jedinke.txt
+#         compiler-bin/generativno_stablo.txt
+#         compiler-bin/sintaksno_stablo.txt
+
+# Perform semantic validation
+./run.sh semantic examples/valid/program1.c
+# Additional output: compiler-bin/tablica_simbola.txt
+#                   compiler-bin/semanticko_stablo.txt
+
+# Complete compilation
+./run.sh examples/valid/program1.c
+# Output: All above files plus generated assembly
 ```
 
 ## Output Files
 
-When running syntax analysis or full compilation, the following files are generated in the `compiler-bin/` directory:
+The compiler generates detailed output files for each compilation phase:
 
-- **leksicke_jedinke.txt**: Lexical tokens output (symbol table and token stream)
-- **generativno_stablo.txt**: Complete generative (parse) tree showing the derivation process
-- **sintaksno_stablo.txt**: Abstract syntax tree (AST) optimized for semantic analysis and code generation
+### Lexical Analysis Output
 
-### Output Format
-
-**Lexical Tokens:**
+**Symbol Table** (`leksicke_jedinke.txt`):
 ```
 tablica znakova:
 indeks   uniformni znak   izvorni tekst
     0   KR_INT           int
     1   IDN              main
-    ...
+    2   L_ZAGRADA        (
+    3   KR_VOID          void
+    4   D_ZAGRADA        )
 
 niz uniformnih znakova:
 uniformni znak    redak    indeks u tablicu znakova
 KR_INT            1        0
 IDN               1        1
-...
+L_ZAGRADA         1        2
+KR_VOID           1        3
+D_ZAGRADA         1        4
 ```
 
-**Generative Tree:**
+### Syntax Analysis Output
+
+**Generative Tree** (`generativno_stablo.txt`):
 ```
-0:<prijevodna_jedinica>
-    1:<vanjska_deklaracija>
-        2:<definicija_funkcije>
-        ...
+<prijevodna_jedinica>
+  <vanjska_deklaracija>
+    <definicija_funkcije>
+      <ime_tipa>
+        KR_INT
+      <izravni_deklarator>
+        IDN
+        L_ZAGRADA
+        KR_VOID
+        D_ZAGRADA
+      <slozena_naredba>
+        L_VIT_ZAGRADA
+        <lista_naredbi>
+          <naredba_skoka>
+            KR_RETURN
+            <izraz>
+              <primarni_izraz>
+                BROJ
+            TOCKAZAREZ
+        D_VIT_ZAGRADA
 ```
 
-**Syntax Tree:**
+**Abstract Syntax Tree** (`sintaksno_stablo.txt`):
 ```
-0:<prijevodna_jedinica>
-    1:<vanjska_deklaracija>
-        2:<definicija_funkcije>
-        ...
+<prijevodna_jedinica>
+  <vanjska_deklaracija>
+    <definicija_funkcije>
+      <ime_tipa>
+        KR_INT
+      <izravni_deklarator>
+        IDN
+        L_ZAGRADA
+        KR_VOID
+        D_ZAGRADA
+      <slozena_naredba>
+        L_VIT_ZAGRADA
+        <lista_naredbi>
+          <naredba_skoka>
+            KR_RETURN
+            <izraz>
+              <primarni_izraz>
+                BROJ
+            TOCKAZAREZ
+        D_VIT_ZAGRADA
+```
+
+### Semantic Analysis Output
+
+**Symbol Table Dump** (`tablica_simbola.txt`):
+```
+=== SYMBOL TABLE DUMP ===
+Scope (Level 0):
+  main : int(void) [defined=true]
+  factorial : int(int) [defined=true]
+  global_var : int [const=false]
+
+Scope (Level 1):
+  n : int [const=false]
+  result : int [const=false]
+```
+
+**Semantic Tree Dump** (`semanticko_stablo.txt`):
+```
+=== SEMANTIC TREE DUMP ===
+<<prijevodna_jedinica>> [type=null, lvalue=false, id=null, elements=0]
+  <<vanjska_deklaracija>> [type=null, lvalue=false, id=null, elements=0]
+    <<definicija_funkcije>> [type=int(void), lvalue=false, id=main, elements=0]
+      <<ime_tipa>> [type=int, lvalue=false, id=null, elements=0]
+        KR_INT (1,int) [symbol=null, type=null]
+      <<izravni_deklarator>> [type=int(void), lvalue=false, id=main, elements=0]
+        IDN (1,main) [symbol=null, type=null]
 ```
 
 ## Configuration
 
-### Lexer Definition
+### Lexer Configuration
 
-The lexer definition file is located at `config/lexer_definition.txt`. This file contains:
-- Macro definitions for reusable patterns
-- State declarations
-- Token type declarations
-- Lexer rules with patterns and actions
+The lexer specification file (`config/lexer_definition.txt`) defines:
 
-The path can be customized via the `LEXER_DEFINITION_PATH` environment variable.
+- **Macro Definitions**: Reusable regular expression patterns
+- **State Declarations**: Lexer states for context-sensitive tokenization
+- **Token Definitions**: Terminal symbol declarations
+- **Lexical Rules**: Pattern-action pairs with state transitions
 
-### Parser Definition
+Example lexer rules:
+```
+%X KOMENTAR
 
-The parser definition file is located at `config/parser_definition.txt`. This file contains:
-- `%V`: Set of non-terminals (first one is the start symbol)
-- `%T`: Set of terminals
-- `%Syn`: Synchronization tokens for error recovery
-- Production rules in the format `A -> α` or `A -> β | γ | ...`
-- Epsilon is denoted by `$`
+%%
 
-The path can be customized via the `PARSER_DEFINITION_PATH` environment variable.
+"//".*              { ; }
+"/*"                { UDJI_U_STANJE(KOMENTAR); }
+<KOMENTAR>"*/"      { VRATI_SE; }
+<KOMENTAR>.         { ; }
 
-## Test Programs
-
-The `examples/` directory contains a comprehensive collection of test programs:
-
-- **`examples/valid/`**: 80 valid C programs covering all language features
-- **`examples/invalid/`**: 70 invalid programs with various error types (lexical, syntax, semantic)
-
-Each directory includes a `README` file describing the programs.
-
-### Generating HTML Reports
-
-To generate HTML reports for all test programs:
-
-```bash
-java -cp "cli/target/classes:compiler-lexer/target/classes:compiler-parser/target/classes" \
-  hr.fer.ppj.examples.ExamplesReportGenerator
+[0-9]+              { return BROJ; }
+[a-zA-Z_][a-zA-Z0-9_]*  { return IDN; }
+"int"               { return KR_INT; }
+"void"              { return KR_VOID; }
 ```
 
-This generates:
-- `examples/report_valid.html` - Report for all valid programs
-- `examples/report_invalid.html` - Report for all invalid programs
+### Parser Configuration
 
-Each report shows:
-- Source code for each program
-- Lexical tokens output
-- Generative tree
-- Syntax tree
-- Error messages (if any)
+The grammar specification file (`config/parser_definition.txt`) contains:
+
+- **Non-terminal Declarations** (`%V`): Production left-hand sides
+- **Terminal Declarations** (`%T`): Token symbols from lexer
+- **Synchronization Tokens** (`%Syn`): Error recovery points
+- **Production Rules**: Context-free grammar rules
+
+Example grammar rules:
+```
+%V <prijevodna_jedinica> <vanjska_deklaracija> <definicija_funkcije>
+%T IDN BROJ KR_INT KR_VOID L_ZAGRADA D_ZAGRADA
+%Syn IDN
+
+<prijevodna_jedinica> ::= <vanjska_deklaracija>
+<prijevodna_jedinica> ::= <prijevodna_jedinica> <vanjska_deklaracija>
+<vanjska_deklaracija> ::= <definicija_funkcije>
+<definicija_funkcije> ::= <ime_tipa> <izravni_deklarator> <slozena_naredba>
+```
+
+### Semantic Configuration
+
+The semantic rules specification (`config/semantics_definition.txt`) defines:
+
+- **Type Checking Rules**: Type compatibility and conversion rules
+- **Scope Resolution Rules**: Symbol visibility and declaration rules
+- **Control Flow Rules**: Jump statement and loop validation rules
+- **Function Call Rules**: Parameter matching and return type validation
 
 ## Documentation
 
-Comprehensive documentation is available in the `docs/` directory:
+Comprehensive technical documentation is available in the `docs/` directory:
+
+### Core Documentation
+
+- **[semantic_analyzer.md](docs/semantic_analyzer.md)**: High-level overview of semantic analysis phase, including pipeline integration, responsibilities, and usage examples
+- **[semantic_analyzer_implementation.md](docs/semantic_analyzer_implementation.md)**: Detailed technical reference covering algorithms, data structures, and implementation details
 
 ### Lexer Documentation
-- **[LEXER_IMPLEMENTATION.md](docs/LEXER_IMPLEMENTATION.md)**: Detailed technical documentation of the lexer implementation, including regex parsing, ε-NFA to DFA conversion, and lexer generator algorithms
-- **[LEXER_USER_GUIDE.md](docs/LEXER_USER_GUIDE.md)**: User guide for writing lexer specifications and using the lexer
-- **[LEXER_DOCUMENTATION.md](docs/LEXER_DOCUMENTATION.md)**: General lexer documentation and overview
+
+- **[lexer_implementation.md](docs/lexer_implementation.md)**: Complete technical documentation of lexer implementation including regex parsing, NFA/DFA conversion algorithms
+- **[lexer_user_guide.md](docs/lexer_user_guide.md)**: User guide for writing lexer specifications and using the lexer module
+- **[lexer_documentation.md](docs/lexer_documentation.md)**: General lexer overview and architecture documentation
 
 ### Parser Documentation
-- **[PARSER_DOCUMENTATION.md](docs/PARSER_DOCUMENTATION.md)**: Overview of the parser module, architecture, usage, and output files
-- **[LR_PARSER_TECHNICAL.md](docs/LR_PARSER_TECHNICAL.md)**: Detailed technical documentation of the canonical LR(1) parser implementation, including:
-  - Input grammar definition format
-  - Grammar augmentation
-  - FIRST set computation
-  - CLOSURE and GOTO algorithms
-  - Canonical collection construction
-  - ACTION and GOTO table generation
-  - Conflict resolution
-  - Runtime parser implementation
+
+- **[parser_documentation.md](docs/parser_documentation.md)**: Parser module overview, architecture, and usage documentation
+- **[lr_parser_technical.md](docs/lr_parser_technical.md)**: Detailed technical documentation of canonical LR(1) parser implementation
 
 ### Additional Documentation
-- **[IMPLEMENTATION_NOTES.md](docs/IMPLEMENTATION_NOTES.md)**: Implementation notes and design decisions
-- **[TESTING_STATUS.md](docs/TESTING_STATUS.md)**: Testing status and coverage information
-- **[LEXER_CONSISTENCY_CHECK.md](docs/LEXER_CONSISTENCY_CHECK.md)**: Lexer consistency checks and validation
 
-### Semantic Analyzer Documentation
-- **[semantic_analyzer.md](docs/semantic_analyzer.md)**: High-level overview of the semantic phase, pipeline integration, diagnostics format, and current configurability story.
-- **[semantic_analyzer_implementation.md](docs/semantic_analyzer_implementation.md)**: Low-level reference covering algorithms, data structures, and extension points inside `compiler-semantics/`.
+- **[implementation_notes.md](docs/implementation_notes.md)**: Implementation decisions, design rationale, and architectural notes
+- **[testing_status.md](docs/testing_status.md)**: Testing coverage, validation status, and quality metrics
+- **[lexer_consistency_check.md](docs/lexer_consistency_check.md)**: Lexer validation and consistency verification procedures
 
 ## Development
 
-### Key Constraints
+### Code Quality Standards
 
-1. **NO REGEX libraries** - All regex parsing is manual, following formal specifications
-2. **LR(1) parser** - Generated from `parser_definition.txt` grammar file using canonical LR(1) construction
-3. **Java 21** - Uses modern features: records, sealed classes, pattern matching
-4. **Code quality** - Error Prone, Checkstyle, SpotBugs, Spotless
+The project enforces strict code quality standards:
 
-### Running Tests
+- **Error Prone**: Advanced static analysis for bug detection
+- **Checkstyle**: Code style and formatting consistency
+- **SpotBugs**: Bug pattern detection and analysis
+- **Spotless**: Automatic code formatting and import organization
 
-```bash
-# Run all tests
-mvn test
-
-# Run tests for a specific module
-mvn test -pl compiler-lexer
-mvn test -pl compiler-parser
-
-# Run a specific test class
-mvn test -Dtest=LexerGoldenTest
-mvn test -Dtest=ParserGoldenTest
-```
-
-### Code Quality Checks
+### Running Quality Checks
 
 ```bash
-# Run all static analysis tools
+# All quality checks
 mvn verify
 
-# Run individual tools
+# Individual tools
 mvn checkstyle:check
 mvn spotbugs:check
 mvn spotless:check
+mvn spotless:apply  # Auto-format code
 ```
 
-### Project Dependencies
+### Architecture Constraints
 
-The project uses a strict dependency hierarchy:
-- `compiler-lexer` has no dependencies on other compiler modules
-- `compiler-parser` depends on `compiler-lexer`
-- `compiler-semantics` depends on `compiler-parser`
-- `compiler-codegen` depends on `compiler-semantics`
-- `cli` depends on all compiler modules
+1. **No External Regex Libraries**: All regular expression parsing is implemented manually using formal automata theory
+2. **Canonical LR(1) Parsing**: Parser uses only canonical LR(1) construction, no LALR or other variants
+3. **Modern Java Features**: Extensive use of Java 21 features (records, sealed classes, pattern matching, text blocks)
+4. **Modular Design**: Strict module boundaries with well-defined interfaces
+5. **Formal Specifications**: All phases follow formal specifications in configuration files
+
+## Testing
+
+### Test Suite Organization
+
+The project includes comprehensive testing at multiple levels:
+
+**Unit Tests**: Individual component testing for each module
+```bash
+mvn test -pl compiler-lexer
+mvn test -pl compiler-parser
+mvn test -pl compiler-semantics
+```
+
+**Integration Tests**: Cross-module integration testing
+```bash
+mvn test -Dtest=*IntegrationTest
+```
+
+**Golden Tests**: Reference output validation
+```bash
+mvn test -Dtest=*GoldenTest
+```
+
+### Test Program Suite
+
+The `examples/` directory contains extensive test programs:
+
+- **Valid Programs** (`examples/valid/`): 80+ semantically correct programs covering all language features
+- **Invalid Programs** (`examples/invalid/`): 70+ programs with various error types (lexical, syntactic, semantic)
+
+### HTML Report Generation
+
+Generate comprehensive HTML reports for all test programs:
+
+```bash
+# Using Maven
+mvn -pl cli exec:java -Dexec.mainClass=hr.fer.ppj.examples.ExamplesReportGenerator
+
+# Using JAR
+java -cp cli/target/ccompiler.jar hr.fer.ppj.examples.ExamplesReportGenerator
+```
+
+Generated reports:
+- `examples/report_valid.html`: Analysis results for valid programs
+- `examples/report_invalid.html`: Error analysis for invalid programs
+
+Each report includes:
+- Complete source code listing
+- Lexical token analysis
+- Parse tree visualization
+- Semantic analysis results
+- Symbol table dumps
+- Error diagnostics (for invalid programs)
 
 ## Status
 
-### ✅ Completed
+### ✅ Completed Components
 
-- **Parent POM**: All required plugins (Error Prone, Checkstyle, SpotBugs, Spotless, Enforcer)
-- **Lexer Module**: 
-  - Manual regex parser (no regex libraries) following formal specifications
-  - ε-NFA → DFA conversion with subset construction
-  - Lexer spec parser (handles macros, states, rules, actions)
-  - Action handling: `UDJI_U_STANJE`, `VRATI_SE`, `NOVI_REDAK`
-  - Maximal munch with rule priority (earlier rules win)
-  - Symbol table with correct output format
-  - Recursive macro expansion
-  - Comprehensive error recovery
-  - Multi-state support (comments, string literals)
-- **Parser Module**:
-  - Grammar parser for `parser_definition.txt` format
-  - Grammar augmentation (S' → S)
-  - FIRST set computation
-  - CLOSURE and GOTO algorithms
-  - Canonical LR(1) collection construction (~823 states)
-  - ACTION and GOTO table generation
-  - Conflict resolution (SHIFT/REDUCE, REDUCE/REDUCE)
-  - Runtime parser with SHIFT, REDUCE, ACCEPT operations
-  - Generative and syntax tree generation
-  - LR table caching for performance
-  - Error recovery with synchronization tokens
-- **Semantics Module**:
-  - Hierarchical symbol tables (`SymbolTable`, `VariableSymbol`, `FunctionSymbol`)
-  - Exhaustive coverage of `config/semantics_definition.txt` via `DeclarationRules`, `ExpressionRules`, and `StatementRules`
-  - Type system with `PrimitiveType`, `ArrayType`, `FunctionType`, `ConstType`, and `TypeSystem` helpers
-  - Verified support for empty blocks, array parameters (`int arr[]`), `arr[i]` indexing, and `void` functions with `return;`
-  - Golden tests (`compiler-semantics/src/test/resources/ppjc_case_10`–`ppjc_case_15`) plus HTML report integration through `ExamplesReportGenerator`
-- **CLI**: Command-line interface for all compiler phases
+**Lexical Analysis**:
+- Manual regex parser with formal NFA/DFA construction
+- Multi-state lexer with context-sensitive tokenization
+- Comprehensive error recovery and reporting
+- Symbol table generation with correct output formatting
+- Maximal munch tokenization with rule priority
 
-### 🚧 In Progress
+**Syntax Analysis**:
+- Canonical LR(1) parser generator from grammar specifications
+- Complete FIRST set computation and grammar augmentation
+- CLOSURE and GOTO algorithm implementations
+- Automatic parsing table generation (~823 states)
+- Conflict resolution for parsing conflicts
+- Parse tree and AST generation with proper formatting
 
-- Parser: Enhanced error recovery
-- Codegen: FRISC instruction emitter
+**Semantic Analysis**:
+- Hierarchical symbol table with lexical scoping
+- Complete type system with const-qualification support
+- Expression type checking with implicit conversions
+- Control flow validation and jump statement analysis
+- Debug output generation (symbol table and semantic tree dumps)
+- Comprehensive coverage of semantic specification
 
-### 📋 TODO
+**Command Line Interface**:
+- Unified CLI for all compilation phases
+- Multiple execution modes (lexer-only, syntax-only, semantic-only, full)
+- Comprehensive error reporting and status codes
+- Integration with build and test infrastructure
 
-- Codegen: Register allocation and function ABI
-- Codegen: Short-circuit evaluation
-- Tests: Integration tests for full compilation pipeline
+### 🚧 In Development
 
-## References
+**Code Generation**:
+- FRISC assembly instruction generation
+- Register allocation algorithms
+- Function calling convention implementation
+- Memory management and optimization
 
-1. Srbljić, Siniša (2007). *Prevođenje programskih jezika*. Element, Zagreb. ISBN 978-953-197-625-1.
+### 📋 Planned Features
 
-2. Aho, A. V., Lam, M. S., Sethi, R., & Ullman, J. D. (2006). *Compilers: Principles, Techniques, and Tools* (2nd ed.). Pearson Education.
+**Advanced Optimizations**:
+- Dead code elimination
+- Constant folding and propagation
+- Loop optimization techniques
+- Register allocation improvements
+
+**Enhanced Diagnostics**:
+- Multiple error reporting with recovery
+- Warning system for potential issues
+- Detailed error location reporting
+- Suggested fixes for common errors
+
+**Development Tools**:
+- Interactive debugger for compilation phases
+- Visualization tools for automata and parse trees
+- Performance profiling and analysis tools
+- Enhanced IDE integration
+
+The PPJ Compiler represents a complete implementation of formal compiler construction techniques, providing both educational value and practical functionality for C program compilation.

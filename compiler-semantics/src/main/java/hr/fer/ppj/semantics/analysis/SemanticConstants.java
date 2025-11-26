@@ -6,7 +6,7 @@ package hr.fer.ppj.semantics.analysis;
  * <p>This class centralizes all magic strings, numeric constants, and other literals
  * used in semantic rule implementations to improve maintainability and reduce errors.
  * 
- * @author PPJ Compiler Team
+ * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */
 final class SemanticConstants {
 

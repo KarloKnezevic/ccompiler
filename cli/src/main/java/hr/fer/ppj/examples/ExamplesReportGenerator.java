@@ -10,6 +10,7 @@ import hr.fer.ppj.parser.config.ParserConfig;
 import hr.fer.ppj.parser.io.TokenReader;
 import hr.fer.ppj.parser.tree.ParseTree;
 import hr.fer.ppj.semantics.analysis.SemanticAnalyzer;
+import hr.fer.ppj.semantics.io.SemanticReport;
 import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -67,6 +68,8 @@ public final class ExamplesReportGenerator {
     final String semanticOutput;
     final String semanticErrors;
     final Integer semanticErrorLine;
+    final String symbolTable;
+    final String semanticTree;
     final boolean lexerSuccess;
     final boolean parserSuccess;
     final boolean semanticSuccess;
@@ -75,6 +78,7 @@ public final class ExamplesReportGenerator {
                   String lexerErrors, Integer lexerErrorLine, String generativeTree,
                   String syntaxTree, String parserErrors, Integer parserErrorLine,
                   String semanticOutput, String semanticErrors, Integer semanticErrorLine,
+                  String symbolTable, String semanticTree,
                   boolean lexerSuccess, boolean parserSuccess, boolean semanticSuccess) {
       this.programName = programName;
       this.sourceCode = sourceCode;
@@ -88,6 +92,8 @@ public final class ExamplesReportGenerator {
       this.semanticOutput = semanticOutput;
       this.semanticErrors = semanticErrors;
       this.semanticErrorLine = semanticErrorLine;
+      this.symbolTable = symbolTable;
+      this.semanticTree = semanticTree;
       this.lexerSuccess = lexerSuccess;
       this.parserSuccess = parserSuccess;
       this.semanticSuccess = semanticSuccess;
@@ -170,6 +176,8 @@ public final class ExamplesReportGenerator {
             "",
             "Analysis failed: " + e.getMessage(),
             null,
+            "",  // symbolTable
+            "",  // semanticTree
             false,
             false,
             false
@@ -297,18 +305,36 @@ public final class ExamplesReportGenerator {
       String semanticOutput = "";
       String semanticErrors = "";
       Integer semanticErrorLine = null;
+      String symbolTable = "";
+      String semanticTree = "";
       boolean semanticSuccess = false;
       
       if (parserSuccess && parseTree != null) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PrintStream printStream = new PrintStream(outputStream, true, StandardCharsets.UTF_8);
         
+        // Create semantic report for temp directory
+        SemanticReport semanticReport = SemanticReport.forDirectory(tempDir.toString());
+        
         try {
           SemanticAnalyzer analyzer = new SemanticAnalyzer();
-          analyzer.analyze(parseTree, printStream);
+          analyzer.analyze(parseTree, printStream, semanticReport);
           printStream.flush();
           semanticOutput = outputStream.toString(StandardCharsets.UTF_8);
           semanticSuccess = true;
+          
+          // Read generated debug files if semantic analysis succeeded
+          Path symbolTableFile = tempDir.resolve("tablica_simbola.txt");
+          Path semanticTreeFile = tempDir.resolve("semanticko_stablo.txt");
+          
+          if (Files.exists(symbolTableFile)) {
+            symbolTable = Files.readString(symbolTableFile);
+          }
+          
+          if (Files.exists(semanticTreeFile)) {
+            semanticTree = Files.readString(semanticTreeFile);
+          }
+          
         } catch (hr.fer.ppj.semantics.analysis.SemanticException e) {
           // Semantic error occurred - output was already written to printStream
           printStream.flush();
@@ -348,6 +374,8 @@ public final class ExamplesReportGenerator {
           semanticOutput,
           semanticErrors,
           semanticErrorLine,
+          symbolTable,
+          semanticTree,
           lexerSuccess,
           parserSuccess,
           semanticSuccess
@@ -540,6 +568,22 @@ public final class ExamplesReportGenerator {
             writer.println("        <pre><code>" + escapeHtml(result.semanticOutput) + "</code></pre>");
             writer.println("      </details>");
           }
+        }
+        
+        // Symbol table (only if semantic analysis succeeded)
+        if (result.semanticSuccess && !result.symbolTable.isEmpty()) {
+          writer.println("      <details>");
+          writer.println("        <summary>Symbol Table</summary>");
+          writer.println("        <pre><code>" + escapeHtml(result.symbolTable) + "</code></pre>");
+          writer.println("      </details>");
+        }
+        
+        // Semantic tree (only if semantic analysis succeeded)
+        if (result.semanticSuccess && !result.semanticTree.isEmpty()) {
+          writer.println("      <details>");
+          writer.println("        <summary>Semantic Tree</summary>");
+          writer.println("        <pre><code>" + escapeHtml(result.semanticTree) + "</code></pre>");
+          writer.println("      </details>");
         }
         
         // Errors

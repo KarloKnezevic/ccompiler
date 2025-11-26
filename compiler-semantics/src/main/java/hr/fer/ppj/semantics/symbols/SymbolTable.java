@@ -1,6 +1,8 @@
 package hr.fer.ppj.semantics.symbols;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -16,6 +18,7 @@ public final class SymbolTable {
 
   private final SymbolTable parent;
   private final Map<String, Symbol> entries = new LinkedHashMap<>();
+  private final List<SymbolTable> children = new ArrayList<>();
 
   public SymbolTable() {
     this(null);
@@ -35,7 +38,9 @@ public final class SymbolTable {
    * restored.
    */
   public SymbolTable enterChildScope() {
-    return new SymbolTable(this);
+    SymbolTable child = new SymbolTable(this);
+    children.add(child);
+    return child;
   }
 
   public boolean declare(Symbol symbol) {
@@ -84,6 +89,26 @@ public final class SymbolTable {
 
   public Map<String, Symbol> entries() {
     return Map.copyOf(entries);
+  }
+  
+  /**
+   * Returns all symbols in this scope (not including parent scopes).
+   * This method is used for semantic report generation.
+   * 
+   * @return a copy of all symbols in this scope
+   */
+  public Map<String, Symbol> getAllSymbols() {
+    return Map.copyOf(entries);
+  }
+  
+  /**
+   * Returns all child scopes of this symbol table.
+   * This method is used for semantic report generation.
+   * 
+   * @return a copy of all child scopes
+   */
+  public List<SymbolTable> getChildScopes() {
+    return List.copyOf(children);
   }
 }
 

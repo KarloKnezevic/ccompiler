@@ -1,9 +1,11 @@
 package hr.fer.ppj.semantics.analysis;
 
 import hr.fer.ppj.parser.tree.ParseTree;
+import hr.fer.ppj.semantics.io.SemanticReport;
 import hr.fer.ppj.semantics.symbols.SymbolTable;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import java.io.PrintStream;
+import java.nio.file.Path;
 import java.util.Objects;
 
 /**
@@ -30,6 +32,21 @@ public final class SemanticAnalyzer {
     NonTerminalNode root = new ParseTreeConverter().convert(parseTree);
     analyze(root, out);
   }
+  
+  /**
+   * Entry point with semantic report generation support.
+   * 
+   * @param parseTree the parse tree from the parser
+   * @param out output stream for error messages
+   * @param semanticReport report generator for debug files (null to disable)
+   */
+  public void analyze(ParseTree parseTree, PrintStream out, SemanticReport semanticReport) {
+    Objects.requireNonNull(parseTree, "parseTree must not be null");
+    Objects.requireNonNull(out, "out must not be null");
+
+    NonTerminalNode root = new ParseTreeConverter().convert(parseTree);
+    analyze(root, out, semanticReport);
+  }
 
   /**
    * Runs semantic analysis starting from {@code <prijevodna_jedinica>}. The method instantiates the
@@ -42,12 +59,37 @@ public final class SemanticAnalyzer {
    * @param out  output stream for diagnostics
    */
   public void analyze(NonTerminalNode root, PrintStream out) {
+    analyze(root, out, null);
+  }
+  
+  /**
+   * Runs semantic analysis with optional report generation.
+   *
+   * @param root root of the generative parse tree
+   * @param out output stream for diagnostics
+   * @param semanticReport report generator for debug files (null to disable)
+   */
+  public void analyze(NonTerminalNode root, PrintStream out, SemanticReport semanticReport) {
     Objects.requireNonNull(root, "root must not be null");
     Objects.requireNonNull(out, "out must not be null");
 
     SymbolTable globalScope = new SymbolTable();
     SemanticChecker checker = new SemanticChecker(globalScope, out);
-    checker.check(root);
+    
+    try {
+      checker.check(root);
+      
+      // If we reach here, semantic analysis succeeded (no exceptions thrown)
+      // Generate debug files if report generator is provided
+      if (semanticReport != null) {
+        semanticReport.generateDebugFiles(globalScope, root);
+      }
+      
+    } catch (SemanticException e) {
+      // Semantic error occurred - don't generate debug files
+      // The error has already been printed by SemanticChecker
+      throw e;
+    }
   }
 }
 

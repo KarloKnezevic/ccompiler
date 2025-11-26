@@ -10,6 +10,7 @@ import hr.fer.ppj.parser.Parser.ParserException;
 import hr.fer.ppj.parser.io.TokenReader;
 import hr.fer.ppj.parser.tree.ParseTree;
 import hr.fer.ppj.semantics.analysis.SemanticAnalyzer;
+import hr.fer.ppj.semantics.io.SemanticReport;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -161,8 +162,12 @@ public final class Main {
     Path binDir = ensureOutputDirectory();
     CompilationArtifacts artifacts = compileToParseTree(filePath, binDir, true);
     SemanticAnalyzer analyzer = new SemanticAnalyzer();
+    
+    // Create semantic report for current working directory
+    SemanticReport semanticReport = SemanticReport.forCurrentDirectory();
+    
     try {
-      analyzer.analyze(artifacts.parseTree(), System.out);
+      analyzer.analyze(artifacts.parseTree(), System.out, semanticReport);
       System.err.println("Semantic analysis completed.");
     } catch (hr.fer.ppj.semantics.analysis.SemanticException e) {
       // Production already printed by SemanticChecker.fail()

@@ -1,170 +1,307 @@
-# Semantic Analyzer Overview
+# Semantic Analyzer
 
-> **Modules covered:** `compiler-semantics/`, `cli/`  
-> **Author:** [Karlo Knežević](https://karloknezevic.github.io/)  
-> **Last update:** 2025‑11‑25
+The semantic analyzer constitutes the third phase of the PPJ compiler pipeline, responsible for enforcing language-specific semantic constraints that cannot be expressed through context-free grammars. This phase validates type compatibility, scope resolution, control flow semantics, and ensures adherence to the PPJ-C language specification.
 
-This document gives a high-level narrative of the semantic analyzer: where it lives in the pipeline, which language rules it enforces, how it surfaces diagnostics, and how developers interact with it. For a line-by-line walkthrough of the implementation, data structures, and algorithms, see [`docs/semantic_analyzer_implementation.md`](semantic_analyzer_implementation.md).
+## Compilation Pipeline Integration
 
----
-
-## 1. Role in the Compilation Pipeline
+The semantic analyzer operates as an intermediate phase between syntactic analysis and code generation:
 
 ```
-    lexer ──► parser ──► semantic analyzer ──► (planned) code generator
+Source Code → Lexical Analysis → Syntactic Analysis → Semantic Analysis → Code Generation
+    (.c)           (tokens)         (parse tree)      (validated AST)     (assembly)
 ```
 
-* **Input:** a fully built `ParseTree` produced by the LR(1) parser (grammar in `config/parser_definition.txt`).
-* **Output:** either (a) silence if the program is semantically correct, or (b) one canonical diagnostic describing the first semantic error.
-* **Guarantees to later phases:** all identifiers are declared and scoped properly, expressions have concrete PPJ types, control-flow constructs obey the language rules, and a conforming `int main(void)` definition exists.
+**Input Contract**: The analyzer receives a complete parse tree (`ParseTree`) from the LR(1) parser, representing a syntactically valid PPJ-C program according to the grammar defined in `config/parser_definition.txt`.
 
-Invocation happens exclusively through the CLI (`hr.fer.ppj.cli.Main#runSemantic`). The CLI already performed lexical and syntactic analysis and then calls `SemanticAnalyzer.analyze(parseTree, System.out)` to validate semantics in-memory.
+**Output Contract**: Upon successful analysis, the analyzer produces no output and allows compilation to proceed. Upon detecting semantic violations, it emits a single canonical error message and terminates compilation.
 
----
+**Semantic Specification**: All semantic rules are formally defined in `config/semantics_definition.txt`, which serves as the authoritative specification for type checking, scope resolution, and semantic validation.
 
-## 2. Grammar Surface & Responsibilities
+## Core Responsibilities
 
-*The specification of record is `config/semantics_definition.txt`.* Every production in that file has a dedicated handler, so the analyzer never invents ad-hoc checks. The responsibilities split into three categories:
+### Type System Enforcement
 
-- **Declarations & Definitions** (`<deklaracija>`, `<definicija_funkcije>`, `<izravni_deklarator>`, `<deklaracija_parametra>`):  
-  - constants require initializers,  
-  - arrays validate bounds (including parameter forms such as `int arr[]`),  
-  - nested scopes own their identifiers,  
-  - prototypes and definitions must agree exactly,  
-  - `int main(void)` must be present once.
-- **Expressions** (all nodes between `<primarni_izraz>` and `<izraz>`):  
-  - l-value / r-value propagation,  
-  - implicit conversions for arithmetic / logical expressions,  
-  - postfix rules for indexing & calls (fixed bug: empty loop bodies and `arr[i]` in both local and parameter contexts are now legal per PPJ spec),  
-  - assignment compatibility.
-- **Statements & Control Flow** (`<slozena_naredba>`, `<naredba_petlje>`, `<naredba_skoka>`...):  
-  - block scopes are RAII-managed,  
-  - `continue`/`break` require an active loop,  
-  - `return;` inside `void` functions is explicitly allowed (and any expression in a `void` function is rejected),  
-  - verification of loop bodies covers empty `{ }` blocks per spec.
+The analyzer implements a static type system with the following primitive types:
+- `void`: Used exclusively for function return types and parameter lists
+- `char`: 8-bit signed integer type
+- `int`: 32-bit signed integer type
 
-Attribute data (type, identifier, l-value flag, parameter lists, initializer metadata) lives inside `SemanticAttributes` attached to each `NonTerminalNode`. Scopes are modeled via a tree of `SymbolTable` instances that exactly mirrors lexical nesting.
+Composite types include:
+- **Array types**: `T[]` where T is any non-void type
+- **Function types**: `T(T1, T2, ..., Tn)` representing function signatures
+- **Const-qualified types**: `const T` for immutable values
 
----
+Type compatibility rules enforce:
+- Implicit conversions between `char` and `int`
+- Assignment compatibility with const-qualification constraints
+- Array-to-pointer decay in function parameters
+- Function signature matching for calls and definitions
 
-## 3. Architecture & Control Flow
+### Scope and Symbol Management
+
+The analyzer maintains a hierarchical symbol table structure that mirrors lexical scoping:
 
 ```
-ParseTree ─► ParseTreeConverter ─► NonTerminalNode / TerminalNode (+ SemanticAttributes)
-                                               │
-                                               ▼
-                                       SemanticAnalyzer
-                                               │
-                                          SemanticChecker
-                                     ┌─────────┼─────────┐
-                                     │                   │
-                             DeclarationRules     ExpressionRules
-                                     │                   │
-                              StatementRules (blocks, jumps)
+Global Scope
+├── Function declarations/definitions
+├── Global variable declarations
+└── Block Scopes (nested)
+    ├── Local variable declarations
+    ├── Function parameters
+    └── Nested block scopes
 ```
 
-- **`SemanticAnalyzer`** is the CLI-facing façade. It converts the parser tree, seeds a global `SymbolTable`, and delegates to `SemanticChecker`.
-- **`SemanticChecker`** owns the mutable state (scope chain, loop depth, current function) and a dispatch table. Instead of one monolithic visitor, the production handlers live inside three focused helpers:
-  - `DeclarationRules` – all productions that introduce or initialize symbols.
-  - `ExpressionRules` – typing logic for `<primarni_izraz>` up to `<izraz>`.
-  - `StatementRules` – scopes, loops, and `return` semantics.
-- **Error reporting** is centralized in `SemanticChecker.fail(...)` which uses `ProductionFormatter` to print the offending production, a blank line, and the canonical `semantic error` message before throwing `SemanticException`.
+**Symbol Table Structure**: Each scope maintains a mapping from identifiers to symbol records:
+- **Variable Symbols**: Store type information, const-qualification, and declaration location
+- **Function Symbols**: Store function signatures, definition status, and parameter metadata
 
-This split keeps each file under ~550 LOC and makes future updates (new grammar rule, optional diagnostics, configuration hooks) surgical.
+**Scope Resolution**: Identifier lookup follows lexical scoping rules, searching from innermost to outermost scope until a matching declaration is found.
 
----
+### Symbol Table Implementation
 
-## 4. Error Reporting & CLI Behavior
+The symbol table is implemented as a hierarchical structure using the `SymbolTable` class:
 
-* The analyzer reports **only the first** semantic violation.
-* Output format (stdout):
-
-  ```
-  <primarni_izraz> ::= IDN(8,y)
-
-  semantic error
-  ```
-
-* The CLI prints `Error: semantic error` to `stderr` and exits with status code `1`.
-* No recovery or warning infrastructure is implemented yet—determinism is more important for automated grading.
-
----
-
-## 5. Configurability Snapshot
-
-There is currently **no semantic configuration surface**:
-
-* No `SemanticConfig` class, CLI flag, environment variable, or YAML/JSON file controls the analyzer.
-* All checks are always enabled and use PPJ’s strict semantics (stop after the first error).
-* Adding configurability would require introducing a configuration object, threading it through `SemanticAnalyzer` / `SemanticChecker`, and guarding rule blocks manually.
-
----
-
-## 4. Configurability Snapshot
-
-The analyzer is intentionally rigid today:
-
-- No `SemanticConfig` class, CLI flag, or environment variable toggles checks.
-- Every rule in `semantics_definition.txt` is always enforced in “fail-fast” mode.
-- Extending it would require defining an options object, passing it through `SemanticAnalyzer`/`SemanticChecker`, and guarding rule blocks manually. The current architecture (modular rule groups) already provides natural seams for such toggles.
-
-## 5. Usage Examples
-
-### CLI Invocation
-
-```bash
-# Validate a single translation unit
-./run.sh semantic compiler-semantics/src/test/resources/ppjc_case_14/program.c
-
-# Direct invocation (if you packaged the CLI module)
-java -jar cli/target/ccompiler.jar semantic examples/invalid/program33.c
+```java
+public class SymbolTable {
+    private final Map<String, Symbol> entries;
+    private final SymbolTable parent;
+    
+    public boolean declare(Symbol symbol);
+    public Symbol lookup(String identifier);
+    public SymbolTable enterChildScope();
+    public SymbolTable exit();
+}
 ```
 
-Failure mode (undeclared identifier):
+**Example Symbol Table Structure**:
+```
+Global Scope (Level 0):
+  main : int(void) [defined=true]
+  factorial : int(int) [defined=true]
+
+Function Scope - factorial (Level 1):
+  n : int [const=false]
+  
+Block Scope - if statement (Level 2):
+  result : int [const=false]
+```
+
+The symbol table supports:
+- **Declaration**: Adding new symbols to the current scope with duplicate detection
+- **Lookup**: Searching for symbols following lexical scoping rules
+- **Scope Management**: Creating and destroying nested scopes with RAII semantics
+
+### Semantic Tree Representation
+
+The analyzer constructs a semantic tree that augments the parse tree with semantic attributes:
+
+```java
+public class NonTerminalNode implements ParseNode {
+    private final String symbol;
+    private final List<ParseNode> children;
+    private final SemanticAttributes attributes;
+}
+
+public class SemanticAttributes {
+    private Type type;
+    private boolean lValue;
+    private boolean isConst;
+    private String identifier;
+    private List<Type> parameterTypes;
+    private FunctionType functionType;
+}
+```
+
+**Semantic Tree Example**:
+```
+<definicija_funkcije> [type=int(int), id=factorial]
+├── <ime_tipa> [type=int]
+│   └── KR_INT (1,int)
+├── <izravni_deklarator> [type=int(int), id=factorial]
+│   ├── IDN (1,factorial)
+│   ├── L_ZAGRADA (1,()
+│   ├── <lista_parametara> [paramTypes=[int]]
+│   │   └── <deklaracija_parametra> [type=int, id=n]
+│   │       ├── <ime_tipa> [type=int]
+│   │       │   └── KR_INT (1,int)
+│   │       └── IDN (1,n)
+│   └── D_ZAGRADA (1,))
+└── <slozena_naredba>
+    ├── L_VIT_ZAGRADA (2,{)
+    ├── <lista_naredbi>
+    │   └── <naredba_skoka>
+    │       ├── KR_RETURN (3,return)
+    │       ├── <izraz> [type=int, lvalue=false]
+    │       │   └── <primarni_izraz> [type=int, lvalue=true]
+    │       │       └── IDN (3,n)
+    │       └── TOCKAZAREZ (3,;)
+    └── D_VIT_ZAGRADA (4,})
+```
+
+### Control Flow Validation
+
+The analyzer enforces control flow semantics including:
+
+**Jump Statement Validation**:
+- `break` and `continue` statements must appear within loop constructs
+- `return` statements must match function return types
+- `return;` is valid only in `void` functions
+- `return expression;` requires type compatibility with function signature
+
+**Loop Construct Validation**:
+- Loop conditions must be convertible to `int`
+- Empty loop bodies (`{}`) are explicitly permitted
+- Nested loop depth tracking for jump statement validation
+
+**Block Structure Validation**:
+- Empty blocks (`{}`) are valid compound statements
+- Block scopes properly nest and maintain symbol visibility
+- Variable declarations follow C-style scoping rules
+
+## Architecture Overview
+
+The semantic analyzer employs a modular architecture with clear separation of concerns:
 
 ```
-<primarni_izraz> ::= IDN(8,y)
+SemanticAnalyzer (Facade)
+├── ParseTreeConverter (Tree Conversion)
+├── SemanticChecker (Core Analysis Engine)
+│   ├── DeclarationRules (Symbol Management)
+│   ├── ExpressionRules (Type Checking)
+│   └── StatementRules (Control Flow)
+├── SymbolTable (Scope Management)
+├── TypeSystem (Type Operations)
+└── SemanticReport (Debug Output)
+```
+
+### Core Components
+
+**SemanticAnalyzer**: Provides the primary API for semantic analysis, handling tree conversion and orchestrating the analysis process.
+
+**SemanticChecker**: Implements the core semantic analysis logic using a visitor pattern to traverse the semantic tree and apply semantic rules.
+
+**Rule Modules**: Specialized handlers for different categories of semantic rules:
+- `DeclarationRules`: Handles variable and function declarations, parameter processing, and symbol table management
+- `ExpressionRules`: Implements type checking for all expression forms, operator semantics, and type conversions
+- `StatementRules`: Manages control flow validation, block scoping, and jump statement semantics
+
+**Type System**: Provides utilities for type representation, compatibility checking, and const-qualification handling.
+
+## Error Reporting
+
+The semantic analyzer implements a fail-fast error reporting strategy:
+
+**Error Format**: Semantic errors are reported using a canonical format that identifies the specific production rule where the error occurred:
+
+```
+<production_name> ::= TERMINAL(line,lexeme) NON_TERMINAL ...
 
 semantic error
-Error: semantic error
 ```
 
-Success mode (empty loop body, array parameter, and `void` return are all valid):
+**Example Error Output**:
+```
+<primarni_izraz> ::= IDN(8,undefined_variable)
+
+semantic error
+```
+
+**Error Handling Strategy**:
+- Analysis terminates immediately upon detecting the first semantic error
+- No error recovery or multiple error reporting is attempted
+- Deterministic error reporting ensures consistent behavior for automated testing
+
+## Debug Output Generation
+
+When semantic analysis completes successfully, the analyzer can generate detailed debug information:
+
+### Symbol Table Dump (`tablica_simbola.txt`)
 
 ```
-./run.sh semantic compiler-semantics/src/test/resources/ppjc_case_15/program.c
-# (no stdout)
+=== SYMBOL TABLE DUMP ===
+Scope (Level 0):
+  main : int(void) [defined=true]
+  factorial : int(int) [defined=true]
+  global_var : int [const=false]
+
+Scope (Level 1):
+  n : int [const=false]
+  local_result : int [const=false]
 ```
 
-### Batch HTML Reports
+### Semantic Tree Dump (`semanticko_stablo.txt`)
 
-`hr.fer.ppj.examples.ExamplesReportGenerator` runs lexer → parser → semantic analyzer for every file in `examples/valid` and `examples/invalid`, then produces `examples/report_valid.html` / `examples/report_invalid.html`. Each section embeds:
+```
+=== SEMANTIC TREE DUMP ===
+<<prijevodna_jedinica>> [type=null, lvalue=false, id=null, elements=0]
+  <<vanjska_deklaracija>> [type=null, lvalue=false, id=null, elements=0]
+    <<definicija_funkcije>> [type=int(int), lvalue=false, id=factorial, elements=0]
+      <<ime_tipa>> [type=int, lvalue=false, id=null, elements=0]
+        KR_INT (1,int) [symbol=null, type=null]
+      <<izravni_deklarator>> [type=int(int), lvalue=false, id=factorial, elements=0]
+        IDN (1,factorial) [symbol=null, type=null]
+        L_ZAGRADA (1,() [symbol=null, type=null]
+        <<lista_parametara>> [type=null, lvalue=false, id=null, elements=0]
+          <<deklaracija_parametra>> [type=int, lvalue=true, id=n, elements=0]
+            <<ime_tipa>> [type=int, lvalue=false, id=null, elements=0]
+              KR_INT (1,int) [symbol=null, type=null]
+            IDN (1,n) [symbol=null, type=null]
+        D_ZAGRADA (1,)) [symbol=null, type=null]
+      <<slozena_naredba>> [type=null, lvalue=false, id=null, elements=0]
+        L_VIT_ZAGRADA (2,{) [symbol=null, type=null]
+        <<lista_naredbi>> [type=null, lvalue=false, id=null, elements=0]
+          <<naredba_skoka>> [type=null, lvalue=false, id=null, elements=0]
+            KR_RETURN (3,return) [symbol=null, type=null]
+            <<izraz>> [type=int, lvalue=true, id=null, elements=0]
+              <<primarni_izraz>> [type=int, lvalue=true, id=null, elements=0]
+                IDN (3,n) [symbol=null, type=null]
+            TOCKAZAREZ (3,;) [symbol=null, type=null]
+        D_VIT_ZAGRADA (4,}) [symbol=null, type=null]
+```
 
-- source snippet,
-- lexical tokens,
-- generative & syntax trees,
-- semantic verdict (either “No semantic errors found.” or the exact production that failed).
+These debug files provide comprehensive insight into the semantic analysis process and are invaluable for understanding symbol resolution and type inference.
 
-This utility is the quickest way to eyeball regressions across the entire corpus.
+## Usage and Integration
 
----
+### Command Line Interface
 
-## 6. Implementation Notes & Testing
+The semantic analyzer is accessible through the CLI with multiple invocation modes:
 
-- Only the first semantic violation is reported. This guarantees deterministic results that match PPJ grading scripts.
-- Tree conversion happens up-front so rule handlers can mutate attributes freely without worrying about parser immutability.
-- Golden tests live under `compiler-semantics/src/test/resources/ppjc_case_*`. Recent additions (`case_12`–`case_15`) cover the previously failing situations:
-  - empty `for`/`while` bodies (`{ }`),
-  - function parameters (`int arr[]`, `int n`),
-  - array indexing for both locals and parameters,
-  - `void` functions that legally use `return;`.
+```bash
+# Semantic analysis only
+java -jar cli/target/ccompiler.jar semantic program.c
 
-## 7. Where to Go Next
+# Full compilation pipeline
+java -jar cli/target/ccompiler.jar program.c
+```
 
-- Need algorithmic details, attribute layouts, or extension tips? → **[`docs/semantic_analyzer_implementation.md`](semantic_analyzer_implementation.md)** (deep dive).
-- Need to trace the CLI orchestration? → `cli/src/main/java/hr/fer/ppj/cli/Main.java`, methods `compileToParseTree` and `runSemantic`.
-- Need to inspect grammar-driven behavior? → `config/semantics_definition.txt` (semantic intent) and `config/parser_definition.txt` (LR grammar).
+### Programmatic Interface
 
-Use this overview to onboard contributors quickly; switch to the implementation document for low-level mechanics.
+```java
+// Create analyzer instance
+SemanticAnalyzer analyzer = new SemanticAnalyzer();
 
+// Create debug report generator (optional)
+SemanticReport report = new SemanticReport(outputDirectory);
 
+// Perform analysis
+try {
+    analyzer.analyze(parseTree, System.out, report);
+    System.err.println("Semantic analysis completed successfully.");
+} catch (SemanticException e) {
+    System.err.println("Error: semantic error");
+    System.exit(1);
+}
+```
+
+### Integration with Build Pipeline
+
+The semantic analyzer integrates seamlessly with the overall compilation pipeline:
+
+1. **Input Validation**: Receives validated parse trees from the LR(1) parser
+2. **Symbol Resolution**: Builds comprehensive symbol tables for all scopes
+3. **Type Checking**: Validates all expressions and statements according to PPJ-C semantics
+4. **Output Generation**: Produces debug information and validates program correctness
+5. **Error Handling**: Provides deterministic error reporting for invalid programs
+
+The analyzer ensures that only semantically valid programs proceed to the code generation phase, maintaining the integrity of the compilation pipeline and enabling reliable code generation.

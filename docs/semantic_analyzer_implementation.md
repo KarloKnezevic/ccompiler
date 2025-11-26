@@ -1,277 +1,638 @@
-# Semantic Analyzer Architecture and Implementation
+# Semantic Analyzer Implementation
 
-> **Author:** [Karlo Knežević](https://karloknezevic.github.io/)
->
-> **Target module:** `compiler-semantics`
+This document provides a comprehensive technical reference for the semantic analysis implementation in the PPJ compiler. It covers the internal architecture, algorithms, data structures, and implementation details necessary for understanding, maintaining, and extending the semantic analyzer.
 
-This document serves as the canonical reference for the semantic-analysis phase of the PPJ compiler. It is written for engineers who want to understand, extend, or reimplement the semantic analyzer. The goal is to describe _what_ the analyzer validates, _how_ it derives semantic attributes, and _why_ the present architecture was chosen.  
-If you only need the high-level picture, start with [`docs/semantic_analyzer.md`](semantic_analyzer.md); this file intentionally dives into implementation minutiae.
+## Implementation Architecture
 
----
+The semantic analyzer is implemented as a multi-layered system with clear separation of concerns and modular design principles.
 
-## 1. Purpose of the Semantic Phase
-
-The semantic analyzer consumes the generative parse tree produced by the LR parser and guarantees that the program respects the PPJ-C language rules that cannot be captured by context-free grammars. Typical responsibilities include:
-
-* enforcing typing rules (type compatibility, implicit conversions, const propagation)
-* tracking declaration/definition consistency, including function signatures
-* ensuring proper control-flow constructs (`break`, `continue`, `return`)
-* validating aggregate constraints (array bounds, `main` signature, reachability of declarations)
-* producing the first semantic error exactly once, in canonical format, then terminating
-
-The analyzer operates purely in-memory. Each compilation unit is processed top-down, attaches synthesized attributes to non-terminals, and updates a hierarchical symbol table that mirrors lexical scopes.
-
----
-
-## 2. Input Contract: `semantics_definition.txt`
-
-The file `config/semantics_definition.txt` enumerates every grammar production that requires semantic handling. Each line follows the canonical `<non_terminal> ::= RHS` format, where the RHS consists of terminals and/or non-terminals separated by whitespace or newlines. The analyzer uses this file as an authoritative reference when mapping generative-tree patterns to semantic handlers.
-
-Key properties:
-
-1. **Deterministic ordering** – productions appear in parser order. The semantic checker mirrors this order in its dispatch table (`visitNonTerminal`) for predictable behavior.
-2. **Terminal annotations** – uppercase symbols correspond to lexer tokens (e.g., `IDN`, `KR_INT`), and give hints about attribute sources (line numbers, lexemes).
-3. **Implicit attributes** – while the file is purely syntactic, the analyzer associates each production with:
-   * input attributes (e.g., expected types for child nodes)
-   * synthesized attributes (e.g., resulting `Type`, `isLValue`, function metadata)
-4. **Extensibility** – to add a new rule, extend this definition file, then implement a matching handler inside `SemanticChecker`. Because we do not interpret the file at runtime (no DSL), the file acts as documentation + a reference for unit tests.
-
----
-
-## 3. High-Level Architecture
+### Core Architecture
 
 ```
-┌───────────────────────────────┐
-│ ParseTree (parser module)     │
-└──────────────┬────────────────┘
-               │
-         ParseTreeConverter
-               │
-┌──────────────▼────────────────┐       ┌──────────────────────┐
-│ NonTerminalNode / TerminalNode│◄──────┤ SemanticAttributes   │
-└──────────────┬────────────────┘       └──────────────────────┘
-               │
-          SemanticAnalyzer
-               │
-          SemanticChecker
-               │
-        ┌──────┴─────────┐
-        │ SymbolTable    │
-        │ Type hierarchy │
-        └────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                    SemanticAnalyzer (Facade)                   │
+├─────────────────────────────────────────────────────────────────┤
+│  • ParseTree → NonTerminalNode conversion                      │
+│  • Analysis orchestration                                      │
+│  • Debug report generation                                     │
+└─────────────────────┬───────────────────────────────────────────┘
+                      │
+┌─────────────────────▼───────────────────────────────────────────┐
+│                   SemanticChecker (Core Engine)                │
+├─────────────────────────────────────────────────────────────────┤
+│  • Tree traversal and rule dispatch                            │
+│  • Scope management and symbol tracking                        │
+│  • Error detection and reporting                               │
+│  • Attribute synthesis and propagation                         │
+└─────┬───────────────┬───────────────┬─────────────────────────────┘
+      │               │               │
+┌─────▼─────┐  ┌──────▼──────┐  ┌─────▼──────┐
+│Declaration│  │ Expression  │  │ Statement  │
+│   Rules   │  │    Rules    │  │   Rules    │
+├───────────┤  ├─────────────┤  ├────────────┤
+│• Symbols  │  │• Type check │  │• Control   │
+│• Scopes   │  │• Operators  │  │  flow      │
+│• Functions│  │• Conversions│  │• Blocks    │
+└───────────┘  └─────────────┘  └────────────┘
 ```
 
-### 3.1 Parse Tree Conversion
+### Module Responsibilities
 
-`ParseTreeConverter` bridges the parser's immutable tree with the semantic module's mutable tree (`NonTerminalNode`, `TerminalNode`). The semantic tree stores:
+**SemanticAnalyzer**: Entry point facade that handles:
+- Parse tree conversion to semantic tree representation
+- Analysis orchestration and error handling
+- Debug report generation when analysis succeeds
+- Integration with the CLI and compilation pipeline
 
-* child links (preserving grammar order)
-* optional `SemanticAttributes` object for synthesized data (type, l-value flag, function metadata)
-* convenience helpers (`NodeUtils`) for safe casting and node inspection
+**SemanticChecker**: Core analysis engine implementing:
+- Visitor pattern for tree traversal
+- Rule dispatch based on production patterns
+- Scope stack management and symbol resolution
+- Attribute synthesis and propagation
+- Centralized error detection and reporting
 
-### 3.2 Symbol Table
+**Rule Modules**: Specialized handlers for semantic rule categories:
+- **DeclarationRules**: Symbol management, function definitions, variable declarations
+- **ExpressionRules**: Type checking, operator semantics, implicit conversions
+- **StatementRules**: Control flow validation, block scoping, jump statements
 
-The `SymbolTable` implements a classic hierarchical map:
+## Data Structures
 
-* `declare(Symbol symbol)` – inserts into the current scope (throws on duplicates)
-* `lookup(String identifier)` – searches current scope first, then walks parents
-* `enterChildScope()` / `exit()` – builds a tree that matches block nesting
+### Semantic Tree Representation
 
-Symbols are represented by dedicated classes:
+The semantic analyzer operates on a mutable tree structure that augments the parser's immutable parse tree with semantic attributes.
 
-* `VariableSymbol` – includes declared type, `isConst`, and optional array size
-* `FunctionSymbol` – retains `FunctionType`, `isDefined` flag, and declaration location
-
-The table enforces invariants (e.g., function declaration vs. definition counts, global `main` contract) during final verification.
-
-### 3.3 Type System
-
-The type hierarchy is implemented via a Java 17 sealed interface (`Type`) with the following implementors:
-
-* `PrimitiveType` – enumerates `VOID`, `CHAR`, `INT`
-* `ArrayType` – wraps an element type and optional length
-* `FunctionType` – retains return type, parameter types, and parameter const flags
-* `ConstType` – decorator for const-qualified types
-
-`TypeSystem` offers helpers for:
-
-* const stripping and application (`stripConst`, `applyConst`)
-* implicit-conversion checks (`canAssign`, `canConvert`)
-* type equality semantics (primitive widening, array compatibility)
-
-### 3.4 Rule dispatcher (`DeclarationRules`, `ExpressionRules`, `StatementRules`)
-
-`SemanticChecker` registers lightweight rule modules instead of hosting every production inline. The constructor looks like:
+#### NonTerminalNode Structure
 
 ```java
-// compiler-semantics/src/main/java/hr/fer/ppj/semantics/analysis/SemanticChecker.java
-registerRule("$", node -> {});
-new DeclarationRules(this);
-statementRules = new StatementRules(this);
-new ExpressionRules(this);
+public class NonTerminalNode implements ParseNode {
+    private final String symbol;                    // Production left-hand side
+    private final List<ParseNode> children;         // Ordered child nodes
+    private final SemanticAttributes attributes;    // Semantic information
+    
+    // Navigation and utility methods
+    public ParseNode child(int index);
+    public int childCount();
+    public boolean matches(String... expectedSymbols);
+}
 ```
 
-- **`DeclarationRules`** mutates scopes (enter/exit), inserts symbols, and enforces everything around `<deklaracija>`, `<definicija_funkcije>`, `<deklaracija_parametra>`, etc. The new helpers `isSizedArrayDeclarator`, `isUnsizedArrayDeclarator`, and `extractArrayLengthLiteral` make sure that both `int arr[5];` and `int arr[]` follow the spec verbatim.
-- **`ExpressionRules`** covers the entire `<primarni_izraz>`…`<izraz>` hierarchy. It owns all typing logic (l-values, implicit conversions, string literal metadata, postfix checking for arrays/functions). No scope mutation happens here.
-- **`StatementRules`** is responsible for `<slozena_naredba>`, loops, and jump statements. It encapsulates the fixed behavior for empty `{ }` blocks and `void` functions with `return;`, while sharing scope-tracking utilities with the checker core.
+#### TerminalNode Structure
 
-The separation keeps each file below ~550 LOC, mirrors the structure of `semantics_definition.txt`, and makes future toggles (e.g., a warning configuration) straightforward.
-
----
-
-## 4. SemanticChecker Workflow
-
-`SemanticChecker` is the core visitor that traverses the generative tree. Its workflow can be summarized as:
-
-1. **Pre-pass setup** – instantiate the root scope, prime built-in symbols if needed.
-2. **Recursive descent** – dispatch each non-terminal to a dedicated `visitXxx` method. Each method:
-   * reads child attributes (types, l-values, literal values)
-   * validates rule-specific constraints
-   * updates `SemanticAttributes` for the parent node
-   * mutates scope/type state (entering/exiting blocks, tracking the current function, loop depth, etc.)
-3. **Error handling** – on the first violation, call `fail(node)`:
-   * format the exact production using `ProductionFormatter`
-   * print the production followed by a blank line and `semantic error`
-   * throw `SemanticException` to unwind the analyzer
-4. **Post-pass verification** – after traversal, run `verifyGlobalConstraints()` to ensure:
-   * a `main` function exists with signature `int main(void)`
-   * every declared function is also defined (unless explicitly allowed)
-
-### 4.1 Attribute Propagation
-
-Each `NonTerminalNode` carries a mutable `SemanticAttributes` object containing:
-
-| Attribute          | Meaning                                                  |
-|--------------------|----------------------------------------------------------|
-| `Type type`        | The computed type of the non-terminal                    |
-| `boolean lValue`   | Whether the expression is an assignable l-value          |
-| `boolean isConst`  | Propagated constness (useful for arrays/functions)       |
-| `String identifier`| Identifier captured at declaration nodes                 |
-| `List<Type> parameterTypes` | For function signatures and argument lists       |
-| `List<String> parameterNames` | Captures names for scope insertion            |
-| `FunctionType functionType` | Resolved function signature metadata            |
-
-Attributes are lazily created to avoid allocating structures for terminals that don't need them. Helper methods inside `SemanticAttributes` use fluent setters to keep method bodies readable.
-
-### 4.2 Control-Flow Tracking
-
-* `loopDepth` – incremented on `while`/`for`, decremented afterwards. Ensures `break`/`continue` exist inside loops.
-* `currentFunction` – tracks the active function signature for `return` validation and implicit parameter scope.
-
-### 4.3 Error Reporting Format
-
-The analyzer prints exactly one production using the format:
-
-```
-<production> ::= SYMBOL( line , lexeme ) ...
-
-semantic error
+```java
+public record TerminalNode(
+    String symbol,      // Terminal symbol (e.g., "IDN", "KR_INT")
+    int line,          // Source line number
+    String lexeme      // Actual text from source
+) implements ParseNode {
+    // Immutable terminal representation
+}
 ```
 
-`ProductionFormatter` renders terminals as `TERMINAL(line,lexeme)` to satisfy PPJ specification. No stack traces are emitted; the CLI catches `SemanticException` and exits immediately.
+#### SemanticAttributes Container
 
----
+```java
+public class SemanticAttributes {
+    private Type type;                          // Computed type
+    private boolean lValue;                     // L-value designation
+    private boolean isConst;                    // Const qualification
+    private String identifier;                  // Declared identifier
+    private List<Type> parameterTypes;          // Function parameters
+    private List<String> parameterNames;        // Parameter identifiers
+    private FunctionType functionType;          // Complete function signature
+    private int elementCount;                   // Array element count
+    private Type inheritedType;                 // Inherited type attribute
+    
+    // Fluent setters for attribute manipulation
+    public SemanticAttributes type(Type type);
+    public SemanticAttributes lValue(boolean lValue);
+    public SemanticAttributes identifier(String identifier);
+    // ... additional setters
+}
+```
 
-## 5. Algorithms & Checks
+### Symbol Table Implementation
 
-Below is a non-exhaustive list of the rule categories handled by `SemanticChecker`. Each item references the underlying algorithmic idea.
+The symbol table implements hierarchical scoping using a tree structure that mirrors lexical nesting in the source program.
 
-### 5.1 Expression Typing
+#### SymbolTable Structure
 
-* **Primary expressions** – `IDN`, literals, parenthesized expressions. Identifiers are resolved via `SymbolTable.lookup`, verifying presence and type.
-* **Postfix expressions** – arrays and functions:
-  * Array indexing ensures the base expression is an array type and the index is `int`.
-  * Function calls cross-check argument count/types with the callee's `FunctionType`.
-  * Post-increment/decrement require l-value `int`.
-* **Unary/cast expressions** – adhere to C-like promotion rules. Casts validate convertibility.
-* **Binary expressions** – grouped via `visitBinaryExpression` to minimize duplication. Each operator category (multiplicative, additive, relational, logical) validates operand compatibility and synthesizes resulting types.
-* **Assignment** – the LHS must be an l-value, RHS must be assignable per `TypeSystem.canAssign`.
+```java
+public class SymbolTable {
+    private final Map<String, Symbol> entries;     // Current scope symbols
+    private final SymbolTable parent;              // Parent scope reference
+    
+    // Core operations
+    public boolean declare(Symbol symbol);          // Add symbol to current scope
+    public Symbol lookup(String identifier);       // Search symbol hierarchy
+    public SymbolTable enterChildScope();          // Create nested scope
+    public SymbolTable exit();                     // Return to parent scope
+    
+    // Utility operations
+    public boolean isDeclaredInCurrentScope(String identifier);
+    public Map<String, Symbol> entries();          // Read-only access
+    public void dump(PrintWriter writer, int indentLevel);  // Debug output
+}
+```
 
-### 5.2 Declarations & Definitions
+#### Symbol Hierarchy
 
-* Handles constants (`KR_CONST`) by wrapping types with `ConstType`.
-* Arrays validate positive length and upper bound (`MAX_ARRAY_LENGTH`). `DeclarationRules` explicitly covers both grammar variants:
+The symbol system uses a sealed interface hierarchy for type safety:
 
-  ```java
-  if (isUnsizedArrayDeclarator(children)) { ... }        // e.g. int arr[]
-  if (isSizedArrayDeclarator(children)) { ... }          // e.g. int arr[5]
-  String literal = extractArrayLengthLiteral(children.get(2), node);
-  int length = checker.parseArrayLength(literal, node);
-  ```
+```java
+public sealed interface Symbol permits VariableSymbol, FunctionSymbol {
+    String name();
+    Type type();
+}
 
-  `extractArrayLengthLiteral` walks through wrapper non-terminals until it reaches the `BROJ` terminal mandated by `semantics_definition.txt`, so even if the parser expands the literal through `<log_ili_izraz>` the semantic rule still enforces “compile-time integer only”.
-* Functions are inserted into the global scope upon declaration; redefinitions check type equality and prevent double definitions.
-* `init_deklarator` ensures initializers exist for const variables and arrays are initialized with matching element counts.
+public record VariableSymbol(
+    String name,
+    Type type,
+    boolean isConst
+) implements Symbol {
+    // Represents variables and constants
+}
 
-### 5.3 Statements
+public record FunctionSymbol(
+    String name,
+    FunctionType type,
+    boolean defined
+) implements Symbol {
+    // Represents function declarations and definitions
+}
+```
 
-* Block scopes create child `SymbolTable` instances through `checker.withNewScope(...)`, ensuring RAII-like semantics (try/finally to restore the parent scope).
-* `<slozena_naredba>` explicitly recognises all legal shapes from the grammar: `{ }`, `{ <lista_deklaracija> }`, and `{ <lista_deklaracija> <lista_naredbi> }`. This is what makes empty `for`/`while` bodies (and standalone `{ }` blocks) legal again.
-* Conditional statements require expressions that are `~ int` (int-convertible via `TypeSystem.isIntConvertible`).
-* Loop constructs increment/decrement `loopDepth`; `continue`/`break` fail immediately when `loopDepth == 0`.
-* `StatementRules.handleReturn` mirrors the spec’s split between `return;` (only permitted inside `void` functions) and `return <expr>;` (where `<expr>` must be assignable to the current function’s return type).
+### Type System Implementation
 
-### 5.4 Global Constraints
+The type system provides a comprehensive representation of PPJ-C types with support for const qualification, arrays, and functions.
 
-Executed after the full traversal:
+#### Type Hierarchy
 
-1. `main` existence and signature (exact match to `int main(void)`).
-2. All declared functions must be defined once; duplicates or missing definitions trigger `fail`.
-3. Optional cross-checks can be added here (e.g., unused symbol diagnostics).
+```java
+public sealed interface Type permits PrimitiveType, ArrayType, FunctionType, ConstType {
+    boolean isVoid();
+    boolean isScalar();
+    boolean isArray();
+    boolean isFunction();
+    boolean isConst();
+}
 
----
+public enum PrimitiveType implements Type {
+    VOID, CHAR, INT;
+    
+    @Override
+    public boolean isVoid() { return this == VOID; }
+    @Override
+    public boolean isScalar() { return this != VOID; }
+}
 
-## 6. Building and Extending the Analyzer
+public record ArrayType(Type elementType) implements Type {
+    @Override
+    public boolean isArray() { return true; }
+    @Override
+    public boolean isScalar() { return false; }
+}
 
-### 6.1 Adding a New Semantic Rule
+public record FunctionType(
+    Type returnType,
+    List<Type> parameterTypes
+) implements Type {
+    @Override
+    public boolean isFunction() { return true; }
+    @Override
+    public boolean isScalar() { return false; }
+}
 
-1. Extend `config/semantics_definition.txt` to document the grammar production.
-2. Implement a corresponding `visitXxx` method (or extend an existing one).
-3. Update `SemanticChecker.visitNonTerminal` dispatch table.
-4. Add unit tests under `compiler-semantics/src/test/java`.
-5. Update this document if the change alters architecture or introduces new invariants.
+public record ConstType(Type baseType) implements Type {
+    @Override
+    public boolean isConst() { return true; }
+    // Delegates other methods to baseType
+}
+```
 
-### 6.2 Debugging Tips
+#### TypeSystem Utilities
 
-* Use `GenerativeTreeParser` to reconstruct the semantic tree from `generativno_stablo.txt` during manual debugging.
-* The `SemanticAnalyzerTest` class contains golden tests that load sample programs and compare semantic outputs against `semantic.txt`.
-* Enable verbose logging around symbol lookups by temporarily instrumenting `SymbolTable`.
+```java
+public final class TypeSystem {
+    // Const qualification operations
+    public static Type stripConst(Type type);
+    public static Type applyConst(Type type);
+    
+    // Type compatibility checking
+    public static boolean canAssign(Type from, Type to);
+    public static boolean canConvert(Type from, Type to);
+    public static boolean isIntConvertible(Type type);
+    
+    // Type equality and comparison
+    public static boolean typesEqual(Type t1, Type t2);
+    public static boolean isCompatibleFunctionType(FunctionType f1, FunctionType f2);
+}
+```
 
----
+## Analysis Algorithms
 
-## 7. Implementation Conventions
+### Tree Traversal Strategy
 
-* **Java 17 features** – sealed interfaces, pattern matching, and records are used to express intent.
-* **Null-safety** – extensive `Objects.requireNonNull` usage to fail fast.
-* **Immutability** – `Type` instances are immutable; symbol tables encapsulate mutability within well-defined APIs.
-* **Error locality** – the first breach stops the analysis, ensuring deterministic outputs for automated graders.
+The semantic analyzer employs a recursive descent traversal strategy with rule-based dispatch:
 
----
+```java
+public void visitNonTerminal(NonTerminalNode node) {
+    String symbol = node.symbol();
+    
+    // Dispatch to appropriate rule handler
+    if (rules.containsKey(symbol)) {
+        rules.get(symbol).apply(node);
+    } else {
+        // Default traversal for unhandled productions
+        for (ParseNode child : node.children()) {
+            if (child instanceof NonTerminalNode nonTerminal) {
+                visitNonTerminal(nonTerminal);
+            }
+        }
+    }
+}
+```
 
-## 8. Future Work
+### Attribute Synthesis
 
-* **Flow-sensitive const and definite-assignment analysis** for more precise diagnostics.
-* **Interprocedural checks** (e.g., verifying that recursive definitions meet specific constraints).
-* **Warning system** – optional diagnostics for unused variables, unreachable code, etc.
-* **Serialization hooks** – emit symbol tables for downstream optimization passes.
+Semantic attributes are synthesized bottom-up during tree traversal:
 
----
+1. **Child Processing**: Visit all child nodes to compute their attributes
+2. **Rule Application**: Apply semantic rules based on the production pattern
+3. **Attribute Computation**: Synthesize parent attributes from child attributes
+4. **Constraint Validation**: Verify semantic constraints and report errors
 
-## 9. Appendix: Quick Reference
+### Scope Management Algorithm
 
-| Component | Location | Responsibility |
-|-----------|----------|----------------|
-| `SemanticAnalyzer` | `compiler-semantics/.../analysis` | API façade used by CLI |
-| `SemanticChecker`  | same | Implements all semantic rules |
-| `SymbolTable` + symbols | `.../symbols` | Hierarchical scope storage |
-| `Type`, `PrimitiveType`, `ArrayType`, `FunctionType`, `ConstType`, `TypeSystem` | `.../types` | Type modeling and conversion helpers |
-| `ParseTreeConverter`, `GenerativeTreeParser` | `.../analysis` & `.../io` | Tree reconstruction utilities |
-| `SemanticAttributes`, `NonTerminalNode`, `TerminalNode` | `.../tree` | Attribute carriers |
+Scope management follows a stack-based approach with RAII semantics:
 
-By following this document and the source code, engineers should be able to implement new semantic checks confidently, ensure they adhere to PPJ specifications, and keep the analyzer maintainable.
+```java
+public void withNewScope(Runnable action) {
+    SymbolTable previousScope = currentScope;
+    currentScope = currentScope.enterChildScope();
+    try {
+        action.run();
+    } finally {
+        currentScope = previousScope;
+    }
+}
+```
 
----
+## Semantic Rule Implementation
 
-_Document version: 2025-11-25_
+### Declaration Processing
 
+Declaration rules handle symbol introduction and scope management:
 
+#### Variable Declarations
+
+```java
+private void visitDeklaracija(NonTerminalNode node) {
+    // Process: <ime_tipa> <lista_init_deklaratora>
+    NonTerminalNode typeNode = (NonTerminalNode) node.child(0);
+    NonTerminalNode declaratorList = (NonTerminalNode) node.child(1);
+    
+    // Synthesize base type
+    visitNonTerminal(typeNode);
+    Type baseType = typeNode.attributes().type();
+    
+    // Validate void type restriction
+    if (baseType.isVoid()) {
+        fail(node); // Variables cannot have void type
+    }
+    
+    // Process declarator list with inherited type
+    declaratorList.attributes().inheritedType(baseType);
+    visitNonTerminal(declaratorList);
+}
+```
+
+#### Function Definitions
+
+```java
+private void visitDefinicijaFunkcije(NonTerminalNode node) {
+    // Process: <ime_tipa> <izravni_deklarator> <slozena_naredba>
+    NonTerminalNode typeNode = (NonTerminalNode) node.child(0);
+    NonTerminalNode declarator = (NonTerminalNode) node.child(1);
+    NonTerminalNode body = (NonTerminalNode) node.child(2);
+    
+    // Synthesize return type
+    visitNonTerminal(typeNode);
+    Type returnType = typeNode.attributes().type();
+    
+    // Process function declarator
+    declarator.attributes().inheritedType(returnType);
+    visitNonTerminal(declarator);
+    
+    String functionName = declarator.attributes().identifier();
+    FunctionType functionType = declarator.attributes().functionType();
+    
+    // Declare or verify function symbol
+    FunctionSymbol symbol = new FunctionSymbol(functionName, functionType, true);
+    if (!currentScope.declare(symbol)) {
+        // Check for compatible redeclaration
+        Symbol existing = currentScope.lookup(functionName);
+        if (!isCompatibleFunctionRedefinition(existing, symbol)) {
+            fail(node);
+        }
+    }
+    
+    // Process function body with parameter scope
+    withFunctionScope(functionType, () -> {
+        visitNonTerminal(body);
+    });
+}
+```
+
+### Expression Type Checking
+
+Expression rules implement type checking and implicit conversion logic:
+
+#### Binary Expression Processing
+
+```java
+private void visitBinaryExpression(NonTerminalNode node, BinaryOperator operator) {
+    NonTerminalNode left = (NonTerminalNode) node.child(0);
+    NonTerminalNode right = (NonTerminalNode) node.child(2);
+    
+    // Process operands
+    visitNonTerminal(left);
+    visitNonTerminal(right);
+    
+    Type leftType = left.attributes().type();
+    Type rightType = right.attributes().type();
+    
+    // Apply operator-specific type rules
+    switch (operator) {
+        case ARITHMETIC -> {
+            if (!TypeSystem.isIntConvertible(leftType) || 
+                !TypeSystem.isIntConvertible(rightType)) {
+                fail(node);
+            }
+            node.attributes().type(PrimitiveType.INT);
+            node.attributes().lValue(false);
+        }
+        case RELATIONAL -> {
+            if (!TypeSystem.isIntConvertible(leftType) || 
+                !TypeSystem.isIntConvertible(rightType)) {
+                fail(node);
+            }
+            node.attributes().type(PrimitiveType.INT);
+            node.attributes().lValue(false);
+        }
+        case ASSIGNMENT -> {
+            if (!left.attributes().isLValue() || 
+                !TypeSystem.canAssign(rightType, leftType)) {
+                fail(node);
+            }
+            node.attributes().type(leftType);
+            node.attributes().lValue(false);
+        }
+    }
+}
+```
+
+#### Array Indexing Validation
+
+```java
+private void handleArrayElement(NonTerminalNode node) {
+    // Process: <postfiks_izraz> L_UGL_ZAGRADA <izraz> D_UGL_ZAGRADA
+    NonTerminalNode base = (NonTerminalNode) node.child(0);
+    NonTerminalNode index = (NonTerminalNode) node.child(2);
+    
+    visitNonTerminal(base);
+    visitNonTerminal(index);
+    
+    Type baseType = base.attributes().type();
+    Type indexType = index.attributes().type();
+    
+    // Validate array base type
+    Type stripped = TypeSystem.stripConst(baseType);
+    if (!(stripped instanceof ArrayType arrayType)) {
+        fail(node);
+    }
+    
+    // Validate index type
+    if (!TypeSystem.isIntConvertible(indexType)) {
+        fail(node);
+    }
+    
+    // Synthesize result attributes
+    node.attributes().type(arrayType.elementType());
+    node.attributes().lValue(true);
+}
+```
+
+### Statement Validation
+
+Statement rules handle control flow and block structure validation:
+
+#### Block Statement Processing
+
+```java
+private void processBlock(NonTerminalNode node) {
+    List<ParseNode> children = node.children();
+    
+    if (children.size() == 2) {
+        // Empty block: L_VIT_ZAGRADA D_VIT_ZAGRADA
+        return; // Empty blocks are explicitly allowed
+    }
+    
+    // Process block contents within new scope
+    withNewScope(() -> {
+        if (children.size() == 3) {
+            // Block with declarations or statements only
+            visitNonTerminal((NonTerminalNode) children.get(1));
+        } else if (children.size() == 4) {
+            // Block with both declarations and statements
+            visitNonTerminal((NonTerminalNode) children.get(1)); // declarations
+            visitNonTerminal((NonTerminalNode) children.get(2)); // statements
+        } else {
+            fail(node);
+        }
+    });
+}
+```
+
+#### Return Statement Validation
+
+```java
+private void handleReturn(NonTerminalNode node) {
+    List<ParseNode> children = node.children();
+    
+    if (children.size() == 2) {
+        // return;
+        if (!currentFunction.returnType().isVoid()) {
+            fail(node); // Non-void functions require return expression
+        }
+    } else if (children.size() == 3) {
+        // return <expression>;
+        NonTerminalNode expr = (NonTerminalNode) children.get(1);
+        visitNonTerminal(expr);
+        
+        if (currentFunction.returnType().isVoid()) {
+            fail(node); // Void functions cannot return expressions
+        }
+        
+        if (!TypeSystem.canAssign(expr.attributes().type(), currentFunction.returnType())) {
+            fail(node); // Return type mismatch
+        }
+    } else {
+        fail(node);
+    }
+}
+```
+
+## Error Handling Implementation
+
+### Error Detection Strategy
+
+The semantic analyzer implements a fail-fast error detection strategy:
+
+```java
+private void fail(NonTerminalNode node) {
+    String production = ProductionFormatter.format(node);
+    System.out.println(production);
+    System.out.println();
+    System.out.println("semantic error");
+    throw new SemanticException("Semantic analysis failed at: " + production);
+}
+```
+
+### Production Formatting
+
+Error messages include the exact production where the error occurred:
+
+```java
+public class ProductionFormatter {
+    public static String format(NonTerminalNode node) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<").append(node.symbol()).append("> ::=");
+        
+        for (ParseNode child : node.children()) {
+            sb.append(" ");
+            if (child instanceof TerminalNode terminal) {
+                sb.append(terminal.symbol())
+                  .append("(").append(terminal.line())
+                  .append(",").append(terminal.lexeme()).append(")");
+            } else {
+                sb.append("<").append(child.symbol()).append(">");
+            }
+        }
+        
+        return sb.toString();
+    }
+}
+```
+
+## Debug Output Generation
+
+### Symbol Table Dumping
+
+The semantic analyzer can generate detailed symbol table dumps for debugging:
+
+```java
+public void writeSymbolTable(SymbolTable globalScope) {
+    Path outputFile = outputDirectory.resolve("tablica_simbola.txt");
+    try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(outputFile))) {
+        writer.println("=== SYMBOL TABLE DUMP ===");
+        dumpSymbolTableRecursive(globalScope, writer, 0);
+    } catch (IOException e) {
+        System.err.println("Warning: Failed to write symbol table report: " + e.getMessage());
+    }
+}
+
+private void dumpSymbolTableRecursive(SymbolTable scope, PrintWriter writer, int level) {
+    String indent = "  ".repeat(level);
+    writer.printf("%sScope (Level %d):%n", indent, level);
+    
+    if (scope.entries().isEmpty()) {
+        writer.printf("%s  (no symbols)%n", indent);
+    } else {
+        for (Map.Entry<String, Symbol> entry : scope.entries().entrySet()) {
+            Symbol symbol = entry.getValue();
+            writer.printf("%s  %s : %s", indent, symbol.name(), symbol.type());
+            
+            if (symbol instanceof FunctionSymbol function) {
+                writer.printf(" [defined=%s]", function.defined());
+            } else if (symbol instanceof VariableSymbol variable) {
+                writer.printf(" [const=%s]", variable.isConst());
+            }
+            writer.println();
+        }
+    }
+}
+```
+
+### Semantic Tree Dumping
+
+Complete semantic tree structures can be dumped with all attributes:
+
+```java
+public void writeSemanticTree(NonTerminalNode root) {
+    Path outputFile = outputDirectory.resolve("semanticko_stablo.txt");
+    try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(outputFile))) {
+        writer.println("=== SEMANTIC TREE DUMP ===");
+        dumpSemanticTreeRecursive(root, writer, 0);
+    } catch (IOException e) {
+        System.err.println("Warning: Failed to write semantic tree report: " + e.getMessage());
+    }
+}
+
+private void dumpSemanticTreeRecursive(ParseNode node, PrintWriter writer, int level) {
+    String indent = "  ".repeat(level);
+    
+    if (node instanceof NonTerminalNode nonTerminal) {
+        writer.printf("%s<<%s>> [type=%s, lvalue=%s, id=%s, elements=%d]%n",
+            indent,
+            nonTerminal.symbol(),
+            nonTerminal.attributes().type(),
+            nonTerminal.attributes().isLValue(),
+            nonTerminal.attributes().identifier(),
+            nonTerminal.attributes().elementCount());
+            
+        for (ParseNode child : nonTerminal.children()) {
+            dumpSemanticTreeRecursive(child, writer, level + 1);
+        }
+    } else if (node instanceof TerminalNode terminal) {
+        writer.printf("%s%s (%d,%s) [symbol=%s]%n",
+            indent,
+            terminal.symbol(),
+            terminal.line(),
+            terminal.lexeme(),
+            terminal.symbol());
+    }
+}
+```
+
+## Extension Points
+
+### Adding New Semantic Rules
+
+To add new semantic rules to the analyzer:
+
+1. **Update Specification**: Add the new rule to `config/semantics_definition.txt`
+2. **Implement Handler**: Create a new rule handler method in the appropriate rule module
+3. **Register Rule**: Add the rule to the dispatch table in `SemanticChecker`
+4. **Add Tests**: Create unit tests to verify the new rule behavior
+5. **Update Documentation**: Document the new rule and its implementation
+
+### Extending Type System
+
+The type system can be extended by:
+
+1. **Adding New Types**: Implement new `Type` interface implementations
+2. **Updating TypeSystem**: Add compatibility rules for new types
+3. **Modifying Rules**: Update expression and declaration rules to handle new types
+4. **Testing**: Ensure comprehensive test coverage for new type interactions
+
+### Enhancing Error Reporting
+
+Error reporting can be enhanced by:
+
+1. **Adding Context**: Include more contextual information in error messages
+2. **Multiple Errors**: Implement error recovery to report multiple errors
+3. **Warnings**: Add warning system for non-fatal semantic issues
+4. **Suggestions**: Provide fix suggestions for common semantic errors
+
+This implementation provides a robust foundation for semantic analysis while maintaining extensibility and maintainability through its modular architecture and clear separation of concerns.
