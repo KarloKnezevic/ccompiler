@@ -286,6 +286,7 @@ details code {
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 3</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -359,6 +360,7 @@ Očekivani uniformni znakovi: L_UGL_ZAGRADA, L_ZAGRADA, OP_PRIDRUZI, TOCKAZAREZ,
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 2</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -427,6 +429,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 2</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -503,6 +506,7 @@ Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT
         <span class="badge badge-error">Lexer error</span>
         <span class="badge badge-skip">Parser: Skipped (lexer failed)</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -528,6 +532,7 @@ Leksička greška na retku 2, stupcu 10: neprepoznat znak &#39;@&#39; (0x40)
         <span class="badge badge-error">Lexer error</span>
         <span class="badge badge-skip">Parser: Skipped (lexer failed)</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -553,6 +558,7 @@ Leksička greška na retku 2, stupcu 10: neprepoznat znak &#39;#&#39; (0x23)
         <span class="badge badge-error">Lexer error</span>
         <span class="badge badge-skip">Parser: Skipped (lexer failed)</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -578,6 +584,7 @@ Leksička greška na retku 2, stupcu 14: neprepoznat znak &#39;&#39;&#39; (0x27)
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -672,6 +679,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, KR_BREAK, KR_CONTI
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -772,6 +780,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, KR_BREAK, KR_CONTI
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-ok">Semantic: OK</span>
+        <span class="badge badge-ok">CodeGen: OK</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -1286,6 +1295,54 @@ Global Scope:
                 D_VIT_ZAGRADA (8,})
 </code></pre>
       </details>
+      <details>
+        <summary>Generated FRISC Assembly Code</summary>
+        <pre><code>; Program entry point
+        MOVE 40000, R7          ; init stack pointer
+        CALL F_MAIN             ; call main
+        HALT                    ; end of program, R6 holds return value
+
+; Function definitions
+F_MAIN                          ; Function main
+; Local variable x at (R7-4)
+        SUB R7, 4, R7           ; allocate 1 local variables
+; Compound statement
+; Local declarations (TODO)
+        MOVE 5, R0              ; load constant 5
+        STORE R0, (R7-4)        ; assign to x
+; If-else statement
+        LOAD R0, (R7-4)         ; load variable x
+        PUSH R0                 ; save left operand
+        MOVE 0, R0              ; load constant 0
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        CMP R0, R1
+        JP_SGT L_SC_TRUE1       ; comparison OP_GT
+        MOVE 0, R0              ; comparison result false
+        JP L_SC_END1
+L_SC_TRUE1
+        MOVE 1, R0              ; comparison result true
+L_SC_END1
+        CMP R0, 0
+        JP_EQ L_ELSE1           ; if condition is false
+; Compound statement
+        MOVE 1, R0              ; load constant 1
+        MOVE R0, R6             ; return value
+        RET                     ; return from function
+        JP L_END1               ; skip else
+L_ELSE1                         ; else clause
+L_END1                          ; end if-else
+        MOVE 0, R0              ; load constant 0
+        MOVE R0, R6             ; return value
+        RET                     ; return from function
+        ADD R7, 4, R7           ; deallocate local variables
+        MOVE 0, R6              ; default return value
+        RET                     ; return from main
+
+; Global variables
+
+</code></pre>
+      </details>
     </section>
     <section id="program18" class="program-card">
       <h2>program18.c</h2>
@@ -1293,6 +1350,7 @@ Global Scope:
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 2</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -1453,6 +1511,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 2</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -1613,6 +1672,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 3</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -1689,6 +1749,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, L_UGL_ZAGRADA, L_ZAGRADA, MIN
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 5</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -2016,6 +2077,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 7</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -2383,6 +2445,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 7</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -2798,6 +2861,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 7</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -3210,6 +3274,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 2</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -3322,6 +3387,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 2</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -3615,6 +3681,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -3870,6 +3937,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-ok">Semantic: OK</span>
+        <span class="badge badge-ok">CodeGen: OK</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -4322,6 +4390,37 @@ Global Scope:
                 D_VIT_ZAGRADA (9,})
 </code></pre>
       </details>
+      <details>
+        <summary>Generated FRISC Assembly Code</summary>
+        <pre><code>; Program entry point
+        MOVE 40000, R7          ; init stack pointer
+        CALL F_MAIN             ; call main
+        HALT                    ; end of program, R6 holds return value
+
+; Function definitions
+F_MAIN                          ; Function main
+; Local variable x at (R7-4)
+; Local variable x at (R7-8)
+        SUB R7, 8, R7           ; allocate 2 local variables
+; Compound statement
+; Local declarations (TODO)
+; Compound statement
+; Local declarations (TODO)
+        MOVE 5, R0              ; load constant 5
+        STORE R0, (R7-8)        ; assign to x
+        MOVE 10, R0             ; load constant 10
+        STORE R0, (R7-8)        ; assign to x
+        LOAD R0, (R7-8)         ; load variable x
+        MOVE R0, R6             ; return value
+        RET                     ; return from function
+        ADD R7, 8, R7           ; deallocate local variables
+        MOVE 0, R6              ; default return value
+        RET                     ; return from main
+
+; Global variables
+
+</code></pre>
+      </details>
     </section>
     <section id="program28" class="program-card">
       <h2>program28.c</h2>
@@ -4329,6 +4428,7 @@ Global Scope:
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 4</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -4636,6 +4736,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 3</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -5028,6 +5129,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 2</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -5304,6 +5406,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 3</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -5575,6 +5678,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 5</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -5907,6 +6011,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -5994,6 +6099,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 8</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -6449,6 +6555,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 7</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -6970,6 +7077,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 7</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -7310,6 +7418,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-ok">Semantic: OK</span>
+        <span class="badge badge-ok">CodeGen: OK</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -7900,6 +8009,58 @@ Global Scope:
                 D_VIT_ZAGRADA (10,})
 </code></pre>
       </details>
+      <details>
+        <summary>Generated FRISC Assembly Code</summary>
+        <pre><code>; Program entry point
+        MOVE 40000, R7          ; init stack pointer
+        CALL F_MAIN             ; call main
+        HALT                    ; end of program, R6 holds return value
+
+; Function definitions
+F_MAIN                          ; Function main
+; Local variable x at (R7-4)
+        SUB R7, 4, R7           ; allocate 1 local variables
+; Compound statement
+; Local declarations (TODO)
+        MOVE 5, R0              ; load constant 5
+        STORE R0, (R7-4)        ; assign to x
+; If-else statement
+        LOAD R0, (R7-4)         ; load variable x
+        PUSH R0                 ; save left operand
+        MOVE 0, R0              ; load constant 0
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        CMP R0, R1
+        JP_SGT L_SC_TRUE1       ; comparison OP_GT
+        MOVE 0, R0              ; comparison result false
+        JP L_SC_END1
+L_SC_TRUE1
+        MOVE 1, R0              ; comparison result true
+L_SC_END1
+        CMP R0, 0
+        JP_EQ L_ELSE1           ; if condition is false
+; Compound statement
+        MOVE 1, R0              ; load constant 1
+        MOVE R0, R6             ; return value
+        RET                     ; return from function
+        JP L_END1               ; skip else
+L_ELSE1                         ; else clause
+; Compound statement
+        MOVE 0, R0              ; load constant 0
+        MOVE R0, R6             ; return value
+        RET                     ; return from function
+L_END1                          ; end if-else
+        MOVE 2, R0              ; load constant 2
+        MOVE R0, R6             ; return value
+        RET                     ; return from function
+        ADD R7, 4, R7           ; deallocate local variables
+        MOVE 0, R6              ; default return value
+        RET                     ; return from main
+
+; Global variables
+
+</code></pre>
+      </details>
     </section>
     <section id="program37" class="program-card">
       <h2>program37.c</h2>
@@ -7907,6 +8068,7 @@ Global Scope:
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 9</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -8025,6 +8187,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 9</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -8143,6 +8306,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 9</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -8261,6 +8425,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 3</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -8548,6 +8713,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 9</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -8666,6 +8832,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -8764,6 +8931,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-ok">Semantic: OK</span>
+        <span class="badge badge-ok">CodeGen: OK</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -9192,6 +9360,32 @@ Global Scope:
                 D_VIT_ZAGRADA (5,})
 </code></pre>
       </details>
+      <details>
+        <summary>Generated FRISC Assembly Code</summary>
+        <pre><code>; Program entry point
+        MOVE 40000, R7          ; init stack pointer
+        CALL F_MAIN             ; call main
+        HALT                    ; end of program, R6 holds return value
+
+; Function definitions
+F_MAIN                          ; Function main
+; Local variable arr at (R7-4)
+        SUB R7, 4, R7           ; allocate 1 local variables
+; Compound statement
+; Local declarations (TODO)
+        MOVE 5, R0              ; load constant 5
+        STORE R0, (R7-4)        ; assign to arr
+        MOVE 0, R0              ; load constant 0
+        MOVE R0, R6             ; return value
+        RET                     ; return from function
+        ADD R7, 4, R7           ; deallocate local variables
+        MOVE 0, R6              ; default return value
+        RET                     ; return from main
+
+; Global variables
+
+</code></pre>
+      </details>
     </section>
     <section id="program43" class="program-card">
       <h2>program43.c</h2>
@@ -9199,6 +9393,7 @@ Global Scope:
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 9</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -9317,6 +9512,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 7</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -9808,6 +10004,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 7</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -10294,6 +10491,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 9</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -10412,6 +10610,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -10499,6 +10698,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -10586,6 +10786,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -10672,6 +10873,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 2</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -10758,6 +10960,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, D_ZAGRADA, L_UGL_ZAGRADA, L_Z
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -10844,6 +11047,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -10930,6 +11134,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -11016,6 +11221,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -11102,6 +11308,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -11202,6 +11409,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -11302,6 +11510,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -11398,6 +11607,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -11495,6 +11705,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -11592,6 +11803,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -11689,6 +11901,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 5</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -11775,6 +11988,7 @@ Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -11872,6 +12086,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -11969,6 +12184,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -12066,6 +12282,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 4</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -12164,6 +12381,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-ok">Semantic: OK</span>
+        <span class="badge badge-ok">CodeGen: OK</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -12622,6 +12840,31 @@ Global Scope:
                 D_VIT_ZAGRADA (6,})
 </code></pre>
       </details>
+      <details>
+        <summary>Generated FRISC Assembly Code</summary>
+        <pre><code>; Program entry point
+        MOVE 40000, R7          ; init stack pointer
+        CALL F_MAIN             ; call main
+        HALT                    ; end of program, R6 holds return value
+
+; Function definitions
+F_MAIN                          ; Function main
+; Local variable i at (R7-4)
+        SUB R7, 4, R7           ; allocate 1 local variables
+; Compound statement
+; Local declarations (TODO)
+; For loop with increment (TODO)
+        LOAD R0, (R7-4)         ; load variable i
+        MOVE R0, R6             ; return value
+        RET                     ; return from function
+        ADD R7, 4, R7           ; deallocate local variables
+        MOVE 0, R6              ; default return value
+        RET                     ; return from main
+
+; Global variables
+
+</code></pre>
+      </details>
     </section>
     <section id="program65" class="program-card">
       <h2>program65.c</h2>
@@ -12629,6 +12872,7 @@ Global Scope:
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-ok">Semantic: OK</span>
+        <span class="badge badge-ok">CodeGen: OK</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -13217,6 +13461,31 @@ Global Scope:
                 D_VIT_ZAGRADA (9,})
 </code></pre>
       </details>
+      <details>
+        <summary>Generated FRISC Assembly Code</summary>
+        <pre><code>; Program entry point
+        MOVE 40000, R7          ; init stack pointer
+        CALL F_MAIN             ; call main
+        HALT                    ; end of program, R6 holds return value
+
+; Function definitions
+F_MAIN                          ; Function main
+; Local variable i at (R7-4)
+        SUB R7, 4, R7           ; allocate 1 local variables
+; Compound statement
+; Local declarations (TODO)
+; For loop with increment (TODO)
+        LOAD R0, (R7-4)         ; load variable i
+        MOVE R0, R6             ; return value
+        RET                     ; return from function
+        ADD R7, 4, R7           ; deallocate local variables
+        MOVE 0, R6              ; default return value
+        RET                     ; return from main
+
+; Global variables
+
+</code></pre>
+      </details>
     </section>
     <section id="program66" class="program-card">
       <h2>program66.c</h2>
@@ -13224,6 +13493,7 @@ Global Scope:
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-ok">Semantic: OK</span>
+        <span class="badge badge-ok">CodeGen: OK</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -13766,6 +14036,57 @@ Global Scope:
                 D_VIT_ZAGRADA (7,})
 </code></pre>
       </details>
+      <details>
+        <summary>Generated FRISC Assembly Code</summary>
+        <pre><code>; Program entry point
+        MOVE 40000, R7          ; init stack pointer
+        CALL F_MAIN             ; call main
+        HALT                    ; end of program, R6 holds return value
+
+; Function definitions
+F_MAIN                          ; Function main
+; Local variable i at (R7-4)
+        SUB R7, 4, R7           ; allocate 1 local variables
+; Compound statement
+; Local declarations (TODO)
+        MOVE 0, R0              ; load constant 0
+        STORE R0, (R7-4)        ; assign to i
+L_LOOP1                         ; for loop
+        LOAD R0, (R7-4)         ; load variable i
+        PUSH R0                 ; save left operand
+        MOVE 10, R0             ; load constant 10
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        CMP R0, R1
+        JP_SLT L_SC_TRUE1       ; comparison OP_LT
+        MOVE 0, R0              ; comparison result false
+        JP L_SC_END1
+L_SC_TRUE1
+        MOVE 1, R0              ; comparison result true
+L_SC_END1
+        CMP R0, 0
+        JP_EQ L_BREAK1          ; exit for loop
+; Compound statement
+        LOAD R0, (R7-4)         ; load variable i
+        PUSH R0                 ; save left operand
+        MOVE 1, R0              ; load constant 1
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        ADD R0, R1, R0          ; addition
+        STORE R0, (R7-4)        ; assign to i
+        JP L_LOOP1              ; repeat for loop
+L_BREAK1
+        LOAD R0, (R7-4)         ; load variable i
+        MOVE R0, R6             ; return value
+        RET                     ; return from function
+        ADD R7, 4, R7           ; deallocate local variables
+        MOVE 0, R6              ; default return value
+        RET                     ; return from main
+
+; Global variables
+
+</code></pre>
+      </details>
     </section>
     <section id="program67" class="program-card">
       <h2>program67.c</h2>
@@ -13773,6 +14094,7 @@ Global Scope:
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 9</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -13891,6 +14213,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 9</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -14009,6 +14332,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 9</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -14127,6 +14451,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 2</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -14218,6 +14543,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, D_ZAGRADA, L_UGL_ZAGRADA, L_Z
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 9</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -14336,6 +14662,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 2</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -14421,6 +14748,7 @@ Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 2</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -14507,6 +14835,7 @@ Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 2</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -14592,6 +14921,7 @@ Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 2</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -14687,6 +15017,7 @@ Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 2</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -14772,6 +15103,7 @@ Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -15101,6 +15433,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -15399,6 +15732,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -15893,6 +16227,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error at line 2</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -16233,6 +16568,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 2</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -16328,6 +16664,7 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, D_ZAGRADA, L_UGL_ZAGRADA, L_Z
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -16854,6 +17191,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 3</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -16952,6 +17290,7 @@ Očekivani uniformni znakovi: IDN, KR_CONST.
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -17207,6 +17546,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -17611,6 +17951,7 @@ Semantic analysis failed: class hr.fer.ppj.semantics.tree.NonTerminalNode cannot
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -18024,6 +18365,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
         <span class="badge badge-error">Semantic error</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -18414,6 +18756,7 @@ semantic error
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-error">Parser error at line 3</span>
         <span class="badge badge-skip">Semantic: Skipped (parser failed)</span>
+        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
       </div>
       <details open>
         <summary>Source Code</summary>

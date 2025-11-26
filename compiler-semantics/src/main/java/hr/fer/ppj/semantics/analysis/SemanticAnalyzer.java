@@ -91,5 +91,47 @@ public final class SemanticAnalyzer {
       throw e;
     }
   }
+  
+  /**
+   * Runs semantic analysis and returns the results for code generation.
+   * 
+   * @param parseTree the parse tree from syntax analysis
+   * @param out output stream for diagnostics
+   * @param semanticReport report generator for debug files (null to disable)
+   * @return the semantic analysis results (global scope and annotated tree)
+   * @throws SemanticException if semantic analysis fails
+   */
+  public SemanticAnalysisResult analyzeWithResults(ParseTree parseTree, PrintStream out, SemanticReport semanticReport) {
+    Objects.requireNonNull(parseTree, "parseTree must not be null");
+    Objects.requireNonNull(out, "out must not be null");
+
+    NonTerminalNode root = new ParseTreeConverter().convert(parseTree);
+    SymbolTable globalScope = new SymbolTable();
+    SemanticChecker checker = new SemanticChecker(globalScope, out);
+    
+    try {
+      checker.check(root);
+      
+      // If we reach here, semantic analysis succeeded (no exceptions thrown)
+      // Generate debug files if report generator is provided
+      if (semanticReport != null) {
+        semanticReport.generateDebugFiles(globalScope, root);
+      }
+      
+      // Return results for code generation
+      return new SemanticAnalysisResult(globalScope, root);
+      
+    } catch (SemanticException e) {
+      // Semantic error occurred - don't generate debug files
+      // The error has already been printed by SemanticChecker
+      throw e;
+    }
+  }
+  
+  /**
+   * Result of semantic analysis containing the global symbol table and annotated parse tree.
+   */
+  public record SemanticAnalysisResult(SymbolTable globalScope, NonTerminalNode parseTree) {
+  }
 }
 

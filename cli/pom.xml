@@ -33,6 +33,11 @@
             <artifactId>compiler-semantics</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>hr.fer.ppj</groupId>
+            <artifactId>compiler-codegen</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

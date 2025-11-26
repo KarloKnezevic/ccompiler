@@ -1,5 +1,6 @@
 package hr.fer.ppj.cli;
 
+import hr.fer.ppj.codegen.CodeGenerator;
 import hr.fer.ppj.lexer.gen.LexerGenerator;
 import hr.fer.ppj.lexer.gen.LexerGeneratorResult;
 import hr.fer.ppj.lexer.io.Lexer;
@@ -155,7 +156,7 @@ public final class Main {
   }
   
   /**
-   * Runs full compilation pipeline (lexical + syntax + code generation).
+   * Runs full compilation pipeline (lexical + syntax + semantic + code generation).
    * Generates all output files in compiler-bin/ directory.
    */
   private static void runSemantic(String filePath) throws Exception {
@@ -163,16 +164,29 @@ public final class Main {
     CompilationArtifacts artifacts = compileToParseTree(filePath, binDir, true);
     SemanticAnalyzer analyzer = new SemanticAnalyzer();
     
-    // Create semantic report for current working directory
-    SemanticReport semanticReport = SemanticReport.forCurrentDirectory();
+    // Create semantic report for compiler-bin directory
+    SemanticReport semanticReport = SemanticReport.forDirectory(binDir.toString());
     
     try {
-      analyzer.analyze(artifacts.parseTree(), System.out, semanticReport);
+      // Perform semantic analysis and get results
+      SemanticAnalyzer.SemanticAnalysisResult semanticResults = analyzer.analyzeWithResults(
+          artifacts.parseTree(), System.out, semanticReport);
       System.err.println("Semantic analysis completed.");
+      
+      // Perform code generation
+      CodeGenerator codeGen = new CodeGenerator();
+      Path friscOutputPath = binDir.resolve("a.frisc");
+      codeGen.generate(semanticResults.globalScope(), semanticResults.parseTree(), friscOutputPath);
+      System.err.println("Code generation completed. Generated " + friscOutputPath);
+      
     } catch (hr.fer.ppj.semantics.analysis.SemanticException e) {
       // Production already printed by SemanticChecker.fail()
       // Print error message and exit without stack trace
       System.err.println("Error: semantic error");
+      System.exit(1);
+    } catch (Exception e) {
+      System.err.println("Error during code generation: " + e.getMessage());
+      e.printStackTrace(System.err);
       System.exit(1);
     }
   }

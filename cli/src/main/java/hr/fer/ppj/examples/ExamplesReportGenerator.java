@@ -1,5 +1,6 @@
 package hr.fer.ppj.examples;
 
+import hr.fer.ppj.codegen.CodeGenerator;
 import hr.fer.ppj.lexer.gen.LexerGenerator;
 import hr.fer.ppj.lexer.gen.LexerGeneratorResult;
 import hr.fer.ppj.lexer.io.Lexer;
@@ -29,14 +30,15 @@ import java.util.stream.Stream;
 /**
  * Generates HTML reports for test programs in examples/valid and examples/invalid directories.
  * 
- * <p>For each .c program, runs lexer, parser, and semantic analyzer, collects outputs, 
- * and generates comprehensive HTML reports showing:
+ * <p>For each .c program, runs lexer, parser, semantic analyzer, and code generator, 
+ * collects outputs, and generates comprehensive HTML reports showing:
  * <ul>
  *   <li>Source code</li>
  *   <li>Lexical tokens output</li>
  *   <li>Generative tree</li>
  *   <li>Syntax tree</li>
  *   <li>Semantic analysis results</li>
+ *   <li>Generated FRISC assembly code</li>
  *   <li>Error messages (if any)</li>
  * </ul>
  * 
@@ -70,16 +72,19 @@ public final class ExamplesReportGenerator {
     final Integer semanticErrorLine;
     final String symbolTable;
     final String semanticTree;
+    final String friscCode;
+    final String friscErrors;
     final boolean lexerSuccess;
     final boolean parserSuccess;
     final boolean semanticSuccess;
+    final boolean friscSuccess;
     
     ProgramResult(String programName, String sourceCode, String lexerOutput, 
                   String lexerErrors, Integer lexerErrorLine, String generativeTree,
                   String syntaxTree, String parserErrors, Integer parserErrorLine,
                   String semanticOutput, String semanticErrors, Integer semanticErrorLine,
-                  String symbolTable, String semanticTree,
-                  boolean lexerSuccess, boolean parserSuccess, boolean semanticSuccess) {
+                  String symbolTable, String semanticTree, String friscCode, String friscErrors,
+                  boolean lexerSuccess, boolean parserSuccess, boolean semanticSuccess, boolean friscSuccess) {
       this.programName = programName;
       this.sourceCode = sourceCode;
       this.lexerOutput = lexerOutput;
@@ -94,9 +99,12 @@ public final class ExamplesReportGenerator {
       this.semanticErrorLine = semanticErrorLine;
       this.symbolTable = symbolTable;
       this.semanticTree = semanticTree;
+      this.friscCode = friscCode;
+      this.friscErrors = friscErrors;
       this.lexerSuccess = lexerSuccess;
       this.parserSuccess = parserSuccess;
       this.semanticSuccess = semanticSuccess;
+      this.friscSuccess = friscSuccess;
     }
   }
   
@@ -178,6 +186,9 @@ public final class ExamplesReportGenerator {
             null,
             "",  // symbolTable
             "",  // semanticTree
+            "",  // friscCode
+            "Analysis failed: " + e.getMessage(),  // friscErrors
+            false,
             false,
             false,
             false
@@ -361,6 +372,31 @@ public final class ExamplesReportGenerator {
         }
       }
       
+      // Run code generation if semantic analysis succeeded
+      String friscCode = "";
+      String friscErrors = "";
+      boolean friscSuccess = false;
+      
+      if (semanticSuccess && parseTree != null) {
+        try {
+          SemanticAnalyzer analyzer = new SemanticAnalyzer();
+          SemanticAnalyzer.SemanticAnalysisResult semanticResults = 
+              analyzer.analyzeWithResults(parseTree, new PrintStream(new ByteArrayOutputStream()), null);
+          
+          CodeGenerator codeGen = new CodeGenerator();
+          Path friscOutputPath = tempDir.resolve("a.frisc");
+          codeGen.generate(semanticResults.globalScope(), semanticResults.parseTree(), friscOutputPath);
+          
+          if (Files.exists(friscOutputPath)) {
+            friscCode = Files.readString(friscOutputPath);
+            friscSuccess = true;
+          }
+          
+        } catch (Exception e) {
+          friscErrors = "Code generation failed: " + e.getMessage();
+        }
+      }
+      
       return new ProgramResult(
           programName,
           sourceCode,
@@ -376,9 +412,12 @@ public final class ExamplesReportGenerator {
           semanticErrorLine,
           symbolTable,
           semanticTree,
+          friscCode,
+          friscErrors,
           lexerSuccess,
           parserSuccess,
-          semanticSuccess
+          semanticSuccess,
+          friscSuccess
       );
     } finally {
       // Cleanup temp directory
@@ -523,6 +562,16 @@ public final class ExamplesReportGenerator {
         } else {
           writer.println("        <span class=\"badge badge-skip\">Semantic: Skipped (parser failed)</span>");
         }
+        
+        // Code generation badge
+        if (result.friscSuccess) {
+          writer.println("        <span class=\"badge badge-ok\">CodeGen: OK</span>");
+        } else if (result.semanticSuccess) {
+          writer.println("        <span class=\"badge badge-error\">CodeGen: Failed</span>");
+        } else {
+          writer.println("        <span class=\"badge badge-skip\">CodeGen: Skipped (semantic failed)</span>");
+        }
+        
         writer.println("      </div>");
         
         // Source code
@@ -586,8 +635,17 @@ public final class ExamplesReportGenerator {
           writer.println("      </details>");
         }
         
+        // FRISC code (only if code generation succeeded)
+        if (result.friscSuccess && !result.friscCode.isEmpty()) {
+          writer.println("      <details>");
+          writer.println("        <summary>Generated FRISC Assembly Code</summary>");
+          writer.println("        <pre><code>" + escapeHtml(result.friscCode) + "</code></pre>");
+          writer.println("      </details>");
+        }
+        
         // Errors
-        if (!result.lexerErrors.isEmpty() || !result.parserErrors.isEmpty() || !result.semanticErrors.isEmpty()) {
+        if (!result.lexerErrors.isEmpty() || !result.parserErrors.isEmpty() || 
+            !result.semanticErrors.isEmpty() || !result.friscErrors.isEmpty()) {
           writer.println("      <details>");
           writer.println("        <summary>Analysis Errors</summary>");
           writer.println("        <pre><code>");
@@ -608,6 +666,13 @@ public final class ExamplesReportGenerator {
             }
             writer.println("SEMANTIC ERRORS:");
             writer.println(escapeHtml(result.semanticErrors));
+          }
+          if (!result.friscErrors.isEmpty()) {
+            if (!result.lexerErrors.isEmpty() || !result.parserErrors.isEmpty() || !result.semanticErrors.isEmpty()) {
+              writer.println("\n---\n");
+            }
+            writer.println("CODE GENERATION ERRORS:");
+            writer.println(escapeHtml(result.friscErrors));
           }
           writer.println("        </code></pre>");
           writer.println("      </details>");
