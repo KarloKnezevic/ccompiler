@@ -25,6 +25,26 @@ The PPJ Compiler implements a complete compilation pipeline for the PPJ-C langua
 
 The compiler operates through four distinct phases:
 
+```mermaid
+flowchart LR
+    A[Source Code<br/>program.c] --> B[Lexical Analysis<br/>Tokenization]
+    B --> C[Syntax Analysis<br/>Parse Tree]
+    C --> D[Semantic Analysis<br/>Type Checking]
+    D --> E[Code Generation<br/>FRISC Assembly]
+    
+    B --> F[leksicke_jedinke.txt]
+    C --> G[generativno_stablo.txt<br/>sintaksno_stablo.txt]
+    D --> H[tablica_simbola.txt<br/>semanticko_stablo.txt]
+    E --> I[assembly.frisc]
+    
+    style A fill:#e1f5fe
+    style E fill:#c8e6c9
+    style F fill:#fff3e0
+    style G fill:#fff3e0
+    style H fill:#fff3e0
+    style I fill:#f3e5f5
+```
+
 1. **Lexical Analysis**: Tokenizes source code using hand-built deterministic finite automata (DFAs) constructed from formal regular expressions
 2. **Syntax Analysis**: Parses token streams into parse trees using canonical LR(1) parsing with automatically generated parsing tables
 3. **Semantic Analysis**: Validates program semantics including type checking, scope resolution, and control flow analysis
@@ -57,38 +77,118 @@ PPJ-C supports a comprehensive subset of C programming language features:
 
 The compiler is implemented as a Maven multi-module project with strict dependency hierarchy:
 
-```
-ppj-compiler/
-├── compiler-lexer/      # Lexical analysis engine
-├── compiler-parser/     # LR(1) parser generator and runtime
-├── compiler-semantics/  # Semantic analysis and type system
-├── compiler-codegen/    # FRISC assembly code generation
-├── cli/                 # Unified command-line interface
-├── config/              # Compiler specification files
-│   ├── lexer_definition.txt      # Lexical rules and DFA specification
-│   ├── parser_definition.txt     # Context-free grammar definition
-│   └── semantics_definition.txt  # Semantic rules specification
-├── examples/            # Test programs and validation suite
-│   ├── valid/          # Semantically correct programs
-│   └── invalid/        # Programs with various error types
-└── docs/               # Comprehensive technical documentation
+```mermaid
+graph TB
+    subgraph "Project Structure"
+        A[cli/] --> B[compiler-codegen/]
+        A --> C[compiler-semantics/]
+        A --> D[compiler-parser/]
+        A --> E[compiler-lexer/]
+        
+        B --> C
+        C --> D
+        D --> E
+        
+        F[config/] --> G[lexer_definition.txt]
+        F --> H[parser_definition.txt]
+        F --> I[semantics_definition.txt]
+        
+        J[examples/] --> K[valid/]
+        J --> L[invalid/]
+        
+        M[docs/] --> N[Technical Documentation]
+    end
+    
+    style A fill:#4fc3f7
+    style B fill:#81c784
+    style C fill:#ffb74d
+    style D fill:#f06292
+    style E fill:#ba68c8
+    style F fill:#90a4ae
+    style J fill:#a5d6a7
+    style M fill:#ffcc02
 ```
 
 ### Module Dependencies
 
-The project maintains a strict layered architecture:
+The project maintains a strict layered architecture with clear dependency flow:
 
-```
-cli
-├── compiler-codegen
-│   └── compiler-semantics
-│       └── compiler-parser
-│           └── compiler-lexer
+```mermaid
+graph TD
+    CLI[CLI Module<br/>Command Line Interface] --> CODEGEN[Code Generation<br/>FRISC Assembly]
+    CLI --> SEMANTICS[Semantic Analysis<br/>Type System]
+    CLI --> PARSER[Syntax Analysis<br/>LR Parser]
+    CLI --> LEXER[Lexical Analysis<br/>DFA Engine]
+    
+    CODEGEN --> SEMANTICS
+    SEMANTICS --> PARSER
+    PARSER --> LEXER
+    
+    subgraph "Configuration Files"
+        LEXDEF[lexer_definition.txt]
+        PARSEDEF[parser_definition.txt]
+        SEMDEF[semantics_definition.txt]
+    end
+    
+    LEXER -.-> LEXDEF
+    PARSER -.-> PARSEDEF
+    SEMANTICS -.-> SEMDEF
+    
+    style CLI fill:#e3f2fd
+    style CODEGEN fill:#e8f5e8
+    style SEMANTICS fill:#fff3e0
+    style PARSER fill:#fce4ec
+    style LEXER fill:#f3e5f5
+    style LEXDEF fill:#f5f5f5
+    style PARSEDEF fill:#f5f5f5
+    style SEMDEF fill:#f5f5f5
 ```
 
 Each module has well-defined responsibilities and interfaces, enabling independent development and testing.
 
 ### Core Components
+
+### Core Components
+
+```mermaid
+graph LR
+    subgraph "Lexer Module"
+        A1[Regex Parser] --> A2[ε-NFA Builder]
+        A2 --> A3[DFA Converter]
+        A3 --> A4[Tokenizer]
+        A4 --> A5[Symbol Table]
+    end
+    
+    subgraph "Parser Module"
+        B1[Grammar Parser] --> B2[FIRST Sets]
+        B2 --> B3[LR Items]
+        B3 --> B4[CLOSURE/GOTO]
+        B4 --> B5[Parse Tables]
+        B5 --> B6[LR Parser]
+    end
+    
+    subgraph "Semantics Module"
+        C1[Symbol Table] --> C2[Type System]
+        C2 --> C3[Expression Rules]
+        C3 --> C4[Declaration Rules]
+        C4 --> C5[Statement Rules]
+    end
+    
+    subgraph "Codegen Module"
+        D1[Instruction Gen] --> D2[Register Alloc]
+        D2 --> D3[Code Optimizer]
+        D3 --> D4[FRISC Output]
+    end
+    
+    A5 --> B6
+    B6 --> C1
+    C5 --> D1
+    
+    style A1 fill:#f8bbd9
+    style B1 fill:#f8bbd9
+    style C1 fill:#f8bbd9
+    style D1 fill:#f8bbd9
+```
 
 **Lexer Module** (`compiler-lexer`):
 - Manual regular expression parser (no external regex libraries)
@@ -165,6 +265,35 @@ The executable JAR is generated at: `cli/target/ccompiler.jar`
 ### Command Line Interface
 
 The compiler provides multiple execution modes:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Lexer: lexer program.c
+    [*] --> Syntax: syntax program.c
+    [*] --> Semantic: semantic program.c
+    [*] --> Full: program.c
+    
+    Lexer --> TokenOutput: leksicke_jedinke.txt
+    TokenOutput --> [*]
+    
+    Syntax --> Lexer_Phase: Internal
+    Lexer_Phase --> Parser_Phase: tokens
+    Parser_Phase --> ParseOutput: generativno_stablo.txt<br/>sintaksno_stablo.txt
+    ParseOutput --> [*]
+    
+    Semantic --> Lexer_Phase2: Internal
+    Lexer_Phase2 --> Parser_Phase2: tokens
+    Parser_Phase2 --> Semantic_Phase: parse tree
+    Semantic_Phase --> SemanticOutput: tablica_simbola.txt<br/>semanticko_stablo.txt
+    SemanticOutput --> [*]
+    
+    Full --> Lexer_Phase3: Internal
+    Lexer_Phase3 --> Parser_Phase3: tokens
+    Parser_Phase3 --> Semantic_Phase3: parse tree
+    Semantic_Phase3 --> Codegen_Phase: validated AST
+    Codegen_Phase --> AssemblyOutput: assembly.frisc
+    AssemblyOutput --> [*]
+```
 
 ```bash
 # Lexical analysis only
@@ -318,6 +447,49 @@ Scope (Level 1):
         IDN (1,main) [symbol=null, type=null]
 ```
 
+### Semantic Analysis Process
+
+```mermaid
+flowchart TD
+    A[Parse Tree] --> B[ParseTreeConverter]
+    B --> C[Semantic Tree<br/>NonTerminalNode]
+    
+    C --> D[SemanticChecker]
+    D --> E{Node Type?}
+    
+    E -->|Declaration| F[DeclarationRules]
+    E -->|Expression| G[ExpressionRules]
+    E -->|Statement| H[StatementRules]
+    
+    F --> I[Symbol Table<br/>Management]
+    G --> J[Type Checking<br/>& Inference]
+    H --> K[Control Flow<br/>Validation]
+    
+    I --> L[Scope Stack]
+    J --> M[Type System]
+    K --> N[Jump Validation]
+    
+    L --> O{Semantic<br/>Error?}
+    M --> O
+    N --> O
+    
+    O -->|Yes| P[Error Report<br/>& Exit]
+    O -->|No| Q[Continue Analysis]
+    
+    Q --> R{More Nodes?}
+    R -->|Yes| D
+    R -->|No| S[Generate Debug Files]
+    
+    S --> T[tablica_simbola.txt]
+    S --> U[semanticko_stablo.txt]
+    
+    style A fill:#e3f2fd
+    style P fill:#ffebee
+    style S fill:#e8f5e8
+    style T fill:#fff3e0
+    style U fill:#fff3e0
+```
+
 ## Configuration
 
 ### Lexer Configuration
@@ -436,6 +608,70 @@ mvn spotless:apply  # Auto-format code
 
 ## Testing
 
+### Type System Architecture
+
+```mermaid
+classDiagram
+    class Type {
+        <<interface>>
+        +isVoid() boolean
+        +isScalar() boolean
+        +isArray() boolean
+        +isFunction() boolean
+        +isConst() boolean
+    }
+    
+    class PrimitiveType {
+        <<enumeration>>
+        VOID
+        CHAR
+        INT
+        +isVoid() boolean
+        +isScalar() boolean
+    }
+    
+    class ArrayType {
+        -elementType: Type
+        +elementType() Type
+        +isArray() boolean
+    }
+    
+    class FunctionType {
+        -returnType: Type
+        -parameterTypes: List~Type~
+        +returnType() Type
+        +parameterTypes() List~Type~
+        +isFunction() boolean
+    }
+    
+    class ConstType {
+        -baseType: Type
+        +baseType() Type
+        +isConst() boolean
+    }
+    
+    class TypeSystem {
+        <<utility>>
+        +stripConst(Type) Type
+        +applyConst(Type) Type
+        +canAssign(Type, Type) boolean
+        +canConvert(Type, Type) boolean
+        +isIntConvertible(Type) boolean
+    }
+    
+    Type <|.. PrimitiveType
+    Type <|.. ArrayType
+    Type <|.. FunctionType
+    Type <|.. ConstType
+    
+    ArrayType --> Type : elementType
+    FunctionType --> Type : returnType
+    FunctionType --> Type : parameterTypes
+    ConstType --> Type : baseType
+    
+    TypeSystem ..> Type : operates on
+```
+
 ### Test Suite Organization
 
 The project includes comprehensive testing at multiple levels:
@@ -490,7 +726,6 @@ Each report includes:
 
 ## Status
 
-### ✅ Completed Components
 
 **Lexical Analysis**:
 - Manual regex parser with formal NFA/DFA construction
