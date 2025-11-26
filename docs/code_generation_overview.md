@@ -850,3 +850,4 @@ L_END_1:                        ; End of if statement
 - Register names and constants clearly distinguished
 
 This comprehensive overview provides the foundation for understanding how the PPJ compiler transforms high-level C constructs into executable FRISC assembly code, maintaining correctness, readability, and educational value throughout the process.
+

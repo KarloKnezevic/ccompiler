@@ -713,3 +713,4 @@ TIMER_ISR:
 ```
 
 This comprehensive reference covers all aspects of the FRISC architecture necessary for understanding and implementing code generation for the PPJ compiler. The architecture's simplicity and regularity make it an excellent target for educational compiler construction while providing sufficient features for meaningful program execution.
+
