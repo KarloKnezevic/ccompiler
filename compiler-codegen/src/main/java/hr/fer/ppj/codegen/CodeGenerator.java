@@ -96,7 +96,7 @@ public final class CodeGenerator {
      * <p>This generates:
      * <pre>
      * ; Program entry point
-     * MOVE 40000, R7      ; init stack pointer
+     * MOVE 10000, R7      ; init stack pointer
      * CALL F_MAIN         ; call main
      * HALT                ; end of program, R6 holds return value
      * </pre>
@@ -105,7 +105,7 @@ public final class CodeGenerator {
         FriscEmitter emitter = context.emitter();
         
         emitter.emitComment("Program entry point");
-        emitter.emitInstruction("MOVE", "40000", "R7", "init stack pointer");
+        emitter.emitInstruction("MOVE", "10000", "R7", "init stack pointer");
         emitter.emitInstruction("CALL", "F_MAIN", null, "call main");
         emitter.emitInstruction("HALT", null, null, "end of program, R6 holds return value");
         emitter.emitNewline();

@@ -565,6 +565,7 @@ Comprehensive technical documentation is available in the `docs/` directory:
 - **[frisc_architecture.md](docs/frisc_architecture.md)**: Complete FRISC processor architecture reference including instruction set, addressing modes, memory model, and assembly directives
 - **[code_generation_overview.md](docs/code_generation_overview.md)**: High-level overview of code generation strategy, runtime model, and implementation approach
 - **[code_generation_implementation.md](docs/code_generation_implementation.md)**: Comprehensive technical documentation covering algorithms, data structures, optimization techniques, and implementation details
+- **[frisc_simulator_guide.md](docs/frisc_simulator_guide.md)**: Complete guide for using the FRISC simulator including console and web interfaces, debugging tools, and integration with the PPJ compiler
 
 ### Lexer Documentation
 

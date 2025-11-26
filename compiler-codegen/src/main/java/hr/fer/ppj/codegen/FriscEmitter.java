@@ -38,7 +38,7 @@ public final class FriscEmitter {
      * 
      * <p>Examples:
      * <ul>
-     *   <li>{@code emitInstruction("MOVE", "40000", "R7", "init stack")} → {@code MOVE 40000, R7      ; init stack}</li>
+     *   <li>{@code emitInstruction("MOVE", "10000", "R7", "init stack")} → {@code MOVE 10000, R7      ; init stack}</li>
      *   <li>{@code emitInstruction("HALT", null, null, "end program")} → {@code HALT                ; end program}</li>
      *   <li>{@code emitInstruction("ADD", "R0", "R1", "R2", null)} → {@code ADD R0, R1, R2}</li>
      * </ul>
@@ -193,6 +193,37 @@ public final class FriscEmitter {
      */
     public void emitNewline() {
         lines.add("");
+    }
+    
+    /**
+     * Emits a section header comment for better code organization.
+     * 
+     * @param title the section title
+     */
+    public void emitSectionHeader(String title) {
+        Objects.requireNonNull(title, "title must not be null");
+        emitComment(title);
+    }
+    
+    /**
+     * Convenience method for emitting simple instructions without operands.
+     * 
+     * @param mnemonic the instruction mnemonic
+     * @param comment optional comment
+     */
+    public void emitInstruction(String mnemonic, String comment) {
+        emitInstruction(mnemonic, null, null, comment);
+    }
+    
+    /**
+     * Convenience method for emitting instructions with one operand.
+     * 
+     * @param mnemonic the instruction mnemonic
+     * @param operand the single operand
+     * @param comment optional comment
+     */
+    public void emitInstruction(String mnemonic, String operand, String comment) {
+        emitInstruction(mnemonic, operand, null, comment);
     }
     
     /**
