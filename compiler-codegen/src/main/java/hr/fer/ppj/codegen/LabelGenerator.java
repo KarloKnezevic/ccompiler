@@ -128,6 +128,15 @@ public final class LabelGenerator {
     }
     
     /**
+     * Generates a simple unique label with default prefix.
+     * 
+     * @return a unique label (e.g., "L1", "L2", "L3")
+     */
+    public String generateLabel() {
+        return getUniqueLabel("L");
+    }
+    
+    /**
      * Label set for if-else statements.
      */
     public record IfLabelSet(String ifLabel, String elseLabel, String endLabel) {}

@@ -20,7 +20,10 @@ public record CodeGenContext(
     SymbolTable globalScope,
     FriscEmitter emitter,
     LabelGenerator labelGenerator,
-    ActivationRecord activationRecord
+    ActivationRecord activationRecord,
+    String functionExitLabel,
+    String loopBreakLabel,
+    String loopContinueLabel
 ) {
     
     /**
@@ -30,12 +33,15 @@ public record CodeGenContext(
      * @param emitter the FRISC code emitter
      * @param labelGenerator the label generator for unique labels
      * @param activationRecord the current function's activation record (may be null for global scope)
+     * @param functionExitLabel the label for function exit (may be null)
+     * @param loopBreakLabel the label for loop break (may be null)
+     * @param loopContinueLabel the label for loop continue (may be null)
      */
     public CodeGenContext {
         Objects.requireNonNull(globalScope, "globalScope must not be null");
         Objects.requireNonNull(emitter, "emitter must not be null");
         Objects.requireNonNull(labelGenerator, "labelGenerator must not be null");
-        // activationRecord may be null for global scope
+        // Other parameters may be null
     }
     
     /**
@@ -45,7 +51,31 @@ public record CodeGenContext(
      * @return a new context with the updated activation record
      */
     public CodeGenContext withActivationRecord(ActivationRecord newActivationRecord) {
-        return new CodeGenContext(globalScope, emitter, labelGenerator, newActivationRecord);
+        return new CodeGenContext(globalScope, emitter, labelGenerator, newActivationRecord, 
+                                functionExitLabel, loopBreakLabel, loopContinueLabel);
+    }
+    
+    /**
+     * Creates a new context with function exit label.
+     * 
+     * @param exitLabel the function exit label
+     * @return a new context with the updated exit label
+     */
+    public CodeGenContext withFunctionExitLabel(String exitLabel) {
+        return new CodeGenContext(globalScope, emitter, labelGenerator, activationRecord, 
+                                exitLabel, loopBreakLabel, loopContinueLabel);
+    }
+    
+    /**
+     * Creates a new context with loop labels.
+     * 
+     * @param breakLabel the loop break label
+     * @param continueLabel the loop continue label
+     * @return a new context with the updated loop labels
+     */
+    public CodeGenContext withLoopLabels(String breakLabel, String continueLabel) {
+        return new CodeGenContext(globalScope, emitter, labelGenerator, activationRecord, 
+                                functionExitLabel, breakLabel, continueLabel);
     }
     
     /**

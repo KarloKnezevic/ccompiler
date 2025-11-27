@@ -1,6 +1,7 @@
 package hr.fer.ppj.codegen.func;
 
 import hr.fer.ppj.codegen.CodeGenContext;
+import hr.fer.ppj.codegen.FriscEmitter;
 import hr.fer.ppj.codegen.stmt.StatementCodeGenerator;
 import hr.fer.ppj.semantics.symbols.Symbol;
 import hr.fer.ppj.semantics.symbols.SymbolTable;
@@ -180,8 +181,12 @@ public final class FunctionCodeGenerator {
         // Process local variable declarations in the function body
         processLocalDeclarations(body, activationRecord);
         
-        // Create function context with activation record
-        CodeGenContext functionContext = context.withActivationRecord(activationRecord);
+        // Generate exit label for this function
+        String exitLabel = context.labelGenerator().generateLabel();
+        
+        // Create function context with activation record and exit label
+        CodeGenContext functionContext = context.withActivationRecord(activationRecord)
+                                               .withFunctionExitLabel(exitLabel);
         
         // Generate function prologue
         generateFunctionPrologue(functionContext, activationRecord);
@@ -190,12 +195,6 @@ public final class FunctionCodeGenerator {
         StatementCodeGenerator stmtGen = new StatementCodeGenerator(functionContext);
         stmtGen.generateStatement(body);
         
-        // Generate function epilogue
-        generateFunctionEpilogue(functionContext, activationRecord);
-        
-        // Default return (in case no explicit return)
-        context.emitter().emitInstruction("MOVE", "0", "R6", "default return value");
-        context.emitter().emitInstruction("RET", null, null, "return from " + functionName);
         context.emitter().emitNewline();
     }
     
@@ -255,7 +254,7 @@ public final class FunctionCodeGenerator {
         List<String> variableNames = extractVariableNames(declaration);
         
         for (String varName : variableNames) {
-            int offset = activationRecord.addLocalVariable(varName);
+            activationRecord.addLocalVariable(varName);
             context.emitter().emitComment("Local variable " + varName + " at " + 
                                         activationRecord.getVariableAddress(varName));
         }
@@ -294,7 +293,7 @@ public final class FunctionCodeGenerator {
         int localSize = activationRecord.getLocalVariablesSize();
         
         if (localSize > 0) {
-            functionContext.emitter().emitInstruction("SUB", "R7", String.valueOf(localSize), "R7", 
+            functionContext.emitter().emitInstruction("SUB", "R7", FriscEmitter.formatHex(localSize), "R7", 
                                                     "allocate " + (localSize / 4) + " local variables");
         }
     }
@@ -306,7 +305,7 @@ public final class FunctionCodeGenerator {
         int localSize = activationRecord.getLocalVariablesSize();
         
         if (localSize > 0) {
-            functionContext.emitter().emitInstruction("ADD", "R7", String.valueOf(localSize), "R7", 
+            functionContext.emitter().emitInstruction("ADD", "R7", FriscEmitter.formatHex(localSize), "R7", 
                                                     "deallocate local variables");
         }
     }
@@ -350,7 +349,7 @@ public final class FunctionCodeGenerator {
         List<String> parameterNames = extractParameterNames(parameters);
         
         for (String paramName : parameterNames) {
-            int offset = activationRecord.addParameter(paramName);
+            activationRecord.addParameter(paramName);
             context.emitter().emitComment("Parameter " + paramName + " at " + 
                                         activationRecord.getVariableAddress(paramName));
         }

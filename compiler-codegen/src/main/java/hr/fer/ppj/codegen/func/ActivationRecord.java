@@ -1,5 +1,6 @@
 package hr.fer.ppj.codegen.func;
 
+import hr.fer.ppj.codegen.FriscEmitter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -13,18 +14,18 @@ import java.util.Objects;
  * 
  * <p>Stack layout (growing downward):
  * <pre>
- * Higher addresses
+ * Higher addresses (after local allocation)
  * +----------------+
- * | Parameter n    | R7 + (4 + n*4)
+ * | Parameter n    | R7 + (localSize + 4 + n*4)
  * | ...            |
- * | Parameter 1    | R7 + 8
- * | Return address | R7 + 4  (pushed by CALL)
- * +----------------+ <- R7 (on function entry)
- * | Local var 1    | R7 - 4
- * | Local var 2    | R7 - 8
+ * | Parameter 1    | R7 + (localSize + 8)
+ * | Return address | R7 + (localSize + 4)
+ * +----------------+ <- R7 (before SUB R7, localSize, R7)
+ * | Local var 1    | R7 + (localSize - 4)
+ * | Local var 2    | R7 + (localSize - 8)
  * | ...            |
- * | Local var n    | R7 - (n*4)
- * +----------------+ <- R7 (after locals allocated)
+ * | Local var n    | R7 + 0
+ * +----------------+ <- R7 (after SUB R7, localSize, R7)
  * Lower addresses
  * </pre>
  * 
@@ -39,14 +40,14 @@ public final class ActivationRecord {
     private final Map<String, Integer> variableOffsets = new HashMap<>();
     
     /**
-     * Current offset for the next local variable (negative, growing downward).
+     * Current offset for the next local variable (positive, from top of locals).
      */
     private int currentLocalOffset = 0;
     
     /**
      * Current offset for the next parameter (positive, growing upward).
      */
-    private int currentParameterOffset = 8; // Start after return address (R7+4) + first param (R7+8)
+    private int currentParameterOffset = 4; // Start after return address (R7+4)
     
     /**
      * Total size of local variables in bytes.
@@ -63,9 +64,10 @@ public final class ActivationRecord {
         Objects.requireNonNull(name, "name must not be null");
         
         int offset = currentParameterOffset;
-        variableOffsets.put(name, offset);
         currentParameterOffset += 4; // Each parameter takes 4 bytes
         
+        // Store parameter with negative offset to distinguish from locals
+        variableOffsets.put(name, -offset);
         return offset;
     }
     
@@ -78,11 +80,21 @@ public final class ActivationRecord {
     public int addLocalVariable(String name) {
         Objects.requireNonNull(name, "name must not be null");
         
-        currentLocalOffset -= 4; // Allocate 4 bytes for the variable
-        localVariablesSize += 4;
+        // Check if variable already exists (e.g., as parameter)
+        if (variableOffsets.containsKey(name)) {
+            // If it's a parameter (negative offset), don't add as local - just return existing
+            int existingOffset = variableOffsets.get(name);
+            if (existingOffset < 0) {
+                return existingOffset; // Return parameter offset as-is
+            }
+            return existingOffset;
+        }
         
-        variableOffsets.put(name, currentLocalOffset);
-        return currentLocalOffset;
+        localVariablesSize += 4; // Increase total size
+        int offset = localVariablesSize - 4; // Offset from bottom of locals
+        
+        variableOffsets.put(name, offset);
+        return offset;
     }
     
     /**
@@ -126,12 +138,16 @@ public final class ActivationRecord {
             throw new IllegalArgumentException("Variable not found: " + name);
         }
         
-        if (offset > 0) {
-            return "(R7+" + offset + ")";
-        } else if (offset < 0) {
-            return "(R7" + offset + ")"; // offset is already negative
+        // Check if it's a parameter (stored with negative offset)
+        if (offset < 0) {
+            // Parameter: adjust for local variable allocation
+            int paramOffset = -offset; // Convert back to positive
+            int adjustedOffset = paramOffset + localVariablesSize;
+            return "(R7+" + formatHexOffset(adjustedOffset) + ")";
         } else {
-            return "(R7)";
+            // Local variable: positive offset from current R7
+            int localOffset = localVariablesSize - offset;
+            return "(R7+" + formatHexOffset(localOffset) + ")";
         }
     }
     
@@ -142,5 +158,19 @@ public final class ActivationRecord {
      */
     public Map<String, Integer> getAllVariables() {
         return Map.copyOf(variableOffsets);
+    }
+    
+    /**
+     * Formats an offset as hexadecimal for FRISC assembly.
+     * 
+     * @param offset the offset value
+     * @return formatted hex string (e.g., "04", "-08")
+     */
+    private String formatHexOffset(int offset) {
+        if (offset >= 0) {
+            return FriscEmitter.formatHex(offset);
+        } else {
+            return "-" + FriscEmitter.formatHex(-offset);
+        }
     }
 }

@@ -72,7 +72,7 @@ public final class CodeGenerator {
             LabelGenerator labelGen = new LabelGenerator();
             
             // Create the main code generation context (no activation record for global scope)
-            CodeGenContext context = new CodeGenContext(globalScope, emitter, labelGen, null);
+            CodeGenContext context = new CodeGenContext(globalScope, emitter, labelGen, null, null, null, null);
             
             // Generate program initialization
             generateProgramInit(context);
@@ -105,7 +105,7 @@ public final class CodeGenerator {
         FriscEmitter emitter = context.emitter();
         
         emitter.emitComment("Program entry point");
-        emitter.emitInstruction("MOVE", "10000", "R7", "init stack pointer");
+        emitter.emitInstruction("MOVE", "40000", "R7", "init stack pointer");
         emitter.emitInstruction("CALL", "F_MAIN", null, "call main");
         emitter.emitInstruction("HALT", null, null, "end of program, R6 holds return value");
         emitter.emitNewline();
@@ -118,9 +118,12 @@ public final class CodeGenerator {
         // This will be implemented by delegating to specialized generators
         // for functions, expressions, and statements
         
-        // For now, create a placeholder implementation
+        // Create generators
         FunctionCodeGenerator funcGen = new FunctionCodeGenerator(context);
         GlobalVariableGenerator globalGen = new GlobalVariableGenerator(context);
+        
+        // Set parse tree for global variable initializers
+        globalGen.setParseTree(translationUnit);
         
         // Process all external declarations in the translation unit
         funcGen.processTranslationUnit(translationUnit);

@@ -1,6 +1,7 @@
 package hr.fer.ppj.codegen.expr;
 
 import hr.fer.ppj.codegen.CodeGenContext;
+import hr.fer.ppj.codegen.FriscEmitter;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.TerminalNode;
@@ -71,6 +72,7 @@ public final class ExpressionCodeGenerator {
             case "<unarni_izraz>" -> generateUnaryExpression(expression);
             case "<postfiks_izraz>" -> generatePostfixExpression(expression);
             case "<primarni_izraz>" -> generatePrimaryExpression(expression);
+            case "<inicijalizator>" -> generateInitializer(expression);
             default -> throw new IllegalArgumentException("Unknown expression type: " + symbol);
         }
     }
@@ -285,7 +287,7 @@ public final class ExpressionCodeGenerator {
         // Clean up arguments from the stack (caller cleans up)
         if (argumentCount > 0) {
             int stackCleanup = argumentCount * 4; // Each argument is 4 bytes
-            context.emitter().emitInstruction("ADD", "R7", String.valueOf(stackCleanup), "R7", 
+            context.emitter().emitInstruction("ADD", "R7", FriscEmitter.formatHex(stackCleanup), "R7", 
                                             "cleanup " + argumentCount + " arguments");
         }
         
@@ -490,9 +492,14 @@ public final class ExpressionCodeGenerator {
                     context.emitter().emitInstruction("LOAD", "R0", address, "load variable " + value);
                 }
                 case "NIZ_ZNAKOVA" -> {
-                    // String literal - TODO: implement string handling
-                    context.emitter().emitComment("String literal: " + value + " (TODO)");
-                    context.emitter().emitInstruction("MOVE", "0", "R0", "string placeholder");
+                    // String literal - generate label and return address
+                    String stringLabel = context.labelGenerator().getUniqueLabel("STR");
+                    context.emitter().emitComment("String literal: " + value);
+                    context.emitter().emitInstruction("MOVE", stringLabel, "R0", "string address");
+                    
+                    // Store string data for later generation
+                    // For now, just return the label address
+                    // TODO: Implement proper string data section
                 }
             }
         } else if (child instanceof NonTerminalNode && children.size() == 3) {
@@ -501,20 +508,80 @@ public final class ExpressionCodeGenerator {
         }
     }
     
-    // Placeholder implementations for other expression types
+    // Bitwise operations implementations
     private void generateBitwiseOrExpression(NonTerminalNode node) {
-        // TODO: Implement bitwise OR
-        generateExpression((NonTerminalNode) node.children().get(0));
+        List<ParseNode> children = node.children();
+        
+        if (children.size() == 1) {
+            // Single child - delegate to next level
+            generateExpression((NonTerminalNode) children.get(0));
+        } else if (children.size() == 3) {
+            // Binary bitwise OR: <left> OP_BIN_ILI <right>
+            NonTerminalNode left = (NonTerminalNode) children.get(0);
+            NonTerminalNode right = (NonTerminalNode) children.get(2);
+            
+            // Generate left operand
+            generateExpression(left);
+            context.emitter().emitInstruction("PUSH", "R0", "save left operand");
+            
+            // Generate right operand
+            generateExpression(right);
+            context.emitter().emitInstruction("MOVE", "R0", "R1", "prepare right operand");
+            context.emitter().emitInstruction("POP", "R0", "restore left operand");
+            
+            // Perform bitwise OR
+            context.emitter().emitInstruction("OR", "R0", "R1", "R0", "bitwise OR");
+        }
     }
     
     private void generateBitwiseXorExpression(NonTerminalNode node) {
-        // TODO: Implement bitwise XOR
-        generateExpression((NonTerminalNode) node.children().get(0));
+        List<ParseNode> children = node.children();
+        
+        if (children.size() == 1) {
+            // Single child - delegate to next level
+            generateExpression((NonTerminalNode) children.get(0));
+        } else if (children.size() == 3) {
+            // Binary bitwise XOR: <left> OP_BIN_XILI <right>
+            NonTerminalNode left = (NonTerminalNode) children.get(0);
+            NonTerminalNode right = (NonTerminalNode) children.get(2);
+            
+            // Generate left operand
+            generateExpression(left);
+            context.emitter().emitInstruction("PUSH", "R0", "save left operand");
+            
+            // Generate right operand
+            generateExpression(right);
+            context.emitter().emitInstruction("MOVE", "R0", "R1", "prepare right operand");
+            context.emitter().emitInstruction("POP", "R0", "restore left operand");
+            
+            // Perform bitwise XOR
+            context.emitter().emitInstruction("XOR", "R0", "R1", "R0", "bitwise XOR");
+        }
     }
     
     private void generateBitwiseAndExpression(NonTerminalNode node) {
-        // TODO: Implement bitwise AND
-        generateExpression((NonTerminalNode) node.children().get(0));
+        List<ParseNode> children = node.children();
+        
+        if (children.size() == 1) {
+            // Single child - delegate to next level
+            generateExpression((NonTerminalNode) children.get(0));
+        } else if (children.size() == 3) {
+            // Binary bitwise AND: <left> OP_BIN_I <right>
+            NonTerminalNode left = (NonTerminalNode) children.get(0);
+            NonTerminalNode right = (NonTerminalNode) children.get(2);
+            
+            // Generate left operand
+            generateExpression(left);
+            context.emitter().emitInstruction("PUSH", "R0", "save left operand");
+            
+            // Generate right operand
+            generateExpression(right);
+            context.emitter().emitInstruction("MOVE", "R0", "R1", "prepare right operand");
+            context.emitter().emitInstruction("POP", "R0", "restore left operand");
+            
+            // Perform bitwise AND
+            context.emitter().emitInstruction("AND", "R0", "R1", "R0", "bitwise AND");
+        }
     }
     
     private void generateEqualityExpression(NonTerminalNode node) {
@@ -621,10 +688,12 @@ public final class ExpressionCodeGenerator {
                     generateMultiplication();
                 }
                 case "OP_DIJELI" -> {
-                    context.emitter().emitComment("Division not implemented (TODO)");
+                    // Division - use simple loop implementation
+                    generateDivision();
                 }
                 case "OP_MOD" -> {
-                    context.emitter().emitComment("Modulo not implemented (TODO)");
+                    // Modulo - use division with remainder
+                    generateModulo();
                 }
                 default -> {
                     context.emitter().emitComment("Unknown multiplicative operator: " + op);
@@ -656,14 +725,93 @@ public final class ExpressionCodeGenerator {
         context.emitter().emitInstruction("ADD", "R0", "R2", "R0", "add multiplicand to result");
         context.emitter().emitInstruction("SUB", "R3", "1", "R3", "decrement multiplier");
         context.emitter().emitInstruction("CMP", "R3", "0", null);
-        context.emitter().emitInstruction("JP_GT", labels.loopLabel(), null, "repeat if multiplier > 0");
+        context.emitter().emitInstruction("JP_SGT", labels.loopLabel(), "repeat if multiplier > 0");
         
         context.emitter().emitLabel(labels.breakLabel(), "multiplication done");
+    }
+    
+    /**
+     * Generates division using repeated subtraction.
+     * R0 = R0 / R1, result in R0
+     */
+    private void generateDivision() {
+        var labels = context.labelGenerator().generateLoopLabels();
+        String divByZero = context.labelGenerator().generateLabel();
+        
+        context.emitter().emitComment("Division: R0 / R1");
+        
+        // Check for division by zero
+        context.emitter().emitInstruction("CMP", "R1", "0", null);
+        context.emitter().emitInstruction("JP_EQ", divByZero, "division by zero");
+        
+        // Save dividend and divisor, initialize quotient
+        context.emitter().emitInstruction("MOVE", "R0", "R2", "save dividend");
+        context.emitter().emitInstruction("MOVE", "R1", "R3", "save divisor");
+        context.emitter().emitInstruction("MOVE", "0", "R0", "initialize quotient");
+        
+        // Division loop
+        context.emitter().emitLabel(labels.loopLabel(), "division loop");
+        context.emitter().emitInstruction("CMP", "R2", "R3", "compare dividend with divisor");
+        context.emitter().emitInstruction("JP_SLT", labels.breakLabel(), "exit if dividend < divisor");
+        
+        context.emitter().emitInstruction("SUB", "R2", "R3", "R2", "subtract divisor from dividend");
+        context.emitter().emitInstruction("ADD", "R0", "1", "R0", "increment quotient");
+        context.emitter().emitInstruction("JP", labels.loopLabel(), "continue division");
+        
+        context.emitter().emitLabel(divByZero, "division by zero");
+        context.emitter().emitInstruction("MOVE", "0", "R0", "result 0 for division by zero");
+        
+        context.emitter().emitLabel(labels.breakLabel(), "end division");
+    }
+    
+    /**
+     * Generates modulo using division with remainder.
+     * R0 = R0 % R1, result in R0
+     */
+    private void generateModulo() {
+        var labels = context.labelGenerator().generateLoopLabels();
+        String modByZero = context.labelGenerator().generateLabel();
+        
+        context.emitter().emitComment("Modulo: R0 % R1");
+        
+        // Check for modulo by zero
+        context.emitter().emitInstruction("CMP", "R1", "0", null);
+        context.emitter().emitInstruction("JP_EQ", modByZero, "modulo by zero");
+        
+        // Save dividend and divisor
+        context.emitter().emitInstruction("MOVE", "R0", "R2", "save dividend");
+        context.emitter().emitInstruction("MOVE", "R1", "R3", "save divisor");
+        
+        // Modulo loop (repeated subtraction until remainder < divisor)
+        context.emitter().emitLabel(labels.loopLabel(), "modulo loop");
+        context.emitter().emitInstruction("CMP", "R2", "R3", "compare remainder with divisor");
+        context.emitter().emitInstruction("JP_SLT", labels.breakLabel(), "exit if remainder < divisor");
+        
+        context.emitter().emitInstruction("SUB", "R2", "R3", "R2", "subtract divisor from remainder");
+        context.emitter().emitInstruction("JP", labels.loopLabel(), "continue modulo");
+        
+        context.emitter().emitLabel(modByZero, "modulo by zero");
+        context.emitter().emitInstruction("MOVE", "0", "R2", "result 0 for modulo by zero");
+        
+        context.emitter().emitLabel(labels.breakLabel(), "end modulo");
+        context.emitter().emitInstruction("MOVE", "R2", "R0", "move remainder to result");
     }
     
     private void generateCastExpression(NonTerminalNode node) {
         // TODO: Implement type casting
         generateExpression((NonTerminalNode) node.children().get(0));
+    }
+    
+    private void generateInitializer(NonTerminalNode node) {
+        // <inicijalizator> ::= <izraz_pridruzivanja>
+        List<ParseNode> children = node.children();
+        if (children.size() == 1) {
+            generateExpression((NonTerminalNode) children.get(0));
+        } else {
+            // Handle array initializers or other complex cases
+            context.emitter().emitComment("Complex initializer (TODO)");
+            context.emitter().emitInstruction("MOVE", "0", "R0", "default initializer");
+        }
     }
     
     private void generateUnaryExpression(NonTerminalNode node) {

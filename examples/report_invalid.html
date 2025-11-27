@@ -1304,14 +1304,15 @@ Global Scope:
 
 ; Function definitions
 F_MAIN                          ; Function main
-; Local variable x at (R7-4)
-        SUB R7, 4, R7           ; allocate 1 local variables
+; Local variable x at (R7+04)
+        SUB R7, 04, R7          ; allocate 1 local variables
 ; Compound statement
-; Local declarations (TODO)
+; Local variable declarations
+; Local variable x at (R7+04) (no initializer)
         MOVE 5, R0              ; load constant 5
-        STORE R0, (R7-4)        ; assign to x
+        STORE R0, (R7+04)       ; assign to x
 ; If-else statement
-        LOAD R0, (R7-4)         ; load variable x
+        LOAD R0, (R7+04)        ; load variable x
         PUSH R0                 ; save left operand
         MOVE 0, R0              ; load constant 0
         MOVE R0, R1             ; right operand to R1
@@ -1328,16 +1329,15 @@ L_SC_END1
 ; Compound statement
         MOVE 1, R0              ; load constant 1
         MOVE R0, R6             ; return value
+        ADD R7, 04, R7          ; deallocate local variables
         RET                     ; return from function
         JP L_END1               ; skip else
 L_ELSE1                         ; else clause
 L_END1                          ; end if-else
         MOVE 0, R0              ; load constant 0
         MOVE R0, R6             ; return value
+        ADD R7, 04, R7          ; deallocate local variables
         RET                     ; return from function
-        ADD R7, 4, R7           ; deallocate local variables
-        MOVE 0, R6              ; default return value
-        RET                     ; return from main
 
 ; Global variables
 
@@ -4399,23 +4399,23 @@ Global Scope:
 
 ; Function definitions
 F_MAIN                          ; Function main
-; Local variable x at (R7-4)
-; Local variable x at (R7-8)
-        SUB R7, 8, R7           ; allocate 2 local variables
+; Local variable x at (R7+04)
+; Local variable x at (R7+04)
+        SUB R7, 04, R7          ; allocate 1 local variables
 ; Compound statement
-; Local declarations (TODO)
+; Local variable declarations
+; Local variable x at (R7+04) (no initializer)
 ; Compound statement
-; Local declarations (TODO)
+; Local variable declarations
+; Local variable x at (R7+04) (no initializer)
         MOVE 5, R0              ; load constant 5
-        STORE R0, (R7-8)        ; assign to x
+        STORE R0, (R7+04)       ; assign to x
         MOVE 10, R0             ; load constant 10
-        STORE R0, (R7-8)        ; assign to x
-        LOAD R0, (R7-8)         ; load variable x
+        STORE R0, (R7+04)       ; assign to x
+        LOAD R0, (R7+04)        ; load variable x
         MOVE R0, R6             ; return value
+        ADD R7, 04, R7          ; deallocate local variables
         RET                     ; return from function
-        ADD R7, 8, R7           ; deallocate local variables
-        MOVE 0, R6              ; default return value
-        RET                     ; return from main
 
 ; Global variables
 
@@ -8018,14 +8018,15 @@ Global Scope:
 
 ; Function definitions
 F_MAIN                          ; Function main
-; Local variable x at (R7-4)
-        SUB R7, 4, R7           ; allocate 1 local variables
+; Local variable x at (R7+04)
+        SUB R7, 04, R7          ; allocate 1 local variables
 ; Compound statement
-; Local declarations (TODO)
+; Local variable declarations
+; Local variable x at (R7+04) (no initializer)
         MOVE 5, R0              ; load constant 5
-        STORE R0, (R7-4)        ; assign to x
+        STORE R0, (R7+04)       ; assign to x
 ; If-else statement
-        LOAD R0, (R7-4)         ; load variable x
+        LOAD R0, (R7+04)        ; load variable x
         PUSH R0                 ; save left operand
         MOVE 0, R0              ; load constant 0
         MOVE R0, R1             ; right operand to R1
@@ -8042,20 +8043,20 @@ L_SC_END1
 ; Compound statement
         MOVE 1, R0              ; load constant 1
         MOVE R0, R6             ; return value
+        ADD R7, 04, R7          ; deallocate local variables
         RET                     ; return from function
         JP L_END1               ; skip else
 L_ELSE1                         ; else clause
 ; Compound statement
         MOVE 0, R0              ; load constant 0
         MOVE R0, R6             ; return value
+        ADD R7, 04, R7          ; deallocate local variables
         RET                     ; return from function
 L_END1                          ; end if-else
         MOVE 2, R0              ; load constant 2
         MOVE R0, R6             ; return value
+        ADD R7, 04, R7          ; deallocate local variables
         RET                     ; return from function
-        ADD R7, 4, R7           ; deallocate local variables
-        MOVE 0, R6              ; default return value
-        RET                     ; return from main
 
 ; Global variables
 
@@ -9369,18 +9370,17 @@ Global Scope:
 
 ; Function definitions
 F_MAIN                          ; Function main
-; Local variable arr at (R7-4)
-        SUB R7, 4, R7           ; allocate 1 local variables
+; Local variable arr at (R7+04)
+        SUB R7, 04, R7          ; allocate 1 local variables
 ; Compound statement
-; Local declarations (TODO)
+; Local variable declarations
+; Local variable arr at (R7+04) (no initializer)
         MOVE 5, R0              ; load constant 5
-        STORE R0, (R7-4)        ; assign to arr
+        STORE R0, (R7+04)       ; assign to arr
         MOVE 0, R0              ; load constant 0
         MOVE R0, R6             ; return value
+        ADD R7, 04, R7          ; deallocate local variables
         RET                     ; return from function
-        ADD R7, 4, R7           ; deallocate local variables
-        MOVE 0, R6              ; default return value
-        RET                     ; return from main
 
 ; Global variables
 
@@ -12849,17 +12849,42 @@ Global Scope:
 
 ; Function definitions
 F_MAIN                          ; Function main
-; Local variable i at (R7-4)
-        SUB R7, 4, R7           ; allocate 1 local variables
+; Local variable i at (R7+04)
+        SUB R7, 04, R7          ; allocate 1 local variables
 ; Compound statement
-; Local declarations (TODO)
-; For loop with increment (TODO)
-        LOAD R0, (R7-4)         ; load variable i
+; Local variable declarations
+; Local variable i at (R7+04) (no initializer)
+; For loop with increment
+L_LOOP1                         ; for loop start
+        LOAD R0, (R7+04)        ; load variable i
+        PUSH R0                 ; save left operand
+        MOVE 10, R0             ; load constant 10
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        CMP R0, R1
+        JP_SLT L_SC_TRUE1       ; comparison OP_LT
+        MOVE 0, R0              ; comparison result false
+        JP L_SC_END1
+L_SC_TRUE1
+        MOVE 1, R0              ; comparison result true
+L_SC_END1
+        CMP R0, 0
+        JP_EQ L_BREAK1          ; exit for loop
+; Compound statement
+L_CONTINUE1                     ; for loop increment
+        LOAD R0, (R7+04)        ; load variable i
+        PUSH R0                 ; save left operand
+        MOVE 1, R0              ; load constant 1
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        ADD R0, R1, R0          ; addition
+        STORE R0, (R7+04)       ; assign to i
+        JP L_LOOP1              ; repeat for loop
+L_BREAK1                        ; for loop end
+        LOAD R0, (R7+04)        ; load variable i
         MOVE R0, R6             ; return value
+        ADD R7, 04, R7          ; deallocate local variables
         RET                     ; return from function
-        ADD R7, 4, R7           ; deallocate local variables
-        MOVE 0, R6              ; default return value
-        RET                     ; return from main
 
 ; Global variables
 
@@ -13470,17 +13495,48 @@ Global Scope:
 
 ; Function definitions
 F_MAIN                          ; Function main
-; Local variable i at (R7-4)
-        SUB R7, 4, R7           ; allocate 1 local variables
+; Local variable i at (R7+04)
+        SUB R7, 04, R7          ; allocate 1 local variables
 ; Compound statement
-; Local declarations (TODO)
-; For loop with increment (TODO)
-        LOAD R0, (R7-4)         ; load variable i
+; Local variable declarations
+; Local variable i at (R7+04) (no initializer)
+; For loop with increment
+        MOVE 0, R0              ; load constant 0
+        STORE R0, (R7+04)       ; assign to i
+L_LOOP1                         ; for loop start
+; Compound statement
+; If statement
+        LOAD R0, (R7+04)        ; load variable i
+        PUSH R0                 ; save left operand
+        MOVE 10, R0             ; load constant 10
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        CMP R0, R1
+        JP_SGT L_SC_TRUE1       ; comparison OP_GT
+        MOVE 0, R0              ; comparison result false
+        JP L_SC_END1
+L_SC_TRUE1
+        MOVE 1, R0              ; comparison result true
+L_SC_END1
+        CMP R0, 0
+        JP_EQ L_END1            ; if condition is false
+; Compound statement
+        JP L_BREAK1             ; break from loop
+L_END1                          ; end if
+L_CONTINUE1                     ; for loop increment
+        LOAD R0, (R7+04)        ; load variable i
+        PUSH R0                 ; save left operand
+        MOVE 1, R0              ; load constant 1
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        ADD R0, R1, R0          ; addition
+        STORE R0, (R7+04)       ; assign to i
+        JP L_LOOP1              ; repeat for loop
+L_BREAK1                        ; for loop end
+        LOAD R0, (R7+04)        ; load variable i
         MOVE R0, R6             ; return value
+        ADD R7, 04, R7          ; deallocate local variables
         RET                     ; return from function
-        ADD R7, 4, R7           ; deallocate local variables
-        MOVE 0, R6              ; default return value
-        RET                     ; return from main
 
 ; Global variables
 
@@ -14045,14 +14101,15 @@ Global Scope:
 
 ; Function definitions
 F_MAIN                          ; Function main
-; Local variable i at (R7-4)
-        SUB R7, 4, R7           ; allocate 1 local variables
+; Local variable i at (R7+04)
+        SUB R7, 04, R7          ; allocate 1 local variables
 ; Compound statement
-; Local declarations (TODO)
+; Local variable declarations
+; Local variable i at (R7+04) (no initializer)
         MOVE 0, R0              ; load constant 0
-        STORE R0, (R7-4)        ; assign to i
+        STORE R0, (R7+04)       ; assign to i
 L_LOOP1                         ; for loop
-        LOAD R0, (R7-4)         ; load variable i
+        LOAD R0, (R7+04)        ; load variable i
         PUSH R0                 ; save left operand
         MOVE 10, R0             ; load constant 10
         MOVE R0, R1             ; right operand to R1
@@ -14067,21 +14124,19 @@ L_SC_END1
         CMP R0, 0
         JP_EQ L_BREAK1          ; exit for loop
 ; Compound statement
-        LOAD R0, (R7-4)         ; load variable i
+        LOAD R0, (R7+04)        ; load variable i
         PUSH R0                 ; save left operand
         MOVE 1, R0              ; load constant 1
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
-        STORE R0, (R7-4)        ; assign to i
+        STORE R0, (R7+04)       ; assign to i
         JP L_LOOP1              ; repeat for loop
 L_BREAK1
-        LOAD R0, (R7-4)         ; load variable i
+        LOAD R0, (R7+04)        ; load variable i
         MOVE R0, R6             ; return value
+        ADD R7, 04, R7          ; deallocate local variables
         RET                     ; return from function
-        ADD R7, 4, R7           ; deallocate local variables
-        MOVE 0, R6              ; default return value
-        RET                     ; return from main
 
 ; Global variables
 

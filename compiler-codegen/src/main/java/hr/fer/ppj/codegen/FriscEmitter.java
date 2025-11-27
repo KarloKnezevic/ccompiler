@@ -252,6 +252,16 @@ public final class FriscEmitter {
     }
     
     /**
+     * Formats a number as hexadecimal for FRISC assembly.
+     * 
+     * @param value the numeric value
+     * @return formatted hex string (e.g., "04", "0C")
+     */
+    public static String formatHex(int value) {
+        return String.format("%02X", value);
+    }
+    
+    /**
      * Returns the number of generated lines.
      * 
      * @return the line count
