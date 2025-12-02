@@ -47,10 +47,10 @@ nvm use 18
 # Or download from https://nodejs.org/
 ```
 
-**Installing FRISC Simulator:**
+**Installing FRISC Simulator ([see more here](https://github.com/izuzak/FRISCjs)):**
 ```bash
 # Install FRISC simulator dependencies
-npm install
+npm install friscjs
 
 # This installs friscjs package in node_modules/
 ```
