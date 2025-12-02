@@ -1,11 +1,8 @@
-int main(void) {
-    int x;
-    int y;
-    x = 0;
-    y = 10;
-    if (x > 0 || y > 0) {
-        return 1;
-    }
-    return 0;
+int x = 12;
+int f(void) {
+    int x = 167;
+    return x;
 }
-
+int main(void) {
+    return f();
+}

@@ -134,6 +134,8 @@ The code generator is designed with the following quality principles:
 
 ### Module Structure
 
+The code generation module is organized into specialized packages and components. For detailed information about the module structure, see [Code Generation Module Structure](codegen_module_structure.md).
+
 The code generation module is organized into specialized components:
 
 ```mermaid

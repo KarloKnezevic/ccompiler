@@ -1,10 +1,9 @@
-char get_char(void) {
-    return 'a';
-}
-
+int n = 5;
 int main(void) {
-    char c;
-    c = get_char();
-    return 0;
+    if (n == 0) {
+        return 0;
+    } else {
+        n = n - 1;
+        return 1 + main();
+    }
 }
-

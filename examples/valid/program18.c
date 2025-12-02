@@ -1,9 +1,8 @@
+int x = 12;
 int main(void) {
-    int i;
-    i = 0;
-    while (i < 10) {
-        i = i + 1;
+    int x = 123;
+    {
+        int x = 32;
+        return x;
     }
-    return i;
 }
-

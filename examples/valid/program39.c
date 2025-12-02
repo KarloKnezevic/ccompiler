@@ -1,13 +1,14 @@
-int main(void) {
-    int x;
-    int y;
-    x = 5;
-    y = 10;
-    if (x > 0) {
-        if (y > 0) {
-            return 1;
-        }
+int f(int x, char y, int z, char a, int b, int c, int d, int arr[]) {
+    int ret = x + y;
+    {
+        int xx = 12;
+        ret = ret + xx;
+        ret = ret + arr[x];
     }
-    return 0;
+    ret = ret + arr[x];
+    return ret - d;
 }
-
+int main(void) {
+    int x[3] = { 51, 52, 53 };
+    return f(1, (char)2, 3, (char)4, 5, 6, 7, x);
+}

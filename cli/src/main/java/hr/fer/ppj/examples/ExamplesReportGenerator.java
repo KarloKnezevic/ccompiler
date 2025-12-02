@@ -1,5 +1,6 @@
 package hr.fer.ppj.examples;
 
+import hr.fer.ppj.cli.FriscRunner;
 import hr.fer.ppj.codegen.CodeGenerator;
 import hr.fer.ppj.lexer.gen.LexerGenerator;
 import hr.fer.ppj.lexer.gen.LexerGeneratorResult;
@@ -54,6 +55,8 @@ public final class ExamplesReportGenerator {
   private static final Pattern SEMANTIC_ERROR_PATTERN = Pattern.compile(
       "(?i).*::=\\s+.*\\(\\s*(\\d+)\\s*,.*", Pattern.DOTALL);
   
+  private static final FriscRunner FRISC_RUNNER = new FriscRunner();
+  
   /**
    * Result of analyzing a single program.
    */
@@ -74,6 +77,11 @@ public final class ExamplesReportGenerator {
     final String semanticTree;
     final String friscCode;
     final String friscErrors;
+    final String expectedOutput;
+    final String actualOutput;
+    final String runtimeError;
+    final String simulatorOutput;
+    final boolean outputMatches;
     final boolean lexerSuccess;
     final boolean parserSuccess;
     final boolean semanticSuccess;
@@ -84,6 +92,8 @@ public final class ExamplesReportGenerator {
                   String syntaxTree, String parserErrors, Integer parserErrorLine,
                   String semanticOutput, String semanticErrors, Integer semanticErrorLine,
                   String symbolTable, String semanticTree, String friscCode, String friscErrors,
+                  String expectedOutput, String actualOutput, String runtimeError, String simulatorOutput,
+                  boolean outputMatches,
                   boolean lexerSuccess, boolean parserSuccess, boolean semanticSuccess, boolean friscSuccess) {
       this.programName = programName;
       this.sourceCode = sourceCode;
@@ -101,6 +111,11 @@ public final class ExamplesReportGenerator {
       this.semanticTree = semanticTree;
       this.friscCode = friscCode;
       this.friscErrors = friscErrors;
+      this.expectedOutput = expectedOutput;
+      this.actualOutput = actualOutput;
+      this.runtimeError = runtimeError;
+      this.outputMatches = outputMatches;
+      this.simulatorOutput = simulatorOutput;
       this.lexerSuccess = lexerSuccess;
       this.parserSuccess = parserSuccess;
       this.semanticSuccess = semanticSuccess;
@@ -188,6 +203,11 @@ public final class ExamplesReportGenerator {
             "",  // semanticTree
             "",  // friscCode
             "Analysis failed: " + e.getMessage(),  // friscErrors
+            "",  // expectedOutput
+            "",  // actualOutput
+            "Not executed",  // runtimeError
+            "",  // simulatorOutput
+            false,  // outputMatches
             false,
             false,
             false,
@@ -397,6 +417,38 @@ public final class ExamplesReportGenerator {
         }
       }
       
+      String expectedOutput = readExpectedOutput(programFile);
+      String actualOutput = "";
+      String runtimeError = "";
+      String simulatorOutput = "";
+      boolean outputMatches = false;
+      
+      if (friscSuccess && !friscCode.isEmpty()) {
+        Path friscOutputPath = tempDir.resolve("a.frisc");
+        try {
+          FriscRunner.Result execResult = FRISC_RUNNER.run(friscOutputPath);
+          simulatorOutput = execResult.output() == null ? "" : execResult.output();
+          if (execResult.success()) {
+            // FRISC simulator outputs decimal R6 value to stdout
+            // Simply use it as-is for comparison
+            actualOutput = execResult.r6Value().trim();
+            
+            if (!expectedOutput.isEmpty()) {
+              outputMatches = expectedOutput.equals(actualOutput);
+            }
+          } else {
+            runtimeError = execResult.errorMessage();
+            if (execResult.output() != null && !execResult.output().isBlank()) {
+              runtimeError += System.lineSeparator() + execResult.output().trim();
+            }
+          }
+        } catch (IOException | InterruptedException e) {
+          runtimeError = "Simulator execution failed: " + e.getMessage();
+        }
+      } else if (!friscSuccess) {
+        runtimeError = friscErrors.isEmpty() ? "Code generation failed." : friscErrors;
+      }
+      
       return new ProgramResult(
           programName,
           sourceCode,
@@ -414,6 +466,11 @@ public final class ExamplesReportGenerator {
           semanticTree,
           friscCode,
           friscErrors,
+          expectedOutput,
+          actualOutput,
+          runtimeError,
+          simulatorOutput,
+          outputMatches,
           lexerSuccess,
           parserSuccess,
           semanticSuccess,
@@ -423,6 +480,34 @@ public final class ExamplesReportGenerator {
       // Cleanup temp directory
       deleteDirectory(tempDir);
     }
+  }
+  
+  private static String readExpectedOutput(Path programFile) {
+    String fileName = programFile.getFileName().toString();
+    if (!fileName.endsWith(".c")) {
+      return "";
+    }
+    
+    String baseName = fileName.substring(0, fileName.length() - 2);
+    Path parent = programFile.getParent();
+    
+    Path[] candidates = new Path[] {
+        parent.resolve(baseName.replace("program", "output") + ".txt"),
+        parent.resolve(baseName + ".out"),
+        parent.resolve(baseName + ".expected")
+    };
+    
+    for (Path candidate : candidates) {
+      if (Files.exists(candidate)) {
+        try {
+          return Files.readString(candidate).trim();
+        } catch (IOException e) {
+          return "Error reading expected output: " + e.getMessage();
+        }
+      }
+    }
+    
+    return "";
   }
   
   /**
@@ -529,6 +614,16 @@ public final class ExamplesReportGenerator {
         String anchor = result.programName.replace(".c", "");
         writer.println("    <section id=\"" + anchor + "\" class=\"program-card\">");
         writer.println("      <h2>" + result.programName + "</h2>");
+        
+        // Prominent pass/fail badge for execution results
+        if (result.friscSuccess && !result.expectedOutput.isEmpty()) {
+          String passFailClass = result.outputMatches ? "badge-pass" : "badge-fail";
+          String passFailIcon = result.outputMatches ? "✅" : "❌";
+          String passFailText = result.outputMatches ? "PASS" : "FAIL";
+          writer.println("      <div class=\"result-badge\">");
+          writer.println("        <span class=\"badge " + passFailClass + "\">" + passFailIcon + " " + passFailText + "</span>");
+          writer.println("      </div>");
+        }
         
         // Status badges
         writer.println("      <div class=\"status-row\">");
@@ -640,6 +735,48 @@ public final class ExamplesReportGenerator {
           writer.println("      <details>");
           writer.println("        <summary>Generated FRISC Assembly Code</summary>");
           writer.println("        <pre><code>" + escapeHtml(result.friscCode) + "</code></pre>");
+          writer.println("      </details>");
+        }
+        
+        // FRISC simulator results and expected output
+        if (result.friscSuccess || !result.expectedOutput.isEmpty() || !result.runtimeError.isEmpty()
+            || (result.simulatorOutput != null && !result.simulatorOutput.isEmpty())) {
+          writer.println("      <details>");
+          writer.println("        <summary>FRISC Execution</summary>");
+          writer.println("        <div class=\"simulator-results\">");
+          
+          if (result.friscSuccess && !result.actualOutput.isEmpty()) {
+            // Show actual output with hex and decimal values
+            writer.println("          <div class=\"output-comparison\">");
+            writer.println("            <table class=\"output-table\">");
+            writer.println("              <tr>");
+            writer.println("                <th>Expected (Decimal)</th>");
+            writer.println("                <th>Actual (Decimal)</th>");
+            writer.println("                <th>Status</th>");
+            writer.println("              </tr>");
+            writer.println("              <tr>");
+            writer.println("                <td><code>" + escapeHtml(result.expectedOutput) + "</code></td>");
+            writer.println("                <td><code>" + escapeHtml(result.actualOutput) + "</code></td>");
+            String statusClass = result.outputMatches ? "status-pass" : "status-fail";
+            String statusText = result.outputMatches ? "✅ PASS" : "❌ FAIL";
+            writer.println("                <td class=\"" + statusClass + "\">" + statusText + "</td>");
+            writer.println("              </tr>");
+            writer.println("            </table>");
+            writer.println("          </div>");
+          } else if (!result.friscSuccess && result.simulatorOutput != null && !result.simulatorOutput.isEmpty()) {
+            // Show simulator output only if execution failed
+            writer.println("          <p><strong>Simulator Output:</strong></p>");
+            writer.println("          <pre><code>" + escapeHtml(result.simulatorOutput) + "</code></pre>");
+          }
+          
+          if (!result.runtimeError.isEmpty()) {
+            writer.println("          <p><strong>Runtime Error:</strong></p>");
+            writer.println("          <pre><code>" + escapeHtml(result.runtimeError) + "</code></pre>");
+          }
+          
+          writer.println("          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>");
+          
+          writer.println("        </div>");
           writer.println("      </details>");
         }
         
@@ -810,9 +947,103 @@ public final class ExamplesReportGenerator {
           color: white;
         }
         
+        .badge-pass {
+          background-color: #10b981;
+          color: white;
+          font-size: 1.1em;
+          padding: 10px 20px;
+          font-weight: 700;
+        }
+        
+        .badge-fail {
+          background-color: #ef4444;
+          color: white;
+          font-size: 1.1em;
+          padding: 10px 20px;
+          font-weight: 700;
+        }
+        
+        .result-badge {
+          text-align: center;
+          margin-bottom: 20px;
+          padding: 15px;
+          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+          border-radius: 8px;
+          border: 2px solid #0ea5e9;
+        }
+        
+        .output-comparison {
+          margin: 20px 0;
+        }
+        
+        .output-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 15px 0;
+          background: white;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .output-table th {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 12px;
+          text-align: left;
+          font-weight: 600;
+        }
+        
+        .output-table td {
+          padding: 12px;
+          border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .output-table tr:last-child td {
+          border-bottom: none;
+        }
+        
+        .output-table code {
+          font-family: 'Courier New', monospace;
+          font-size: 1.1em;
+          background: #f3f4f6;
+          padding: 4px 8px;
+          border-radius: 4px;
+        }
+        
+        .status-pass {
+          color: #10b981;
+          font-weight: 700;
+          font-size: 1.1em;
+        }
+        
+        .status-fail {
+          color: #ef4444;
+          font-weight: 700;
+          font-size: 1.1em;
+        }
+        
         .badge-skip {
           background-color: #6b7280;
           color: white;
+        }
+        
+        .simulator-results {
+          padding: 10px;
+        }
+        
+        .simulator-results p {
+          margin: 8px 0;
+        }
+        
+        .match-success {
+          color: #10b981;
+          font-weight: bold;
+        }
+        
+        .match-failure {
+          color: #ef4444;
+          font-weight: bold;
         }
         
         details {

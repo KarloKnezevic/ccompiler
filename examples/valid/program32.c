@@ -1,10 +1,8 @@
-float get_float(void) {
-    return 3.14;
-}
-
 int main(void) {
-    float f;
-    f = get_float();
-    return 0;
+    int x = 0;
+    int i;
+    for (i=0; i<42; ++i) {
+        x = x + 2;
+    }
+    return x;
 }
-

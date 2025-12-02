@@ -1,12 +1,7 @@
-struct Node {
-    int value;
-    int next;
-};
-
 int main(void) {
-    struct Node node;
-    node.value = 42;
-    node.next = 0;
-    return node.value;
+	int x = 2;
+	if (x != 2 || (x = 5)) {
+		return x;
+	}
+    return 0;
 }
-

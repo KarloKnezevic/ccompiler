@@ -1,6 +1,8 @@
 package hr.fer.ppj.codegen;
 
-import hr.fer.ppj.codegen.func.ActivationRecord;
+import hr.fer.ppj.codegen.emitter.FriscEmitter;
+import hr.fer.ppj.codegen.model.ActivationRecord;
+import hr.fer.ppj.codegen.util.LabelGenerator;
 import hr.fer.ppj.semantics.symbols.SymbolTable;
 import java.util.Objects;
 

@@ -1,7 +1,6 @@
 package hr.fer.ppj.codegen.stmt;
 
 import hr.fer.ppj.codegen.CodeGenContext;
-import hr.fer.ppj.codegen.FriscEmitter;
 import hr.fer.ppj.codegen.expr.ExpressionCodeGenerator;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
@@ -149,7 +148,7 @@ public final class StatementCodeGenerator {
             exprGen.generateExpression(condition);
             
             // Jump to end if condition is false
-            context.emitter().emitInstruction("CMP", "R0", "0", null);
+            context.emitter().emitInstruction("CMP", "R0", "%D 0", null);
             context.emitter().emitInstruction("JP_EQ", labels.endLabel(), null, "if condition is false");
             
             // Generate then statement
@@ -171,7 +170,7 @@ public final class StatementCodeGenerator {
             exprGen.generateExpression(condition);
             
             // Jump to else if condition is false
-            context.emitter().emitInstruction("CMP", "R0", "0", null);
+            context.emitter().emitInstruction("CMP", "R0", "%D 0", null);
             context.emitter().emitInstruction("JP_EQ", labels.elseLabel(), null, "if condition is false");
             
             // Generate then statement
@@ -225,7 +224,7 @@ public final class StatementCodeGenerator {
         exprGen.generateExpression(condition);
         
         // Exit if condition is false
-        context.emitter().emitInstruction("CMP", "R0", "0", null);
+        context.emitter().emitInstruction("CMP", "R0", "%D 0", null);
         context.emitter().emitInstruction("JP_EQ", labels.breakLabel(), null, "exit while loop");
         
         // Generate loop body with break/continue context
@@ -269,7 +268,7 @@ public final class StatementCodeGenerator {
                 exprGen.generateExpression(condExpr);
                 
                 // Exit if condition is false
-                context.emitter().emitInstruction("CMP", "R0", "0", null);
+                context.emitter().emitInstruction("CMP", "R0", "%D 0", null);
                 context.emitter().emitInstruction("JP_EQ", labels.breakLabel(), null, "exit for loop");
             }
             
@@ -307,7 +306,7 @@ public final class StatementCodeGenerator {
                 exprGen.generateExpression(condExpr);
                 
                 // Exit if condition is false
-                context.emitter().emitInstruction("CMP", "R0", "0", null);
+                context.emitter().emitInstruction("CMP", "R0", "%D 0", null);
                 context.emitter().emitInstruction("JP_EQ", labels.breakLabel(), "exit for loop");
             }
             
@@ -342,24 +341,29 @@ public final class StatementCodeGenerator {
                 if (children.size() == 3) {
                     // KR_RETURN <izraz> TOCKAZAREZ
                     NonTerminalNode expression = (NonTerminalNode) children.get(1);
-                    exprGen.generateExpression(expression);
-                    context.emitter().emitInstruction("MOVE", "R0", "R6", "return value");
+                    
+                    // Optimization: try to generate expression directly into R6 when possible
+                    if (tryGenerateReturnExpressionDirectly(expression)) {
+                        // Expression was generated directly into R6
+                    } else {
+                        // Fallback: generate into R0, then move to R6
+                        // Ensure expression is actually generated
+                        exprGen.generateExpression(expression);
+                        // Verify R0 was set (if not, this is a bug)
+                        context.emitter().emitInstruction("MOVE", "R0", "R6", "return value");
+                    }
                 } else {
                     // KR_RETURN TOCKAZAREZ (void return)
-                    context.emitter().emitInstruction("MOVE", "0", "R6", "void return");
+                    context.emitter().emitInstruction("MOVE", "%D 0", "R6", "void return");
                 }
                 
-                // Deallocate local variables before return
-                if (context.activationRecord() != null) {
-                    int localSize = context.activationRecord().getLocalVariablesSize();
-                    if (localSize > 0) {
-                        context.emitter().emitInstruction("ADD", "R7", FriscEmitter.formatHex(localSize), "R7", 
-                                                        "deallocate local variables");
-                    }
+                // Jump to function exit label to execute epilogue (avoids duplicate epilogues)
+                if (context.functionExitLabel() != null) {
+                    context.emitter().emitInstruction("JP", context.functionExitLabel(), "jump to function exit");
+                } else {
+                    // Fallback: generate epilogue directly if no exit label
+                    generateFunctionEpilogue();
                 }
-                
-                // Direct RET for clean code
-                context.emitter().emitInstruction("RET", "return from function");
             }
             case "KR_BREAK" -> {
                 if (context.loopBreakLabel() != null) {
@@ -376,6 +380,131 @@ public final class StatementCodeGenerator {
                 }
             }
         }
+    }
+    
+    /**
+     * Attempts to generate a return expression directly into R6, avoiding
+     * unnecessary MOVE R0, R6 instructions.
+     * 
+     * @param expression the return expression
+     * @return true if expression was generated directly into R6, false otherwise
+     */
+    private boolean tryGenerateReturnExpressionDirectly(NonTerminalNode expression) {
+        // Try simple cases first: integer literals (including negative)
+        String literal = tryGetSimpleIntegerLiteral(expression);
+        if (literal != null) {
+            context.emitter().emitInstruction("MOVE", "%D " + literal, "R6", "return constant " + literal);
+            return true;
+        }
+        
+        // For other cases, we'd need to modify ExpressionCodeGenerator to support
+        // generating directly into R6, which is more complex. For now, we'll
+        // generate into R0 and move to R6 (which is acceptable).
+        return false;
+    }
+    
+    /**
+     * Attempts to detect simple return of an integer literal, e.g.:
+     * return 31;
+     * return -84;
+     * 
+     * Navigates through single-child expression wrappers until reaching
+     * a &lt;primarni_izraz&gt; with a BROJ terminal, or a unary minus
+     * followed by a literal.
+     * 
+     * @return the literal value as string (with minus if negative), or null if not a simple literal
+     */
+    private String tryGetSimpleIntegerLiteral(NonTerminalNode expression) {
+        NonTerminalNode node = expression;
+        boolean isNegative = false;
+        
+        // Drill down while there is exactly one non-terminal child
+        outer:
+        while (true) {
+            List<ParseNode> children = node.children();
+            
+            // Check for unary minus at <unarni_izraz> level
+            // Structure: <unarni_izraz> -> <unarni_operator> -> MINUS + <cast_izraz>
+            if ("<unarni_izraz>".equals(node.symbol()) && children.size() == 2) {
+                ParseNode first = children.get(0);
+                // Check if first child is <unarni_operator> containing MINUS
+                if (first instanceof NonTerminalNode unaryOp && 
+                    "<unarni_operator>".equals(unaryOp.symbol())) {
+                    // Check if <unarni_operator> contains MINUS
+                    for (ParseNode opChild : unaryOp.children()) {
+                        if (opChild instanceof TerminalNode terminal && "MINUS".equals(terminal.symbol())) {
+                            isNegative = true;
+                            // Continue with the operand (<cast_izraz>)
+                            if (children.get(1) instanceof NonTerminalNode operand) {
+                                node = operand;
+                                continue outer; // Continue outer loop with new node
+                            }
+                            break outer;
+                        }
+                    }
+                }
+            }
+            
+            // Check for <primarni_izraz> with BROJ terminal
+            if ("<primarni_izraz>".equals(node.symbol())) {
+                for (ParseNode child : children) {
+                    if (child instanceof TerminalNode terminal && "BROJ".equals(terminal.symbol())) {
+                        String value = terminal.lexeme();
+                        return isNegative ? "-" + value : value;
+                    }
+                }
+                // If we found <primarni_izraz> but no BROJ, stop
+                break;
+            }
+            
+            // Look for single non-terminal child to continue drilling
+            NonTerminalNode singleChild = null;
+            for (ParseNode child : children) {
+                if (child instanceof NonTerminalNode nt) {
+                    if (singleChild != null) {
+                        // Multiple non-terminals - can't be a simple literal
+                        break outer;
+                    }
+                    singleChild = nt;
+                } else if (child instanceof TerminalNode) {
+                    // Terminal found - check if it's part of a simple structure
+                    // If it's not BROJ in <primarni_izraz>, we're done
+                    break outer;
+                }
+            }
+            
+            if (singleChild == null) {
+                // No single child to continue with
+                break;
+            }
+            
+            node = singleChild;
+            
+            // Continue drilling through expression wrappers
+            String symbol = node.symbol();
+            if ("<cast_izraz>".equals(symbol) || 
+                "<unarni_izraz>".equals(symbol) ||
+                "<postfiks_izraz>".equals(symbol) ||
+                "<primarni_izraz>".equals(symbol) ||
+                "<izraz_pridruzivanja>".equals(symbol) ||
+                "<log_ili_izraz>".equals(symbol) ||
+                "<log_i_izraz>".equals(symbol) ||
+                "<bin_ili_izraz>".equals(symbol) ||
+                "<bin_xili_izraz>".equals(symbol) ||
+                "<bin_i_izraz>".equals(symbol) ||
+                "<jednakosni_izraz>".equals(symbol) ||
+                "<odnosni_izraz>".equals(symbol) ||
+                "<aditivni_izraz>".equals(symbol) ||
+                "<multiplikativni_izraz>".equals(symbol)) {
+                // Continue drilling down - these are all expression wrappers
+                continue;
+            }
+            
+            // If we hit something else, stop
+            break;
+        }
+        
+        return null;
     }
     
     /**
@@ -452,21 +581,32 @@ public final class StatementCodeGenerator {
      */
     private void processInitDeclarator(NonTerminalNode node) {
         List<ParseNode> children = node.children();
+        String varName = null;
         
         if (children.size() == 1) {
             // Just a declarator (no initializer)
-            String varName = extractVariableName((NonTerminalNode) children.get(0));
-            if (varName != null && context.activationRecord() != null) {
-                String address = context.activationRecord().getVariableAddress(varName);
-                context.emitter().emitComment("Local variable " + varName + " at " + address + " (no initializer)");
-            }
+            varName = extractVariableName((NonTerminalNode) children.get(0));
         } else if (children.size() == 3) {
             // Declarator with initializer: <deklarator> OP_ASSIGN <inicijalizator>
-            String varName = extractVariableName((NonTerminalNode) children.get(0));
-            NonTerminalNode initializer = (NonTerminalNode) children.get(2);
+            varName = extractVariableName((NonTerminalNode) children.get(0));
+        }
+        
+        if (varName != null && context.activationRecord() != null) {
+            // Ensure variable is in activation record (fallback if not added during pre-processing)
+            if (!context.activationRecord().hasVariable(varName)) {
+                // Extract array size if it's an array
+                int size = extractArraySize((NonTerminalNode) children.get(0));
+                context.activationRecord().addLocalVariable(varName, size);
+            }
             
-            if (varName != null && context.activationRecord() != null) {
-                String address = context.activationRecord().getVariableAddress(varName);
+            String address = context.activationRecord().getVariableAddress(varName);
+            
+            if (children.size() == 1) {
+                // Just a declarator (no initializer)
+                context.emitter().emitComment("Local variable " + varName + " at " + address + " (no initializer)");
+            } else if (children.size() == 3) {
+                // Declarator with initializer: <deklarator> OP_ASSIGN <inicijalizator>
+                NonTerminalNode initializer = (NonTerminalNode) children.get(2);
                 context.emitter().emitComment("Local variable " + varName + " at " + address + " with initializer");
                 
                 // Generate initializer expression
@@ -476,6 +616,75 @@ public final class StatementCodeGenerator {
                 context.emitter().emitInstruction("STORE", "R0", address, "initialize " + varName);
             }
         }
+    }
+    
+    /**
+     * Extracts array size from a declarator node.
+     * Returns 4 (default) for non-arrays, or size * element_size for arrays.
+     * Note: This method is used as a fallback when variable is not in activation record.
+     * It defaults to 4 bytes per element (int), but ideally should check the type specifier.
+     */
+    private int extractArraySize(NonTerminalNode declarator) {
+        // Find <izravni_deklarator>
+        for (ParseNode child : declarator.children()) {
+            if (child instanceof NonTerminalNode nonTerminal && 
+                "<izravni_deklarator>".equals(nonTerminal.symbol())) {
+                return extractArraySizeFromDirectDeclarator(nonTerminal);
+            }
+        }
+        return 4; // Default: simple variable
+    }
+    
+    /**
+     * Extracts array size from a direct declarator.
+     * Defaults to 4 bytes per element (int). For char arrays, this should be 1 byte,
+     * but without access to the type specifier, we default to int.
+     */
+    private int extractArraySizeFromDirectDeclarator(NonTerminalNode directDeclarator) {
+        List<ParseNode> children = directDeclarator.children();
+        
+        // Handle nested <izravni_deklarator> structure
+        // For arrays: <izravni_deklarator> -> <izravni_deklarator> -> IDN L_UGL_ZAGRADA BROJ D_UGL_ZAGRADA
+        NonTerminalNode nestedDeclarator = null;
+        for (ParseNode child : children) {
+            if (child instanceof NonTerminalNode nonTerminal && 
+                "<izravni_deklarator>".equals(nonTerminal.symbol())) {
+                nestedDeclarator = nonTerminal;
+                break;
+            }
+        }
+        
+        // If nested, recurse into it
+        if (nestedDeclarator != null) {
+            return extractArraySizeFromDirectDeclarator(nestedDeclarator);
+        }
+        
+        // Check if it's an array: look for L_UGL_ZAGRADA followed by BROJ followed by D_UGL_ZAGRADA
+        // Need to check all possible positions (including at the end)
+        for (int i = 0; i <= children.size() - 3; i++) {
+            if (i + 2 < children.size()) {
+                ParseNode node1 = children.get(i);
+                ParseNode node2 = children.get(i + 1);
+                ParseNode node3 = children.get(i + 2);
+                
+                if (node1 instanceof TerminalNode t1 && "L_UGL_ZAGRADA".equals(t1.symbol()) &&
+                    node2 instanceof TerminalNode t2 && "BROJ".equals(t2.symbol()) &&
+                    node3 instanceof TerminalNode t3 && "D_UGL_ZAGRADA".equals(t3.symbol())) {
+                    // It's an array declaration
+                    try {
+                        int arraySize = Integer.parseInt(t2.lexeme());
+                        // Default to 4 bytes per element (int)
+                        // Note: For char arrays, this should be 1, but we don't have type info here
+                        // The correct size should be determined from the type specifier in the declaration
+                        return arraySize * 4; // 4 bytes per element (int)
+                    } catch (NumberFormatException e) {
+                        return 4; // Invalid size, treat as simple variable
+                    }
+                }
+            }
+        }
+        
+        return 4; // Not an array, simple variable
     }
     
     /**
@@ -501,6 +710,38 @@ public final class StatementCodeGenerator {
             }
         }
         return null;
+    }
+    
+    /**
+     * Generates the function epilogue (deallocate locals, restore frame pointer, return).
+     * 
+     * <p>Generates the canonical epilogue:
+     * <pre>
+     * ADD  R7, %D K, R7     ; deallocate locals
+     * POP  R5               ; restore old frame pointer
+     * RET                   ; pops return address and jumps
+     * </pre>
+     */
+    private void generateFunctionEpilogue() {
+        if (context.activationRecord() == null) {
+            // Not in a function, just return
+            context.emitter().emitInstruction("RET", null, null, "return from function");
+            return;
+        }
+        
+        int localSize = context.activationRecord().getLocalVariablesSize();
+        
+        // Deallocate local variables
+        if (localSize > 0) {
+            context.emitter().emitInstruction("ADD", "R7", "%D " + localSize, "R7", 
+                                            "deallocate local variables");
+        }
+        
+        // Restore old frame pointer
+        context.emitter().emitInstruction("POP", "R5", null, "restore old frame pointer");
+        
+        // Return to caller (RET pops return address and jumps)
+        context.emitter().emitInstruction("RET", null, null, "return to caller");
     }
     
 }

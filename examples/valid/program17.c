@@ -1,9 +1,7 @@
+int x = 12;
 int main(void) {
-    int x;
-    x = 5;
-    if (!(x == 0)) {
-        return 1;
+    int x = 123;
+    {
+        return x;
     }
-    return 0;
 }
-

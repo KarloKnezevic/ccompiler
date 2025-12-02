@@ -1,10 +1,8 @@
 package hr.fer.ppj.codegen.func;
 
 import hr.fer.ppj.codegen.CodeGenContext;
-import hr.fer.ppj.codegen.FriscEmitter;
+import hr.fer.ppj.codegen.model.ActivationRecord;
 import hr.fer.ppj.codegen.stmt.StatementCodeGenerator;
-import hr.fer.ppj.semantics.symbols.Symbol;
-import hr.fer.ppj.semantics.symbols.SymbolTable;
 import hr.fer.ppj.semantics.symbols.VariableSymbol;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
@@ -195,6 +193,11 @@ public final class FunctionCodeGenerator {
         StatementCodeGenerator stmtGen = new StatementCodeGenerator(functionContext);
         stmtGen.generateStatement(body);
         
+        // Generate function epilogue label (for functions that fall through without explicit return)
+        // Return statements will jump to this label to avoid duplicate epilogues
+        context.emitter().emitLabel(exitLabel, "function exit");
+        generateFunctionEpilogue(functionContext, activationRecord);
+        
         context.emitter().emitNewline();
     }
     
@@ -208,6 +211,9 @@ public final class FunctionCodeGenerator {
     
     /**
      * Recursively finds local variable declarations in the parse tree.
+     * 
+     * Structure for compound statement:
+     * <slozena_naredba> -> L_VIT_ZAGRADA <lista_deklaracija> <lista_naredbi> D_VIT_ZAGRADA
      */
     private void findLocalVariables(NonTerminalNode node, ActivationRecord activationRecord) {
         String symbol = node.symbol();
@@ -215,6 +221,19 @@ public final class FunctionCodeGenerator {
         if ("<lista_deklaracija>".equals(symbol)) {
             // Process declaration list
             processDeclarationList(node, activationRecord);
+        } else if ("<slozena_naredba>".equals(symbol)) {
+            // Compound statement: look for <lista_deklaracija> in children
+            for (ParseNode child : node.children()) {
+                if (child instanceof NonTerminalNode nonTerminal) {
+                    String childSymbol = nonTerminal.symbol();
+                    if ("<lista_deklaracija>".equals(childSymbol)) {
+                        processDeclarationList(nonTerminal, activationRecord);
+                    } else {
+                        // Continue searching in other children
+                        findLocalVariables(nonTerminal, activationRecord);
+                    }
+                }
+            }
         } else {
             // Recursively process children
             for (ParseNode child : node.children()) {
@@ -247,67 +266,266 @@ public final class FunctionCodeGenerator {
     }
     
     /**
-     * Processes a single declaration and extracts variable names.
+     * Processes a single declaration and extracts variable names with their sizes.
      */
     private void processDeclaration(NonTerminalNode declaration, ActivationRecord activationRecord) {
-        // Find variable names in the declaration
-        List<String> variableNames = extractVariableNames(declaration);
+        // Extract type specifier from declaration first
+        boolean isCharType = extractTypeSpecifierFromDeclaration(declaration);
+        int elementSize = isCharType ? 1 : 4; // char is 1 byte, int is 4 bytes
         
-        for (String varName : variableNames) {
-            activationRecord.addLocalVariable(varName);
-            context.emitter().emitComment("Local variable " + varName + " at " + 
-                                        activationRecord.getVariableAddress(varName));
+        // Find variable names and sizes in the declaration
+        List<VariableInfo> variables = extractVariableInfo(declaration, elementSize);
+        
+        for (VariableInfo varInfo : variables) {
+            activationRecord.addLocalVariable(varInfo.name(), varInfo.sizeInBytes());
+            context.emitter().emitComment("Local variable " + varInfo.name() + " at " + 
+                                        activationRecord.getVariableAddress(varInfo.name()));
         }
     }
     
     /**
-     * Extracts variable names from a declaration node.
+     * Extracts the type specifier from a declaration node.
+     * Returns true if the type is char, false if int (or unknown).
      */
-    private List<String> extractVariableNames(NonTerminalNode declaration) {
-        // This is a simplified implementation - in a full compiler,
-        // you'd need to parse the declaration structure more carefully
-        return findIdentifiers(declaration);
+    private boolean extractTypeSpecifierFromDeclaration(NonTerminalNode declaration) {
+        // Look for KR_CHAR or KR_INT in the declaration tree
+        // Structure: <deklaracija> -> <specifikator_tipa> -> KR_CHAR or KR_INT
+        return findTypeSpecifier(declaration, "KR_CHAR");
     }
     
     /**
-     * Finds all identifiers in a declaration.
+     * Information about a local variable including its name and size.
      */
-    private List<String> findIdentifiers(NonTerminalNode node) {
-        List<String> identifiers = new java.util.ArrayList<>();
+    private record VariableInfo(String name, int sizeInBytes) {}
+    
+    /**
+     * Extracts variable information (name and size) from a declaration node.
+     * 
+     * Structure: <deklaracija> -> <lista_init_deklaratora> -> <init_deklarator> -> <deklarator> -> <izravni_deklarator> -> IDN
+     * 
+     * @param declaration the declaration node
+     * @param elementSize the element size in bytes (1 for char, 4 for int)
+     */
+    private List<VariableInfo> extractVariableInfo(NonTerminalNode declaration, int elementSize) {
+        List<VariableInfo> variables = new java.util.ArrayList<>();
         
-        for (ParseNode child : node.children()) {
-            if (child instanceof TerminalNode terminal && "IDN".equals(terminal.symbol())) {
-                identifiers.add(terminal.lexeme());
-            } else if (child instanceof NonTerminalNode nonTerminal) {
-                identifiers.addAll(findIdentifiers(nonTerminal));
+        // Find <lista_init_deklaratora>
+        for (ParseNode child : declaration.children()) {
+            if (child instanceof NonTerminalNode nonTerminal && 
+                "<lista_init_deklaratora>".equals(nonTerminal.symbol())) {
+                extractVariableInfoFromList(nonTerminal, variables, elementSize);
             }
         }
         
-        return identifiers;
+        return variables;
     }
     
     /**
-     * Generates the function prologue (allocate local variables).
+     * Extracts variable information from a list of init declarators.
+     * 
+     * @param list the list of init declarators
+     * @param variables the list to add variable info to
+     * @param elementSize the element size in bytes (1 for char, 4 for int)
+     */
+    private void extractVariableInfoFromList(NonTerminalNode list, List<VariableInfo> variables, int elementSize) {
+        List<ParseNode> children = list.children();
+        
+        if (children.size() == 1) {
+            // Single <init_deklarator>
+            extractVariableInfoFromInitDeclarator((NonTerminalNode) children.get(0), variables, elementSize);
+        } else if (children.size() == 3) {
+            // <lista_init_deklaratora> ZAREZ <init_deklarator>
+            extractVariableInfoFromList((NonTerminalNode) children.get(0), variables, elementSize);
+            extractVariableInfoFromInitDeclarator((NonTerminalNode) children.get(2), variables, elementSize);
+        }
+    }
+    
+    /**
+     * Extracts variable information from an init declarator.
+     * Structure: <init_deklarator> -> <deklarator> -> <izravni_deklarator> -> IDN
+     * 
+     * @param initDeclarator the init declarator node
+     * @param variables the list to add variable info to
+     * @param elementSize the element size in bytes (1 for char, 4 for int)
+     */
+    private void extractVariableInfoFromInitDeclarator(NonTerminalNode initDeclarator, List<VariableInfo> variables, int elementSize) {
+        // Find <deklarator>
+        for (ParseNode child : initDeclarator.children()) {
+            if (child instanceof NonTerminalNode nonTerminal && 
+                "<deklarator>".equals(nonTerminal.symbol())) {
+                extractVariableInfoFromDeclarator(nonTerminal, variables, elementSize);
+            }
+        }
+    }
+    
+    /**
+     * Extracts variable information from a declarator.
+     * Structure: <deklarator> -> <izravni_deklarator> -> IDN
+     * 
+     * @param declarator the declarator node
+     * @param variables the list to add variable info to
+     * @param elementSize the element size in bytes (1 for char, 4 for int)
+     */
+    private void extractVariableInfoFromDeclarator(NonTerminalNode declarator, List<VariableInfo> variables, int elementSize) {
+        // Find <izravni_deklarator>
+        for (ParseNode child : declarator.children()) {
+            if (child instanceof NonTerminalNode nonTerminal && 
+                "<izravni_deklarator>".equals(nonTerminal.symbol())) {
+                extractVariableInfoFromDirectDeclarator(nonTerminal, variables, elementSize);
+            }
+        }
+    }
+    
+    /**
+     * Extracts variable information from a direct declarator.
+     * Structure: <izravni_deklarator> -> IDN (or IDN with array/function syntax)
+     * For arrays: <izravni_deklarator> -> IDN L_UGL_ZAGRADA BROJ D_UGL_ZAGRADA
+     * 
+     * @param directDeclarator the direct declarator node
+     * @param variables the list to add variable info to
+     * @param elementSize the element size in bytes (1 for char, 4 for int)
+     */
+    private void extractVariableInfoFromDirectDeclarator(NonTerminalNode directDeclarator, List<VariableInfo> variables, int elementSize) {
+        String varName = null;
+        int arraySize = 0;
+        boolean isArray = false;
+        
+        List<ParseNode> children = directDeclarator.children();
+        
+        // Handle nested <izravni_deklarator> structure
+        // For arrays: <izravni_deklarator> -> <izravni_deklarator> -> IDN L_UGL_ZAGRADA BROJ D_UGL_ZAGRADA
+        // Or: <izravni_deklarator> -> IDN L_UGL_ZAGRADA BROJ D_UGL_ZAGRADA
+        NonTerminalNode nestedDeclarator = null;
+        for (ParseNode child : children) {
+            if (child instanceof NonTerminalNode nonTerminal && 
+                "<izravni_deklarator>".equals(nonTerminal.symbol())) {
+                nestedDeclarator = nonTerminal;
+                break;
+            }
+        }
+        
+        // If nested, recurse into it
+        if (nestedDeclarator != null) {
+            extractVariableInfoFromDirectDeclarator(nestedDeclarator, variables, elementSize);
+            return;
+        }
+        
+        // Find IDN (variable name)
+        for (ParseNode child : children) {
+            if (child instanceof TerminalNode terminal && "IDN".equals(terminal.symbol())) {
+                varName = terminal.lexeme();
+                break;
+            }
+        }
+        
+        if (varName == null) {
+            return; // No variable name found
+        }
+        
+        // Check if it's an array: look for L_UGL_ZAGRADA followed by BROJ followed by D_UGL_ZAGRADA
+        // (Only if we haven't already found array brackets above)
+        if (!isArray) {
+            for (int i = 0; i <= children.size() - 3; i++) {
+                if (i + 2 < children.size()) {
+                    ParseNode node1 = children.get(i);
+                    ParseNode node2 = children.get(i + 1);
+                    ParseNode node3 = children.get(i + 2);
+                    
+                    if (node1 instanceof TerminalNode t1 && "L_UGL_ZAGRADA".equals(t1.symbol()) &&
+                        node2 instanceof TerminalNode t2 && "BROJ".equals(t2.symbol()) &&
+                        node3 instanceof TerminalNode t3 && "D_UGL_ZAGRADA".equals(t3.symbol())) {
+                        // It's an array declaration
+                        isArray = true;
+                        try {
+                            arraySize = Integer.parseInt(t2.lexeme());
+                        } catch (NumberFormatException e) {
+                            arraySize = 0; // Invalid size, treat as error
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (isArray) {
+            // Array: size * element_size bytes
+            variables.add(new VariableInfo(varName, arraySize * elementSize));
+        } else {
+            // Simple variable: 4 bytes (int or char both stored as 4 bytes on stack)
+            variables.add(new VariableInfo(varName, 4));
+        }
+    }
+    
+    /**
+     * Searches for a type specifier (KR_CHAR or KR_INT) in a declaration node.
+     */
+    private boolean findTypeSpecifier(NonTerminalNode node, String targetSpecifier) {
+        if (node == null) {
+            return false;
+        }
+        
+        for (ParseNode child : node.children()) {
+            if (child instanceof TerminalNode terminal && targetSpecifier.equals(terminal.symbol())) {
+                return true;
+            } else if (child instanceof NonTerminalNode nonTerminal) {
+                if (findTypeSpecifier(nonTerminal, targetSpecifier)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Generates the function prologue (save frame pointer, allocate local variables).
+     * 
+     * <p>Generates the canonical prologue:
+     * <pre>
+     * PUSH R5               ; save old frame pointer
+     * MOVE R7, R5           ; R5 = current SP -> base of frame
+     * SUB  R7, %D K, R7     ; allocate K bytes for locals (stack grows down)
+     * </pre>
      */
     private void generateFunctionPrologue(CodeGenContext functionContext, ActivationRecord activationRecord) {
         int localSize = activationRecord.getLocalVariablesSize();
         
+        // Always save old frame pointer (even if no locals)
+        functionContext.emitter().emitInstruction("PUSH", "R5", null, "save old frame pointer");
+        
+        // Set R5 = R7 (current stack pointer)
+        functionContext.emitter().emitInstruction("MOVE", "R7", "R5", "R5 = current SP -> base of frame");
+        
+        // Allocate space for local variables
         if (localSize > 0) {
-            functionContext.emitter().emitInstruction("SUB", "R7", FriscEmitter.formatHex(localSize), "R7", 
+            functionContext.emitter().emitInstruction("SUB", "R7", "%D " + localSize, "R7", 
                                                     "allocate " + (localSize / 4) + " local variables");
         }
     }
     
     /**
-     * Generates the function epilogue (deallocate local variables).
+     * Generates the function epilogue (deallocate locals, restore frame pointer, return).
+     * 
+     * <p>Generates the canonical epilogue:
+     * <pre>
+     * ADD  R7, %D K, R7     ; deallocate locals
+     * POP  R5               ; restore old frame pointer
+     * RET                   ; pops return address and jumps
+     * </pre>
      */
     private void generateFunctionEpilogue(CodeGenContext functionContext, ActivationRecord activationRecord) {
         int localSize = activationRecord.getLocalVariablesSize();
         
+        // Deallocate local variables
         if (localSize > 0) {
-            functionContext.emitter().emitInstruction("ADD", "R7", FriscEmitter.formatHex(localSize), "R7", 
+            functionContext.emitter().emitInstruction("ADD", "R7", "%D " + localSize, "R7", 
                                                     "deallocate local variables");
         }
+        
+        // Restore old frame pointer
+        functionContext.emitter().emitInstruction("POP", "R5", null, "restore old frame pointer");
+        
+        // Return to caller (RET pops return address and jumps)
+        functionContext.emitter().emitInstruction("RET", null, null, "return to caller");
     }
     
     /**

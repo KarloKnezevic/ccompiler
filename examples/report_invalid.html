@@ -123,9 +123,103 @@ nav.index a:hover {
   color: white;
 }
 
+.badge-pass {
+  background-color: #10b981;
+  color: white;
+  font-size: 1.1em;
+  padding: 10px 20px;
+  font-weight: 700;
+}
+
+.badge-fail {
+  background-color: #ef4444;
+  color: white;
+  font-size: 1.1em;
+  padding: 10px 20px;
+  font-weight: 700;
+}
+
+.result-badge {
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: 8px;
+  border: 2px solid #0ea5e9;
+}
+
+.output-comparison {
+  margin: 20px 0;
+}
+
+.output-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.output-table th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.output-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.output-table tr:last-child td {
+  border-bottom: none;
+}
+
+.output-table code {
+  font-family: 'Courier New', monospace;
+  font-size: 1.1em;
+  background: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.status-pass {
+  color: #10b981;
+  font-weight: 700;
+  font-size: 1.1em;
+}
+
+.status-fail {
+  color: #ef4444;
+  font-weight: 700;
+  font-size: 1.1em;
+}
+
 .badge-skip {
   background-color: #6b7280;
   color: white;
+}
+
+.simulator-results {
+  padding: 10px;
+}
+
+.simulator-results p {
+  margin: 8px 0;
+}
+
+.match-success {
+  color: #10b981;
+  font-weight: bold;
+}
+
+.match-failure {
+  color: #ef4444;
+  font-weight: bold;
 }
 
 details {
@@ -344,6 +438,14 @@ Očekivani uniformni znakovi: L_UGL_ZAGRADA, L_ZAGRADA, OP_PRIDRUZI, TOCKAZAREZ,
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -411,6 +513,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 Pročitan uniformni znak: KR_INT (int).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, NIZ_ZNAKOVA, OP_DEC, OP_INC, OP_NEG, OP_TILDA, PLUS, TOCKAZAREZ, ZNAK.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -490,6 +600,14 @@ Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -518,6 +636,14 @@ Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 LEXER ERRORS:
@@ -544,6 +670,14 @@ Leksička greška na retku 2, stupcu 10: neprepoznat znak &#39;@&#39; (0x40)
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 LEXER ERRORS:
@@ -568,6 +702,14 @@ Leksička greška na retku 2, stupcu 10: neprepoznat znak &#39;#&#39; (0x23)
 }
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -661,6 +803,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, KR_BREAK, KR_CONTI
 Pročitan uniformni znak: KR_INT (int).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, KR_BREAK, KR_CONTINUE, KR_FOR, KR_IF, KR_RETURN, KR_WHILE, L_VIT_ZAGRADA, L_ZAGRADA, MINUS, NIZ_ZNAKOVA, OP_DEC, OP_INC, OP_NEG, OP_TILDA, PLUS, TOCKAZAREZ, ZNAK.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -762,6 +912,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, KR_BREAK, KR_CONTI
 Pročitan uniformni znak: KR_ELSE (else).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, KR_BREAK, KR_CONTINUE, KR_FOR, KR_IF, KR_RETURN, KR_WHILE, L_VIT_ZAGRADA, L_ZAGRADA, MINUS, NIZ_ZNAKOVA, OP_DEC, OP_INC, OP_NEG, OP_TILDA, PLUS, TOCKAZAREZ, ZNAK.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -1304,44 +1462,66 @@ Global Scope:
 
 ; Function definitions
 F_MAIN                          ; Function main
-; Local variable x at (R7+04)
-        SUB R7, 04, R7          ; allocate 1 local variables
+; Local variable x at (R5-04)
+        PUSH R5                 ; save old frame pointer
+        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
+        SUB R7, %D 4, R7        ; allocate 1 local variables
 ; Compound statement
 ; Local variable declarations
-; Local variable x at (R7+04) (no initializer)
-        MOVE 5, R0              ; load constant 5
-        STORE R0, (R7+04)       ; assign to x
+; Local variable x at (R5-04) (no initializer)
+        MOVE %D 5, R0           ; load constant 5
+        STORE R0, (R5-04)       ; assign to x
 ; If-else statement
-        LOAD R0, (R7+04)        ; load variable x
+        LOAD R0, (R5-04)        ; load variable x
         PUSH R0                 ; save left operand
-        MOVE 0, R0              ; load constant 0
+        MOVE %D 0, R0           ; load constant 0
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         CMP R0, R1
         JP_SGT L_SC_TRUE1       ; comparison OP_GT
-        MOVE 0, R0              ; comparison result false
+        MOVE %D 0, R0           ; comparison result false
         JP L_SC_END1
 L_SC_TRUE1
-        MOVE 1, R0              ; comparison result true
+        MOVE %D 1, R0           ; comparison result true
 L_SC_END1
-        CMP R0, 0
+        CMP R0, %D 0
         JP_EQ L_ELSE1           ; if condition is false
 ; Compound statement
-        MOVE 1, R0              ; load constant 1
-        MOVE R0, R6             ; return value
-        ADD R7, 04, R7          ; deallocate local variables
-        RET                     ; return from function
+        MOVE %D 1, R6           ; return constant 1
+        JP L1                   ; jump to function exit
         JP L_END1               ; skip else
 L_ELSE1                         ; else clause
 L_END1                          ; end if-else
-        MOVE 0, R0              ; load constant 0
-        MOVE R0, R6             ; return value
-        ADD R7, 04, R7          ; deallocate local variables
-        RET                     ; return from function
+        MOVE %D 0, R6           ; return constant 0
+        JP L1                   ; jump to function exit
+L1                              ; function exit
+        ADD R7, %D 4, R7        ; deallocate local variables
+        POP R5                  ; restore old frame pointer
+        RET                     ; return to caller
 
 ; Global variables
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <div class="output-comparison">
+            <table class="output-table">
+              <tr>
+                <th>Expected (Decimal)</th>
+                <th>Actual (Decimal)</th>
+                <th>Status</th>
+              </tr>
+              <tr>
+                <td><code></code></td>
+                <td><code>1</code></td>
+                <td class="status-fail">❌ FAIL</td>
+              </tr>
+            </table>
+          </div>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
     </section>
     <section id="program18" class="program-card">
@@ -1496,6 +1676,14 @@ D_VIT_ZAGRADA          4       10
         <pre><code>&lt;naredba_skoka&gt; ::= KR_BREAK(2,break) TOCKAZAREZ(2,;)
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -1659,6 +1847,14 @@ D_VIT_ZAGRADA          4       10
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
@@ -1731,6 +1927,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, L_UGL_ZAGRADA, L_ZAGRADA, MIN
 Pročitan uniformni znak: KR_RETURN (return).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, L_UGL_ZAGRADA, L_ZAGRADA, MINUS, OP_BIN_ILI, OP_BIN_XILI, OP_DEC, OP_DIJELI, OP_EQ, OP_GT, OP_GTE, OP_I, OP_ILI, OP_INC, OP_LT, OP_LTE, OP_MOD, OP_NEQ, OP_PRIDRUZI, PLUS, TOCKA, TOCKAZAREZ, ZAREZ.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -2062,6 +2266,14 @@ D_VIT_ZAGRADA          8       14
         <pre><code>&lt;naredba_skoka&gt; ::= KR_BREAK(5,break) TOCKAZAREZ(5,;)
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -2430,6 +2642,14 @@ D_VIT_ZAGRADA          9       9
         <pre><code>&lt;postfiks_izraz&gt; ::= &lt;postfiks_izraz&gt; L_ZAGRADA(7,() &lt;lista_argumenata&gt; D_ZAGRADA(7,))
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -2848,6 +3068,14 @@ D_VIT_ZAGRADA          9       11
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
@@ -3261,6 +3489,14 @@ D_VIT_ZAGRADA          9       8
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
@@ -3372,6 +3608,14 @@ D_VIT_ZAGRADA          3       8
         <pre><code>&lt;naredba_skoka&gt; ::= KR_RETURN(2,return) TOCKAZAREZ(2,;)
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -3668,6 +3912,14 @@ D_VIT_ZAGRADA          8       8
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
@@ -3922,6 +4174,14 @@ D_VIT_ZAGRADA          6       11
         <pre><code>&lt;init_deklarator&gt; ::= &lt;deklarator&gt;
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -4399,27 +4659,52 @@ Global Scope:
 
 ; Function definitions
 F_MAIN                          ; Function main
-; Local variable x at (R7+04)
-; Local variable x at (R7+04)
-        SUB R7, 04, R7          ; allocate 1 local variables
+; Local variable x at (R5-04)
+; Local variable x at (R5-04)
+        PUSH R5                 ; save old frame pointer
+        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
+        SUB R7, %D 4, R7        ; allocate 1 local variables
 ; Compound statement
 ; Local variable declarations
-; Local variable x at (R7+04) (no initializer)
+; Local variable x at (R5-04) (no initializer)
 ; Compound statement
 ; Local variable declarations
-; Local variable x at (R7+04) (no initializer)
-        MOVE 5, R0              ; load constant 5
-        STORE R0, (R7+04)       ; assign to x
-        MOVE 10, R0             ; load constant 10
-        STORE R0, (R7+04)       ; assign to x
-        LOAD R0, (R7+04)        ; load variable x
+; Local variable x at (R5-04) (no initializer)
+        MOVE %D 5, R0           ; load constant 5
+        STORE R0, (R5-04)       ; assign to x
+        MOVE %D 10, R0          ; load constant 10
+        STORE R0, (R5-04)       ; assign to x
+        LOAD R0, (R5-04)        ; load variable x
         MOVE R0, R6             ; return value
-        ADD R7, 04, R7          ; deallocate local variables
-        RET                     ; return from function
+        JP L1                   ; jump to function exit
+L1                              ; function exit
+        ADD R7, %D 4, R7        ; deallocate local variables
+        POP R5                  ; restore old frame pointer
+        RET                     ; return to caller
 
 ; Global variables
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <div class="output-comparison">
+            <table class="output-table">
+              <tr>
+                <th>Expected (Decimal)</th>
+                <th>Actual (Decimal)</th>
+                <th>Status</th>
+              </tr>
+              <tr>
+                <td><code></code></td>
+                <td><code>10</code></td>
+                <td class="status-fail">❌ FAIL</td>
+              </tr>
+            </table>
+          </div>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
     </section>
     <section id="program28" class="program-card">
@@ -4721,6 +5006,14 @@ D_VIT_ZAGRADA          6       13
         <pre><code>&lt;aditivni_izraz&gt; ::= &lt;aditivni_izraz&gt; PLUS(4,+) &lt;multiplikativni_izraz&gt;
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -5116,6 +5409,14 @@ D_VIT_ZAGRADA          8       16
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
@@ -5393,6 +5694,14 @@ D_VIT_ZAGRADA          6       13
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
@@ -5663,6 +5972,14 @@ D_VIT_ZAGRADA          5       15
         <pre><code>&lt;izraz_pridruzivanja&gt; ::= &lt;unarni_izraz&gt; OP_PRIDRUZI(3,=) &lt;izraz_pridruzivanja&gt;
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -5998,6 +6315,14 @@ D_VIT_ZAGRADA          7       12
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
@@ -6081,6 +6406,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 Pročitan uniformni znak: TOCKAZAREZ (;).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, NIZ_ZNAKOVA, OP_DEC, OP_INC, OP_NEG, OP_TILDA, PLUS, ZNAK.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -6540,6 +6873,14 @@ D_VIT_ZAGRADA         10       15
         <pre><code>&lt;primarni_izraz&gt; ::= IDN(8,y)
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -7064,6 +7405,14 @@ D_VIT_ZAGRADA          9       17
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
@@ -7403,6 +7752,14 @@ D_VIT_ZAGRADA          9       8
         <pre><code>&lt;postfiks_izraz&gt; ::= &lt;postfiks_izraz&gt; L_ZAGRADA(7,() D_ZAGRADA(7,))
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -8018,49 +8375,69 @@ Global Scope:
 
 ; Function definitions
 F_MAIN                          ; Function main
-; Local variable x at (R7+04)
-        SUB R7, 04, R7          ; allocate 1 local variables
+; Local variable x at (R5-04)
+        PUSH R5                 ; save old frame pointer
+        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
+        SUB R7, %D 4, R7        ; allocate 1 local variables
 ; Compound statement
 ; Local variable declarations
-; Local variable x at (R7+04) (no initializer)
-        MOVE 5, R0              ; load constant 5
-        STORE R0, (R7+04)       ; assign to x
+; Local variable x at (R5-04) (no initializer)
+        MOVE %D 5, R0           ; load constant 5
+        STORE R0, (R5-04)       ; assign to x
 ; If-else statement
-        LOAD R0, (R7+04)        ; load variable x
+        LOAD R0, (R5-04)        ; load variable x
         PUSH R0                 ; save left operand
-        MOVE 0, R0              ; load constant 0
+        MOVE %D 0, R0           ; load constant 0
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         CMP R0, R1
         JP_SGT L_SC_TRUE1       ; comparison OP_GT
-        MOVE 0, R0              ; comparison result false
+        MOVE %D 0, R0           ; comparison result false
         JP L_SC_END1
 L_SC_TRUE1
-        MOVE 1, R0              ; comparison result true
+        MOVE %D 1, R0           ; comparison result true
 L_SC_END1
-        CMP R0, 0
+        CMP R0, %D 0
         JP_EQ L_ELSE1           ; if condition is false
 ; Compound statement
-        MOVE 1, R0              ; load constant 1
-        MOVE R0, R6             ; return value
-        ADD R7, 04, R7          ; deallocate local variables
-        RET                     ; return from function
+        MOVE %D 1, R6           ; return constant 1
+        JP L1                   ; jump to function exit
         JP L_END1               ; skip else
 L_ELSE1                         ; else clause
 ; Compound statement
-        MOVE 0, R0              ; load constant 0
-        MOVE R0, R6             ; return value
-        ADD R7, 04, R7          ; deallocate local variables
-        RET                     ; return from function
+        MOVE %D 0, R6           ; return constant 0
+        JP L1                   ; jump to function exit
 L_END1                          ; end if-else
-        MOVE 2, R0              ; load constant 2
-        MOVE R0, R6             ; return value
-        ADD R7, 04, R7          ; deallocate local variables
-        RET                     ; return from function
+        MOVE %D 2, R6           ; return constant 2
+        JP L1                   ; jump to function exit
+L1                              ; function exit
+        ADD R7, %D 4, R7        ; deallocate local variables
+        POP R5                  ; restore old frame pointer
+        RET                     ; return to caller
 
 ; Global variables
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <div class="output-comparison">
+            <table class="output-table">
+              <tr>
+                <th>Expected (Decimal)</th>
+                <th>Actual (Decimal)</th>
+                <th>Status</th>
+              </tr>
+              <tr>
+                <td><code></code></td>
+                <td><code>1</code></td>
+                <td class="status-fail">❌ FAIL</td>
+              </tr>
+            </table>
+          </div>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
     </section>
     <section id="program37" class="program-card">
@@ -8170,6 +8547,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
 Pročitan uniformni znak: KR_INT (int).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_BREAK, KR_CONTINUE, KR_FOR, KR_IF, KR_RETURN, KR_WHILE, L_VIT_ZAGRADA, L_ZAGRADA, MINUS, NIZ_ZNAKOVA, OP_DEC, OP_INC, OP_NEG, OP_TILDA, PLUS, TOCKAZAREZ, ZNAK.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -8291,6 +8676,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -8408,6 +8801,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
 Pročitan uniformni znak: KR_INT (int).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_BREAK, KR_CONTINUE, KR_FOR, KR_IF, KR_RETURN, KR_WHILE, L_VIT_ZAGRADA, L_ZAGRADA, MINUS, NIZ_ZNAKOVA, OP_DEC, OP_INC, OP_NEG, OP_TILDA, PLUS, TOCKAZAREZ, ZNAK.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -8701,6 +9102,14 @@ D_VIT_ZAGRADA          5       14
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
@@ -8817,6 +9226,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -8914,6 +9331,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
 Pročitan uniformni znak: KR_STRUCT (struct).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_BREAK, KR_CONTINUE, KR_FOR, KR_IF, KR_RETURN, KR_WHILE, L_VIT_ZAGRADA, L_ZAGRADA, MINUS, NIZ_ZNAKOVA, OP_DEC, OP_INC, OP_NEG, OP_TILDA, PLUS, TOCKAZAREZ, ZNAK.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -9370,21 +9795,45 @@ Global Scope:
 
 ; Function definitions
 F_MAIN                          ; Function main
-; Local variable arr at (R7+04)
-        SUB R7, 04, R7          ; allocate 1 local variables
+; Local variable arr at (R5-04)
+        PUSH R5                 ; save old frame pointer
+        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
+        SUB R7, %D 4, R7        ; allocate 1 local variables
 ; Compound statement
 ; Local variable declarations
-; Local variable arr at (R7+04) (no initializer)
-        MOVE 5, R0              ; load constant 5
-        STORE R0, (R7+04)       ; assign to arr
-        MOVE 0, R0              ; load constant 0
-        MOVE R0, R6             ; return value
-        ADD R7, 04, R7          ; deallocate local variables
-        RET                     ; return from function
+; Local variable arr at (R5-04) (no initializer)
+        MOVE %D 5, R0           ; load constant 5
+        STORE R0, (R5-04)       ; assign to arr
+        MOVE %D 0, R6           ; return constant 0
+        JP L1                   ; jump to function exit
+L1                              ; function exit
+        ADD R7, %D 4, R7        ; deallocate local variables
+        POP R5                  ; restore old frame pointer
+        RET                     ; return to caller
 
 ; Global variables
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <div class="output-comparison">
+            <table class="output-table">
+              <tr>
+                <th>Expected (Decimal)</th>
+                <th>Actual (Decimal)</th>
+                <th>Status</th>
+              </tr>
+              <tr>
+                <td><code></code></td>
+                <td><code>0</code></td>
+                <td class="status-fail">❌ FAIL</td>
+              </tr>
+            </table>
+          </div>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
     </section>
     <section id="program43" class="program-card">
@@ -9494,6 +9943,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
 Pročitan uniformni znak: KR_INT (int).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_BREAK, KR_CONTINUE, KR_FOR, KR_IF, KR_RETURN, KR_WHILE, L_VIT_ZAGRADA, L_ZAGRADA, MINUS, NIZ_ZNAKOVA, OP_DEC, OP_INC, OP_NEG, OP_TILDA, PLUS, TOCKAZAREZ, ZNAK.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -9991,6 +10448,14 @@ D_VIT_ZAGRADA          9       12
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
@@ -10478,6 +10943,14 @@ D_VIT_ZAGRADA          9       8
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
@@ -10594,6 +11067,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -10680,6 +11161,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 Pročitan uniformni znak: TOCKAZAREZ (;).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, NIZ_ZNAKOVA, OP_DEC, OP_INC, OP_NEG, OP_TILDA, PLUS, ZNAK.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -10770,6 +11259,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -10855,6 +11352,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 Pročitan uniformni znak: OP_PRIDRUZI (=).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, NIZ_ZNAKOVA, OP_DEC, OP_INC, OP_NEG, OP_TILDA, PLUS, ZNAK.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -10944,6 +11449,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, D_ZAGRADA, L_UGL_ZAGRADA, L_Z
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -11029,6 +11542,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 Pročitan uniformni znak: OP_PRIDRUZI (=).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, NIZ_ZNAKOVA, OP_DEC, OP_INC, OP_NEG, OP_TILDA, PLUS, ZNAK.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -11118,6 +11639,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -11205,6 +11734,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -11290,6 +11827,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 Pročitan uniformni znak: OP_PRIDRUZI (=).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, NIZ_ZNAKOVA, OP_DEC, OP_INC, OP_NEG, OP_TILDA, PLUS, ZNAK.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -11393,6 +11938,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -11494,6 +12047,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -11589,6 +12150,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 Pročitan uniformni znak: D_ZAGRADA ()).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, NIZ_ZNAKOVA, OP_DEC, OP_INC, OP_NEG, OP_TILDA, PLUS, ZNAK.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -11689,6 +12258,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -11785,6 +12362,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 Pročitan uniformni znak: D_ZAGRADA ()).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, NIZ_ZNAKOVA, OP_DEC, OP_INC, OP_NEG, OP_TILDA, PLUS, ZNAK.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -11885,6 +12470,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -11970,6 +12563,14 @@ Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT
 Pročitan uniformni znak: KR_RETURN (return).
 Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT, KR_STRUCT, KR_VOID.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -12070,6 +12671,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -12166,6 +12775,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 Pročitan uniformni znak: D_ZAGRADA ()).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, NIZ_ZNAKOVA, OP_DEC, OP_INC, OP_NEG, OP_TILDA, PLUS, ZNAK.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -12266,6 +12883,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -12363,6 +12988,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, 
 Pročitan uniformni znak: KR_VOID (void).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, IDN, L_ZAGRADA, MINUS, NIZ_ZNAKOVA, OP_DEC, OP_INC, OP_NEG, OP_TILDA, PLUS, ZNAK.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -12849,46 +13482,71 @@ Global Scope:
 
 ; Function definitions
 F_MAIN                          ; Function main
-; Local variable i at (R7+04)
-        SUB R7, 04, R7          ; allocate 1 local variables
+; Local variable i at (R5-04)
+        PUSH R5                 ; save old frame pointer
+        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
+        SUB R7, %D 4, R7        ; allocate 1 local variables
 ; Compound statement
 ; Local variable declarations
-; Local variable i at (R7+04) (no initializer)
+; Local variable i at (R5-04) (no initializer)
 ; For loop with increment
 L_LOOP1                         ; for loop start
-        LOAD R0, (R7+04)        ; load variable i
+        LOAD R0, (R5-04)        ; load variable i
         PUSH R0                 ; save left operand
-        MOVE 10, R0             ; load constant 10
+        MOVE %D 10, R0          ; load constant 10
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         CMP R0, R1
         JP_SLT L_SC_TRUE1       ; comparison OP_LT
-        MOVE 0, R0              ; comparison result false
+        MOVE %D 0, R0           ; comparison result false
         JP L_SC_END1
 L_SC_TRUE1
-        MOVE 1, R0              ; comparison result true
+        MOVE %D 1, R0           ; comparison result true
 L_SC_END1
-        CMP R0, 0
+        CMP R0, %D 0
         JP_EQ L_BREAK1          ; exit for loop
 ; Compound statement
 L_CONTINUE1                     ; for loop increment
-        LOAD R0, (R7+04)        ; load variable i
+        LOAD R0, (R5-04)        ; load variable i
         PUSH R0                 ; save left operand
-        MOVE 1, R0              ; load constant 1
+        MOVE %D 1, R0           ; load constant 1
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
-        STORE R0, (R7+04)       ; assign to i
+        STORE R0, (R5-04)       ; assign to i
         JP L_LOOP1              ; repeat for loop
 L_BREAK1                        ; for loop end
-        LOAD R0, (R7+04)        ; load variable i
+        LOAD R0, (R5-04)        ; load variable i
         MOVE R0, R6             ; return value
-        ADD R7, 04, R7          ; deallocate local variables
-        RET                     ; return from function
+        JP L1                   ; jump to function exit
+L1                              ; function exit
+        ADD R7, %D 4, R7        ; deallocate local variables
+        POP R5                  ; restore old frame pointer
+        RET                     ; return to caller
 
 ; Global variables
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <div class="output-comparison">
+            <table class="output-table">
+              <tr>
+                <th>Expected (Decimal)</th>
+                <th>Actual (Decimal)</th>
+                <th>Status</th>
+              </tr>
+              <tr>
+                <td><code></code></td>
+                <td><code>10</code></td>
+                <td class="status-fail">❌ FAIL</td>
+              </tr>
+            </table>
+          </div>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
     </section>
     <section id="program65" class="program-card">
@@ -13495,52 +14153,77 @@ Global Scope:
 
 ; Function definitions
 F_MAIN                          ; Function main
-; Local variable i at (R7+04)
-        SUB R7, 04, R7          ; allocate 1 local variables
+; Local variable i at (R5-04)
+        PUSH R5                 ; save old frame pointer
+        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
+        SUB R7, %D 4, R7        ; allocate 1 local variables
 ; Compound statement
 ; Local variable declarations
-; Local variable i at (R7+04) (no initializer)
+; Local variable i at (R5-04) (no initializer)
 ; For loop with increment
-        MOVE 0, R0              ; load constant 0
-        STORE R0, (R7+04)       ; assign to i
+        MOVE %D 0, R0           ; load constant 0
+        STORE R0, (R5-04)       ; assign to i
 L_LOOP1                         ; for loop start
 ; Compound statement
 ; If statement
-        LOAD R0, (R7+04)        ; load variable i
+        LOAD R0, (R5-04)        ; load variable i
         PUSH R0                 ; save left operand
-        MOVE 10, R0             ; load constant 10
+        MOVE %D 10, R0          ; load constant 10
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         CMP R0, R1
         JP_SGT L_SC_TRUE1       ; comparison OP_GT
-        MOVE 0, R0              ; comparison result false
+        MOVE %D 0, R0           ; comparison result false
         JP L_SC_END1
 L_SC_TRUE1
-        MOVE 1, R0              ; comparison result true
+        MOVE %D 1, R0           ; comparison result true
 L_SC_END1
-        CMP R0, 0
+        CMP R0, %D 0
         JP_EQ L_END1            ; if condition is false
 ; Compound statement
         JP L_BREAK1             ; break from loop
 L_END1                          ; end if
 L_CONTINUE1                     ; for loop increment
-        LOAD R0, (R7+04)        ; load variable i
+        LOAD R0, (R5-04)        ; load variable i
         PUSH R0                 ; save left operand
-        MOVE 1, R0              ; load constant 1
+        MOVE %D 1, R0           ; load constant 1
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
-        STORE R0, (R7+04)       ; assign to i
+        STORE R0, (R5-04)       ; assign to i
         JP L_LOOP1              ; repeat for loop
 L_BREAK1                        ; for loop end
-        LOAD R0, (R7+04)        ; load variable i
+        LOAD R0, (R5-04)        ; load variable i
         MOVE R0, R6             ; return value
-        ADD R7, 04, R7          ; deallocate local variables
-        RET                     ; return from function
+        JP L1                   ; jump to function exit
+L1                              ; function exit
+        ADD R7, %D 4, R7        ; deallocate local variables
+        POP R5                  ; restore old frame pointer
+        RET                     ; return to caller
 
 ; Global variables
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <div class="output-comparison">
+            <table class="output-table">
+              <tr>
+                <th>Expected (Decimal)</th>
+                <th>Actual (Decimal)</th>
+                <th>Status</th>
+              </tr>
+              <tr>
+                <td><code></code></td>
+                <td><code>11</code></td>
+                <td class="status-fail">❌ FAIL</td>
+              </tr>
+            </table>
+          </div>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
     </section>
     <section id="program66" class="program-card">
@@ -14101,46 +14784,71 @@ Global Scope:
 
 ; Function definitions
 F_MAIN                          ; Function main
-; Local variable i at (R7+04)
-        SUB R7, 04, R7          ; allocate 1 local variables
+; Local variable i at (R5-04)
+        PUSH R5                 ; save old frame pointer
+        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
+        SUB R7, %D 4, R7        ; allocate 1 local variables
 ; Compound statement
 ; Local variable declarations
-; Local variable i at (R7+04) (no initializer)
-        MOVE 0, R0              ; load constant 0
-        STORE R0, (R7+04)       ; assign to i
+; Local variable i at (R5-04) (no initializer)
+        MOVE %D 0, R0           ; load constant 0
+        STORE R0, (R5-04)       ; assign to i
 L_LOOP1                         ; for loop
-        LOAD R0, (R7+04)        ; load variable i
+        LOAD R0, (R5-04)        ; load variable i
         PUSH R0                 ; save left operand
-        MOVE 10, R0             ; load constant 10
+        MOVE %D 10, R0          ; load constant 10
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         CMP R0, R1
         JP_SLT L_SC_TRUE1       ; comparison OP_LT
-        MOVE 0, R0              ; comparison result false
+        MOVE %D 0, R0           ; comparison result false
         JP L_SC_END1
 L_SC_TRUE1
-        MOVE 1, R0              ; comparison result true
+        MOVE %D 1, R0           ; comparison result true
 L_SC_END1
-        CMP R0, 0
+        CMP R0, %D 0
         JP_EQ L_BREAK1          ; exit for loop
 ; Compound statement
-        LOAD R0, (R7+04)        ; load variable i
+        LOAD R0, (R5-04)        ; load variable i
         PUSH R0                 ; save left operand
-        MOVE 1, R0              ; load constant 1
+        MOVE %D 1, R0           ; load constant 1
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
-        STORE R0, (R7+04)       ; assign to i
+        STORE R0, (R5-04)       ; assign to i
         JP L_LOOP1              ; repeat for loop
 L_BREAK1
-        LOAD R0, (R7+04)        ; load variable i
+        LOAD R0, (R5-04)        ; load variable i
         MOVE R0, R6             ; return value
-        ADD R7, 04, R7          ; deallocate local variables
-        RET                     ; return from function
+        JP L1                   ; jump to function exit
+L1                              ; function exit
+        ADD R7, %D 4, R7        ; deallocate local variables
+        POP R5                  ; restore old frame pointer
+        RET                     ; return to caller
 
 ; Global variables
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <div class="output-comparison">
+            <table class="output-table">
+              <tr>
+                <th>Expected (Decimal)</th>
+                <th>Actual (Decimal)</th>
+                <th>Status</th>
+              </tr>
+              <tr>
+                <td><code></code></td>
+                <td><code>10</code></td>
+                <td class="status-fail">❌ FAIL</td>
+              </tr>
+            </table>
+          </div>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
     </section>
     <section id="program67" class="program-card">
@@ -14250,6 +14958,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
 Pročitan uniformni znak: KR_INT (int).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_BREAK, KR_CONTINUE, KR_FOR, KR_IF, KR_RETURN, KR_WHILE, L_VIT_ZAGRADA, L_ZAGRADA, MINUS, NIZ_ZNAKOVA, OP_DEC, OP_INC, OP_NEG, OP_TILDA, PLUS, TOCKAZAREZ, ZNAK.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -14371,6 +15087,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -14490,6 +15214,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -14580,6 +15312,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, D_ZAGRADA, L_UGL_ZAGRADA, L_Z
 Pročitan uniformni znak: L_VIT_ZAGRADA ({).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, D_ZAGRADA, L_UGL_ZAGRADA, L_ZAGRADA, MINUS, OP_BIN_ILI, OP_BIN_XILI, OP_DEC, OP_DIJELI, OP_EQ, OP_GT, OP_GTE, OP_I, OP_ILI, OP_INC, OP_LT, OP_LTE, OP_MOD, OP_NEQ, PLUS, TOCKA, ZAREZ.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -14701,6 +15441,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, BROJ, D_VIT_ZAGRADA, IDN, KR_
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -14785,6 +15533,14 @@ Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT
 Pročitan uniformni znak: BROJ (2).
 Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT, KR_STRUCT, KR_VOID, TOCKAZAREZ.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -14874,6 +15630,14 @@ Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -14958,6 +15722,14 @@ Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT
 Pročitan uniformni znak: BROJ (123).
 Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT, KR_STRUCT, KR_VOID, TOCKAZAREZ.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -15056,6 +15828,14 @@ Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 PARSER ERRORS:
@@ -15140,6 +15920,14 @@ Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT
 Pročitan uniformni znak: BROJ (4).
 Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT, KR_STRUCT, KR_VOID, TOCKAZAREZ.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -15475,6 +16263,14 @@ D_VIT_ZAGRADA          7       13
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
@@ -15772,6 +16568,14 @@ D_VIT_ZAGRADA          6       12
         <pre><code>&lt;unarni_izraz&gt; ::= &lt;unarni_operator&gt; &lt;cast_izraz&gt;
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -16269,6 +17073,14 @@ D_VIT_ZAGRADA          9       18
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
@@ -16610,6 +17422,14 @@ D_VIT_ZAGRADA          7       15
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
@@ -16701,6 +17521,14 @@ Očekivani uniformni znakovi: AMPERSAND, ASTERISK, D_ZAGRADA, L_UGL_ZAGRADA, L_Z
 Pročitan uniformni znak: L_VIT_ZAGRADA ({).
 Očekivani uniformni znakovi: AMPERSAND, ASTERISK, D_ZAGRADA, L_UGL_ZAGRADA, L_ZAGRADA, MINUS, OP_BIN_ILI, OP_BIN_XILI, OP_DEC, OP_DIJELI, OP_EQ, OP_GT, OP_GTE, OP_I, OP_ILI, OP_INC, OP_LT, OP_LTE, OP_MOD, OP_NEQ, PLUS, TOCKA, ZAREZ.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -17233,6 +18061,14 @@ D_VIT_ZAGRADA         10       20
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
@@ -17327,6 +18163,14 @@ Očekivani uniformni znakovi: IDN, KR_CONST.
 Pročitan uniformni znak: ASTERISK (*).
 Očekivani uniformni znakovi: IDN, KR_CONST.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -17586,6 +18430,14 @@ D_VIT_ZAGRADA          5       12
         <pre><code>&lt;init_deklarator&gt; ::= &lt;deklarator&gt;
 
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -17991,6 +18843,14 @@ D_VIT_ZAGRADA         11       6
                             TOCKAZAREZ , ;
                 D_VIT_ZAGRADA , }
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>
@@ -18407,6 +19267,14 @@ D_VIT_ZAGRADA          8       15
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
@@ -18798,6 +19666,14 @@ D_VIT_ZAGRADA          9       9
 </code></pre>
       </details>
       <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
+      </details>
+      <details>
         <summary>Analysis Errors</summary>
         <pre><code>
 SEMANTIC ERRORS:
@@ -18877,6 +19753,14 @@ Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT
 Pročitan uniformni znak: OP_PRIDRUZI (=).
 Očekivani uniformni znakovi: ASTERISK, IDN, KR_CHAR, KR_CONST, KR_FLOAT, KR_INT, KR_STRUCT, KR_VOID, TOCKAZAREZ.
 </code></pre>
+      </details>
+      <details>
+        <summary>FRISC Execution</summary>
+        <div class="simulator-results">
+          <p><strong>Runtime Error:</strong></p>
+          <pre><code>Code generation failed.</code></pre>
+          <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
+        </div>
       </details>
       <details>
         <summary>Analysis Errors</summary>

@@ -1,10 +1,10 @@
+int x = 1234;
+int y = 12345;
 int main(void) {
-    int i;
-    for (i = 0; i < 10; i = i + 1) {
-        if (i % 2 == 0) {
-            continue;
-        }
+    if (x < y) {
+        return 12;
+    } else {
+        return 21;
     }
-    return i;
+    return 9;
 }
-

@@ -1,9 +1,5 @@
-void print_hello(void) {
-    return;
-}
-
+char a[5];
 int main(void) {
-    print_hello();
-    return 0;
+    a[3] = (char)12;
+    return a[3];
 }
-

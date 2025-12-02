@@ -1,12 +1,11 @@
+int x = 12;
 int main(void) {
-    int i;
-    i = 0;
-    while (i < 5) {
-        i = i + 1;
-        if (i == 3) {
-            break;
+    int y = 13;
+    {
+        int z = 1;
+        {
+            int w = 2;
+            return x + y + z + w;
         }
     }
-    return i;
 }
-

@@ -1,12 +1,7 @@
-struct Point {
-    int x;
-    int y;
-};
-
 int main(void) {
-    struct Point p;
-    p.x = 10;
-    p.y = 20;
-    return p.x + p.y;
+	int x = 2;
+	if (x == 2 || (x = 5)) {
+		return x;
+	}
+    return 0;
 }
-

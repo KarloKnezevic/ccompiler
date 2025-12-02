@@ -1,7 +1,6 @@
 int main(void) {
-    int i;
-    for (i = 0; i < 10; i = i + 1) {
-    }
-    return i;
+    int x = 2;
+    int y = x;
+    int z = x + y;
+    return z;
 }
-

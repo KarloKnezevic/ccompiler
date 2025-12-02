@@ -1,14 +1,4 @@
-int multiply(int x, int y) {
-    return x * y;
-}
-
+char a[5] = {'a', 'b', 'c', 'd', 'e'};
 int main(void) {
-    int a;
-    int b;
-    int product;
-    a = 7;
-    b = 6;
-    product = multiply(a, b);
-    return product;
+    return a[1];
 }
-

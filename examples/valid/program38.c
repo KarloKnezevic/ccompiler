@@ -1,13 +1,6 @@
-int main(void) {
-    int i;
-    int j;
-    int sum;
-    sum = 0;
-    for (i = 0; i < 3; i = i + 1) {
-        for (j = 0; j < 3; j = j + 1) {
-            sum = sum + 1;
-        }
-    }
-    return sum;
+int f(int x, int y, int z, int a, int b, int c, int d) {
+    return x + y + d + c + a + b;
 }
-
+int main(void) {
+    return f(1, 2, 3, 4, 5, 6, 7);
+}

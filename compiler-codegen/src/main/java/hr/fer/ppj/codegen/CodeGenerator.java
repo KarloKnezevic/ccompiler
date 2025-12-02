@@ -1,6 +1,9 @@
 package hr.fer.ppj.codegen;
 
+import hr.fer.ppj.codegen.emitter.FriscEmitter;
+import hr.fer.ppj.codegen.frisc.HelperFunctionGenerator;
 import hr.fer.ppj.codegen.func.FunctionCodeGenerator;
+import hr.fer.ppj.codegen.util.LabelGenerator;
 import hr.fer.ppj.semantics.symbols.SymbolTable;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import java.io.IOException;
@@ -78,7 +81,14 @@ public final class CodeGenerator {
             generateProgramInit(context);
             
             // Process the translation unit (functions and global declarations)
+            // This will mark which helper functions are needed
             processTranslationUnit(context, parseTree);
+            
+            // Generate helper functions (F_MUL, F_DIV) only if needed, before user functions
+            if (emitter.needsMulHelper() || emitter.needsDivHelper()) {
+                HelperFunctionGenerator helperGen = new HelperFunctionGenerator();
+                helperGen.generateHelperFunctions(context, emitter.needsMulHelper(), emitter.needsDivHelper());
+            }
             
             // Write the generated code to file
             emitter.writeToFile(outputPath);
@@ -96,7 +106,7 @@ public final class CodeGenerator {
      * <p>This generates:
      * <pre>
      * ; Program entry point
-     * MOVE 10000, R7      ; init stack pointer
+     * MOVE 40000, R7      ; init stack pointer (SP)
      * CALL F_MAIN         ; call main
      * HALT                ; end of program, R6 holds return value
      * </pre>
@@ -131,4 +141,5 @@ public final class CodeGenerator {
         // Generate global variable declarations at the end
         globalGen.generateGlobalVariables();
     }
+    
 }

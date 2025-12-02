@@ -1,13 +1,15 @@
-int main(void) {
-    int i;
-    int j;
-    for (i = 0; i < 5; i = i + 1) {
-        for (j = 0; j < 5; j = j + 1) {
-            if (i == j) {
-                break;
-            }
-        }
-    }
-    return i;
+int c(int w) {
+    return w;
 }
-
+int b(int z) {
+    return z + c(z+1);
+}
+int a(int y) {
+    return y + b(y+1);
+}
+int f(int x) {
+    return a(x+1) + x;
+}
+int main(void) {
+    return f(1);
+}

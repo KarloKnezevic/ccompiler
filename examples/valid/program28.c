@@ -1,12 +1,7 @@
-int square(int x) {
-    return x * x;
-}
-
+int a[5];
 int main(void) {
-    int n;
-    int result;
-    n = 5;
-    result = square(n);
-    return result;
+    a[0] = 0;
+    a[4] = 123;
+    a[2] = 1;
+    return a[0] + a[4] + a[2];
 }
-

@@ -1,10 +1,5 @@
+int x = 15;
+int y = 16;
 int main(void) {
-    int a;
-    int b;
-    int result;
-    a = 17;
-    b = 5;
-    result = a % b;
-    return result;
+    return x+y;
 }
-

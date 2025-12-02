@@ -1,9 +1,5 @@
+int x = 27;
+int y = 65;
 int main(void) {
-    int x;
-    x = 5;
-    if (x <= 5) {
-        return 1;
-    }
-    return 0;
+    return x^y;
 }
-
