@@ -55,13 +55,38 @@ public final class PrimaryExpressionGenerator {
      */
     public void generatePrimaryExpression(NonTerminalNode node) {
         List<ParseNode> children = node.children();
-        ParseNode child = children.get(0);
         
-        if (child instanceof TerminalNode terminal) {
-            generateTerminalPrimary(terminal);
-        } else if (child instanceof NonTerminalNode && children.size() == 3) {
+        if (children.size() == 1) {
+            // Single child - terminal (BROJ, ZNAK, IDN, NIZ_ZNAKOVA)
+            ParseNode child = children.get(0);
+            if (child instanceof TerminalNode terminal) {
+                generateTerminalPrimary(terminal);
+            } else {
+                // Should not happen, but delegate just in case
+                expressionGenerator.generateExpression((NonTerminalNode) child);
+            }
+        } else if (children.size() == 3) {
             // Parenthesized expression: L_ZAGRADA <izraz> D_ZAGRADA
-            expressionGenerator.generateExpression((NonTerminalNode) children.get(1));
+            ParseNode first = children.get(0);
+            ParseNode second = children.get(1);
+            ParseNode third = children.get(2);
+            
+            if (first instanceof TerminalNode leftParen && "L_ZAGRADA".equals(leftParen.symbol()) &&
+                second instanceof NonTerminalNode &&
+                third instanceof TerminalNode rightParen && "D_ZAGRADA".equals(rightParen.symbol())) {
+                // Evaluate the inner expression
+                expressionGenerator.generateExpression((NonTerminalNode) second);
+            } else {
+                // Unexpected structure - try to evaluate first child
+                if (first instanceof NonTerminalNode) {
+                    expressionGenerator.generateExpression((NonTerminalNode) first);
+                }
+            }
+        } else {
+            // Unexpected structure - try to evaluate first child if it's a non-terminal
+            if (!children.isEmpty() && children.get(0) instanceof NonTerminalNode) {
+                expressionGenerator.generateExpression((NonTerminalNode) children.get(0));
+            }
         }
     }
     

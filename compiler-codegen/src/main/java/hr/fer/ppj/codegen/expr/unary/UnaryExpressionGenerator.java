@@ -59,26 +59,70 @@ public final class UnaryExpressionGenerator {
             expressionGenerator.generateExpression((NonTerminalNode) children.get(0));
         } else if (children.size() == 2) {
             ParseNode first = children.get(0);
+            NonTerminalNode operand = (NonTerminalNode) children.get(1);
             
+            // Check if first child is a terminal (for OP_INC/OP_DEC) or <unarni_operator> (for +, -, ~, !)
             if (first instanceof TerminalNode terminal) {
                 String operator = terminal.symbol();
-                NonTerminalNode operand = (NonTerminalNode) children.get(1);
                 
                 switch (operator) {
-                    case "PLUS" -> {
-                        // Unary plus - just evaluate the operand
+                    case "OP_INC", "OP_DEC" -> {
+                        // Pre-increment/decrement - handled by ExpressionCodeGenerator
+                        // This shouldn't happen here, but delegate just in case
                         expressionGenerator.generateExpression(operand);
                     }
-                    case "MINUS" -> generateUnaryMinus(operand);
-                    case "OP_TILDA" -> generateBitwiseNot(operand);
-                    case "OP_NEG" -> generateLogicalNot(operand);
                     default -> {
-                        context.emitter().emitComment("Unknown unary operator: " + operator);
+                        context.emitter().emitComment("Unexpected terminal in unary expression: " + operator);
                         expressionGenerator.generateExpression(operand);
                     }
                 }
+            } else if (first instanceof NonTerminalNode unaryOpNode && 
+                       "<unarni_operator>".equals(unaryOpNode.symbol())) {
+                // Structure: <unarni_izraz> -> <unarni_operator> -> MINUS/PLUS/OP_TILDA/OP_NEG + <cast_izraz>
+                // Extract the actual operator from <unarni_operator>
+                String operator = extractOperatorFromUnaryOperatorNode(unaryOpNode);
+                
+                if (operator != null) {
+                    switch (operator) {
+                        case "PLUS" -> {
+                            // Unary plus - just evaluate the operand
+                            expressionGenerator.generateExpression(operand);
+                        }
+                        case "MINUS" -> generateUnaryMinus(operand);
+                        case "OP_TILDA" -> generateBitwiseNot(operand);
+                        case "OP_NEG" -> generateLogicalNot(operand);
+                        default -> {
+                            context.emitter().emitComment("Unknown unary operator: " + operator);
+                            expressionGenerator.generateExpression(operand);
+                        }
+                    }
+                } else {
+                    // Could not extract operator - delegate to operand
+                    context.emitter().emitComment("Could not extract unary operator");
+                    expressionGenerator.generateExpression(operand);
+                }
+            } else {
+                // Unknown structure - delegate to operand
+                expressionGenerator.generateExpression(operand);
             }
         }
+    }
+    
+    /**
+     * Extracts the operator symbol from a <unarni_operator> node.
+     * 
+     * <p>The <unarni_operator> node contains a single terminal child with the operator symbol.
+     * 
+     * @param unaryOpNode the <unarni_operator> node
+     * @return the operator symbol (PLUS, MINUS, OP_TILDA, OP_NEG), or null if not found
+     */
+    private String extractOperatorFromUnaryOperatorNode(NonTerminalNode unaryOpNode) {
+        for (ParseNode child : unaryOpNode.children()) {
+            if (child instanceof TerminalNode terminal) {
+                return terminal.symbol();
+            }
+        }
+        return null;
     }
     
     /**

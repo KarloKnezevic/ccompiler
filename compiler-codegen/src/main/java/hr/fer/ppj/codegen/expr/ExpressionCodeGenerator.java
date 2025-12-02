@@ -138,10 +138,10 @@ public final class ExpressionCodeGenerator {
             generateExpression((NonTerminalNode) children.get(0));
         } else if (children.size() == 2) {
             ParseNode first = children.get(0);
+            NonTerminalNode operand = (NonTerminalNode) children.get(1);
             
             if (first instanceof hr.fer.ppj.semantics.tree.TerminalNode terminal) {
                 String operator = terminal.symbol();
-                NonTerminalNode operand = (NonTerminalNode) children.get(1);
                 
                 // Pre-increment/decrement are handled by assignment generator
                 if ("OP_INC".equals(operator)) {
@@ -153,6 +153,13 @@ public final class ExpressionCodeGenerator {
                     // Delegate to unary generator for +, -, !, ~
                     unaryGenerator.generateUnaryExpression(node);
                 }
+            } else if (first instanceof NonTerminalNode) {
+                // First child is a non-terminal (e.g., <unarni_operator>)
+                // Delegate to unary generator which handles this structure
+                unaryGenerator.generateUnaryExpression(node);
+            } else {
+                // Unknown structure - delegate to operand
+                generateExpression(operand);
             }
         }
     }

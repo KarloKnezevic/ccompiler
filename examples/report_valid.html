@@ -2917,7 +2917,7 @@ L2                              ; function exit
     <section id="program15" class="program-card">
       <h2>program15.c</h2>
       <div class="result-badge">
-        <span class="badge badge-fail">❌ FAIL</span>
+        <span class="badge badge-pass">✅ PASS</span>
       </div>
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
@@ -3488,6 +3488,7 @@ F_MAIN                          ; Function main
         MOVE R6, R0             ; function result
         PUSH R0                 ; save left operand
 ; Function call: f
+        MOVE %D -4, R0          ; load constant -4
         PUSH R0                 ; push argument 1
         CALL F_F                ; call f
         ADD R7, %D 4, R7        ; cleanup 1 arguments
@@ -3517,8 +3518,8 @@ L2                              ; function exit
               </tr>
               <tr>
                 <td><code>13</code></td>
-                <td><code>29</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>13</code></td>
+                <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
           </div>
@@ -11844,7 +11845,7 @@ L2                              ; multiplication done
 
 
 *********************************************************
-Reading program from file: /var/folders/mn/1hcrcl2d0mb6xc17840py3_40000gn/T/ppj_report_program28.c17489607241462127849/a.frisc
+Reading program from file: /var/folders/mn/1hcrcl2d0mb6xc17840py3_40000gn/T/ppj_report_program28.c3231300045450301175/a.frisc
 *********************************************************
 
 
@@ -18640,6 +18641,8 @@ L_SC_TRUE2
 L_SC_END2
         CMP R0, %D 0
         JP_NE L_SC_TRUE1        ; if left is true, result is true
+        MOVE %D 1, R0           ; load constant 1
+        STORE R0, (R5-04)       ; assign to x
         CMP R0, %D 0
         JP_NE L_SC_TRUE1        ; if right is true, result is true
         MOVE %D 0, R0           ; result is false
@@ -18661,6 +18664,8 @@ L_SC_TRUE4
 L_SC_END4
         CMP R0, %D 0
         JP_EQ L_SC_FALSE3       ; if left is false, result is false
+        MOVE %D 2, R0           ; load constant 2
+        STORE R0, (R5-04)       ; assign to x
         CMP R0, %D 0
         JP_NE L_SC_TRUE3        ; if right is true, result is true
         MOVE %D 0, R0           ; result is false
@@ -18707,7 +18712,7 @@ L1                              ; function exit
     <section id="program37" class="program-card">
       <h2>program37.c</h2>
       <div class="result-badge">
-        <span class="badge badge-fail">❌ FAIL</span>
+        <span class="badge badge-pass">✅ PASS</span>
       </div>
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
@@ -20487,7 +20492,19 @@ F_MAIN                          ; Function main
 ; Local variable c at (R5-1C) with initializer
         MOVE %D 64, R0          ; load constant 64
         STORE R0, (R5-1C)       ; initialize c
+        LOAD R0, (R5-14)        ; load variable a
         PUSH R0                 ; save left operand
+        LOAD R0, (R5-18)        ; load variable b
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        ADD R0, R1, R0          ; addition
+        PUSH R0                 ; save left operand
+        LOAD R0, (R5-04)        ; load variable x
+        PUSH R0                 ; save left operand
+        LOAD R0, (R5-08)        ; load variable y
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        ADD R0, R1, R0          ; addition
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
@@ -20507,6 +20524,27 @@ F_MAIN                          ; Function main
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
         PUSH R0                 ; save left operand
+        LOAD R0, (R5-14)        ; load variable a
+        PUSH R0                 ; save left operand
+        LOAD R0, (R5-0C)        ; load variable z
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        SUB R0, R1, R0          ; subtraction
+        PUSH R0                 ; save left operand
+        LOAD R0, (R5-10)        ; load variable w
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        SUB R0, R1, R0          ; subtraction
+        PUSH R0                 ; save left operand
+        LOAD R0, (R5-14)        ; load variable a
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        SUB R0, R1, R0          ; subtraction
+        PUSH R0                 ; save left operand
+        LOAD R0, (R5-18)        ; load variable b
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        SUB R0, R1, R0          ; subtraction
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
@@ -20563,8 +20601,8 @@ L2                              ; function exit
               </tr>
               <tr>
                 <td><code>59</code></td>
-                <td><code>384</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>59</code></td>
+                <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
           </div>
@@ -25448,6 +25486,8 @@ L_SC_TRUE2
 L_SC_END2
         CMP R0, %D 0
         JP_NE L_SC_TRUE1        ; if left is true, result is true
+        MOVE %D 5, R0           ; load constant 5
+        STORE R0, (R5-04)       ; assign to x
         CMP R0, %D 0
         JP_NE L_SC_TRUE1        ; if right is true, result is true
         MOVE %D 0, R0           ; result is false
@@ -25497,7 +25537,7 @@ L1                              ; function exit
     <section id="program42" class="program-card">
       <h2>program42.c</h2>
       <div class="result-badge">
-        <span class="badge badge-fail">❌ FAIL</span>
+        <span class="badge badge-pass">✅ PASS</span>
       </div>
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
@@ -26126,6 +26166,8 @@ L_SC_TRUE2
 L_SC_END2
         CMP R0, %D 0
         JP_EQ L_SC_FALSE1       ; if left is false, result is false
+        MOVE %D 5, R0           ; load constant 5
+        STORE R0, (R5-04)       ; assign to x
         CMP R0, %D 0
         JP_NE L_SC_TRUE1        ; if right is true, result is true
         MOVE %D 0, R0           ; result is false
@@ -26166,8 +26208,8 @@ L1                              ; function exit
               </tr>
               <tr>
                 <td><code>5</code></td>
-                <td><code>2</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>5</code></td>
+                <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
           </div>
@@ -26178,7 +26220,7 @@ L1                              ; function exit
     <section id="program43" class="program-card">
       <h2>program43.c</h2>
       <div class="result-badge">
-        <span class="badge badge-fail">❌ FAIL</span>
+        <span class="badge badge-pass">✅ PASS</span>
       </div>
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
@@ -26810,6 +26852,8 @@ L_SC_TRUE2
 L_SC_END2
         CMP R0, %D 0
         JP_NE L_SC_TRUE1        ; if left is true, result is true
+        MOVE %D 5, R0           ; load constant 5
+        STORE R0, (R5-04)       ; assign to x
         CMP R0, %D 0
         JP_NE L_SC_TRUE1        ; if right is true, result is true
         MOVE %D 0, R0           ; result is false
@@ -26847,8 +26891,8 @@ L1                              ; function exit
               </tr>
               <tr>
                 <td><code>5</code></td>
-                <td><code>0</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>5</code></td>
+                <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
           </div>
@@ -27487,6 +27531,8 @@ L_SC_TRUE2
 L_SC_END2
         CMP R0, %D 0
         JP_EQ L_SC_FALSE1       ; if left is false, result is false
+        MOVE %D 5, R0           ; load constant 5
+        STORE R0, (R5-04)       ; assign to x
         CMP R0, %D 0
         JP_NE L_SC_TRUE1        ; if right is true, result is true
         MOVE %D 0, R0           ; result is false
