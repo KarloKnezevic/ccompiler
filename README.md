@@ -106,7 +106,7 @@ You should see beautiful FRISC assembly code! 🎉
 **1. Execute with FRISC Simulator:**
 ```bash
 # Make sure FRISC simulator is installed first
-npm install
+npm install friscjs
 
 # Run the generated assembly
 node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc
