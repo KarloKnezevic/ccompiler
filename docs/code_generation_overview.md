@@ -144,9 +144,13 @@ graph TB
         A[CodeGenerator<br/>Main Orchestrator]
         
         subgraph "Generation Components"
-            B[FunctionCodeGenerator<br/>Function Definitions]
-            C[ExpressionCodeGenerator<br/>Expression Evaluation]
-            D[StatementCodeGenerator<br/>Control Flow]
+            B[FunctionCodeGenerator<br/>Function Orchestrator]
+            B1[FunctionInfoExtractor<br/>Info Extraction]
+            B2[FunctionPrologueEpilogueGenerator<br/>Entry/Exit Code]
+            C[ExpressionCodeGenerator<br/>Expression Orchestrator]
+            C1[Specialized Expression Generators<br/>Binary, Logical, Unary, etc.]
+            D[StatementCodeGenerator<br/>Statement Orchestrator]
+            D1[Specialized Statement Generators<br/>Branching, Loop, Jump, Local]
             E[GlobalVariableGenerator<br/>Data Declarations]
         end
         
@@ -169,9 +173,18 @@ graph TB
     A --> D
     A --> E
     
+    B --> B1
+    B --> B2
+    C --> C1
+    D --> D1
+    
     B --> F
+    B1 --> F
+    B2 --> F
     C --> F
+    C1 --> F
     D --> F
+    D1 --> F
     E --> F
     
     B --> G
@@ -183,6 +196,7 @@ graph TB
     D --> H
     
     B --> I
+    B2 --> I
     
     J --> A
     K --> A
@@ -191,6 +205,10 @@ graph TB
     style A fill:#2196f3
     style F fill:#4caf50
     style J fill:#ff9800
+    style B1 fill:#e1bee7
+    style B2 fill:#e1bee7
+    style C1 fill:#fff9c4
+    style D1 fill:#c8e6c9
 ```
 
 ### Component Responsibilities
@@ -201,23 +219,55 @@ graph TB
 - Integrates function and global variable generation
 - Handles output file management and error reporting
 
-**FunctionCodeGenerator**: Function definition and management
-- Generates function prologs and epilogs
-- Manages local variable allocation and stack frames
-- Handles parameter passing and return value management
-- Coordinates function body code generation
+**FunctionCodeGenerator**: Function definition orchestrator
+- Coordinates function definition processing
+- Delegates to `FunctionInfoExtractor` for parse tree traversal
+- Delegates to `FunctionPrologueEpilogueGenerator` for entry/exit code
+- Manages function body code generation via `StatementCodeGenerator`
 
-**ExpressionCodeGenerator**: Expression evaluation and computation
-- Implements expression evaluation strategies
-- Handles type conversions and operator semantics
+**FunctionInfoExtractor**: Function information extraction
+- Extracts function names from parse tree
+- Extracts parameter lists and names
+- Extracts local variable information (including arrays)
+- Handles nested parse tree structures
+
+**FunctionPrologueEpilogueGenerator**: Function entry/exit code
+- Generates function prologue (PUSH R5, MOVE R7 R5, allocate locals)
+- Generates function epilogue (deallocate locals, POP R5, RET)
+- Single source of truth for prologue/epilogue generation
+
+**ExpressionCodeGenerator**: Expression evaluation orchestrator
+- Delegates to specialized generators (binary, logical, unary, assignment, array, call, primary)
+- Coordinates expression evaluation strategies
 - Manages temporary value storage and register usage
 - Implements short-circuit evaluation for logical operators
 
-**StatementCodeGenerator**: Control flow and statement execution
-- Generates code for conditional statements (if/else)
-- Implements loop constructs (while, for) with proper control flow
-- Handles jump statements (break, continue, return)
-- Manages compound statements and block scoping
+**StatementCodeGenerator**: Statement orchestrator
+- Delegates to specialized generators based on statement type
+- Handles compound statements and statement lists
+- Manages expression statements
+- Coordinates control flow generation
+
+**BranchingStatementGenerator**: If-else statement generation
+- Generates code for if statements (without else)
+- Generates code for if-else statements
+- Manages conditional jump labels
+
+**LoopStatementGenerator**: Loop statement generation
+- Generates code for while loops
+- Generates code for for loops (with/without increment)
+- Manages loop labels (loop, break, continue)
+
+**JumpStatementGenerator**: Jump statement generation
+- Generates code for return statements (with optimization for literals)
+- Generates code for break statements
+- Generates code for continue statements
+- Handles function epilogue fallback
+
+**LocalDeclarationGenerator**: Local variable declaration generation
+- Processes local variable declarations in compound statements
+- Handles variable initializers
+- Extracts array sizes from parse tree
 
 **GlobalVariableGenerator**: Global data management
 - Generates global variable declarations and initialization

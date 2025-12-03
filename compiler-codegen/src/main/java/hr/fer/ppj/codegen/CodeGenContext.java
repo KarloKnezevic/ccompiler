@@ -9,12 +9,32 @@ import java.util.Objects;
 /**
  * Context object that carries shared state during code generation.
  * 
- * <p>This class encapsulates the common resources needed throughout the code
+ * <p>This immutable record encapsulates the common resources needed throughout the code
  * generation process, including the symbol table, code emitter, label generator,
  * and current activation record for local variable management.
  * 
- * <p>The context is immutable and thread-safe, making it suitable for use in
- * recursive code generation scenarios.
+ * <p><b>Immutability:</b> The context is immutable and thread-safe, making it suitable
+ * for use in recursive code generation scenarios. To update context state, use the
+ * {@code with*} methods to create new context instances.
+ * 
+ * <p><b>Context Components:</b>
+ * <ul>
+ *   <li>{@code globalScope} - Global symbol table from semantic analysis</li>
+ *   <li>{@code emitter} - FRISC code emitter for instruction output</li>
+ *   <li>{@code labelGenerator} - Generator for unique labels (L1, L2, F_MAIN, etc.)</li>
+ *   <li>{@code activationRecord} - Current function's stack frame (null for global scope)</li>
+ *   <li>{@code functionExitLabel} - Label for function epilogue (null if not in function)</li>
+ *   <li>{@code loopBreakLabel} - Label for break statements (null if not in loop)</li>
+ *   <li>{@code loopContinueLabel} - Label for continue statements (null if not in loop)</li>
+ * </ul>
+ * 
+ * <p><b>FRISC Semantics:</b> The activation record tracks:
+ * <ul>
+ *   <li>Local variable offsets (negative from R5)</li>
+ *   <li>Parameter offsets (positive from R5)</li>
+ *   <li>Total stack frame size</li>
+ *   <li>Array variable sizes (for array parameter detection)</li>
+ * </ul>
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */

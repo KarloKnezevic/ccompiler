@@ -11,18 +11,36 @@ import java.util.Objects;
 /**
  * Generates FRISC assembly code for primary expressions.
  * 
+ * <p><b>Grammar Rule:</b> Handles {@code <primarni_izraz>} nonterminal:
+ * <pre>
+ * &lt;primarni_izraz&gt; ::= IDN
+ *                     | BROJ
+ *                     | ZNAK
+ *                     | NIZ_ZNAKOVA
+ *                     | L_ZAGRADA &lt;izraz&gt; D_ZAGRADA
+ * </pre>
+ * 
  * <p>This class handles the generation of code for primary expressions including:
  * <ul>
- *   <li>Integer constants (BROJ)</li>
- *   <li>Character constants (ZNAK)</li>
- *   <li>Identifiers (IDN) - variable references</li>
- *   <li>String literals (NIZ_ZNAKOVA)</li>
- *   <li>Parenthesized expressions</li>
+ *   <li>Integer constants (BROJ) - loads value into R0</li>
+ *   <li>Character constants (ZNAK) - loads ASCII value into R0</li>
+ *   <li>Identifiers (IDN) - loads variable value from memory into R0</li>
+ *   <li>String literals (NIZ_ZNAKOVA) - loads string address into R0</li>
+ *   <li>Parenthesized expressions - evaluates inner expression</li>
  * </ul>
  * 
- * <p>Primary expressions are the simplest form of expressions and form the
- * base of the expression hierarchy. They typically load values directly
- * into register R0.
+ * <p><b>FRISC Semantics:</b>
+ * <ul>
+ *   <li>Integer constants: Uses {@code emitLoadIntConstant} which handles 20-bit immediate
+ *       limitations. Large constants (>524287 or <-524288) are constructed using SHL/ADD pattern.</li>
+ *   <li>Character constants: ASCII value (0-255) loaded as integer</li>
+ *   <li>Variable access: Uses LOAD instruction with address from ActivationRecord (local)
+ *       or global label (global)</li>
+ *   <li>String literals: Returns address (label) pointing to string data</li>
+ *   <li>Parentheses: No code generated, just evaluates inner expression</li>
+ * </ul>
+ * 
+ * <p><b>Register Usage:</b> Result is always left in R0.
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */
@@ -45,13 +63,25 @@ public final class PrimaryExpressionGenerator {
     /**
      * Generates code for primary expressions.
      * 
+     * <p><b>Grammar Rule:</b> Implements {@code <primarni_izraz>}:
+     * <pre>
+     * &lt;primarni_izraz&gt; ::= IDN | BROJ | ZNAK | NIZ_ZNAKOVA
+     *                     | L_ZAGRADA &lt;izraz&gt; D_ZAGRADA
+     * </pre>
+     * 
      * <p>Primary expressions can be:
      * <ul>
      *   <li>Terminal nodes (BROJ, ZNAK, IDN, NIZ_ZNAKOVA)</li>
      *   <li>Parenthesized expressions: L_ZAGRADA <izraz> D_ZAGRADA</li>
      * </ul>
      * 
-     * @param node the primary expression node
+     * <p><b>FRISC Code Generation:</b>
+     * <ul>
+     *   <li>Terminals: Generate appropriate load instruction (MOVE for constants, LOAD for variables)</li>
+     *   <li>Parentheses: Recursively evaluate inner expression (no extra code)</li>
+     * </ul>
+     * 
+     * @param node the primary expression node ({@code <primarni_izraz>})
      */
     public void generatePrimaryExpression(NonTerminalNode node) {
         List<ParseNode> children = node.children();
@@ -93,7 +123,23 @@ public final class PrimaryExpressionGenerator {
     /**
      * Generates code for terminal primary expressions (constants and identifiers).
      * 
-     * @param terminal the terminal node
+     * <p><b>Grammar Terminals:</b>
+     * <ul>
+     *   <li>{@code BROJ} - Integer constant</li>
+     *   <li>{@code ZNAK} - Character constant</li>
+     *   <li>{@code IDN} - Identifier (variable)</li>
+     *   <li>{@code NIZ_ZNAKOVA} - String literal</li>
+     * </ul>
+     * 
+     * <p><b>FRISC Code:</b>
+     * <ul>
+     *   <li>BROJ: {@code MOVE %D value, R0} (or SHL/ADD sequence for large values)</li>
+     *   <li>ZNAK: {@code MOVE %D ascii, R0}</li>
+     *   <li>IDN: {@code LOAD R0, (address)} where address is (R5±offset) or (G_LABEL)</li>
+     *   <li>NIZ_ZNAKOVA: {@code MOVE STR_label, R0} (returns address)</li>
+     * </ul>
+     * 
+     * @param terminal the terminal node (BROJ, ZNAK, IDN, or NIZ_ZNAKOVA)
      */
     private void generateTerminalPrimary(TerminalNode terminal) {
         String symbol = terminal.symbol();

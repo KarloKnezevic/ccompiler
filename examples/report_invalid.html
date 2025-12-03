@@ -14823,7 +14823,7 @@ L_SC_END1
         ADD R0, R1, R0          ; addition
         STORE R0, (R5-04)       ; assign to i
         JP L_LOOP1              ; repeat for loop
-L_BREAK1
+L_BREAK1                        ; for loop end
         LOAD R0, (R5-04)        ; load variable i
         MOVE R0, R6             ; return value
         JP L1                   ; jump to function exit

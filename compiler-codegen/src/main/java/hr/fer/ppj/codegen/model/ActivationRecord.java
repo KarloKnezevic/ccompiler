@@ -88,6 +88,13 @@ public final class ActivationRecord {
      * <p>Local variables are allocated with negative offsets from R5, starting
      * at R5-4. The size is rounded up to a multiple of 4 bytes for alignment.
      * 
+     * <p><b>FRISC Stack Layout:</b>
+     * <ul>
+     *   <li>First local variable: R5-4</li>
+     *   <li>Second local variable: R5-8</li>
+     *   <li>Arrays: Allocated as contiguous block (e.g., int a[5] uses 20 bytes at R5-20 to R5-1)</li>
+     * </ul>
+     * 
      * @param name the variable name
      * @return the stack offset for this variable (negative, relative to R5)
      */
@@ -97,6 +104,13 @@ public final class ActivationRecord {
     
     /**
      * Adds a local variable to the activation record with specified size.
+     * 
+     * <p><b>FRISC Semantics:</b>
+     * <ul>
+     *   <li>Size is aligned to 4-byte boundary (rounds up)</li>
+     *   <li>Arrays: size = num_elements * 4 (element size is 4 bytes for both int and char)</li>
+     *   <li>Stack grows downward: R7 decreases by aligned size</li>
+     * </ul>
      * 
      * <p>The size is rounded up to a multiple of 4 bytes for stack alignment.
      * Local variables are allocated downward from R5 (negative offsets).

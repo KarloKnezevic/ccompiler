@@ -40,34 +40,48 @@ compiler-codegen
 
 ## Package Structure
 
-The module is organized into logical packages based on responsibility:
+The module is organized into logical packages based on responsibility. Each package has a `package-info.java` file documenting its purpose, grammar rules handled, and FRISC semantics.
 
 ```
 hr.fer.ppj.codegen/
+├── package-info.java                    # Main package documentation
 ├── CodeGenerator.java                    # Main orchestrator
-├── CodeGenContext.java                   # Shared state management
+├── CodeGenContext.java                   # Shared state management (immutable record)
 ├── CodeGenerationException.java          # Error handling
 ├── GlobalVariableGenerator.java          # Global data generation
 │
 ├── emitter/                              # Code emission
-│   └── FriscEmitter.java                 # Assembly output formatting
+│   ├── package-info.java                 # Emission package documentation
+│   └── FriscEmitter.java                 # Assembly output formatting + large immediate handling
 │
 ├── model/                                # Domain models
-│   └── ActivationRecord.java             # Stack frame layout
+│   ├── package-info.java                 # Model package documentation
+│   └── ActivationRecord.java             # Stack frame layout management
 │
 ├── util/                                 # Utilities
+│   ├── package-info.java                 # Utility package documentation
 │   └── LabelGenerator.java               # Unique label generation
 │
 ├── frisc/                                # FRISC-specific
+│   ├── package-info.java                 # FRISC package documentation
 │   └── HelperFunctionGenerator.java      # F_MUL, F_DIV helpers
 │
 ├── func/                                 # Function generation
-│   └── FunctionCodeGenerator.java        # Function definitions and calls
+│   ├── package-info.java                 # Function package documentation
+│   ├── FunctionCodeGenerator.java        # Function orchestrator
+│   ├── FunctionInfoExtractor.java        # Extract function names, parameters, local variables
+│   └── FunctionPrologueEpilogueGenerator.java # Generate prologue/epilogue code
 │
 ├── stmt/                                 # Statement generation
-│   └── StatementCodeGenerator.java       # Control flow statements
+│   ├── package-info.java                 # Statement package documentation
+│   ├── StatementCodeGenerator.java       # Statement orchestrator
+│   ├── BranchingStatementGenerator.java  # If-else statements
+│   ├── LoopStatementGenerator.java       # While and for loops
+│   ├── JumpStatementGenerator.java       # Return, break, continue
+│   └── LocalDeclarationGenerator.java   # Local variable declarations
 │
 ├── expr/                                 # Expression generation
+│   ├── package-info.java                 # Expression package documentation
 │   ├── ExpressionCodeGenerator.java      # Expression orchestrator
 │   │
 │   ├── binary/                           # Binary operations
@@ -92,9 +106,18 @@ hr.fer.ppj.codegen/
 │       └── PrimaryExpressionGenerator.java
 │
 └── global/                               # Global variable utilities
+    ├── package-info.java                 # Global package documentation
     ├── InitializerExtractor.java         # Parse tree initializer extraction
     └── ArraySizeExtractor.java           # Array size extraction
 ```
+
+### Package Documentation
+
+All packages now include comprehensive `package-info.java` files that document:
+- Package purpose and responsibilities
+- Grammar rules handled by classes in the package
+- FRISC semantics and conventions
+- Key classes and their roles
 
 ## Core Components
 
@@ -639,16 +662,34 @@ To add support for a new expression type:
 
 To add support for a new statement type:
 
-1. Add method to `StatementCodeGenerator`:
+1. Create specialized generator class (if complex) or add method to `StatementCodeGenerator`:
    ```java
-   private void generateNewStatement(NonTerminalNode stmt, CodeGenContext context) {
-       // Implementation
+   package hr.fer.ppj.codegen.stmt;
+   
+   public final class NewStatementGenerator {
+       private final CodeGenContext context;
+       private final ExpressionCodeGenerator exprGen;
+       private final StatementCodeGenerator stmtGen;
+       
+       public void generateNewStatement(NonTerminalNode stmt) {
+           // Implementation
+       }
    }
    ```
 
-2. Add dispatch case in `generateStatement()`:
+2. Add generator instance to `StatementCodeGenerator`:
    ```java
-   case "<new_statement>" -> generateNewStatement(statement, context);
+   private final NewStatementGenerator newStmtGen;
+   
+   public StatementCodeGenerator(CodeGenContext context) {
+       // ...
+       this.newStmtGen = new NewStatementGenerator(context, exprGen, this);
+   }
+   ```
+
+3. Add dispatch case in `generateStatement()`:
+   ```java
+   case "<new_statement>" -> newStmtGen.generateNewStatement(statement);
    ```
 
 ### Adding New Helper Functions
@@ -684,15 +725,27 @@ The `compiler-codegen` module is organized with clear separation of concerns:
 
 - **Orchestration**: `CodeGenerator` coordinates the overall process
 - **Expression Generation**: Hierarchical delegation to specialized generators
-- **Statement Generation**: Direct implementation in `StatementCodeGenerator`
-- **Function Generation**: Complete function handling in `FunctionCodeGenerator`
+- **Statement Generation**: Modular delegation to specialized statement generators
+- **Function Generation**: Modular approach with separate extractors and generators
 - **Infrastructure**: Shared utilities for emission, labeling, and state management
+
+**Key Architectural Patterns**:
+- **Orchestrator Pattern**: Main generators (`CodeGenerator`, `ExpressionCodeGenerator`, `StatementCodeGenerator`, `FunctionCodeGenerator`) coordinate specialized generators
+- **Delegation Pattern**: Complex operations delegated to focused, single-responsibility classes
+- **Extractor Pattern**: Parse tree traversal and information extraction separated from code generation
+
+**Module Statistics**:
+- **Expression Generators**: 7 specialized generators (binary, logical, unary, assignment, array, call, primary)
+- **Statement Generators**: 4 specialized generators (branching, loop, jump, local declaration)
+- **Function Components**: 3 classes (orchestrator, info extractor, prologue/epilogue generator)
+- **Total Classes**: ~30+ classes organized across 10+ packages
 
 This architecture provides:
 - **Maintainability**: Clear responsibilities and modular design
 - **Extensibility**: Easy to add new expression or statement types
 - **Testability**: Components can be tested independently
 - **Readability**: Well-organized code with comprehensive documentation
+- **Modularity**: Each generator class is focused and can be understood in isolation
 
 The module follows Java best practices with immutable value objects, clear naming conventions, and comprehensive Javadoc documentation throughout.
 

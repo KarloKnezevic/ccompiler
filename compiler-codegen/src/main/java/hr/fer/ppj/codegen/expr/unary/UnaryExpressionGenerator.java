@@ -13,14 +13,36 @@ import java.util.Objects;
 /**
  * Generates FRISC assembly code for unary expressions and type casts.
  * 
+ * <p><b>Grammar Rules:</b> Handles {@code <unarni_izraz>} and {@code <cast_izraz>}:
+ * <pre>
+ * &lt;unarni_izraz&gt; ::= &lt;postfiks_izraz&gt;
+ *                  | OP_INC &lt;unarni_izraz&gt;
+ *                  | OP_DEC &lt;unarni_izraz&gt;
+ *                  | &lt;unarni_operator&gt; &lt;cast_izraz&gt;
+ * 
+ * &lt;unarni_operator&gt; ::= PLUS | MINUS | OP_TILDA | OP_NEG
+ * 
+ * &lt;cast_izraz&gt; ::= &lt;unarni_izraz&gt;
+ *                | L_ZAGRADA &lt;ime_tipa&gt; D_ZAGRADA &lt;cast_izraz&gt;
+ * </pre>
+ * 
  * <p>This class handles the generation of code for:
  * <ul>
  *   <li>Unary operators: +, -, !, ~</li>
  *   <li>Type casts: (type) expression</li>
  * </ul>
  * 
- * <p>Unary operators operate on a single operand and produce a result in R0.
- * Type casts convert values between types (e.g., int to char by masking).
+ * <p><b>FRISC Semantics:</b>
+ * <ul>
+ *   <li>Unary plus (+): No-op, just evaluates operand</li>
+ *   <li>Unary minus (-): Negation using {@code 0 - operand} pattern, or direct negative
+ *       constant emission for literals</li>
+ *   <li>Logical NOT (!): Compares operand to 0, returns 1 if zero, 0 otherwise</li>
+ *   <li>Bitwise NOT (~): XOR with 0xFFFFFFFF</li>
+ *   <li>Type casts: int→char masks lower 8 bits (AND 00FF), char→int is no-op</li>
+ * </ul>
+ * 
+ * <p><b>Register Usage:</b> Operand evaluated in R0, result left in R0.
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */
@@ -167,10 +189,21 @@ public final class UnaryExpressionGenerator {
     /**
      * Generates code for unary minus (-operand).
      * 
-     * <p>Optimizes for integer literals by directly emitting the negative value.
-     * For non-literals, performs runtime negation: 0 - R0 = -R0.
+     * <p><b>Grammar Rule:</b> Handles {@code <unarni_izraz> ::= MINUS <cast_izraz>}
      * 
-     * @param operand the operand expression
+     * <p><b>Optimization:</b> For integer literals, directly emits the negated value
+     * using {@code emitLoadIntConstant} (which handles large negative values correctly).
+     * 
+     * <p><b>FRISC Code Pattern:</b>
+     * <ul>
+     *   <li>Literal: {@code MOVE %D -value, R0} (or SHL/ADD for large values)</li>
+     *   <li>Non-literal: {@code MOVE %D 0, R1; SUB R1, R0, R0} (0 - operand)</li>
+     * </ul>
+     * 
+     * <p><b>FRISC Semantics:</b> Uses SUB instruction for runtime negation:
+     * {@code SUB R1, R0, R0} computes R0 = R1 - R0 = 0 - operand = -operand.
+     * 
+     * @param operand the operand expression ({@code <cast_izraz>})
      */
     private void generateUnaryMinus(NonTerminalNode operand) {
         String literalValue = tryExtractIntegerLiteral(operand);

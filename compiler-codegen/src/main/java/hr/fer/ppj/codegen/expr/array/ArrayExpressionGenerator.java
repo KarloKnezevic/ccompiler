@@ -9,20 +9,41 @@ import java.util.Objects;
 /**
  * Generates FRISC assembly code for array indexing operations.
  * 
+ * <p><b>Grammar Rule:</b> Handles array indexing from {@code <postfiks_izraz>}:
+ * <pre>
+ * &lt;postfiks_izraz&gt; ::= &lt;postfiks_izraz&gt; L_UGL_ZAGRADA &lt;izraz&gt; D_UGL_ZAGRADA
+ * </pre>
+ * 
  * <p>This class handles the generation of code for:
  * <ul>
- *   <li>Array element access: a[i]</li>
- *   <li>Array element assignment: a[i] = value</li>
+ *   <li>Array element access: {@code a[i]}</li>
+ *   <li>Array element assignment: {@code a[i] = value}</li>
  * </ul>
  * 
- * <p>Array indexing involves:
- * <ol>
- *   <li>Computing the element address: base + index * element_size</li>
- *   <li>Loading or storing the element value</li>
- * </ol>
+ * <p><b>FRISC Semantics:</b>
+ * <ul>
+ *   <li><b>Element Size:</b> Both {@code int} and {@code char} arrays use 4-byte elements
+ *       (chars stored as 4-byte words)</li>
+ *   <li><b>Address Calculation:</b> {@code address(a[i]) = base(a) + i * 4}</li>
+ *   <li><b>Index Multiplication:</b> Uses {@code SHL R0, %D 2, R0} to multiply index by 4
+ *       (shift left by 2 bits = multiply by 4)</li>
+ *   <li><b>Memory Access:</b> Uses {@code LOAD} and {@code STORE} instructions (not LOADB/STOREB)</li>
+ * </ul>
  * 
- * <p>The generator handles both global and local arrays, and supports
- * different element sizes (1 byte for char, 4 bytes for int).
+ * <p><b>Array Types Supported:</b>
+ * <ul>
+ *   <li><b>Global arrays:</b> Base address is label (e.g., {@code G_A})</li>
+ *   <li><b>Local arrays:</b> Base address is stack offset (e.g., {@code (R5-20)})</li>
+ *   <li><b>Array parameters:</b> Base address is pointer loaded from parameter slot
+ *       (e.g., {@code LOAD R1, (R5+8)} to get pointer, then index from that)</li>
+ * </ul>
+ * 
+ * <p><b>Register Usage:</b>
+ * <ul>
+ *   <li>R0: Index value (input), then byte offset (index * 4), then element value (output)</li>
+ *   <li>R1: Base address, then element address (base + offset)</li>
+ *   <li>R2: Used for saving source value during assignment</li>
+ * </ul>
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */
@@ -49,16 +70,49 @@ public final class ArrayExpressionGenerator {
     /**
      * Generates code for array element access: a[i].
      * 
+     * <p><b>Grammar Rule:</b> Implements {@code <postfiks_izraz> ::= <postfiks_izraz> L_UGL_ZAGRADA <izraz> D_UGL_ZAGRADA}
+     * 
+     * <p><b>FRISC Code Sequence:</b>
+     * <pre>
+     * ; Evaluate index expression (result in R0)
+     * ... (index evaluation) ...
+     * 
+     * ; Multiply index by element size (4 bytes)
+     * SHL R0, %D 2, R0          ; index * 4 (shift left by 2 = multiply by 4)
+     * 
+     * ; Load base address into R1
+     * MOVE G_A, R1              ; for global arrays
+     * ; OR
+     * MOVE R5, R1               ; for local arrays
+     * ADD R1, -20, R1           ; add base offset (e.g., -20 for local array)
+     * ; OR
+     * LOAD R1, (R5+8)           ; for array parameters (load pointer)
+     * 
+     * ; Compute element address: base + offset
+     * ADD R1, R0, R1            ; R1 = base + (index * 4)
+     * 
+     * ; Load element value
+     * LOAD R0, (R1)             ; load array element into R0
+     * </pre>
+     * 
+     * <p><b>FRISC Semantics:</b>
+     * <ul>
+     *   <li>Element size is always 4 bytes (for both int and char arrays)</li>
+     *   <li>Index multiplication uses SHL (shift left) for efficiency</li>
+     *   <li>Array parameters require loading the pointer first (array decay to pointer)</li>
+     * </ul>
+     * 
      * <p>The result is loaded into register R0.
      * 
-     * @param base the base array expression
-     * @param indexExpr the index expression
+     * @param base the base array expression ({@code <postfiks_izraz>})
+     * @param indexExpr the index expression ({@code <izraz>})
      */
     public void generateArrayIndexing(NonTerminalNode base, NonTerminalNode indexExpr) {
         // Extract base variable name
         String baseVarName = extractVariableName(base);
         if (baseVarName == null) {
             // Complex array base expression - not a simple variable
+            // Delegate to expression generator (e.g., for nested array access)
             expressionGenerator.generateExpression(base);
             return;
         }
@@ -72,17 +126,21 @@ public final class ArrayExpressionGenerator {
         // Calculate element address: base + index * element_size
         // R0 contains index, multiply by element size (4 bytes)
         // Use SHL for multiplication by 4 (shift left by 2 bits = multiply by 4)
+        // This is more efficient than using F_MUL helper function
         context.emitter().emitInstruction("SHL", "R0", "%D 2", "R0", "index * 4 (element size)");
         
         // R0 now contains byte offset (index * 4), add to base address
         // Load base address into R1
+        // For array parameters, this will LOAD the pointer value
         loadBaseAddress(baseAddress, "R1");
         
         // Add index offset to base: R1 = R1 + R0
+        // R1 now contains the address of a[i]
         context.emitter().emitInstruction("ADD", "R1", "R0", "R1", "compute element address");
         
         // Load element value from computed address
         // Use LOAD for both int and char arrays (treating chars as 4-byte words)
+        // Note: We use LOAD/STORE, not LOADB/STOREB, because element size is 4 bytes
         context.emitter().emitInstruction("LOAD", "R0", "(R1)", "load array element");
     }
     
