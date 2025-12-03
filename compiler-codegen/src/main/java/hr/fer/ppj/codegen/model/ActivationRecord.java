@@ -45,6 +45,12 @@ public final class ActivationRecord {
     private final Map<String, Integer> variableOffsets = new HashMap<>();
     
     /**
+     * Map from variable name to its size in bytes.
+     * Used to determine if a variable is an array (size > 4 bytes).
+     */
+    private final Map<String, Integer> variableSizes = new HashMap<>();
+    
+    /**
      * Current offset for the next parameter (positive, relative to R5).
      * First parameter starts at R5+8 (after old R5 at +0 and return address at +4).
      */
@@ -72,6 +78,7 @@ public final class ActivationRecord {
         
         // Store parameter with positive offset (R5+8, R5+12, etc.)
         variableOffsets.put(name, offset);
+        variableSizes.put(name, 4); // Parameters are always 4 bytes (pointers)
         return offset;
     }
     
@@ -120,6 +127,7 @@ public final class ActivationRecord {
         int offset = -(localVariablesSize); // Negative offset from R5
         
         variableOffsets.put(name, offset);
+        variableSizes.put(name, sizeInBytes); // Store actual size (not aligned)
         return offset;
     }
     
@@ -190,6 +198,19 @@ public final class ActivationRecord {
      */
     public Map<String, Integer> getAllVariables() {
         return Map.copyOf(variableOffsets);
+    }
+    
+    /**
+     * Gets the size of a variable in bytes.
+     * 
+     * <p>This can be used to determine if a variable is an array:
+     * if size > 4 bytes, it's likely an array.
+     * 
+     * @param name the variable name
+     * @return the size in bytes, or null if variable not found
+     */
+    public Integer getVariableSize(String name) {
+        return variableSizes.get(name);
     }
     
     /**

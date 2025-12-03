@@ -175,10 +175,11 @@ public final class UnaryExpressionGenerator {
     private void generateUnaryMinus(NonTerminalNode operand) {
         String literalValue = tryExtractIntegerLiteral(operand);
         if (literalValue != null) {
-            // Optimize: directly emit negative literal
+            // Optimize: directly emit negative literal using helper to handle large values
             try {
                 int value = Integer.parseInt(literalValue);
-                context.emitter().emitInstruction("MOVE", "%D " + (-value), "R0", "load constant -" + literalValue);
+                int negatedValue = -value;
+                context.emitter().emitLoadIntConstant(negatedValue, "R0", "load constant -" + literalValue);
             } catch (NumberFormatException e) {
                 // Fall back to runtime negation
                 generateRuntimeNegation(operand);

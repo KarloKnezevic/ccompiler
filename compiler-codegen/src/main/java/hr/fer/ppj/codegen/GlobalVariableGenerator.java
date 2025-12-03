@@ -110,6 +110,10 @@ public final class GlobalVariableGenerator {
     
     /**
      * Generates FRISC data declaration for an array variable.
+     * 
+     * <p>For this project, both int and char arrays use element size 4 bytes.
+     * Uninitialized arrays use the `DS directive (backtick DS) to reserve space.
+     * Initialized arrays use DW with comma-separated values.
      */
     private void generateArrayVariable(String label, VariableSymbol variable, ArrayType arrayType) {
         // Try to find array initializer from parse tree
@@ -118,11 +122,12 @@ public final class GlobalVariableGenerator {
             initValues = initializerExtractor.findArrayInitializer(variable.name(), arrayType);
         }
         
-        // Determine element size (1 for char, 4 for int)
-        int elementSize = (arrayType.elementType() == PrimitiveType.CHAR) ? 1 : 4;
+        // For this project: both int and char arrays use element size 4 bytes
+        // We treat chars as 4-byte elements and use LOAD instead of LOADB
+        int elementSize = 4;
         
         if (initValues == null || initValues.isEmpty()) {
-            // No initializer - use DS directive to allocate space
+            // No initializer - use `DS directive (backtick DS) to allocate space
             // Extract array size from parse tree
             int arraySize = 0;
             if (arraySizeExtractor != null) {
@@ -131,16 +136,17 @@ public final class GlobalVariableGenerator {
             if (arraySize > 0) {
                 int totalBytes = arraySize * elementSize;
                 String comment = "global " + variable.type() + " " + variable.name();
-                context.emitter().emitData(label, "DS", "%D " + totalBytes, comment);
+                // Use backtick DS: `DS %D N
+                context.emitter().emitData(label, "`DS", "%D " + totalBytes, comment);
             } else {
                 // Fallback: allocate space for at least 1 element
                 String comment = "global " + variable.type() + " " + variable.name();
-                context.emitter().emitData(label, "DS", "%D " + elementSize, comment);
+                context.emitter().emitData(label, "`DS", "%D " + elementSize, comment);
             }
             return;
         }
         
-        // Generate array with initializer values
+        // Generate array with initializer values using DW
         StringBuilder dataValue = new StringBuilder();
         boolean first = true;
         for (String value : initValues) {

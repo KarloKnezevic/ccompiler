@@ -3,7 +3,6 @@ package hr.fer.ppj.codegen.func;
 import hr.fer.ppj.codegen.CodeGenContext;
 import hr.fer.ppj.codegen.model.ActivationRecord;
 import hr.fer.ppj.codegen.stmt.StatementCodeGenerator;
-import hr.fer.ppj.semantics.symbols.VariableSymbol;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.TerminalNode;
@@ -267,11 +266,14 @@ public final class FunctionCodeGenerator {
     
     /**
      * Processes a single declaration and extracts variable names with their sizes.
+     * 
+     * <p>For this project, both int and char arrays use element size 4 bytes.
+     * We treat chars as 4-byte elements and use LOAD/STORE instead of LOADB/STOREB.
      */
     private void processDeclaration(NonTerminalNode declaration, ActivationRecord activationRecord) {
-        // Extract type specifier from declaration first
-        boolean isCharType = extractTypeSpecifierFromDeclaration(declaration);
-        int elementSize = isCharType ? 1 : 4; // char is 1 byte, int is 4 bytes
+        // For this project: both int and char arrays use element size 4 bytes
+        // We treat chars as 4-byte elements and use LOAD/STORE instead of LOADB/STOREB
+        int elementSize = 4;
         
         // Find variable names and sizes in the declaration
         List<VariableInfo> variables = extractVariableInfo(declaration, elementSize);
@@ -283,15 +285,6 @@ public final class FunctionCodeGenerator {
         }
     }
     
-    /**
-     * Extracts the type specifier from a declaration node.
-     * Returns true if the type is char, false if int (or unknown).
-     */
-    private boolean extractTypeSpecifierFromDeclaration(NonTerminalNode declaration) {
-        // Look for KR_CHAR or KR_INT in the declaration tree
-        // Structure: <deklaracija> -> <specifikator_tipa> -> KR_CHAR or KR_INT
-        return findTypeSpecifier(declaration, "KR_CHAR");
-    }
     
     /**
      * Information about a local variable including its name and size.
@@ -303,8 +296,10 @@ public final class FunctionCodeGenerator {
      * 
      * Structure: <deklaracija> -> <lista_init_deklaratora> -> <init_deklarator> -> <deklarator> -> <izravni_deklarator> -> IDN
      * 
+     * <p>For this project, both int and char arrays use element size 4 bytes.
+     * 
      * @param declaration the declaration node
-     * @param elementSize the element size in bytes (1 for char, 4 for int)
+     * @param elementSize the element size in bytes (always 4 for this project)
      */
     private List<VariableInfo> extractVariableInfo(NonTerminalNode declaration, int elementSize) {
         List<VariableInfo> variables = new java.util.ArrayList<>();
@@ -381,9 +376,11 @@ public final class FunctionCodeGenerator {
      * Structure: <izravni_deklarator> -> IDN (or IDN with array/function syntax)
      * For arrays: <izravni_deklarator> -> IDN L_UGL_ZAGRADA BROJ D_UGL_ZAGRADA
      * 
+     * <p>For this project, both int and char arrays use element size 4 bytes.
+     * 
      * @param directDeclarator the direct declarator node
      * @param variables the list to add variable info to
-     * @param elementSize the element size in bytes (1 for char, 4 for int)
+     * @param elementSize the element size in bytes (always 4 for this project)
      */
     private void extractVariableInfoFromDirectDeclarator(NonTerminalNode directDeclarator, List<VariableInfo> variables, int elementSize) {
         String varName = null;
@@ -391,6 +388,7 @@ public final class FunctionCodeGenerator {
         boolean isArray = false;
         
         List<ParseNode> children = directDeclarator.children();
+        
         
         // Handle nested <izravni_deklarator> structure
         // For arrays: <izravni_deklarator> -> <izravni_deklarator> -> IDN L_UGL_ZAGRADA BROJ D_UGL_ZAGRADA
@@ -404,18 +402,71 @@ public final class FunctionCodeGenerator {
             }
         }
         
-        // If nested, recurse into it
-        if (nestedDeclarator != null) {
-            extractVariableInfoFromDirectDeclarator(nestedDeclarator, variables, elementSize);
-            return;
-        }
-        
-        // Find IDN (variable name)
+        // Find IDN (variable name) - check both current level and nested level
         for (ParseNode child : children) {
             if (child instanceof TerminalNode terminal && "IDN".equals(terminal.symbol())) {
                 varName = terminal.lexeme();
                 break;
             }
+        }
+        
+        // If nested, check current level for array brackets after nested declarator
+        // Structure: <izravni_deklarator> -> <izravni_deklarator> -> IDN, then L_UGL_ZAGRADA <log_ili_izraz> D_UGL_ZAGRADA
+        if (nestedDeclarator != null) {
+            // Find IDN in nested level
+            List<ParseNode> nestedChildren = nestedDeclarator.children();
+            for (ParseNode nestedChild : nestedChildren) {
+                if (nestedChild instanceof TerminalNode terminal && "IDN".equals(terminal.symbol())) {
+                    varName = terminal.lexeme();
+                    break;
+                }
+            }
+            
+            // Check current level for array brackets after nested declarator
+            // Structure: <izravni_deklarator> L_UGL_ZAGRADA <log_ili_izraz> D_UGL_ZAGRADA
+            // where <log_ili_izraz> contains BROJ terminal
+            int nestedIndex = -1;
+            for (int i = 0; i < children.size(); i++) {
+                if (children.get(i) == nestedDeclarator) {
+                    nestedIndex = i;
+                    break;
+                }
+            }
+            if (nestedIndex >= 0 && nestedIndex + 3 < children.size()) {
+                ParseNode node1 = children.get(nestedIndex + 1);
+                ParseNode node2 = children.get(nestedIndex + 2);
+                ParseNode node3 = children.get(nestedIndex + 3);
+                if (node1 instanceof TerminalNode t1 && "L_UGL_ZAGRADA".equals(t1.symbol()) &&
+                    node2 instanceof NonTerminalNode exprNode &&
+                    node3 instanceof TerminalNode t3 && "D_UGL_ZAGRADA".equals(t3.symbol())) {
+                    // Extract BROJ from <log_ili_izraz> expression
+                    String numberValue = extractNumberFromExpression(exprNode);
+                    if (numberValue != null) {
+                        isArray = true;
+                        try {
+                            arraySize = Integer.parseInt(numberValue);
+                        } catch (NumberFormatException e) {
+                            arraySize = 0;
+                        }
+                    }
+                }
+            }
+            
+            // If we found varName and array brackets, we're done
+            if (varName != null && isArray && arraySize > 0) {
+                variables.add(new VariableInfo(varName, arraySize * elementSize));
+                return;
+            }
+            
+            // If we found varName but no array brackets, it's a simple variable
+            if (varName != null && !isArray) {
+                variables.add(new VariableInfo(varName, 4));
+                return;
+            }
+            
+            // Otherwise, recurse into nested level to handle it (might have different structure)
+            extractVariableInfoFromDirectDeclarator(nestedDeclarator, variables, elementSize);
+            return;
         }
         
         if (varName == null) {
@@ -457,23 +508,30 @@ public final class FunctionCodeGenerator {
     }
     
     /**
-     * Searches for a type specifier (KR_CHAR or KR_INT) in a declaration node.
+     * Extracts a number value from an expression node (e.g., <log_ili_izraz>).
+     * Recursively searches for a BROJ terminal and returns its lexeme.
+     * 
+     * @param exprNode the expression node
+     * @return the number value as string, or null if not found
      */
-    private boolean findTypeSpecifier(NonTerminalNode node, String targetSpecifier) {
-        if (node == null) {
-            return false;
+    private String extractNumberFromExpression(NonTerminalNode exprNode) {
+        if (exprNode == null) {
+            return null;
         }
         
-        for (ParseNode child : node.children()) {
-            if (child instanceof TerminalNode terminal && targetSpecifier.equals(terminal.symbol())) {
-                return true;
+        // Search for BROJ terminal in the expression tree
+        for (ParseNode child : exprNode.children()) {
+            if (child instanceof TerminalNode terminal && "BROJ".equals(terminal.symbol())) {
+                return terminal.lexeme();
             } else if (child instanceof NonTerminalNode nonTerminal) {
-                if (findTypeSpecifier(nonTerminal, targetSpecifier)) {
-                    return true;
+                String result = extractNumberFromExpression(nonTerminal);
+                if (result != null) {
+                    return result;
                 }
             }
         }
-        return false;
+        
+        return null;
     }
     
     /**

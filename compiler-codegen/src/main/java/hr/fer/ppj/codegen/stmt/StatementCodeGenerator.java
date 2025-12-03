@@ -393,8 +393,13 @@ public final class StatementCodeGenerator {
         // Try simple cases first: integer literals (including negative)
         String literal = tryGetSimpleIntegerLiteral(expression);
         if (literal != null) {
-            context.emitter().emitInstruction("MOVE", "%D " + literal, "R6", "return constant " + literal);
-            return true;
+            try {
+                int value = Integer.parseInt(literal);
+                context.emitter().emitLoadIntConstant(value, "R6", "return constant " + literal);
+                return true;
+            } catch (NumberFormatException e) {
+                // If parsing fails, fall through to normal generation
+            }
         }
         
         // For other cases, we'd need to modify ExpressionCodeGenerator to support

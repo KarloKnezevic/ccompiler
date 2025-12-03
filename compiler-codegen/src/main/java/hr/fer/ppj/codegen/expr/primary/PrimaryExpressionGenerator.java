@@ -102,12 +102,20 @@ public final class PrimaryExpressionGenerator {
         switch (symbol) {
             case "BROJ" -> {
                 // Integer constant from source - treat as decimal
-                context.emitter().emitInstruction("MOVE", "%D " + value, "R0", "load constant " + value);
+                // Parse the value and use helper to handle large literals
+                try {
+                    int intValue = Integer.parseInt(value);
+                    context.emitter().emitLoadIntConstant(intValue, "R0", "load constant " + value);
+                } catch (NumberFormatException e) {
+                    // Fallback: if parsing fails, emit as-is (shouldn't happen for valid C)
+                    context.emitter().emitInstruction("MOVE", "%D " + value, "R0", "load constant " + value);
+                }
             }
             case "ZNAK" -> {
                 // Character constant - convert to ASCII value (decimal)
                 int ascii = value.charAt(1); // Skip the quote
-                context.emitter().emitInstruction("MOVE", "%D " + ascii, "R0", "load char '" + value + "'");
+                // ASCII values are always small (0-255), but use helper for consistency
+                context.emitter().emitLoadIntConstant(ascii, "R0", "load char '" + value + "'");
             }
             case "IDN" -> {
                 // Identifier - load from local or global variable

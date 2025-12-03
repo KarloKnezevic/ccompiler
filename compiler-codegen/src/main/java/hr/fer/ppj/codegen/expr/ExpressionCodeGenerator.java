@@ -65,6 +65,7 @@ public final class ExpressionCodeGenerator {
         this.unaryGenerator = new UnaryExpressionGenerator(context, this);
         this.assignmentGenerator = new AssignmentExpressionGenerator(context, this);
         this.arrayGenerator = new ArrayExpressionGenerator(context, this, assignmentGenerator);
+        this.assignmentGenerator.setArrayGenerator(this.arrayGenerator); // Set array generator for assignments
         this.functionCallGenerator = new FunctionCallGenerator(context, this);
         this.binaryGenerator = new BinaryExpressionGenerator(context, this);
         this.logicalGenerator = new LogicalExpressionGenerator(context, this);

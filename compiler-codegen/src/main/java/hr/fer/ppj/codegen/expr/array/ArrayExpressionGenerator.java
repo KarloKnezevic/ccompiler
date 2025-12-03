@@ -3,11 +3,7 @@ package hr.fer.ppj.codegen.expr.array;
 import hr.fer.ppj.codegen.CodeGenContext;
 import hr.fer.ppj.codegen.expr.ExpressionCodeGenerator;
 import hr.fer.ppj.codegen.expr.assignment.AssignmentExpressionGenerator;
-import hr.fer.ppj.semantics.symbols.VariableSymbol;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
-import hr.fer.ppj.semantics.types.ArrayType;
-import hr.fer.ppj.semantics.types.PrimitiveType;
-import hr.fer.ppj.semantics.types.Type;
 import java.util.Objects;
 
 /**
@@ -70,32 +66,15 @@ public final class ArrayExpressionGenerator {
         // Get base address (local or global)
         String baseAddress = getVariableAddress(baseVarName);
         
-        // Look up variable type to determine element size
-        int elementSize = getArrayElementSize(baseVarName);
-        
         // Generate code for index expression (result in R0)
         expressionGenerator.generateExpression(indexExpr);
         
         // Calculate element address: base + index * element_size
-        // R0 contains index, multiply by element size
-        if (elementSize == 1) {
-            // For char arrays, index is already correct (1 byte per element)
-            // No multiplication needed
-        } else {
-            // For int arrays or other sizes, multiply index by elementSize using F_MUL
-            context.emitter().markMulNeeded();
-            context.emitter().emitInstruction("MOVE", "R0", "R1", "save index");
-            context.emitter().emitInstruction("MOVE", "%D " + elementSize, "R0", "element size");
-            // Call F_MUL: push arguments (b, then a), call, clean up
-            context.emitter().emitInstruction("PUSH", "R1", null, "push second arg (index)");
-            context.emitter().emitInstruction("PUSH", "R0", null, "push first arg (element size)");
-            context.emitter().emitInstruction("CALL", "F_MUL", null, "call multiplication helper");
-            context.emitter().emitInstruction("ADD", "R7", "%D 8", "R7", "clean up arguments");
-            // Result is now in R6, move to R0
-            context.emitter().emitInstruction("MOVE", "R6", "R0", "move result to R0");
-        }
+        // R0 contains index, multiply by element size (4 bytes)
+        // Use SHL for multiplication by 4 (shift left by 2 bits = multiply by 4)
+        context.emitter().emitInstruction("SHL", "R0", "%D 2", "R0", "index * 4 (element size)");
         
-        // R0 now contains byte offset, add to base address
+        // R0 now contains byte offset (index * 4), add to base address
         // Load base address into R1
         loadBaseAddress(baseAddress, "R1");
         
@@ -103,13 +82,8 @@ public final class ArrayExpressionGenerator {
         context.emitter().emitInstruction("ADD", "R1", "R0", "R1", "compute element address");
         
         // Load element value from computed address
-        if (elementSize == 1) {
-            // For char arrays, use LOADB (byte load)
-            context.emitter().emitInstruction("LOADB", "R0", "(R1)", "load char element");
-        } else {
-            // For int arrays, use LOAD (word load)
-            context.emitter().emitInstruction("LOAD", "R0", "(R1)", "load int element");
-        }
+        // Use LOAD for both int and char arrays (treating chars as 4-byte words)
+        context.emitter().emitInstruction("LOAD", "R0", "(R1)", "load array element");
     }
     
     /**
@@ -138,9 +112,8 @@ public final class ArrayExpressionGenerator {
             throw new IllegalStateException("Complex array base expression not supported");
         }
         
-        // Get base address and element size
+        // Get base address
         String baseAddress = getVariableAddress(baseVarName);
-        int elementSize = getArrayElementSize(baseVarName);
         
         // Save source value (it's in sourceRegister, which is typically R0)
         context.emitter().emitInstruction("MOVE", sourceRegister, "R2", "save value to assign");
@@ -149,21 +122,9 @@ public final class ArrayExpressionGenerator {
         expressionGenerator.generateExpression(indexExpr);
         
         // Calculate element address: base + index * element_size
-        if (elementSize == 1) {
-            // For char arrays, no multiplication needed
-        } else {
-            // For int arrays or other sizes, multiply index by element_size using F_MUL
-            context.emitter().markMulNeeded();
-            context.emitter().emitInstruction("MOVE", "R0", "R1", "save index");
-            context.emitter().emitInstruction("MOVE", "%D " + elementSize, "R0", "element size");
-            // Call F_MUL: push arguments (b, then a), call, clean up
-            context.emitter().emitInstruction("PUSH", "R1", null, "push second arg (index)");
-            context.emitter().emitInstruction("PUSH", "R0", null, "push first arg (element size)");
-            context.emitter().emitInstruction("CALL", "F_MUL", null, "call multiplication helper");
-            context.emitter().emitInstruction("ADD", "R7", "%D 8", "R7", "clean up arguments");
-            // Result is now in R6, move to R0
-            context.emitter().emitInstruction("MOVE", "R6", "R0", "move result to R0");
-        }
+        // R0 contains index, multiply by element size (4 bytes)
+        // Use SHL for multiplication by 4 (shift left by 2 bits = multiply by 4)
+        context.emitter().emitInstruction("SHL", "R0", "%D 2", "R0", "index * 4 (element size)");
         
         // Compute base address in R1
         loadBaseAddress(baseAddress, "R1");
@@ -172,13 +133,8 @@ public final class ArrayExpressionGenerator {
         context.emitter().emitInstruction("ADD", "R1", "R0", "R1", "compute element address");
         
         // Store value to computed address (R2 contains the value)
-        if (elementSize == 1) {
-            // For char arrays, use STOREB (byte store)
-            context.emitter().emitInstruction("STOREB", "R2", "(R1)", "store char element");
-        } else {
-            // For int arrays, use STORE (word store)
-            context.emitter().emitInstruction("STORE", "R2", "(R1)", "store int element");
-        }
+        // Use STORE for both int and char arrays (treating chars as 4-byte words)
+        context.emitter().emitInstruction("STORE", "R2", "(R1)", "store array element");
     }
     
     /**
@@ -238,31 +194,6 @@ public final class ArrayExpressionGenerator {
                 context.emitter().emitInstruction("ADD", targetRegister, formattedOffset, targetRegister, "add base offset");
             }
         }
-    }
-    
-    /**
-     * Gets the element size (in bytes) for an array variable.
-     * 
-     * @param variableName the array variable name
-     * @return element size (1 for char, 4 for int)
-     */
-    private int getArrayElementSize(String variableName) {
-        // Look up variable in symbol table
-        var symbolOpt = context.globalScope().lookup(variableName);
-        if (symbolOpt.isPresent() && symbolOpt.get() instanceof VariableSymbol varSymbol) {
-            Type varType = varSymbol.type();
-            if (varType instanceof ArrayType arrayType) {
-                Type elementType = arrayType.elementType();
-                if (elementType == PrimitiveType.CHAR) {
-                    return 1; // char is 1 byte
-                } else if (elementType == PrimitiveType.INT) {
-                    return 4; // int is 4 bytes
-                }
-            }
-        }
-        
-        // Default: assume int array (4 bytes)
-        return 4;
     }
     
     /**

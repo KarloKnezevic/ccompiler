@@ -30,6 +30,7 @@ public final class AssignmentExpressionGenerator {
     
     private final CodeGenContext context;
     private final ExpressionCodeGenerator expressionGenerator;
+    private hr.fer.ppj.codegen.expr.array.ArrayExpressionGenerator arrayGenerator;
     
     /**
      * Creates a new assignment expression generator.
@@ -40,6 +41,15 @@ public final class AssignmentExpressionGenerator {
     public AssignmentExpressionGenerator(CodeGenContext context, ExpressionCodeGenerator expressionGenerator) {
         this.context = Objects.requireNonNull(context, "context must not be null");
         this.expressionGenerator = Objects.requireNonNull(expressionGenerator, "expressionGenerator must not be null");
+    }
+    
+    /**
+     * Sets the array generator for array assignment support.
+     * 
+     * @param arrayGenerator the array expression generator
+     */
+    public void setArrayGenerator(hr.fer.ppj.codegen.expr.array.ArrayExpressionGenerator arrayGenerator) {
+        this.arrayGenerator = arrayGenerator;
     }
     
     /**
@@ -61,8 +71,8 @@ public final class AssignmentExpressionGenerator {
             // Generate code for right-hand side first
             expressionGenerator.generateExpression(rvalue);
             
-            // Generate assignment code
-            generateAssignment(lvalue, "R0");
+            // Generate assignment code (with array generator support)
+            generateAssignment(lvalue, "R0", arrayGenerator);
         }
     }
     

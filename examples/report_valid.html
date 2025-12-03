@@ -6683,8 +6683,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_C      DW %D 97               ; global CHAR c = 97
 G_X      DW %D 2                ; global INT x = 2
+G_C      DW %D 97               ; global CHAR c = 97
 
 </code></pre>
       </details>
@@ -9660,7 +9660,7 @@ G_X      DW %D 1234             ; global INT x = 1234
     <section id="program26" class="program-card">
       <h2>program26.c</h2>
       <div class="result-badge">
-        <span class="badge badge-fail">❌ FAIL</span>
+        <span class="badge badge-pass">✅ PASS</span>
       </div>
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
@@ -10310,9 +10310,10 @@ F_MAIN                          ; Function main
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
         MOVE %D 1, R0           ; load constant 1
+        SHL R0, %D 2, R0        ; index * 4 (element size)
         MOVE G_A, R1            ; load base address
         ADD R1, R0, R1          ; compute element address
-        LOADB R0, (R1)          ; load char element
+        LOAD R0, (R1)           ; load array element
         MOVE R0, R6             ; return value
         JP L1                   ; jump to function exit
 L1                              ; function exit
@@ -10336,8 +10337,8 @@ G_A      DW %D 97, %D 98, %D 99, %D 100, %D 101; global ArrayType[elementType=CH
               </tr>
               <tr>
                 <td><code>98</code></td>
-                <td><code>0</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>98</code></td>
+                <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
           </div>
@@ -10728,7 +10729,7 @@ semantic error
     <section id="program28" class="program-card">
       <h2>program28.c</h2>
       <div class="result-badge">
-        <span class="badge badge-fail">❌ FAIL</span>
+        <span class="badge badge-pass">✅ PASS</span>
       </div>
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
@@ -11701,49 +11702,46 @@ F_MAIN                          ; Function main
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
         MOVE %D 0, R0           ; load constant 0
-        STORE R0, (G_A)         ; assign to a
-        MOVE %D 123, R0         ; load constant 123
-        STORE R0, (G_A)         ; assign to a
-        MOVE %D 1, R0           ; load constant 1
-        STORE R0, (G_A)         ; assign to a
+        MOVE R0, R2             ; save value to assign
         MOVE %D 0, R0           ; load constant 0
-        MOVE R0, R1             ; save index
-        MOVE %D 4, R0           ; element size
-        PUSH R1                 ; push second arg (index)
-        PUSH R0                 ; push first arg (element size)
-        CALL F_MUL              ; call multiplication helper
-        ADD R7, %D 8, R7        ; clean up arguments
-        MOVE R6, R0             ; move result to R0
+        SHL R0, %D 2, R0        ; index * 4 (element size)
         MOVE G_A, R1            ; load base address
         ADD R1, R0, R1          ; compute element address
-        LOAD R0, (R1)           ; load int element
+        STORE R2, (R1)          ; store array element
+        MOVE %D 123, R0         ; load constant 123
+        MOVE R0, R2             ; save value to assign
+        MOVE %D 4, R0           ; load constant 4
+        SHL R0, %D 2, R0        ; index * 4 (element size)
+        MOVE G_A, R1            ; load base address
+        ADD R1, R0, R1          ; compute element address
+        STORE R2, (R1)          ; store array element
+        MOVE %D 1, R0           ; load constant 1
+        MOVE R0, R2             ; save value to assign
+        MOVE %D 2, R0           ; load constant 2
+        SHL R0, %D 2, R0        ; index * 4 (element size)
+        MOVE G_A, R1            ; load base address
+        ADD R1, R0, R1          ; compute element address
+        STORE R2, (R1)          ; store array element
+        MOVE %D 0, R0           ; load constant 0
+        SHL R0, %D 2, R0        ; index * 4 (element size)
+        MOVE G_A, R1            ; load base address
+        ADD R1, R0, R1          ; compute element address
+        LOAD R0, (R1)           ; load array element
         PUSH R0                 ; save left operand
         MOVE %D 4, R0           ; load constant 4
-        MOVE R0, R1             ; save index
-        MOVE %D 4, R0           ; element size
-        PUSH R1                 ; push second arg (index)
-        PUSH R0                 ; push first arg (element size)
-        CALL F_MUL              ; call multiplication helper
-        ADD R7, %D 8, R7        ; clean up arguments
-        MOVE R6, R0             ; move result to R0
+        SHL R0, %D 2, R0        ; index * 4 (element size)
         MOVE G_A, R1            ; load base address
         ADD R1, R0, R1          ; compute element address
-        LOAD R0, (R1)           ; load int element
+        LOAD R0, (R1)           ; load array element
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
         PUSH R0                 ; save left operand
         MOVE %D 2, R0           ; load constant 2
-        MOVE R0, R1             ; save index
-        MOVE %D 4, R0           ; element size
-        PUSH R1                 ; push second arg (index)
-        PUSH R0                 ; push first arg (element size)
-        CALL F_MUL              ; call multiplication helper
-        ADD R7, %D 8, R7        ; clean up arguments
-        MOVE R6, R0             ; move result to R0
+        SHL R0, %D 2, R0        ; index * 4 (element size)
         MOVE G_A, R1            ; load base address
         ADD R1, R0, R1          ; compute element address
-        LOAD R0, (R1)           ; load int element
+        LOAD R0, (R1)           ; load array element
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
@@ -11754,206 +11752,27 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_A      DS %D 4                ; global ArrayType[elementType=INT] a
-
-; Helper functions for multiplication and division
-
-F_MUL                           ; Helper function: int mul(int a, int b)
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        SUB R7, %D 4, R7        ; allocate local for accumulator
-        LOAD R0, (R5+08)        ; a (left operand, pushed last, first parameter)
-        LOAD R1, (R5+0C)        ; b (right operand, pushed first, second parameter)
-        MOVE %D 0, R2           ; acc = 0
-        CMP R1, %D 0
-        JR_EQ L2                ; if b == 0, result is 0
-        CMP R1, %D 0
-        JR_SGT L3               ; if b &gt; 0, proceed with positive multiplication
-        MOVE %D 0, R3           ; zero for negation
-        SUB R3, R0, R0          ; negate a
-        SUB R3, R1, R1          ; negate b
-L3                              ; multiplication loop (b &gt; 0)
-L4                              ; multiplication loop
-        ADD R2, R0, R2          ; acc += a
-        SUB R1, %D 1, R1        ; b--
-        CMP R1, %D 0
-        JR_SGT L4               ; while (b &gt; 0)
-L2                              ; multiplication done
-        MOVE R2, R6             ; result
-        ADD R7, %D 4, R7        ; deallocate local
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
+G_A      `DS %D 4               ; global ArrayType[elementType=INT] a
 
 </code></pre>
       </details>
       <details>
         <summary>FRISC Execution</summary>
         <div class="simulator-results">
-          <p><strong>Runtime Error:</strong></p>
-          <pre><code>Simulator did not report R6 register value
-*********************************************************
-** FRISCjs - FRISC simulator in JavaScript
-** 
-** Usage instructions:
-** 
-**   pass filename argument with the FRISC program:
-**     &gt; node main.js filename
-**   or input the FRISC program via stdin:
-**     &gt; cat filename | node main.js
-** 
-** Note: the simulator has a memory module of 256KB,
-**       i.e. from 0x00000000 to 0x0003FFFF.
-** 
-** Verbose debugging mode can be turned on by passing
-**   specifying the -v flag, e.g.:
-** 
-**     &gt; node main.js -v filename
-**   or
-**     &gt; cat filename | node main.js -v
-** 
-** The CPU frequency (in Hz) can be set with the -cpufreq
-**   flag argument (default value is 1000):
-** 
-**     &gt; node main.js -cpufreq 2 filename
-**   or
-**     &gt; cat filename | node main.js -cpufreq 2
-** 
-** Memory size (in number of 1K locations) can be set with
-**   the -memsize flag argument (default value is 256):
-** 
-**     &gt; node main.js -memsize 64 filename
-**   or
-**     &gt; cat filename | node main.js -memsize 64
-** 
-** Execution flow:
-** 
-**   1) compilation of the FRISC program to machine code 
-**   2) step-by-step execution of FRISC program 
-**      with logging of processor state at each step  
-**      to stderr (if in verbose mode)
-**   3) output of r6 to stdout after program execution
-** 
-** GUI version of FRISC simulator is available at:
-** 
-**   http://fer-ppj.github.com/FRISCjs/main.html
-** 
-** Bug reports:
-** 
-**   mailto:ppj@zemris.fer.hr, or 
-**   http://github.com/fer-ppj/FRISCjs/issues
-*********************************************************
-
-
-*********************************************************
-Reading program from file: /var/folders/mn/1hcrcl2d0mb6xc17840py3_40000gn/T/ppj_report_program28.c3231300045450301175/a.frisc
-*********************************************************
-
-
-*********************************************************
-Input FRISC program:
-*********************************************************
-
-; Program entry point
-        MOVE 40000, R7          ; init stack pointer
-        CALL F_MAIN             ; call main
-        HALT                    ; end of program, R6 holds return value
-
-; Function definitions
-F_MAIN                          ; Function main
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-; Compound statement
-        MOVE %D 0, R0           ; load constant 0
-        STORE R0, (G_A)         ; assign to a
-        MOVE %D 123, R0         ; load constant 123
-        STORE R0, (G_A)         ; assign to a
-        MOVE %D 1, R0           ; load constant 1
-        STORE R0, (G_A)         ; assign to a
-        MOVE %D 0, R0           ; load constant 0
-        MOVE R0, R1             ; save index
-        MOVE %D 4, R0           ; element size
-        PUSH R1                 ; push second arg (index)
-        PUSH R0                 ; push first arg (element size)
-        CALL F_MUL              ; call multiplication helper
-        ADD R7, %D 8, R7        ; clean up arguments
-        MOVE R6, R0             ; move result to R0
-        MOVE G_A, R1            ; load base address
-        ADD R1, R0, R1          ; compute element address
-        LOAD R0, (R1)           ; load int element
-        PUSH R0                 ; save left operand
-        MOVE %D 4, R0           ; load constant 4
-        MOVE R0, R1             ; save index
-        MOVE %D 4, R0           ; element size
-        PUSH R1                 ; push second arg (index)
-        PUSH R0                 ; push first arg (element size)
-        CALL F_MUL              ; call multiplication helper
-        ADD R7, %D 8, R7        ; clean up arguments
-        MOVE R6, R0             ; move result to R0
-        MOVE G_A, R1            ; load base address
-        ADD R1, R0, R1          ; compute element address
-        LOAD R0, (R1)           ; load int element
-        MOVE R0, R1             ; right operand to R1
-        POP R0                  ; restore left operand
-        ADD R0, R1, R0          ; addition
-        PUSH R0                 ; save left operand
-        MOVE %D 2, R0           ; load constant 2
-        MOVE R0, R1             ; save index
-        MOVE %D 4, R0           ; element size
-        PUSH R1                 ; push second arg (index)
-        PUSH R0                 ; push first arg (element size)
-        CALL F_MUL              ; call multiplication helper
-        ADD R7, %D 8, R7        ; clean up arguments
-        MOVE R6, R0             ; move result to R0
-        MOVE G_A, R1            ; load base address
-        ADD R1, R0, R1          ; compute element address
-        LOAD R0, (R1)           ; load int element
-        MOVE R0, R1             ; right operand to R1
-        POP R0                  ; restore left operand
-        ADD R0, R1, R0          ; addition
-        MOVE R0, R6             ; return value
-        JP L1                   ; jump to function exit
-L1                              ; function exit
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-
-; Global variables
-G_A      DS %D 4                ; global ArrayType[elementType=INT] a
-
-; Helper functions for multiplication and division
-
-F_MUL                           ; Helper function: int mul(int a, int b)
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        SUB R7, %D 4, R7        ; allocate local for accumulator
-        LOAD R0, (R5+08)        ; a (left operand, pushed last, first parameter)
-        LOAD R1, (R5+0C)        ; b (right operand, pushed first, second parameter)
-        MOVE %D 0, R2           ; acc = 0
-        CMP R1, %D 0
-        JR_EQ L2                ; if b == 0, result is 0
-        CMP R1, %D 0
-        JR_SGT L3               ; if b &gt; 0, proceed with positive multiplication
-        MOVE %D 0, R3           ; zero for negation
-        SUB R3, R0, R0          ; negate a
-        SUB R3, R1, R1          ; negate b
-L3                              ; multiplication loop (b &gt; 0)
-L4                              ; multiplication loop
-        ADD R2, R0, R2          ; acc += a
-        SUB R1, %D 1, R1        ; b--
-        CMP R1, %D 0
-        JR_SGT L4               ; while (b &gt; 0)
-L2                              ; multiplication done
-        MOVE R2, R6             ; result
-        ADD R7, %D 4, R7        ; deallocate local
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-
-
-
-*********************************************************
-Parsing input FRISC program.
-*********************************************************
-
-Parsing error on line 65 column 10 -- SyntaxError: Expected &quot; &quot;, &quot;;&quot;, &quot;ADC&quot;, &quot;ADD&quot;, &quot;AND&quot;, &quot;ASHR&quot;, &quot;CALL&quot;, &quot;CMP&quot;, &quot;DB&quot;, &quot;DH&quot;, &quot;DW&quot;, &quot;HALT&quot;, &quot;JP&quot;, &quot;JR&quot;, &quot;LOAD&quot;, &quot;LOADB&quot;, &quot;LOADH&quot;, &quot;MOVE&quot;, &quot;OR&quot;, &quot;POP&quot;, &quot;PUSH&quot;, &quot;RET&quot;, &quot;RETI&quot;, &quot;RETN&quot;, &quot;ROTL&quot;, &quot;ROTR&quot;, &quot;SBC&quot;, &quot;SHL&quot;, &quot;SHR&quot;, &quot;STORE&quot;, &quot;STOREB&quot;, &quot;STOREH&quot;, &quot;SUB&quot;, &quot;XOR&quot;, &quot;\n&quot;, &quot;\n\r&quot;, &quot;\r&quot;, &quot;\r\n&quot;, &quot;\t&quot;, &quot;`BASE&quot;, &quot;`DS&quot;, &quot;`DW&quot;, &quot;`END&quot;, &quot;`EQU&quot; or &quot;`ORG&quot; but &quot;D&quot; found.</code></pre>
+          <div class="output-comparison">
+            <table class="output-table">
+              <tr>
+                <th>Expected (Decimal)</th>
+                <th>Actual (Decimal)</th>
+                <th>Status</th>
+              </tr>
+              <tr>
+                <td><code>124</code></td>
+                <td><code>124</code></td>
+                <td class="status-pass">✅ PASS</td>
+              </tr>
+            </table>
+          </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
       </details>
@@ -11961,7 +11780,7 @@ Parsing error on line 65 column 10 -- SyntaxError: Expected &quot; &quot;, &quot
     <section id="program29" class="program-card">
       <h2>program29.c</h2>
       <div class="result-badge">
-        <span class="badge badge-fail">❌ FAIL</span>
+        <span class="badge badge-pass">✅ PASS</span>
       </div>
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
@@ -12685,73 +12504,45 @@ F_F                             ; Function f
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
         MOVE %D 123, R0         ; load constant 123
-        STORE R0, (R5+08)       ; assign to a
+        MOVE R0, R2             ; save value to assign
+        MOVE %D 3, R0           ; load constant 3
+        SHL R0, %D 2, R0        ; index * 4 (element size)
+        LOAD R1, (R5+08)        ; load array pointer from parameter
+        ADD R1, R0, R1          ; compute element address
+        STORE R2, (R1)          ; store array element
 L1                              ; function exit
         POP R5                  ; restore old frame pointer
         RET                     ; return to caller
 
 F_MAIN                          ; Function main
-; Local variable a at (R5-04)
+; Local variable a at (R5-14)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        SUB R7, %D 4, R7        ; allocate 1 local variables
+        SUB R7, %D 20, R7       ; allocate 5 local variables
 ; Compound statement
 ; Local variable declarations
-; Local variable a at (R5-04) (no initializer)
+; Local variable a at (R5-14) (no initializer)
 ; Function call: f
-        LOAD R0, (R5-04)        ; load variable a
+        MOVE R5, R0             ; load frame pointer
+        ADD R0, -14, R0         ; compute array address
         PUSH R0                 ; push argument 1
         CALL F_F                ; call f
         ADD R7, %D 4, R7        ; cleanup 1 arguments
         MOVE R6, R0             ; function result
         MOVE %D 3, R0           ; load constant 3
-        MOVE R0, R1             ; save index
-        MOVE %D 4, R0           ; element size
-        PUSH R1                 ; push second arg (index)
-        PUSH R0                 ; push first arg (element size)
-        CALL F_MUL              ; call multiplication helper
-        ADD R7, %D 8, R7        ; clean up arguments
-        MOVE R6, R0             ; move result to R0
+        SHL R0, %D 2, R0        ; index * 4 (element size)
         MOVE R5, R1             ; load frame pointer
-        ADD R1, -04, R1         ; add base offset
+        ADD R1, -14, R1         ; add base offset
         ADD R1, R0, R1          ; compute element address
-        LOAD R0, (R1)           ; load int element
+        LOAD R0, (R1)           ; load array element
         MOVE R0, R6             ; return value
         JP L2                   ; jump to function exit
 L2                              ; function exit
-        ADD R7, %D 4, R7        ; deallocate local variables
+        ADD R7, %D 20, R7       ; deallocate local variables
         POP R5                  ; restore old frame pointer
         RET                     ; return to caller
 
 ; Global variables
-
-; Helper functions for multiplication and division
-
-F_MUL                           ; Helper function: int mul(int a, int b)
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        SUB R7, %D 4, R7        ; allocate local for accumulator
-        LOAD R0, (R5+08)        ; a (left operand, pushed last, first parameter)
-        LOAD R1, (R5+0C)        ; b (right operand, pushed first, second parameter)
-        MOVE %D 0, R2           ; acc = 0
-        CMP R1, %D 0
-        JR_EQ L3                ; if b == 0, result is 0
-        CMP R1, %D 0
-        JR_SGT L4               ; if b &gt; 0, proceed with positive multiplication
-        MOVE %D 0, R3           ; zero for negation
-        SUB R3, R0, R0          ; negate a
-        SUB R3, R1, R1          ; negate b
-L4                              ; multiplication loop (b &gt; 0)
-L5                              ; multiplication loop
-        ADD R2, R0, R2          ; acc += a
-        SUB R1, %D 1, R1        ; b--
-        CMP R1, %D 0
-        JR_SGT L5               ; while (b &gt; 0)
-L3                              ; multiplication done
-        MOVE R2, R6             ; result
-        ADD R7, %D 4, R7        ; deallocate local
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
 
 </code></pre>
       </details>
@@ -12767,8 +12558,8 @@ L3                              ; multiplication done
               </tr>
               <tr>
                 <td><code>123</code></td>
-                <td><code>0</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>123</code></td>
+                <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
           </div>
@@ -27586,7 +27377,7 @@ L1                              ; function exit
     <section id="program5" class="program-card">
       <h2>program5.c</h2>
       <div class="result-badge">
-        <span class="badge badge-fail">❌ FAIL</span>
+        <span class="badge badge-pass">✅ PASS</span>
       </div>
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
@@ -27793,7 +27584,9 @@ F_MAIN                          ; Function main
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
-        MOVE %D 1234567890, R6  ; return constant 1234567890
+        MOVE %D 18838, R6       ; return constant 1234567890 (hi part)
+        SHL R6, %D 16, R6       ; shift hi part left by 16
+        ADD R6, %D 722, R6      ; add lo part
         JP L1                   ; jump to function exit
 L1                              ; function exit
         POP R5                  ; restore old frame pointer
@@ -27815,8 +27608,8 @@ L1                              ; function exit
               </tr>
               <tr>
                 <td><code>1234567890</code></td>
-                <td><code>393938</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>1234567890</code></td>
+                <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
           </div>

@@ -207,10 +207,13 @@ public final class FriscEmitter {
     }
     
     /**
-     * Emits a data declaration (DW, DH, DB).
+     * Emits a data declaration (DW, DH, DB, `DS).
+     * 
+     * <p>For the `DS directive (backtick DS), the directive parameter should be "`DS".
+     * This directive reserves uninitialized memory space.
      * 
      * @param label optional label for the data
-     * @param directive the data directive ("DW", "DH", "DB")
+     * @param directive the data directive ("DW", "DH", "DB", "`DS")
      * @param value the data value
      * @param comment optional comment
      */
@@ -247,6 +250,77 @@ public final class FriscEmitter {
      */
     public void emitNewline() {
         lines.add("");
+    }
+    
+    /**
+     * Minimum value for a 20-bit signed immediate (-2^19 = -524288).
+     */
+    private static final int IMMEDIATE_MIN = -524288;
+    
+    /**
+     * Maximum value for a 20-bit signed immediate (2^19 - 1 = 524287).
+     */
+    private static final int IMMEDIATE_MAX = 524287;
+    
+    /**
+     * Emits code to load a 32-bit integer constant into a register.
+     * 
+     * <p>If the value fits into a 20-bit signed immediate (-524288 to 524287),
+     * emits a single MOVE instruction. Otherwise, constructs the value from
+     * high and low 16-bit parts using SHL and ADD.
+     * 
+     * <p>Example for small value (fits in 20 bits):
+     * <pre>
+     * MOVE %D 12345, R0
+     * </pre>
+     * 
+     * <p>Example for large value (doesn't fit):
+     * <pre>
+     * MOVE %D 18838, R0    ; hi part (1234567890 >> 16)
+     * SHL  R0, %D 16, R0   ; shift left by 16
+     * ADD  R0, %D 722, R0  ; add lo part (1234567890 & 0xFFFF)
+     * </pre>
+     * 
+     * @param value the 32-bit integer value to load
+     * @param targetRegister the target register (e.g., "R0", "R6")
+     * @param comment optional comment (may be null)
+     */
+    public void emitLoadIntConstant(int value, String targetRegister, String comment) {
+        Objects.requireNonNull(targetRegister, "targetRegister must not be null");
+        
+        if (value >= IMMEDIATE_MIN && value <= IMMEDIATE_MAX) {
+            // Value fits in 20-bit signed immediate - use single MOVE
+            String commentText = comment != null ? comment : "load constant " + value;
+            emitInstruction("MOVE", "%D " + value, targetRegister, commentText);
+        } else {
+            // Value doesn't fit - construct from hi and lo parts
+            // Split into 16-bit parts: value = hi * 2^16 + lo
+            int hi = (value >> 16) & 0xFFFF;
+            int lo = value & 0xFFFF;
+            
+            // Sign-extend hi as signed 16-bit for proper representation
+            short hiShort = (short) hi;
+            int hiSigned = hiShort; // This will sign-extend to 32 bits
+            
+            // Emit construction sequence
+            String baseComment = comment != null ? comment : "load constant " + value;
+            emitInstruction("MOVE", "%D " + hiSigned, targetRegister, baseComment + " (hi part)");
+            emitInstruction("SHL", targetRegister, "%D 16", targetRegister, "shift hi part left by 16");
+            // Only emit ADD if lo part is non-zero (optimization)
+            if (lo != 0) {
+                emitInstruction("ADD", targetRegister, "%D " + lo, targetRegister, "add lo part");
+            }
+        }
+    }
+    
+    /**
+     * Checks if a value fits in a 20-bit signed immediate.
+     * 
+     * @param value the value to check
+     * @return true if the value fits in [-524288, 524287]
+     */
+    public static boolean fitsInImmediate(int value) {
+        return value >= IMMEDIATE_MIN && value <= IMMEDIATE_MAX;
     }
     
     /**

@@ -9795,19 +9795,25 @@ Global Scope:
 
 ; Function definitions
 F_MAIN                          ; Function main
-; Local variable arr at (R5-04)
+; Local variable arr at (R5-28)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        SUB R7, %D 4, R7        ; allocate 1 local variables
+        SUB R7, %D 40, R7       ; allocate 10 local variables
 ; Compound statement
 ; Local variable declarations
-; Local variable arr at (R5-04) (no initializer)
+; Local variable arr at (R5-28) (no initializer)
         MOVE %D 5, R0           ; load constant 5
-        STORE R0, (R5-04)       ; assign to arr
+        MOVE R0, R2             ; save value to assign
+        MOVE %D 10, R0          ; load constant 10
+        SHL R0, %D 2, R0        ; index * 4 (element size)
+        MOVE R5, R1             ; load frame pointer
+        ADD R1, -28, R1         ; add base offset
+        ADD R1, R0, R1          ; compute element address
+        STORE R2, (R1)          ; store array element
         MOVE %D 0, R6           ; return constant 0
         JP L1                   ; jump to function exit
 L1                              ; function exit
-        ADD R7, %D 4, R7        ; deallocate local variables
+        ADD R7, %D 40, R7       ; deallocate local variables
         POP R5                  ; restore old frame pointer
         RET                     ; return to caller
 

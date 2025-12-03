@@ -153,37 +153,13 @@ public final class FunctionCallGenerator {
         
         // Check local scope if in function
         if (context.isInFunction() && context.activationRecord().hasVariable(variableName)) {
-            // For local arrays, we need to check the symbol table
-            // For now, use a heuristic based on element size
-            int elementSize = getArrayElementSize(variableName);
-            return elementSize > 0; // Simple heuristic
+            // For local arrays, check the size stored in activation record
+            // Arrays have size > 4 bytes (simple variables are 4 bytes)
+            Integer size = context.activationRecord().getVariableSize(variableName);
+            return size != null && size > 4;
         }
         
         return false;
-    }
-    
-    /**
-     * Gets the element size (in bytes) for an array variable.
-     * 
-     * @param variableName the array variable name
-     * @return element size (1 for char, 4 for int), or 0 if not an array
-     */
-    private int getArrayElementSize(String variableName) {
-        // Look up variable in symbol table
-        var symbolOpt = context.globalScope().lookup(variableName);
-        if (symbolOpt.isPresent() && symbolOpt.get() instanceof VariableSymbol varSymbol) {
-            Type varType = varSymbol.type();
-            if (varType instanceof ArrayType arrayType) {
-                Type elementType = arrayType.elementType();
-                if (elementType == hr.fer.ppj.semantics.types.PrimitiveType.CHAR) {
-                    return 1; // char is 1 byte
-                } else if (elementType == hr.fer.ppj.semantics.types.PrimitiveType.INT) {
-                    return 4; // int is 4 bytes
-                }
-            }
-        }
-        
-        return 0; // Not an array
     }
     
     /**
