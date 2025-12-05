@@ -8,6 +8,7 @@ import hr.fer.ppj.lexer.io.Lexer;
 import hr.fer.ppj.lexer.io.Token;
 import hr.fer.ppj.parser.Parser;
 import hr.fer.ppj.parser.config.ParserConfig;
+import hr.fer.ppj.semantics.errors.SemanticException;
 import hr.fer.ppj.semantics.io.GenerativeTreeParser;
 import hr.fer.ppj.semantics.io.LexicalTokenReader;
 import hr.fer.ppj.semantics.io.SemanticToken;

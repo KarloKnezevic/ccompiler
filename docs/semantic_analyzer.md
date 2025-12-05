@@ -21,21 +21,26 @@ Source Code → Lexical Analysis → Syntactic Analysis → Semantic Analysis �
 
 ### Type System Enforcement
 
-The analyzer implements a static type system with the following primitive types:
+The analyzer implements a comprehensive static type system with the following primitive types:
 - `void`: Used exclusively for function return types and parameter lists
 - `char`: 8-bit signed integer type
 - `int`: 32-bit signed integer type
+- `float`: 32-bit floating-point type
 
 Composite types include:
 - **Array types**: `T[]` where T is any non-void type
+- **Pointer types**: `T*` where T is any type (including `void*`)
+- **Struct types**: Named or anonymous structures with named fields
 - **Function types**: `T(T1, T2, ..., Tn)` representing function signatures
 - **Const-qualified types**: `const T` for immutable values
 
 Type compatibility rules enforce:
-- Implicit conversions between `char` and `int`
+- Implicit conversions between `char`, `int`, and `float` following C's usual arithmetic conversions
+- Pointer compatibility (same base type, array-to-pointer decay)
 - Assignment compatibility with const-qualification constraints
-- Array-to-pointer decay in function parameters
+- Array-to-pointer decay in function parameters and expressions
 - Function signature matching for calls and definitions
+- Struct type equality (by tag name for tagged structs, by structure for anonymous structs)
 
 ### Scope and Symbol Management
 
@@ -45,6 +50,7 @@ The analyzer maintains a hierarchical symbol table structure that mirrors lexica
 Global Scope
 ├── Function declarations/definitions
 ├── Global variable declarations
+├── Struct tag definitions
 └── Block Scopes (nested)
     ├── Local variable declarations
     ├── Function parameters
@@ -54,6 +60,8 @@ Global Scope
 **Symbol Table Structure**: Each scope maintains a mapping from identifiers to symbol records:
 - **Variable Symbols**: Store type information, const-qualification, and declaration location
 - **Function Symbols**: Store function signatures, definition status, and parameter metadata
+
+**Struct Tag Table**: A separate global table tracks struct type definitions by tag name, enabling forward declarations and self-referential structures.
 
 **Scope Resolution**: Identifier lookup follows lexical scoping rules, searching from innermost to outermost scope until a matching declaration is found.
 
@@ -78,6 +86,8 @@ public class SymbolTable {
 Global Scope (Level 0):
   main : int(void) [defined=true]
   factorial : int(int) [defined=true]
+  global_var : int [const=false]
+  struct Node : StructType [tag=Node, fields={data:int, next:Node*}]
 
 Function Scope - factorial (Level 1):
   n : int [const=false]
@@ -103,12 +113,13 @@ public class NonTerminalNode implements ParseNode {
 }
 
 public class SemanticAttributes {
-    private Type type;
-    private boolean lValue;
-    private boolean isConst;
-    private String identifier;
-    private List<Type> parameterTypes;
-    private FunctionType functionType;
+    private Type type;                          // Computed type
+    private boolean lValue;                     // L-value designation
+    private boolean isConst;                    // Const qualification
+    private String identifier;                  // Declared identifier
+    private List<Type> parameterTypes;          // Function parameters
+    private FunctionType functionType;          // Complete function signature
+    private Map<String, Type> structFields;     // Struct field types
 }
 ```
 
@@ -149,7 +160,7 @@ The analyzer enforces control flow semantics including:
 - `return expression;` requires type compatibility with function signature
 
 **Loop Construct Validation**:
-- Loop conditions must be convertible to `int`
+- Loop conditions must be scalar types (int, char, float, or pointer)
 - Empty loop bodies (`{}`) are explicitly permitted
 - Nested loop depth tracking for jump statement validation
 
@@ -167,8 +178,20 @@ SemanticAnalyzer (Facade)
 ├── ParseTreeConverter (Tree Conversion)
 ├── SemanticChecker (Core Analysis Engine)
 │   ├── DeclarationRules (Symbol Management)
+│   │   ├── TypeSpecificationRules
+│   │   ├── DeclaratorRules
+│   │   ├── StructRules
+│   │   ├── ParameterRules
+│   │   └── InitializerRules
 │   ├── ExpressionRules (Type Checking)
-│   └── StatementRules (Control Flow)
+│   │   ├── PrimaryExpressionRules
+│   │   ├── PostfixExpressionRules
+│   │   ├── UnaryExpressionRules
+│   │   └── BinaryExpressionRules
+│   ├── StatementRules (Control Flow)
+│   │   ├── ControlFlowRules
+│   │   └── JumpStatementRules
+│   └── GlobalConstraintVerifier
 ├── SymbolTable (Scope Management)
 ├── TypeSystem (Type Operations)
 └── SemanticReport (Debug Output)
@@ -185,7 +208,134 @@ SemanticAnalyzer (Facade)
 - `ExpressionRules`: Implements type checking for all expression forms, operator semantics, and type conversions
 - `StatementRules`: Manages control flow validation, block scoping, and jump statement semantics
 
-**Type System**: Provides utilities for type representation, compatibility checking, and const-qualification handling.
+**Type System**: Provides utilities for type representation, compatibility checking, const-qualification handling, and arithmetic conversions.
+
+## Grammar and Language Subset
+
+The semantic analyzer supports the following C subset as defined by the grammar:
+
+### Primitive Types
+
+- `void`: Function return types and parameter lists only
+- `char`: 8-bit signed integer
+- `int`: 32-bit signed integer
+- `float`: 32-bit floating-point
+
+### Composite Types
+
+- **Arrays**: `T[N]` where T is any non-void type and N is a compile-time constant
+- **Pointers**: `T*` where T is any type, with optional `const` qualifier on the pointer itself
+- **Structs**: Named (`struct Tag { ... }`) or anonymous (`struct { ... }`) structures with named fields
+- **Functions**: `T(T1, T2, ..., Tn)` representing function signatures
+
+### Type Qualifiers
+
+- `const`: Applied to any type, making values immutable
+
+### Expressions
+
+**Primary expressions**:
+- Identifiers (variables, functions)
+- Numeric literals (integer, float, character)
+- String literals
+- Parenthesized expressions
+
+**Postfix expressions**:
+- Array indexing: `array[index]`
+- Function calls: `func()` or `func(arg1, arg2, ...)`
+- Struct member access: `struct.field`
+- Postfix increment/decrement: `expr++`, `expr--`
+
+**Unary expressions**:
+- Prefix increment/decrement: `++expr`, `--expr`
+- Unary operators: `+expr`, `-expr`, `~expr`, `!expr`
+- Address-of: `&expr` (requires l-value)
+- Dereference: `*expr` (requires pointer type)
+
+**Cast expressions**:
+- Explicit type casts: `(type) expr`
+
+**Binary operators**:
+- Multiplicative: `*`, `/`, `%`
+- Additive: `+`, `-`
+- Relational: `<`, `>`, `<=`, `>=`
+- Equality: `==`, `!=`
+- Bitwise: `&`, `^`, `|`
+- Logical: `&&`, `||`
+- Assignment: `=`
+
+### Statements and Control Flow
+
+- **Compound statements**: `{ declarations statements }`
+- **Expression statements**: `expression;`
+- **Conditional**: `if (condition) statement` and `if (condition) statement else statement`
+- **Loops**: `while (condition) statement` and `for (init; condition; update) statement`
+- **Jump statements**: `break;`, `continue;`, `return;`, `return expression;`
+
+### Declarations
+
+- **Global variables**: Declared at translation unit level
+- **Local variables**: Declared within function bodies or blocks
+- **Function definitions**: `return_type name(parameters) { body }`
+- **Function parameters**: Typed parameters, arrays decay to pointers
+- **Arrays**: Fixed-size arrays with compile-time constant size
+- **Struct declarations**: Field declarations within struct definitions
+- **Pointer declarators**: `*identifier` or `*const identifier`
+
+## Type System Details
+
+### Type Representation
+
+Types are represented using a sealed interface hierarchy:
+
+- **PrimitiveType**: Enum for `VOID`, `CHAR`, `INT`, `FLOAT`
+- **ArrayType**: `record ArrayType(Type elementType)`
+- **PointerType**: `record PointerType(Type baseType, boolean isConst)`
+- **StructType**: `record StructType(String tag, Map<String, Type> fields)`
+- **FunctionType**: `record FunctionType(Type returnType, List<Type> parameterTypes)`
+- **ConstType**: `record ConstType(Type baseType)` - wraps any type with const qualifier
+
+### Type Compatibility Rules
+
+**Assignment Compatibility**:
+- Numeric types: `char` → `int` → `float` (implicit promotion)
+- Pointers: Same base type (ignoring const on pointed-to type), or `int 0` → any pointer (NULL)
+- Arrays: Decay to pointer in assignment contexts
+- Structs: Exact type match required
+- Const: Can assign non-const to const, but not vice versa
+
+**Arithmetic Conversions** (C's usual arithmetic conversions):
+- If either operand is `float`, result is `float`
+- Otherwise, both operands promoted to `int`, result is `int`
+- Applies to: `char`, `int`, `float` in arithmetic operations
+
+**Pointer Operations**:
+- Pointer arithmetic: `pointer + int` or `pointer - int` (result is pointer)
+- Pointer subtraction: `pointer - pointer` (result is `int`)
+- Pointer comparison: Pointers to same base type can be compared
+- Array indexing: Arrays decay to pointers, `array[i]` is equivalent to `*(array + i)`
+
+**Cast Rules**:
+- Numeric types can be cast to each other
+- Pointers can be cast to pointers (if compatible base types)
+- Pointers can be cast to integers
+- Integers can be cast to pointers
+- Struct casts only allowed between identical struct types
+
+### Struct Type System
+
+**Struct Definitions**:
+- Tagged structs: `struct Tag { ... }` - can be forward declared
+- Anonymous structs: `struct { ... }` - cannot be referenced later
+
+**Forward Declarations**:
+- Struct tags can be forward declared with empty field list
+- Allows self-referential structures: `struct Node { struct Node *next; }`
+- Forward declaration is replaced with full definition when fields are processed
+
+**Struct Field Access**:
+- Field access: `struct.field` (base must be struct type, field must exist)
+- Pointer dereference: `(*ptr).field` (grammar limitation: no `->` operator)
 
 ## Error Reporting
 
@@ -223,6 +373,9 @@ Scope (Level 0):
   main : int(void) [defined=true]
   factorial : int(int) [defined=true]
   global_var : int [const=false]
+
+Struct Tags:
+  Node : StructType [tag=Node, fields={data:int, next:Node*}]
 
 Scope (Level 1):
   n : int [const=false]

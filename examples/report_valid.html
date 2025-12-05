@@ -1029,8 +1029,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_X      DW %D 27               ; global INT x = 27
 G_Y      DW %D 65               ; global INT y = 65
+G_X      DW %D 27               ; global INT x = 27
 
 </code></pre>
       </details>
@@ -1504,8 +1504,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_X      DW %D 27               ; global INT x = 27
 G_Y      DW %D 65               ; global INT y = 65
+G_X      DW %D 27               ; global INT x = 27
 
 </code></pre>
       </details>
@@ -1982,8 +1982,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_X      DW %D 27               ; global INT x = 27
 G_Y      DW %D 65               ; global INT y = 65
+G_X      DW %D 27               ; global INT x = 27
 
 </code></pre>
       </details>
@@ -8894,8 +8894,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_X      DW %D 1234             ; global INT x = 1234
 G_Y      DW %D 12345            ; global INT y = 12345
+G_X      DW %D 1234             ; global INT x = 1234
 
 </code></pre>
       </details>
@@ -9631,8 +9631,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_X      DW %D 1234             ; global INT x = 1234
 G_Y      DW %D 125              ; global INT y = 125
+G_X      DW %D 1234             ; global INT x = 1234
 
 </code></pre>
       </details>
@@ -10348,11 +10348,14 @@ G_A      DW %D 97, %D 98, %D 99, %D 100, %D 101; global ArrayType[elementType=CH
     </section>
     <section id="program27" class="program-card">
       <h2>program27.c</h2>
+      <div class="result-badge">
+        <span class="badge badge-pass">✅ PASS</span>
+      </div>
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
-        <span class="badge badge-error">Semantic error at line 3</span>
-        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
+        <span class="badge badge-ok">Semantic: OK</span>
+        <span class="badge badge-ok">CodeGen: OK</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -10706,24 +10709,223 @@ D_VIT_ZAGRADA          5       16
       </details>
       <details>
         <summary>Semantic Analysis</summary>
-        <pre><code>&lt;cast_izraz&gt; ::= L_ZAGRADA(3,() &lt;ime_tipa&gt; D_ZAGRADA(3,)) &lt;cast_izraz&gt;
+        <pre><code>No semantic errors found.</code></pre>
+      </details>
+      <details>
+        <summary>Symbol Table</summary>
+        <pre><code>=== SYMBOL TABLE DUMP ===
+
+Global Scope:
+  a : array(CHAR)
+  main : INT () [defined]
+
+  Nested Scope 1:
+    (no symbols)
+
+</code></pre>
+      </details>
+      <details>
+        <summary>Semantic Tree</summary>
+        <pre><code>=== SEMANTIC TREE DUMP ===
+
+&lt;&lt;prijevodna_jedinica&gt;&gt; [lvalue=false, elements=0]
+    &lt;&lt;prijevodna_jedinica&gt;&gt; [lvalue=false, elements=0]
+        &lt;&lt;vanjska_deklaracija&gt;&gt; [lvalue=false, elements=0]
+            &lt;&lt;deklaracija&gt;&gt; [lvalue=false, elements=0]
+                &lt;&lt;specifikatori_deklaracije&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                    &lt;&lt;specifikator_tipa&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                        KR_CHAR (1,char)
+                &lt;&lt;lista_init_deklaratora&gt;&gt; [lvalue=false, elements=0]
+                    &lt;&lt;init_deklarator&gt;&gt; [lvalue=false, elements=0]
+                        &lt;&lt;deklarator&gt;&gt; [type=array(CHAR), lvalue=false, id=a, elements=5]
+                            &lt;&lt;izravni_deklarator&gt;&gt; [type=array(CHAR), lvalue=false, id=a, elements=5]
+                                &lt;&lt;izravni_deklarator&gt;&gt; [type=CHAR, lvalue=true, id=a, elements=0]
+                                    IDN (1,a) [symbol=a]
+                                L_UGL_ZAGRADA (1,[)
+                                &lt;&lt;log_ili_izraz&gt;&gt; [lvalue=false, elements=0]
+                                    &lt;&lt;log_i_izraz&gt;&gt; [lvalue=false, elements=0]
+                                        &lt;&lt;bin_ili_izraz&gt;&gt; [lvalue=false, elements=0]
+                                            &lt;&lt;bin_xili_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                &lt;&lt;bin_i_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                    &lt;&lt;jednakosni_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                        &lt;&lt;odnosni_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                            &lt;&lt;aditivni_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                                &lt;&lt;multiplikativni_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                                    &lt;&lt;cast_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                                        &lt;&lt;unarni_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                                            &lt;&lt;postfiks_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                                                &lt;&lt;primarni_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                                                    BROJ (1,5) [type=int]
+                                D_UGL_ZAGRADA (1,])
+                TOCKAZAREZ (1,;)
+    &lt;&lt;vanjska_deklaracija&gt;&gt; [lvalue=false, elements=0]
+        &lt;&lt;definicija_funkcije&gt;&gt; [lvalue=false, elements=0]
+            &lt;&lt;specifikatori_deklaracije&gt;&gt; [type=INT, lvalue=false, elements=0]
+                &lt;&lt;specifikator_tipa&gt;&gt; [type=INT, lvalue=false, elements=0]
+                    KR_INT (2,int)
+            &lt;&lt;deklarator&gt;&gt; [type=INT(), lvalue=false, id=main, elements=0]
+                &lt;&lt;izravni_deklarator&gt;&gt; [type=INT(), lvalue=false, id=main, elements=0]
+                    &lt;&lt;izravni_deklarator&gt;&gt; [type=INT, lvalue=true, id=main, elements=0]
+                        IDN (2,main) [symbol=main]
+                    L_ZAGRADA (2,()
+                    &lt;&lt;lista_parametara&gt;&gt; [lvalue=false, elements=0]
+                        &lt;&lt;deklaracija_parametra&gt;&gt; [type=VOID, lvalue=false, elements=0]
+                            &lt;&lt;specifikatori_deklaracije&gt;&gt; [type=VOID, lvalue=false, elements=0]
+                                &lt;&lt;specifikator_tipa&gt;&gt; [type=VOID, lvalue=false, elements=0]
+                                    KR_VOID (2,void)
+                    D_ZAGRADA (2,))
+            &lt;&lt;slozena_naredba&gt;&gt; [lvalue=false, elements=0]
+                L_VIT_ZAGRADA (2,{)
+                &lt;&lt;lista_naredbi&gt;&gt; [lvalue=false, elements=0]
+                    &lt;&lt;lista_naredbi&gt;&gt; [lvalue=false, elements=0]
+                        &lt;&lt;naredba&gt;&gt; [lvalue=false, elements=0]
+                            &lt;&lt;izraz_naredba&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                &lt;&lt;izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                    &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                        &lt;&lt;unarni_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                            &lt;&lt;postfiks_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                                &lt;&lt;postfiks_izraz&gt;&gt; [type=array(CHAR), lvalue=false, elements=0]
+                                                    &lt;&lt;primarni_izraz&gt;&gt; [type=array(CHAR), lvalue=false, elements=0]
+                                                        IDN (3,a) [symbol=a]
+                                                L_UGL_ZAGRADA (3,[)
+                                                &lt;&lt;izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                    &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                        &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                            &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                    &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                        &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                            &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                    &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                        &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                            &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                    &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                        &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                            BROJ (3,3) [type=int]
+                                                D_UGL_ZAGRADA (3,])
+                                        OP_PRIDRUZI (3,=)
+                                        &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                            &lt;&lt;log_ili_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                &lt;&lt;log_i_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                    &lt;&lt;bin_ili_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                        &lt;&lt;bin_xili_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                            &lt;&lt;bin_i_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                &lt;&lt;jednakosni_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                    &lt;&lt;odnosni_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                        &lt;&lt;aditivni_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                            &lt;&lt;multiplikativni_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                &lt;&lt;cast_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                    L_ZAGRADA (3,()
+                                                                                    &lt;&lt;ime_tipa&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                        &lt;&lt;lista_specifikatora_kvalifikatora&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                            &lt;&lt;specifikator_tipa&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                KR_CHAR (3,char)
+                                                                                    D_ZAGRADA (3,))
+                                                                                    &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                        &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                            &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                    BROJ (3,12) [type=int]
+                                TOCKAZAREZ (3,;)
+                    &lt;&lt;naredba&gt;&gt; [lvalue=false, elements=0]
+                        &lt;&lt;naredba_skoka&gt;&gt; [lvalue=false, elements=0]
+                            KR_RETURN (4,return)
+                            &lt;&lt;izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                    &lt;&lt;log_ili_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                        &lt;&lt;log_i_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                            &lt;&lt;bin_ili_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                                &lt;&lt;bin_xili_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                                    &lt;&lt;bin_i_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                                        &lt;&lt;jednakosni_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                                            &lt;&lt;odnosni_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                                                &lt;&lt;aditivni_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                                                    &lt;&lt;multiplikativni_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                                                        &lt;&lt;cast_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                                                            &lt;&lt;unarni_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                                                                &lt;&lt;postfiks_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                                                                    &lt;&lt;postfiks_izraz&gt;&gt; [type=array(CHAR), lvalue=false, elements=0]
+                                                                                        &lt;&lt;primarni_izraz&gt;&gt; [type=array(CHAR), lvalue=false, elements=0]
+                                                                                            IDN (4,a) [symbol=a]
+                                                                                    L_UGL_ZAGRADA (4,[)
+                                                                                    &lt;&lt;izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                        &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                            &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                    &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                        &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                            &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                    &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                        &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                            &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                    &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                        &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                            &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                BROJ (4,3) [type=int]
+                                                                                    D_UGL_ZAGRADA (4,])
+                            TOCKAZAREZ (4,;)
+                D_VIT_ZAGRADA (5,})
+</code></pre>
+      </details>
+      <details>
+        <summary>Generated FRISC Assembly Code</summary>
+        <pre><code>; Program entry point
+        MOVE 40000, R7          ; init stack pointer
+        CALL F_MAIN             ; call main
+        HALT                    ; end of program, R6 holds return value
+
+; Function definitions
+F_MAIN                          ; Function main
+        PUSH R5                 ; save old frame pointer
+        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
+; Compound statement
+        MOVE %D 12, R0          ; load constant 12
+        AND R0, 00FF, R0        ; cast to char (mask lower 8 bits)
+        MOVE R0, R2             ; save value to assign
+        MOVE %D 3, R0           ; load constant 3
+        SHL R0, %D 2, R0        ; index * 4 (element size)
+        MOVE G_A, R1            ; load base address
+        ADD R1, R0, R1          ; compute element address
+        STORE R2, (R1)          ; store array element
+        MOVE %D 3, R0           ; load constant 3
+        SHL R0, %D 2, R0        ; index * 4 (element size)
+        MOVE G_A, R1            ; load base address
+        ADD R1, R0, R1          ; compute element address
+        LOAD R0, (R1)           ; load array element
+        MOVE R0, R6             ; return value
+        JP L1                   ; jump to function exit
+L1                              ; function exit
+        POP R5                  ; restore old frame pointer
+        RET                     ; return to caller
+
+; Global variables
+G_A      `DS %D 4               ; global ArrayType[elementType=CHAR] a
 
 </code></pre>
       </details>
       <details>
         <summary>FRISC Execution</summary>
         <div class="simulator-results">
-          <p><strong>Runtime Error:</strong></p>
-          <pre><code>Code generation failed.</code></pre>
+          <div class="output-comparison">
+            <table class="output-table">
+              <tr>
+                <th>Expected (Decimal)</th>
+                <th>Actual (Decimal)</th>
+                <th>Status</th>
+              </tr>
+              <tr>
+                <td><code>12</code></td>
+                <td><code>12</code></td>
+                <td class="status-pass">✅ PASS</td>
+              </tr>
+            </table>
+          </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
-      </details>
-      <details>
-        <summary>Analysis Errors</summary>
-        <pre><code>
-SEMANTIC ERRORS:
-semantic error
-        </code></pre>
       </details>
     </section>
     <section id="program28" class="program-card">
@@ -21557,11 +21759,14 @@ L2                              ; function exit
     </section>
     <section id="program39" class="program-card">
       <h2>program39.c</h2>
+      <div class="result-badge">
+        <span class="badge badge-fail">❌ FAIL</span>
+      </div>
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
         <span class="badge badge-ok">Parser: OK</span>
-        <span class="badge badge-error">Semantic error at line 13</span>
-        <span class="badge badge-skip">CodeGen: Skipped (semantic failed)</span>
+        <span class="badge badge-ok">Semantic: OK</span>
+        <span class="badge badge-ok">CodeGen: OK</span>
       </div>
       <details open>
         <summary>Source Code</summary>
@@ -22947,24 +23152,785 @@ D_VIT_ZAGRADA         14       23
       </details>
       <details>
         <summary>Semantic Analysis</summary>
-        <pre><code>&lt;cast_izraz&gt; ::= L_ZAGRADA(13,() &lt;ime_tipa&gt; D_ZAGRADA(13,)) &lt;cast_izraz&gt;
+        <pre><code>No semantic errors found.</code></pre>
+      </details>
+      <details>
+        <summary>Symbol Table</summary>
+        <pre><code>=== SYMBOL TABLE DUMP ===
+
+Global Scope:
+  f : INT (INT, CHAR, INT, CHAR, INT, INT, INT, array(INT)) [defined]
+  main : INT () [defined]
+
+  Nested Scope 1:
+    a : CHAR
+    arr : array(INT)
+    b : INT
+    c : INT
+    d : INT
+    ret : INT
+    x : INT
+    y : CHAR
+    z : INT
+
+    Nested Scope 1:
+      xx : INT
+
+  Nested Scope 2:
+    x : array(INT)
+
+</code></pre>
+      </details>
+      <details>
+        <summary>Semantic Tree</summary>
+        <pre><code>=== SEMANTIC TREE DUMP ===
+
+&lt;&lt;prijevodna_jedinica&gt;&gt; [lvalue=false, elements=0]
+    &lt;&lt;prijevodna_jedinica&gt;&gt; [lvalue=false, elements=0]
+        &lt;&lt;vanjska_deklaracija&gt;&gt; [lvalue=false, elements=0]
+            &lt;&lt;definicija_funkcije&gt;&gt; [lvalue=false, elements=0]
+                &lt;&lt;specifikatori_deklaracije&gt;&gt; [type=INT, lvalue=false, elements=0]
+                    &lt;&lt;specifikator_tipa&gt;&gt; [type=INT, lvalue=false, elements=0]
+                        KR_INT (1,int)
+                &lt;&lt;deklarator&gt;&gt; [type=INT(INT, CHAR, INT, CHAR, INT, INT, INT, array(INT)), lvalue=false, id=f, elements=0]
+                    &lt;&lt;izravni_deklarator&gt;&gt; [type=INT(INT, CHAR, INT, CHAR, INT, INT, INT, array(INT)), lvalue=false, id=f, elements=0]
+                        &lt;&lt;izravni_deklarator&gt;&gt; [type=INT, lvalue=true, id=f, elements=0]
+                            IDN (1,f) [symbol=f]
+                        L_ZAGRADA (1,()
+                        &lt;&lt;lista_parametara&gt;&gt; [lvalue=false, elements=0]
+                            &lt;&lt;lista_parametara&gt;&gt; [lvalue=false, elements=0]
+                                &lt;&lt;lista_parametara&gt;&gt; [lvalue=false, elements=0]
+                                    &lt;&lt;lista_parametara&gt;&gt; [lvalue=false, elements=0]
+                                        &lt;&lt;lista_parametara&gt;&gt; [lvalue=false, elements=0]
+                                            &lt;&lt;lista_parametara&gt;&gt; [lvalue=false, elements=0]
+                                                &lt;&lt;lista_parametara&gt;&gt; [lvalue=false, elements=0]
+                                                    &lt;&lt;lista_parametara&gt;&gt; [lvalue=false, elements=0]
+                                                        &lt;&lt;deklaracija_parametra&gt;&gt; [type=INT, lvalue=true, id=x, elements=0]
+                                                            &lt;&lt;specifikatori_deklaracije&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                &lt;&lt;specifikator_tipa&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                    KR_INT (1,int)
+                                                            &lt;&lt;deklarator&gt;&gt; [type=INT, lvalue=true, id=x, elements=0]
+                                                                &lt;&lt;izravni_deklarator&gt;&gt; [type=INT, lvalue=true, id=x, elements=0]
+                                                                    IDN (1,x) [symbol=x]
+                                                    ZAREZ (1,,)
+                                                    &lt;&lt;deklaracija_parametra&gt;&gt; [type=CHAR, lvalue=true, id=y, elements=0]
+                                                        &lt;&lt;specifikatori_deklaracije&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                            &lt;&lt;specifikator_tipa&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                KR_CHAR (1,char)
+                                                        &lt;&lt;deklarator&gt;&gt; [type=CHAR, lvalue=true, id=y, elements=0]
+                                                            &lt;&lt;izravni_deklarator&gt;&gt; [type=CHAR, lvalue=true, id=y, elements=0]
+                                                                IDN (1,y) [symbol=y]
+                                                ZAREZ (1,,)
+                                                &lt;&lt;deklaracija_parametra&gt;&gt; [type=INT, lvalue=true, id=z, elements=0]
+                                                    &lt;&lt;specifikatori_deklaracije&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                        &lt;&lt;specifikator_tipa&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                            KR_INT (1,int)
+                                                    &lt;&lt;deklarator&gt;&gt; [type=INT, lvalue=true, id=z, elements=0]
+                                                        &lt;&lt;izravni_deklarator&gt;&gt; [type=INT, lvalue=true, id=z, elements=0]
+                                                            IDN (1,z) [symbol=z]
+                                            ZAREZ (1,,)
+                                            &lt;&lt;deklaracija_parametra&gt;&gt; [type=CHAR, lvalue=true, id=a, elements=0]
+                                                &lt;&lt;specifikatori_deklaracije&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                    &lt;&lt;specifikator_tipa&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                        KR_CHAR (1,char)
+                                                &lt;&lt;deklarator&gt;&gt; [type=CHAR, lvalue=true, id=a, elements=0]
+                                                    &lt;&lt;izravni_deklarator&gt;&gt; [type=CHAR, lvalue=true, id=a, elements=0]
+                                                        IDN (1,a) [symbol=a]
+                                        ZAREZ (1,,)
+                                        &lt;&lt;deklaracija_parametra&gt;&gt; [type=INT, lvalue=true, id=b, elements=0]
+                                            &lt;&lt;specifikatori_deklaracije&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                &lt;&lt;specifikator_tipa&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                    KR_INT (1,int)
+                                            &lt;&lt;deklarator&gt;&gt; [type=INT, lvalue=true, id=b, elements=0]
+                                                &lt;&lt;izravni_deklarator&gt;&gt; [type=INT, lvalue=true, id=b, elements=0]
+                                                    IDN (1,b) [symbol=b]
+                                    ZAREZ (1,,)
+                                    &lt;&lt;deklaracija_parametra&gt;&gt; [type=INT, lvalue=true, id=c, elements=0]
+                                        &lt;&lt;specifikatori_deklaracije&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                            &lt;&lt;specifikator_tipa&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                KR_INT (1,int)
+                                        &lt;&lt;deklarator&gt;&gt; [type=INT, lvalue=true, id=c, elements=0]
+                                            &lt;&lt;izravni_deklarator&gt;&gt; [type=INT, lvalue=true, id=c, elements=0]
+                                                IDN (1,c) [symbol=c]
+                                ZAREZ (1,,)
+                                &lt;&lt;deklaracija_parametra&gt;&gt; [type=INT, lvalue=true, id=d, elements=0]
+                                    &lt;&lt;specifikatori_deklaracije&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                        &lt;&lt;specifikator_tipa&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                            KR_INT (1,int)
+                                    &lt;&lt;deklarator&gt;&gt; [type=INT, lvalue=true, id=d, elements=0]
+                                        &lt;&lt;izravni_deklarator&gt;&gt; [type=INT, lvalue=true, id=d, elements=0]
+                                            IDN (1,d) [symbol=d]
+                            ZAREZ (1,,)
+                            &lt;&lt;deklaracija_parametra&gt;&gt; [type=array(INT), lvalue=false, id=arr, elements=0]
+                                &lt;&lt;specifikatori_deklaracije&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                    &lt;&lt;specifikator_tipa&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                        KR_INT (1,int)
+                                &lt;&lt;deklarator&gt;&gt; [type=array(INT), lvalue=false, id=arr, elements=0]
+                                    &lt;&lt;izravni_deklarator&gt;&gt; [type=array(INT), lvalue=false, id=arr, elements=0]
+                                        &lt;&lt;izravni_deklarator&gt;&gt; [type=INT, lvalue=true, id=arr, elements=0]
+                                            IDN (1,arr) [symbol=arr]
+                                        L_UGL_ZAGRADA (1,[)
+                                        D_UGL_ZAGRADA (1,])
+                        D_ZAGRADA (1,))
+                &lt;&lt;slozena_naredba&gt;&gt; [lvalue=false, elements=0]
+                    L_VIT_ZAGRADA (1,{)
+                    &lt;&lt;lista_deklaracija&gt;&gt; [lvalue=false, elements=0]
+                        &lt;&lt;deklaracija&gt;&gt; [lvalue=false, elements=0]
+                            &lt;&lt;specifikatori_deklaracije&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                &lt;&lt;specifikator_tipa&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                    KR_INT (2,int)
+                            &lt;&lt;lista_init_deklaratora&gt;&gt; [lvalue=false, elements=0]
+                                &lt;&lt;init_deklarator&gt;&gt; [lvalue=false, elements=0]
+                                    &lt;&lt;deklarator&gt;&gt; [type=INT, lvalue=true, id=ret, elements=0]
+                                        &lt;&lt;izravni_deklarator&gt;&gt; [type=INT, lvalue=true, id=ret, elements=0]
+                                            IDN (2,ret) [symbol=ret]
+                                    OP_PRIDRUZI (2,=)
+                                    &lt;&lt;inicijalizator&gt;&gt; [lvalue=false, elements=0]
+                                        &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                            &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                    &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                        &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                            &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                    &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                        &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                            &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                    &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                        &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                            &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                    IDN (2,x) [symbol=x]
+                                                                            PLUS (2,+)
+                                                                            &lt;&lt;multiplikativni_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                                                                &lt;&lt;cast_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                                                                    &lt;&lt;unarni_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                                                                        &lt;&lt;postfiks_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                                                                            &lt;&lt;primarni_izraz&gt;&gt; [type=CHAR, lvalue=true, elements=0]
+                                                                                                IDN (2,y) [symbol=y]
+                            TOCKAZAREZ (2,;)
+                    &lt;&lt;lista_naredbi&gt;&gt; [lvalue=false, elements=0]
+                        &lt;&lt;lista_naredbi&gt;&gt; [lvalue=false, elements=0]
+                            &lt;&lt;lista_naredbi&gt;&gt; [lvalue=false, elements=0]
+                                &lt;&lt;naredba&gt;&gt; [lvalue=false, elements=0]
+                                    &lt;&lt;slozena_naredba&gt;&gt; [lvalue=false, elements=0]
+                                        L_VIT_ZAGRADA (3,{)
+                                        &lt;&lt;lista_deklaracija&gt;&gt; [lvalue=false, elements=0]
+                                            &lt;&lt;deklaracija&gt;&gt; [lvalue=false, elements=0]
+                                                &lt;&lt;specifikatori_deklaracije&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                    &lt;&lt;specifikator_tipa&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                        KR_INT (4,int)
+                                                &lt;&lt;lista_init_deklaratora&gt;&gt; [lvalue=false, elements=0]
+                                                    &lt;&lt;init_deklarator&gt;&gt; [lvalue=false, elements=0]
+                                                        &lt;&lt;deklarator&gt;&gt; [type=INT, lvalue=true, id=xx, elements=0]
+                                                            &lt;&lt;izravni_deklarator&gt;&gt; [type=INT, lvalue=true, id=xx, elements=0]
+                                                                IDN (4,xx) [symbol=xx]
+                                                        OP_PRIDRUZI (4,=)
+                                                        &lt;&lt;inicijalizator&gt;&gt; [lvalue=false, elements=0]
+                                                            &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                    &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                        &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                            &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                    &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                        &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                            &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                    &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                        &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                            &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                    BROJ (4,12) [type=int]
+                                                TOCKAZAREZ (4,;)
+                                        &lt;&lt;lista_naredbi&gt;&gt; [lvalue=false, elements=0]
+                                            &lt;&lt;lista_naredbi&gt;&gt; [lvalue=false, elements=0]
+                                                &lt;&lt;naredba&gt;&gt; [lvalue=false, elements=0]
+                                                    &lt;&lt;izraz_naredba&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                        &lt;&lt;izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                            &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                    &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                        &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                            IDN (5,ret) [symbol=ret]
+                                                                OP_PRIDRUZI (5,=)
+                                                                &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                    &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                        &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                            &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                    &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                        &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                            &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                    &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                        &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                            &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                    &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                        &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                            IDN (5,ret) [symbol=ret]
+                                                                                                    PLUS (5,+)
+                                                                                                    &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                        &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                            &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                    &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                        IDN (5,xx) [symbol=xx]
+                                                        TOCKAZAREZ (5,;)
+                                            &lt;&lt;naredba&gt;&gt; [lvalue=false, elements=0]
+                                                &lt;&lt;izraz_naredba&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                    &lt;&lt;izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                        &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                            &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                    &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                        IDN (6,ret) [symbol=ret]
+                                                            OP_PRIDRUZI (6,=)
+                                                            &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                    &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                        &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                            &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                    &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                        &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                            &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                    &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                        &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                            &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                    &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                        IDN (6,ret) [symbol=ret]
+                                                                                                PLUS (6,+)
+                                                                                                &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                    &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                        &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                            &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                &lt;&lt;postfiks_izraz&gt;&gt; [type=array(INT), lvalue=false, elements=0]
+                                                                                                                    &lt;&lt;primarni_izraz&gt;&gt; [type=array(INT), lvalue=false, elements=0]
+                                                                                                                        IDN (6,arr) [symbol=arr]
+                                                                                                                L_UGL_ZAGRADA (6,[)
+                                                                                                                &lt;&lt;izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                    &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                        &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                            &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                    &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                        &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                            &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                                &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                                    &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                                        &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                                            &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                                                &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                                                    &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                                                        &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                                                            IDN (6,x) [symbol=x]
+                                                                                                                D_UGL_ZAGRADA (6,])
+                                                    TOCKAZAREZ (6,;)
+                                        D_VIT_ZAGRADA (7,})
+                            &lt;&lt;naredba&gt;&gt; [lvalue=false, elements=0]
+                                &lt;&lt;izraz_naredba&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                    &lt;&lt;izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                        &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                            &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                    &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                        IDN (8,ret) [symbol=ret]
+                                            OP_PRIDRUZI (8,=)
+                                            &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                    &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                        &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                            &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                    &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                        &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                            &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                    &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                        &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                            &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                    &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                        IDN (8,ret) [symbol=ret]
+                                                                                PLUS (8,+)
+                                                                                &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                    &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                        &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                            &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                &lt;&lt;postfiks_izraz&gt;&gt; [type=array(INT), lvalue=false, elements=0]
+                                                                                                    &lt;&lt;primarni_izraz&gt;&gt; [type=array(INT), lvalue=false, elements=0]
+                                                                                                        IDN (8,arr) [symbol=arr]
+                                                                                                L_UGL_ZAGRADA (8,[)
+                                                                                                &lt;&lt;izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                    &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                        &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                            &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                    &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                        &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                            &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                    &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                        &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                            &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                                &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                                    &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                                        &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                                                                            IDN (8,x) [symbol=x]
+                                                                                                D_UGL_ZAGRADA (8,])
+                                    TOCKAZAREZ (8,;)
+                        &lt;&lt;naredba&gt;&gt; [lvalue=false, elements=0]
+                            &lt;&lt;naredba_skoka&gt;&gt; [lvalue=false, elements=0]
+                                KR_RETURN (9,return)
+                                &lt;&lt;izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                    &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                        &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                            &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                    &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                        &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                            &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                    &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                        &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                            &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                    &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                        &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                            &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                                IDN (9,ret) [symbol=ret]
+                                                                        MINUS (9,-)
+                                                                        &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                            &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                    &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                        &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=true, elements=0]
+                                                                                            IDN (9,d) [symbol=d]
+                                TOCKAZAREZ (9,;)
+                    D_VIT_ZAGRADA (10,})
+    &lt;&lt;vanjska_deklaracija&gt;&gt; [lvalue=false, elements=0]
+        &lt;&lt;definicija_funkcije&gt;&gt; [lvalue=false, elements=0]
+            &lt;&lt;specifikatori_deklaracije&gt;&gt; [type=INT, lvalue=false, elements=0]
+                &lt;&lt;specifikator_tipa&gt;&gt; [type=INT, lvalue=false, elements=0]
+                    KR_INT (11,int)
+            &lt;&lt;deklarator&gt;&gt; [type=INT(), lvalue=false, id=main, elements=0]
+                &lt;&lt;izravni_deklarator&gt;&gt; [type=INT(), lvalue=false, id=main, elements=0]
+                    &lt;&lt;izravni_deklarator&gt;&gt; [type=INT, lvalue=true, id=main, elements=0]
+                        IDN (11,main) [symbol=main]
+                    L_ZAGRADA (11,()
+                    &lt;&lt;lista_parametara&gt;&gt; [lvalue=false, elements=0]
+                        &lt;&lt;deklaracija_parametra&gt;&gt; [type=VOID, lvalue=false, elements=0]
+                            &lt;&lt;specifikatori_deklaracije&gt;&gt; [type=VOID, lvalue=false, elements=0]
+                                &lt;&lt;specifikator_tipa&gt;&gt; [type=VOID, lvalue=false, elements=0]
+                                    KR_VOID (11,void)
+                    D_ZAGRADA (11,))
+            &lt;&lt;slozena_naredba&gt;&gt; [lvalue=false, elements=0]
+                L_VIT_ZAGRADA (11,{)
+                &lt;&lt;lista_deklaracija&gt;&gt; [lvalue=false, elements=0]
+                    &lt;&lt;deklaracija&gt;&gt; [lvalue=false, elements=0]
+                        &lt;&lt;specifikatori_deklaracije&gt;&gt; [type=INT, lvalue=false, elements=0]
+                            &lt;&lt;specifikator_tipa&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                KR_INT (12,int)
+                        &lt;&lt;lista_init_deklaratora&gt;&gt; [lvalue=false, elements=0]
+                            &lt;&lt;init_deklarator&gt;&gt; [lvalue=false, elements=0]
+                                &lt;&lt;deklarator&gt;&gt; [type=array(INT), lvalue=false, id=x, elements=3]
+                                    &lt;&lt;izravni_deklarator&gt;&gt; [type=array(INT), lvalue=false, id=x, elements=3]
+                                        &lt;&lt;izravni_deklarator&gt;&gt; [type=INT, lvalue=true, id=x, elements=0]
+                                            IDN (12,x) [symbol=x]
+                                        L_UGL_ZAGRADA (12,[)
+                                        &lt;&lt;log_ili_izraz&gt;&gt; [lvalue=false, elements=0]
+                                            &lt;&lt;log_i_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                &lt;&lt;bin_ili_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                    &lt;&lt;bin_xili_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                        &lt;&lt;bin_i_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                            &lt;&lt;jednakosni_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                                &lt;&lt;odnosni_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                                    &lt;&lt;aditivni_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                                        &lt;&lt;multiplikativni_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                                            &lt;&lt;cast_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                                                &lt;&lt;unarni_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                                                    &lt;&lt;postfiks_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                                                        &lt;&lt;primarni_izraz&gt;&gt; [lvalue=false, elements=0]
+                                                                                            BROJ (12,3) [type=int]
+                                        D_UGL_ZAGRADA (12,])
+                                OP_PRIDRUZI (12,=)
+                                &lt;&lt;inicijalizator&gt;&gt; [lvalue=false, elements=0]
+                                    L_VIT_ZAGRADA (12,{)
+                                    &lt;&lt;lista_izraza_pridruzivanja&gt;&gt; [lvalue=false, elements=0]
+                                        &lt;&lt;lista_izraza_pridruzivanja&gt;&gt; [lvalue=false, elements=0]
+                                            &lt;&lt;lista_izraza_pridruzivanja&gt;&gt; [lvalue=false, elements=0]
+                                                &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                    &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                        &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                            &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                    &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                        &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                            &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                    &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                        &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                            &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                    &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                        BROJ (12,51) [type=int]
+                                            ZAREZ (12,,)
+                                            &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                    &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                        &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                            &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                    &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                        &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                            &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                    &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                        &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                            &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                    BROJ (12,52) [type=int]
+                                        ZAREZ (12,,)
+                                        &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                            &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                    &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                        &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                            &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                    &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                        &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                            &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                    &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                        &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                            &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                BROJ (12,53) [type=int]
+                                    D_VIT_ZAGRADA (12,})
+                        TOCKAZAREZ (12,;)
+                &lt;&lt;lista_naredbi&gt;&gt; [lvalue=false, elements=0]
+                    &lt;&lt;naredba&gt;&gt; [lvalue=false, elements=0]
+                        &lt;&lt;naredba_skoka&gt;&gt; [lvalue=false, elements=0]
+                            KR_RETURN (13,return)
+                            &lt;&lt;izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                    &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                        &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                            &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                    &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                        &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                            &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                    &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                        &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                            &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                    &lt;&lt;postfiks_izraz&gt;&gt; [type=INT(INT, CHAR, INT, CHAR, INT, INT, INT, array(INT)), lvalue=false, elements=0]
+                                                                                        &lt;&lt;primarni_izraz&gt;&gt; [type=INT(INT, CHAR, INT, CHAR, INT, INT, INT, array(INT)), lvalue=false, elements=0]
+                                                                                            IDN (13,f) [symbol=f]
+                                                                                    L_ZAGRADA (13,()
+                                                                                    &lt;&lt;lista_argumenata&gt;&gt; [lvalue=false, elements=0]
+                                                                                        &lt;&lt;lista_argumenata&gt;&gt; [lvalue=false, elements=0]
+                                                                                            &lt;&lt;lista_argumenata&gt;&gt; [lvalue=false, elements=0]
+                                                                                                &lt;&lt;lista_argumenata&gt;&gt; [lvalue=false, elements=0]
+                                                                                                    &lt;&lt;lista_argumenata&gt;&gt; [lvalue=false, elements=0]
+                                                                                                        &lt;&lt;lista_argumenata&gt;&gt; [lvalue=false, elements=0]
+                                                                                                            &lt;&lt;lista_argumenata&gt;&gt; [lvalue=false, elements=0]
+                                                                                                                &lt;&lt;lista_argumenata&gt;&gt; [lvalue=false, elements=0]
+                                                                                                                    &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                        &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                            &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                    &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                        &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                            &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                    &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                        &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                            &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                                &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                                    &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                                        &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                                            BROJ (13,1) [type=int]
+                                                                                                                ZAREZ (13,,)
+                                                                                                                &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                    &lt;&lt;log_ili_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                        &lt;&lt;log_i_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                            &lt;&lt;bin_ili_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                &lt;&lt;bin_xili_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                    &lt;&lt;bin_i_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                        &lt;&lt;jednakosni_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                            &lt;&lt;odnosni_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                                &lt;&lt;aditivni_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                                    &lt;&lt;multiplikativni_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                                        &lt;&lt;cast_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                                            L_ZAGRADA (13,()
+                                                                                                                                                            &lt;&lt;ime_tipa&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                                                &lt;&lt;lista_specifikatora_kvalifikatora&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                                                    &lt;&lt;specifikator_tipa&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                                                        KR_CHAR (13,char)
+                                                                                                                                                            D_ZAGRADA (13,))
+                                                                                                                                                            &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                                &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                                    &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                                        &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                                            BROJ (13,2) [type=int]
+                                                                                                            ZAREZ (13,,)
+                                                                                                            &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                    &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                        &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                            &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                    &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                        &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                            &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                    &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                        &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                            &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                                &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                                    BROJ (13,3) [type=int]
+                                                                                                        ZAREZ (13,,)
+                                                                                                        &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                            &lt;&lt;log_ili_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                &lt;&lt;log_i_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                    &lt;&lt;bin_ili_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                        &lt;&lt;bin_xili_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                            &lt;&lt;bin_i_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                &lt;&lt;jednakosni_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                    &lt;&lt;odnosni_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                        &lt;&lt;aditivni_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                            &lt;&lt;multiplikativni_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                                &lt;&lt;cast_izraz&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                                    L_ZAGRADA (13,()
+                                                                                                                                                    &lt;&lt;ime_tipa&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                                        &lt;&lt;lista_specifikatora_kvalifikatora&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                                            &lt;&lt;specifikator_tipa&gt;&gt; [type=CHAR, lvalue=false, elements=0]
+                                                                                                                                                                KR_CHAR (13,char)
+                                                                                                                                                    D_ZAGRADA (13,))
+                                                                                                                                                    &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                        &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                            &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                                &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                                    BROJ (13,4) [type=int]
+                                                                                                    ZAREZ (13,,)
+                                                                                                    &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                        &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                            &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                    &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                        &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                            &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                    &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                        &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                            &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                    &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                        &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                            BROJ (13,5) [type=int]
+                                                                                                ZAREZ (13,,)
+                                                                                                &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                    &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                        &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                            &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                    &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                        &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                            &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                    &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                        &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                            &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                    &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                        BROJ (13,6) [type=int]
+                                                                                            ZAREZ (13,,)
+                                                                                            &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                &lt;&lt;log_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                    &lt;&lt;log_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                        &lt;&lt;bin_ili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                            &lt;&lt;bin_xili_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                &lt;&lt;bin_i_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                    &lt;&lt;jednakosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                        &lt;&lt;odnosni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                            &lt;&lt;aditivni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                &lt;&lt;multiplikativni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                    &lt;&lt;cast_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                        &lt;&lt;unarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                            &lt;&lt;postfiks_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                &lt;&lt;primarni_izraz&gt;&gt; [type=INT, lvalue=false, elements=0]
+                                                                                                                                                    BROJ (13,7) [type=int]
+                                                                                        ZAREZ (13,,)
+                                                                                        &lt;&lt;izraz_pridruzivanja&gt;&gt; [type=array(INT), lvalue=false, elements=0]
+                                                                                            &lt;&lt;log_ili_izraz&gt;&gt; [type=array(INT), lvalue=false, elements=0]
+                                                                                                &lt;&lt;log_i_izraz&gt;&gt; [type=array(INT), lvalue=false, elements=0]
+                                                                                                    &lt;&lt;bin_ili_izraz&gt;&gt; [type=array(INT), lvalue=false, elements=0]
+                                                                                                        &lt;&lt;bin_xili_izraz&gt;&gt; [type=array(INT), lvalue=false, elements=0]
+                                                                                                            &lt;&lt;bin_i_izraz&gt;&gt; [type=array(INT), lvalue=false, elements=0]
+                                                                                                                &lt;&lt;jednakosni_izraz&gt;&gt; [type=array(INT), lvalue=false, elements=0]
+                                                                                                                    &lt;&lt;odnosni_izraz&gt;&gt; [type=array(INT), lvalue=false, elements=0]
+                                                                                                                        &lt;&lt;aditivni_izraz&gt;&gt; [type=array(INT), lvalue=false, elements=0]
+                                                                                                                            &lt;&lt;multiplikativni_izraz&gt;&gt; [type=array(INT), lvalue=false, elements=0]
+                                                                                                                                &lt;&lt;cast_izraz&gt;&gt; [type=array(INT), lvalue=false, elements=0]
+                                                                                                                                    &lt;&lt;unarni_izraz&gt;&gt; [type=array(INT), lvalue=false, elements=0]
+                                                                                                                                        &lt;&lt;postfiks_izraz&gt;&gt; [type=array(INT), lvalue=false, elements=0]
+                                                                                                                                            &lt;&lt;primarni_izraz&gt;&gt; [type=array(INT), lvalue=false, elements=0]
+                                                                                                                                                IDN (13,x) [symbol=x]
+                                                                                    D_ZAGRADA (13,))
+                            TOCKAZAREZ (13,;)
+                D_VIT_ZAGRADA (14,})
+</code></pre>
+      </details>
+      <details>
+        <summary>Generated FRISC Assembly Code</summary>
+        <pre><code>; Program entry point
+        MOVE 40000, R7          ; init stack pointer
+        CALL F_MAIN             ; call main
+        HALT                    ; end of program, R6 holds return value
+
+; Function definitions
+F_F                             ; Function f
+; Parameter x at (R5+08)
+; Parameter y at (R5+0C)
+; Parameter z at (R5+10)
+; Parameter a at (R5+14)
+; Parameter b at (R5+18)
+; Parameter c at (R5+1C)
+; Parameter d at (R5+20)
+; Parameter arr at (R5+24)
+; Local variable ret at (R5-04)
+; Local variable xx at (R5-08)
+        PUSH R5                 ; save old frame pointer
+        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
+        SUB R7, %D 8, R7        ; allocate 2 local variables
+; Compound statement
+; Local variable declarations
+; Local variable ret at (R5-04) with initializer
+        LOAD R0, (R5+08)        ; load variable x
+        PUSH R0                 ; save left operand
+        LOAD R0, (R5+0C)        ; load variable y
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        ADD R0, R1, R0          ; addition
+        STORE R0, (R5-04)       ; initialize ret
+; Compound statement
+; Local variable declarations
+; Local variable xx at (R5-08) with initializer
+        MOVE %D 12, R0          ; load constant 12
+        STORE R0, (R5-08)       ; initialize xx
+        LOAD R0, (R5-04)        ; load variable ret
+        PUSH R0                 ; save left operand
+        LOAD R0, (R5-08)        ; load variable xx
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        ADD R0, R1, R0          ; addition
+        STORE R0, (R5-04)       ; assign to ret
+        LOAD R0, (R5-04)        ; load variable ret
+        PUSH R0                 ; save left operand
+        LOAD R0, (R5+08)        ; load variable x
+        SHL R0, %D 2, R0        ; index * 4 (element size)
+        LOAD R1, (R5+24)        ; load array pointer from parameter
+        ADD R1, R0, R1          ; compute element address
+        LOAD R0, (R1)           ; load array element
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        ADD R0, R1, R0          ; addition
+        STORE R0, (R5-04)       ; assign to ret
+        LOAD R0, (R5-04)        ; load variable ret
+        PUSH R0                 ; save left operand
+        LOAD R0, (R5+08)        ; load variable x
+        SHL R0, %D 2, R0        ; index * 4 (element size)
+        LOAD R1, (R5+24)        ; load array pointer from parameter
+        ADD R1, R0, R1          ; compute element address
+        LOAD R0, (R1)           ; load array element
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        ADD R0, R1, R0          ; addition
+        STORE R0, (R5-04)       ; assign to ret
+        LOAD R0, (R5-04)        ; load variable ret
+        PUSH R0                 ; save left operand
+        LOAD R0, (R5+20)        ; load variable d
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        SUB R0, R1, R0          ; subtraction
+        MOVE R0, R6             ; return value
+        JP L1                   ; jump to function exit
+L1                              ; function exit
+        ADD R7, %D 8, R7        ; deallocate local variables
+        POP R5                  ; restore old frame pointer
+        RET                     ; return to caller
+
+F_MAIN                          ; Function main
+; Local variable x at (R5-0C)
+        PUSH R5                 ; save old frame pointer
+        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
+        SUB R7, %D 12, R7       ; allocate 3 local variables
+; Compound statement
+; Local variable declarations
+; Local variable x at (R5-0C) with initializer
+        MOVE %D 0, R0           ; default initializer
+        STORE R0, (R5-0C)       ; initialize x
+; Function call: f
+        MOVE R5, R0             ; load frame pointer
+        ADD R0, -0C, R0         ; compute array address
+        PUSH R0                 ; push argument 8
+        MOVE %D 7, R0           ; load constant 7
+        PUSH R0                 ; push argument 7
+        MOVE %D 6, R0           ; load constant 6
+        PUSH R0                 ; push argument 6
+        MOVE %D 5, R0           ; load constant 5
+        PUSH R0                 ; push argument 5
+        MOVE %D 4, R0           ; load constant 4
+        AND R0, 00FF, R0        ; cast to char (mask lower 8 bits)
+        PUSH R0                 ; push argument 4
+        MOVE %D 3, R0           ; load constant 3
+        PUSH R0                 ; push argument 3
+        MOVE %D 2, R0           ; load constant 2
+        AND R0, 00FF, R0        ; cast to char (mask lower 8 bits)
+        PUSH R0                 ; push argument 2
+        MOVE %D 1, R0           ; load constant 1
+        PUSH R0                 ; push argument 1
+        CALL F_F                ; call f
+        ADD R7, %D 32, R7       ; cleanup 8 arguments
+        MOVE R6, R0             ; function result
+        MOVE R0, R6             ; return value
+        JP L2                   ; jump to function exit
+L2                              ; function exit
+        ADD R7, %D 12, R7       ; deallocate local variables
+        POP R5                  ; restore old frame pointer
+        RET                     ; return to caller
+
+; Global variables
 
 </code></pre>
       </details>
       <details>
         <summary>FRISC Execution</summary>
         <div class="simulator-results">
-          <p><strong>Runtime Error:</strong></p>
-          <pre><code>Code generation failed.</code></pre>
+          <div class="output-comparison">
+            <table class="output-table">
+              <tr>
+                <th>Expected (Decimal)</th>
+                <th>Actual (Decimal)</th>
+                <th>Status</th>
+              </tr>
+              <tr>
+                <td><code>112</code></td>
+                <td><code>8</code></td>
+                <td class="status-fail">❌ FAIL</td>
+              </tr>
+            </table>
+          </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
-      </details>
-      <details>
-        <summary>Analysis Errors</summary>
-        <pre><code>
-SEMANTIC ERRORS:
-semantic error
-        </code></pre>
       </details>
     </section>
     <section id="program4" class="program-card">
@@ -28312,8 +29278,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_X      DW %D 15               ; global INT x = 15
 G_Y      DW %D 16               ; global INT y = 16
+G_X      DW %D 15               ; global INT x = 15
 
 </code></pre>
       </details>
@@ -28792,8 +29758,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_X      DW %D 15               ; global INT x = 15
 G_Y      DW %D -12              ; global INT y = -12
+G_X      DW %D 15               ; global INT x = 15
 
 </code></pre>
       </details>
@@ -29258,8 +30224,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_X      DW %D 15               ; global INT x = 15
 G_Y      DW %D 12               ; global INT y = 12
+G_X      DW %D 15               ; global INT x = 15
 
 </code></pre>
       </details>

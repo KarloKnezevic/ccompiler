@@ -1,11 +1,11 @@
 package hr.fer.ppj.semantics.analysis;
 
 import hr.fer.ppj.parser.tree.ParseTree;
+import hr.fer.ppj.semantics.errors.SemanticException;
 import hr.fer.ppj.semantics.io.SemanticReport;
 import hr.fer.ppj.semantics.symbols.SymbolTable;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import java.io.PrintStream;
-import java.nio.file.Path;
 import java.util.Objects;
 
 /**

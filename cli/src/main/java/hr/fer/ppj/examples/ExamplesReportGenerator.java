@@ -366,7 +366,7 @@ public final class ExamplesReportGenerator {
             semanticTree = Files.readString(semanticTreeFile);
           }
           
-        } catch (hr.fer.ppj.semantics.analysis.SemanticException e) {
+        } catch (hr.fer.ppj.semantics.errors.SemanticException e) {
           // Semantic error occurred - output was already written to printStream
           printStream.flush();
           semanticOutput = outputStream.toString(StandardCharsets.UTF_8);

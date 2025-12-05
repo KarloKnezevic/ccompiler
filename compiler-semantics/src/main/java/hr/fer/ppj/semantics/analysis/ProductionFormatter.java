@@ -12,7 +12,7 @@ import java.util.StringJoiner;
  *
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */
-final class ProductionFormatter {
+public final class ProductionFormatter {
 
   private ProductionFormatter() {}
 
@@ -20,7 +20,7 @@ final class ProductionFormatter {
    * Renders the provided non-terminal by walking its children in order and concatenating them into
    * the canonical {@code <production> ::= RHS} shape.
    */
-  static String formatProduction(NonTerminalNode node) {
+  public static String formatProduction(NonTerminalNode node) {
     StringJoiner joiner = new StringJoiner(" ", node.symbol() + " ::= ", "");
     for (ParseNode child : node.children()) {
       joiner.add(formatSymbol(child));

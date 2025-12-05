@@ -164,12 +164,12 @@ public record FunctionSymbol(
 
 ### Type System Implementation
 
-The type system provides a comprehensive representation of PPJ-C types with support for const qualification, arrays, and functions.
+The type system provides a comprehensive representation of PPJ-C types with support for const qualification, arrays, pointers, structs, and functions.
 
 #### Type Hierarchy
 
 ```java
-public sealed interface Type permits PrimitiveType, ArrayType, FunctionType, ConstType {
+public sealed interface Type permits PrimitiveType, ArrayType, FunctionType, ConstType, PointerType, StructType {
     boolean isVoid();
     boolean isScalar();
     boolean isArray();
@@ -178,7 +178,7 @@ public sealed interface Type permits PrimitiveType, ArrayType, FunctionType, Con
 }
 
 public enum PrimitiveType implements Type {
-    VOID, CHAR, INT;
+    VOID, CHAR, INT, FLOAT;
     
     @Override
     public boolean isVoid() { return this == VOID; }
@@ -191,6 +191,18 @@ public record ArrayType(Type elementType) implements Type {
     public boolean isArray() { return true; }
     @Override
     public boolean isScalar() { return false; }
+}
+
+public record PointerType(Type baseType, boolean isConst) implements Type {
+    @Override
+    public boolean isScalar() { return true; }
+    // Pointers are scalar types and can be used in arithmetic/boolean contexts
+}
+
+public record StructType(String tag, Map<String, Type> fields) implements Type {
+    @Override
+    public boolean isScalar() { return false; }
+    // Structs are not scalar - cannot be used in arithmetic
 }
 
 public record FunctionType(
@@ -216,18 +228,26 @@ public record ConstType(Type baseType) implements Type {
 public final class TypeSystem {
     // Const qualification operations
     public static Type stripConst(Type type);
-    public static Type applyConst(Type type);
+    public static Type withConst(Type type);
+    public static boolean isConst(Type type);
     
     // Type compatibility checking
     public static boolean canAssign(Type from, Type to);
-    public static boolean canConvert(Type from, Type to);
+    public static boolean canCast(Type source, Type target);
     public static boolean isIntConvertible(Type type);
+    public static boolean equalsIgnoringConst(Type left, Type right);
     
-    // Type equality and comparison
-    public static boolean typesEqual(Type t1, Type t2);
-    public static boolean isCompatibleFunctionType(FunctionType f1, FunctionType f2);
+    // Type promotion and arithmetic
+    public static Type arithmeticResult(Type lhs, Type rhs);
+    
+    // Array-to-pointer decay
+    public static PointerType decayToArrayPointer(ArrayType arrayType);
 }
 ```
+
+The `TypeSystem` class delegates to specialized utility classes:
+- **TypeCompatibility**: Handles assignment compatibility, cast validity, and type equality
+- **TypePromotion**: Implements C's usual arithmetic conversions and scalar type checks
 
 ## Analysis Algorithms
 
@@ -365,17 +385,26 @@ private void visitBinaryExpression(NonTerminalNode node, BinaryOperator operator
     // Apply operator-specific type rules
     switch (operator) {
         case ARITHMETIC -> {
-            if (!TypeSystem.isIntConvertible(leftType) || 
-                !TypeSystem.isIntConvertible(rightType)) {
+            if (!leftType.isScalar() || !rightType.isScalar()) {
                 fail(node);
             }
-            node.attributes().type(PrimitiveType.INT);
+            // Apply C's usual arithmetic conversions
+            Type resultType = TypeSystem.arithmeticResult(leftType, rightType);
+            node.attributes().type(resultType);
             node.attributes().lValue(false);
         }
         case RELATIONAL -> {
-            if (!TypeSystem.isIntConvertible(leftType) || 
-                !TypeSystem.isIntConvertible(rightType)) {
+            // Relational operators work on arithmetic types or pointers
+            if (!leftType.isScalar() || !rightType.isScalar()) {
                 fail(node);
+            }
+            // Pointer comparisons require compatible base types
+            if (leftType instanceof PointerType && rightType instanceof PointerType) {
+                PointerType leftPtr = (PointerType) TypeSystem.stripConst(leftType);
+                PointerType rightPtr = (PointerType) TypeSystem.stripConst(rightType);
+                if (!TypeSystem.equalsIgnoringConst(leftPtr.baseType(), rightPtr.baseType())) {
+                    fail(node);
+                }
             }
             node.attributes().type(PrimitiveType.INT);
             node.attributes().lValue(false);
