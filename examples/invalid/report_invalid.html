@@ -199,6 +199,12 @@ nav.index a:hover {
   font-size: 1.1em;
 }
 
+.status-unknown {
+  color: #6b7280;
+  font-weight: normal;
+  font-size: 1.1em;
+}
+
 .badge-skip {
   background-color: #6b7280;
   color: white;
@@ -1509,16 +1515,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
-                <td><code></code></td>
+                <td><code>—</code></td>
                 <td><code>1</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>1.5258789E-5</code></td>
+                <td class="status-unknown">❔ UNKNOWN</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -4692,16 +4701,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
-                <td><code></code></td>
+                <td><code>—</code></td>
                 <td><code>10</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>1.5258789E-4</code></td>
+                <td class="status-unknown">❔ UNKNOWN</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -8425,16 +8437,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
-                <td><code></code></td>
+                <td><code>—</code></td>
                 <td><code>1</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>1.5258789E-5</code></td>
+                <td class="status-unknown">❔ UNKNOWN</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -9827,16 +9842,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
-                <td><code></code></td>
+                <td><code>—</code></td>
                 <td><code>0</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>0.0</code></td>
+                <td class="status-unknown">❔ UNKNOWN</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -13540,16 +13558,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
-                <td><code></code></td>
+                <td><code>—</code></td>
                 <td><code>10</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>1.5258789E-4</code></td>
+                <td class="status-unknown">❔ UNKNOWN</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -14217,16 +14238,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
-                <td><code></code></td>
+                <td><code>—</code></td>
                 <td><code>11</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>1.6784668E-4</code></td>
+                <td class="status-unknown">❔ UNKNOWN</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -14842,16 +14866,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
-                <td><code></code></td>
+                <td><code>—</code></td>
                 <td><code>10</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>1.5258789E-4</code></td>
+                <td class="status-unknown">❔ UNKNOWN</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -16447,16 +16474,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
-                <td><code></code></td>
+                <td><code>—</code></td>
                 <td><code>5</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>7.6293945E-5</code></td>
+                <td class="status-unknown">❔ UNKNOWN</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -19679,28 +19709,55 @@ L1                              ; function exit
 ; Helper functions for multiplication and division
 
 F_MUL                           ; Helper function: int mul(int a, int b)
+; F_MUL: signed 32-bit integer multiplication
+; Input:  a at (R5+08), b at (R5+0C)
+; Output: R6 = a * b
+; Algorithm: binary shift-and-add (Russian peasant), O(32) steps
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        SUB R7, %D 4, R7        ; allocate local for accumulator
         LOAD R0, (R5+08)        ; a (left operand, pushed last, first parameter)
         LOAD R1, (R5+0C)        ; b (right operand, pushed first, second parameter)
-        MOVE %D 0, R2           ; acc = 0
         CMP R1, %D 0
-        JR_EQ L2                ; if b == 0, result is 0
+        JR_EQ L2                ; if b == 0, return 0
+L3                              ; continue multiplication
+        MOVE %D 0, R4           ; sign = 0 (positive)
+        CMP R0, %D 0
+        JR_SGE L4               ; if a &gt;= 0, skip negation
+        MOVE %D 0, R2
+        SUB R2, R0, R0          ; a = -a
+        XOR R4, %D 1, R4        ; sign ^= 1
+L4                              ; skip negate a
         CMP R1, %D 0
-        JR_SGT L3               ; if b &gt; 0, proceed with positive multiplication
-        MOVE %D 0, R3           ; zero for negation
-        SUB R3, R0, R0          ; negate a
-        SUB R3, R1, R1          ; negate b
-L3                              ; multiplication loop (b &gt; 0)
-L4                              ; multiplication loop
+        JR_SGE L5               ; if b &gt;= 0, skip negation
+        MOVE %D 0, R2
+        SUB R2, R1, R1          ; b = -b
+        XOR R4, %D 1, R4        ; sign ^= 1
+L5                              ; skip negate b
+; Binary shift-and-add multiplication (Russian peasant algorithm)
+        PUSH R4                 ; save sign flag on stack
+        MOVE %D 0, R2           ; acc = 0 (accumulator)
+L6                              ; binary multiplication loop
+        CMP R1, %D 0
+        JR_EQ L7                ; if b == 0, exit loop
+        AND R1, %D 1, R3        ; R3 = b &amp; 1
+        CMP R3, %D 0
+        JR_EQ L8                ; if (b &amp; 1) == 0, skip add
         ADD R2, R0, R2          ; acc += a
-        SUB R1, %D 1, R1        ; b--
-        CMP R1, %D 0
-        JR_SGT L4               ; while (b &gt; 0)
-L2                              ; multiplication done
+L8                              ; skip add
+        SHL R0, %D 1, R0        ; a &lt;&lt;= 1
+        SHR R1, %D 1, R1        ; b &gt;&gt;= 1
+        JR L6                   ; continue loop
+L7                              ; loop done, apply sign
+        POP R4                  ; restore sign flag
+        CMP R4, %D 0
+        JR_EQ L9                ; if sign == 0, result is positive
+        MOVE %D 0, R0
+        SUB R0, R2, R2          ; acc = -acc
+        JP L9                   ; result ready
+L2                              ; zero multiplier
+        MOVE %D 0, R2           ; result 0 for zero multiplier
+L9                              ; end multiplication
         MOVE R2, R6             ; result
-        ADD R7, %D 4, R7        ; deallocate local
         POP R5                  ; restore old frame pointer
         RET                     ; return to caller
 
@@ -19712,16 +19769,19 @@ L2                              ; multiplication done
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
-                <td><code></code></td>
+                <td><code>—</code></td>
                 <td><code>6</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>9.1552734E-5</code></td>
+                <td class="status-unknown">❔ UNKNOWN</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -20331,16 +20391,19 @@ L2                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
-                <td><code></code></td>
+                <td><code>—</code></td>
                 <td><code>6</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>9.1552734E-5</code></td>
+                <td class="status-unknown">❔ UNKNOWN</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>

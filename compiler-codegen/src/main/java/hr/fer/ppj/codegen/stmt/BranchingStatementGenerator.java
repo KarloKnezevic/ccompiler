@@ -10,10 +10,26 @@ import java.util.Objects;
 /**
  * Generates FRISC assembly code for branching statements (if-else).
  * 
- * <p>This class handles the generation of conditional control flow:
+ * <p>This class handles the generation of conditional control flow, implementing the
+ * <b>conditional branch code generation algorithm</b> that translates C if-else
+ * constructs into FRISC assembly with proper label management and control flow.
+ * 
+ * <p><b>Algorithm: Conditional Branch Code Generation</b>
+ * 
+ * <p>Conditional branches are translated using a <b>structured control flow pattern</b>:
+ * <ol>
+ *   <li><b>Condition Evaluation:</b> Evaluate the condition expression, result in R0</li>
+ *   <li><b>Boolean Check:</b> Compare R0 with 0 (C convention: 0 = false, non-zero = true)</li>
+ *   <li><b>Conditional Jump:</b> Jump to else/end label if condition is false</li>
+ *   <li><b>Then Branch:</b> Generate code for the then statement</li>
+ *   <li><b>Else Branch:</b> Generate code for the else statement (if present)</li>
+ *   <li><b>End Label:</b> Marks the end of the if-else construct</li>
+ * </ol>
+ * 
+ * <p><b>Branch Types Handled:</b>
  * <ul>
- *   <li>If statements: {@code if (condition) statement}</li>
- *   <li>If-else statements: {@code if (condition) statement1 else statement2}</li>
+ *   <li><b>If Statements:</b> {@code if (condition) statement}</li>
+ *   <li><b>If-Else Statements:</b> {@code if (condition) statement1 else statement2}</li>
  * </ul>
  * 
  * <p><b>Grammar Rules Handled:</b>
@@ -22,22 +38,82 @@ import java.util.Objects;
  *                        | KR_IF L_ZAGRADA &lt;izraz&gt; D_ZAGRADA &lt;naredba&gt; KR_ELSE &lt;naredba&gt;
  * </pre>
  * 
- * <p><b>FRISC Code Pattern:</b>
+ * <p><b>If Statement Algorithm:</b>
+ * 
+ * <p>The if statement (without else) is translated as follows:
+ * <ol>
+ *   <li><b>Condition Evaluation:</b> Evaluate condition, result in R0</li>
+ *   <li><b>Boolean Check:</b> Compare R0 with 0</li>
+ *   <li><b>Skip Then:</b> If condition is false (R0 == 0), jump to end label</li>
+ *   <li><b>Then Execution:</b> Generate code for then statement</li>
+ *   <li><b>End Label:</b> Marks the end of the if statement</li>
+ * </ol>
+ * 
+ * <p><b>If-Else Statement Algorithm:</b>
+ * 
+ * <p>The if-else statement is translated as follows:
+ * <ol>
+ *   <li><b>Condition Evaluation:</b> Evaluate condition, result in R0</li>
+ *   <li><b>Boolean Check:</b> Compare R0 with 0</li>
+ *   <li><b>Jump to Else:</b> If condition is false (R0 == 0), jump to else label</li>
+ *   <li><b>Then Execution:</b> Generate code for then statement</li>
+ *   <li><b>Skip Else:</b> Jump to end label (to skip else branch)</li>
+ *   <li><b>Else Label:</b> Marks the start of the else branch</li>
+ *   <li><b>Else Execution:</b> Generate code for else statement</li>
+ *   <li><b>End Label:</b> Marks the end of the if-else statement</li>
+ * </ol>
+ * 
+ * <p><b>Boolean Evaluation Convention:</b>
+ * 
+ * <p>C uses the following convention for boolean evaluation:
+ * <ul>
+ *   <li><b>False:</b> 0 (zero value)</li>
+ *   <li><b>True:</b> Any non-zero value</li>
+ * </ul>
+ * 
+ * <p>This is implemented by comparing the condition result with 0:
+ * <ul>
+ *   <li>If R0 == 0, condition is false → skip then branch</li>
+ *   <li>If R0 != 0, condition is true → execute then branch</li>
+ * </ul>
+ * 
+ * <p><b>FRISC Code Pattern (If Statement):</b>
  * <pre>
  * ; If statement
  * &lt;condition evaluation&gt;     ; result in R0
  * CMP R0, %D 0              ; compare with 0
- * JP_EQ L_END                ; jump to end if false
+ * JP_EQ L_END1               ; jump to end if false
  * &lt;then statement&gt;
- * L_END                      ; end label
+ * L_END1:                    ; end label
  * </pre>
  * 
- * <p><b>FRISC Semantics:</b>
+ * <p><b>FRISC Code Pattern (If-Else Statement):</b>
+ * <pre>
+ * ; If-else statement
+ * &lt;condition evaluation&gt;     ; result in R0
+ * CMP R0, %D 0              ; compare with 0
+ * JP_EQ L_ELSE1               ; jump to else if false
+ * &lt;then statement&gt;
+ * JP L_END1                   ; skip else
+ * L_ELSE1:                    ; else label
+ * &lt;else statement&gt;
+ * L_END1:                     ; end label
+ * </pre>
+ * 
+ * <p><b>Nested Conditionals:</b>
+ * 
+ * <p>Nested if-else statements are handled correctly because:
  * <ul>
- *   <li>Condition evaluated as boolean (0 = false, non-zero = true)</li>
- *   <li>CMP instruction sets flags based on R0 - 0</li>
- *   <li>JP_EQ jumps if condition is false (R0 == 0)</li>
- *   <li>Labels generated via LabelGenerator for unique names</li>
+ *   <li>Each if-else creates its own set of labels (if, else, end)</li>
+ *   <li>Labels are generated with unique numbers (L_IF1, L_ELSE1, L_END1, etc.)</li>
+ *   <li>Inner conditionals use different labels than outer conditionals</li>
+ * </ul>
+ * 
+ * <p><b>Complexity Analysis:</b>
+ * <ul>
+ *   <li><b>Time Complexity:</b> O(1) for code generation (constant number of instructions),
+ *       but actual runtime depends on condition and branch execution</li>
+ *   <li><b>Space Complexity:</b> O(1) - uses only a few labels and registers</li>
  * </ul>
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>

@@ -230,7 +230,9 @@ final class UnaryExpressionRules {
       checker.fail(node);
       return;
     }
-    Type resultType = operandType instanceof PointerType ? operandType : PrimitiveType.INT;
+    // For unary operators, preserve the operand type (especially for FLOAT)
+    // Pointer types remain pointers, but scalar types (int, char, float) preserve their type
+    Type resultType = operandType instanceof PointerType ? operandType : operandType;
     node.attributes().type(resultType);
     node.attributes().lValue(false);
     node.attributes().stringLiteral(false);

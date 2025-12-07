@@ -313,17 +313,7 @@ public final class LocalDeclarationGenerator {
      * @return the identifier name (IDN lexeme), or null if not found
      */
     private String findIdentifier(NonTerminalNode node) {
-        for (ParseNode child : node.children()) {
-            if (child instanceof TerminalNode terminal && "IDN".equals(terminal.symbol())) {
-                return terminal.lexeme();
-            } else if (child instanceof NonTerminalNode nonTerminal) {
-                String result = findIdentifier(nonTerminal);
-                if (result != null) {
-                    return result;
-                }
-            }
-        }
-        return null;
+        return hr.fer.ppj.codegen.utils.IdentifierExtractor.findIdentifier(node);
     }
 }
 

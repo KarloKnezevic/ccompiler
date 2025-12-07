@@ -199,6 +199,12 @@ nav.index a:hover {
   font-size: 1.1em;
 }
 
+.status-unknown {
+  color: #6b7280;
+  font-weight: normal;
+  font-size: 1.1em;
+}
+
 .badge-skip {
   background-color: #6b7280;
   color: white;
@@ -559,16 +565,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>71</code></td>
                 <td><code>71</code></td>
+                <td><code>0.001083374</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -1021,7 +1030,7 @@ F_MAIN                          ; Function main
         LOAD R0, (G_Y)          ; load variable y
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
-        OR R0, R1, R0           ; or
+        OR R0, R1, R0           ; bitwise OR
         MOVE R0, R6             ; return value
         JP L1                   ; jump to function exit
 L1                              ; function exit
@@ -1040,16 +1049,19 @@ G_X      DW %D 27               ; global INT x = 27
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>91</code></td>
                 <td><code>91</code></td>
+                <td><code>0.0013885498</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -1496,7 +1508,7 @@ F_MAIN                          ; Function main
         LOAD R0, (G_Y)          ; load variable y
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
-        AND R0, R1, R0          ; and
+        AND R0, R1, R0          ; bitwise AND
         MOVE R0, R6             ; return value
         JP L1                   ; jump to function exit
 L1                              ; function exit
@@ -1515,16 +1527,19 @@ G_X      DW %D 27               ; global INT x = 27
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>1</code></td>
                 <td><code>1</code></td>
+                <td><code>1.5258789E-5</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -1974,7 +1989,7 @@ F_MAIN                          ; Function main
         LOAD R0, (G_Y)          ; load variable y
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
-        XOR R0, R1, R0          ; xor
+        XOR R0, R1, R0          ; bitwise XOR
         MOVE R0, R6             ; return value
         JP L1                   ; jump to function exit
 L1                              ; function exit
@@ -1993,16 +2008,19 @@ G_X      DW %D 27               ; global INT x = 27
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>90</code></td>
                 <td><code>90</code></td>
+                <td><code>0.001373291</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -2397,16 +2415,19 @@ L2                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>123</code></td>
                 <td><code>123</code></td>
+                <td><code>0.001876831</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -2899,16 +2920,19 @@ L2                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>12</code></td>
                 <td><code>12</code></td>
+                <td><code>1.8310547E-4</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -3512,16 +3536,19 @@ L2                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>13</code></td>
                 <td><code>13</code></td>
+                <td><code>1.9836426E-4</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -4110,16 +4137,19 @@ G_X      DW %D 12               ; global INT x = 12
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>167</code></td>
                 <td><code>167</code></td>
+                <td><code>0.0025482178</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -4568,16 +4598,19 @@ G_X      DW %D 12               ; global INT x = 12
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>123</code></td>
                 <td><code>123</code></td>
+                <td><code>0.001876831</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -5121,16 +5154,19 @@ G_X      DW %D 12               ; global INT x = 12
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>32</code></td>
                 <td><code>32</code></td>
+                <td><code>4.8828125E-4</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -5889,16 +5925,19 @@ G_X      DW %D 12               ; global INT x = 12
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>28</code></td>
                 <td><code>28</code></td>
+                <td><code>4.272461E-4</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -6227,16 +6266,19 @@ G_X      DW %D 3                ; global INT x = 3
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>3</code></td>
                 <td><code>3</code></td>
+                <td><code>4.5776367E-5</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -6694,16 +6736,19 @@ G_C      DW %D 97               ; global CHAR c = 97
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>99</code></td>
                 <td><code>99</code></td>
+                <td><code>0.0015106201</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -7256,16 +7301,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>4</code></td>
                 <td><code>4</code></td>
+                <td><code>6.1035156E-5</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -7664,16 +7712,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>21</code></td>
                 <td><code>21</code></td>
+                <td><code>3.2043457E-4</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -8168,16 +8219,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>11</code></td>
                 <td><code>11</code></td>
+                <td><code>1.6784668E-4</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -8905,16 +8959,19 @@ G_X      DW %D 1234             ; global INT x = 1234
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>12</code></td>
                 <td><code>12</code></td>
+                <td><code>1.8310547E-4</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -9642,16 +9699,19 @@ G_X      DW %D 1234             ; global INT x = 1234
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>32</code></td>
                 <td><code>32</code></td>
+                <td><code>4.8828125E-4</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -10331,16 +10391,19 @@ G_A      DW %D 97, %D 98, %D 99, %D 100, %D 101; global ArrayType[elementType=CH
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>98</code></td>
                 <td><code>98</code></td>
+                <td><code>0.0014953613</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -10913,16 +10976,19 @@ G_A      `DS %D 4               ; global ArrayType[elementType=CHAR] a
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>12</code></td>
                 <td><code>12</code></td>
+                <td><code>1.8310547E-4</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -11964,16 +12030,19 @@ G_A      `DS %D 4               ; global ArrayType[elementType=INT] a
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>124</code></td>
                 <td><code>124</code></td>
+                <td><code>0.0018920898</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -12754,16 +12823,19 @@ L2                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>123</code></td>
                 <td><code>123</code></td>
+                <td><code>0.001876831</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -12995,16 +13067,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>31</code></td>
                 <td><code>31</code></td>
+                <td><code>4.7302246E-4</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -13924,16 +13999,19 @@ L2                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>5</code></td>
                 <td><code>5</code></td>
+                <td><code>7.6293945E-5</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -14661,16 +14739,19 @@ G_N      DW %D 5                ; global INT n = 5
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>5</code></td>
                 <td><code>5</code></td>
+                <td><code>7.6293945E-5</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -15445,16 +15526,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>84</code></td>
                 <td><code>84</code></td>
+                <td><code>0.0012817383</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -16256,16 +16340,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>16</code></td>
                 <td><code>16</code></td>
+                <td><code>2.4414062E-4</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -16913,16 +17000,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>2</code></td>
                 <td><code>2</code></td>
+                <td><code>3.0517578E-5</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -17870,16 +17960,19 @@ L3                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>2</code></td>
                 <td><code>2</code></td>
+                <td><code>3.0517578E-5</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -18687,16 +18780,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>15</code></td>
                 <td><code>15</code></td>
+                <td><code>2.2888184E-4</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -20588,16 +20684,19 @@ L2                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>59</code></td>
                 <td><code>59</code></td>
+                <td><code>9.0026855E-4</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -21742,16 +21841,19 @@ L2                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>25</code></td>
                 <td><code>25</code></td>
+                <td><code>3.8146973E-4</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -23918,16 +24020,19 @@ L2                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>112</code></td>
                 <td><code>8</code></td>
+                <td><code>1.2207031E-4</code></td>
                 <td class="status-fail">❌ FAIL</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -24256,16 +24361,19 @@ G_X      DW %D 72               ; global INT x = 72
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>72</code></td>
                 <td><code>72</code></td>
+                <td><code>0.0010986328</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -25593,16 +25701,19 @@ L5                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>10</code></td>
                 <td><code>10</code></td>
+                <td><code>1.5258789E-4</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -26276,16 +26387,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>2</code></td>
                 <td><code>2</code></td>
+                <td><code>3.0517578E-5</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -26959,16 +27073,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>5</code></td>
                 <td><code>5</code></td>
+                <td><code>7.6293945E-5</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -27642,16 +27759,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>5</code></td>
                 <td><code>5</code></td>
+                <td><code>7.6293945E-5</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -28325,16 +28445,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>2</code></td>
                 <td><code>2</code></td>
+                <td><code>3.0517578E-5</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -28568,16 +28691,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>1234567890</code></td>
                 <td><code>1234567890</code></td>
+                <td><code>18838.012</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -28823,16 +28949,19 @@ L1                              ; function exit
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>-84</code></td>
                 <td><code>-84</code></td>
+                <td><code>-0.0012817383</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -29289,16 +29418,19 @@ G_X      DW %D 15               ; global INT x = 15
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>31</code></td>
                 <td><code>31</code></td>
+                <td><code>4.7302246E-4</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -29769,16 +29901,19 @@ G_X      DW %D 15               ; global INT x = 15
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>3</code></td>
                 <td><code>3</code></td>
+                <td><code>4.5776367E-5</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>
@@ -30235,16 +30370,19 @@ G_X      DW %D 15               ; global INT x = 15
           <div class="output-comparison">
             <table class="output-table">
               <tr>
-                <th>Expected (Decimal)</th>
-                <th>Actual (Decimal)</th>
+                <th>Expected</th>
+                <th>Actual (Q16.16)</th>
+                <th>Q16.16 Float</th>
                 <th>Status</th>
               </tr>
               <tr>
                 <td><code>3</code></td>
                 <td><code>3</code></td>
+                <td><code>4.5776367E-5</code></td>
                 <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
+            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
           </div>
           <p><strong>Manual Testing:</strong> Run <code>node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc</code> after compiling this program to verify the return value in R6 register.</p>
         </div>

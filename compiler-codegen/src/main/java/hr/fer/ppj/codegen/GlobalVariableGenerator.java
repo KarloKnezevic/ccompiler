@@ -13,16 +13,127 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Generates FRISC assembly declarations for global variables.
+ * Generates FRISC assembly data declarations for global variables.
  * 
  * <p>This class processes the global symbol table and generates appropriate
- * FRISC data declarations (DW, DH, DB) for global variables and constants.
- * Global variables are placed at the end of the program, after all function
- * definitions.
+ * FRISC data declarations (DW, `DS) for global variables and constants.
+ * It implements the <b>global variable code generation algorithm</b> that
+ * translates C global variable declarations into FRISC data section declarations.
  * 
- * <p>Each global variable gets a unique label following the pattern
- * {@code G_<VARIABLE_NAME>} and is initialized with its declared value
- * or zero if no initializer is provided.
+ * <p><b>Algorithm: Global Variable Code Generation</b>
+ * 
+ * <p>The algorithm works as follows:
+ * <ol>
+ *   <li><b>Symbol Table Traversal:</b> Iterate through all symbols in the global scope</li>
+ *   <li><b>Variable Identification:</b> Filter for VariableSymbol entries (skip functions,
+ *       types, etc.)</li>
+ *   <li><b>Type Analysis:</b> Determine if variable is simple (int, char, float) or array</li>
+ *   <li><b>Initializer Extraction:</b> Extract initializer values from the parse tree
+ *       (if present)</li>
+ *   <li><b>Data Declaration Generation:</b> Generate appropriate FRISC data directive:
+ *       <ul>
+ *         <li>Initialized simple variables: {@code DW %D value}</li>
+ *         <li>Uninitialized simple variables: {@code DW %D 0}</li>
+ *         <li>Initialized arrays: {@code DW value1, value2, ...}</li>
+ *         <li>Uninitialized arrays: {@code `DS %D total_bytes}</li>
+ *       </ul>
+ *   </li>
+ * </ol>
+ * 
+ * <p><b>FRISC Data Directives:</b>
+ * 
+ * <p>FRISC uses the following data directives:
+ * <ul>
+ *   <li><b>DW (Define Word):</b> Declares a 32-bit word (4 bytes) with an initial value.
+ *       Used for initialized simple variables and arrays.</li>
+ *   <li><b>`DS (Define Storage):</b> Reserves space for uninitialized data (backtick prefix).
+ *       Used for uninitialized arrays. Format: {@code `DS %D N} where N is the number of bytes.</li>
+ * </ul>
+ * 
+ * <p><b>Label Generation:</b>
+ * 
+ * <p>Each global variable gets a unique label following the pattern:
+ * <pre>
+ * G_<VARIABLE_NAME>
+ * </pre>
+ * 
+ * <p>For example:
+ * <ul>
+ *   <li>Variable {@code x} → label {@code G_X}</li>
+ *   <li>Variable {@code counter} → label {@code G_COUNTER}</li>
+ * </ul>
+ * 
+ * <p><b>Initializer Extraction Algorithm:</b>
+ * 
+ * <p>Initializers are extracted from the parse tree using {@link InitializerExtractor}:
+ * <ol>
+ *   <li><b>Parse Tree Search:</b> Search the parse tree for the variable declaration</li>
+ *   <li><b>Initializer Node Location:</b> Find the initializer node associated with the variable</li>
+ *   <li><b>Value Extraction:</b> Extract constant values from the initializer expression</li>
+ *   <li><b>Array Handling:</b> For arrays, extract all initializer values recursively</li>
+ * </ol>
+ * 
+ * <p><b>Simple Variable Generation:</b>
+ * 
+ * <p>For simple variables (int, char, float):
+ * <ul>
+ *   <li><b>With Initializer:</b> {@code G_VAR DW %D 42} (initialized to 42)</li>
+ *   <li><b>Without Initializer:</b> {@code G_VAR DW %D 0} (initialized to 0)</li>
+ * </ul>
+ * 
+ * <p><b>Array Variable Generation:</b>
+ * 
+ * <p>For array variables:
+ * <ul>
+ *   <li><b>With Initializer:</b> {@code G_ARRAY DW %D 1, %D 2, %D 3} (initialized array)</li>
+ *   <li><b>Without Initializer:</b> {@code G_ARRAY `DS %D 20} (uninitialized array, 20 bytes = 5 ints)</li>
+ * </ul>
+ * 
+ * <p><b>Array Size Calculation:</b>
+ * 
+ * <p>For uninitialized arrays, the size is calculated as:
+ * <pre>
+ * total_bytes = array_size × element_size
+ * </pre>
+ * 
+ * <p>For this project, both int and char arrays use element size 4 bytes (32 bits).
+ * 
+ * <p><b>Placement in Generated Code:</b>
+ * 
+ * <p>Global variables are placed at the end of the generated FRISC program, after all
+ * function definitions. This follows the conventional assembly layout:
+ * <pre>
+ * ; Program entry point
+ * MOVE 40000, R7
+ * CALL F_MAIN
+ * HALT
+ * 
+ * ; Helper functions
+ * F_MUL ...
+ * F_DIV ...
+ * 
+ * ; Function definitions
+ * F_MAIN ...
+ * F_FOO ...
+ * 
+ * ; Global variables (data section)
+ * G_X DW %D 42
+ * G_ARRAY `DS %D 20
+ * </pre>
+ * 
+ * <p><b>Why This Ordering?</b>
+ * <ul>
+ *   <li><b>Conventional Layout:</b> Code section before data section is standard</li>
+ *   <li><b>Forward References:</b> Functions can reference global variables (labels can
+ *       be used before definition in assembly)</li>
+ *   <li><b>Linker Compatibility:</b> Matches standard linker expectations</li>
+ * </ul>
+ * 
+ * <p><b>Complexity Analysis:</b>
+ * <ul>
+ *   <li><b>Time Complexity:</b> O(n) where n is the number of global variables</li>
+ *   <li><b>Space Complexity:</b> O(1) - processes one variable at a time</li>
+ * </ul>
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */

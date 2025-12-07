@@ -5,25 +5,107 @@ import hr.fer.ppj.codegen.emitter.FriscEmitter;
 import java.util.Objects;
 
 /**
- * Generates FRISC helper functions for operations not directly supported by the architecture.
+ * Orchestrates generation of FRISC helper functions for operations not directly supported by the architecture.
  * 
  * <p>FRISC architecture does not have native MUL (multiplication) or DIV (division) instructions.
- * This class generates helper functions F_MUL and F_DIV that implement these operations using
- * basic arithmetic operations (addition, subtraction, comparison).
+ * This class coordinates the generation of helper functions by delegating to specialized generators.
+ * It acts as a <b>facade</b> that manages the generation of all integer helper functions based on
+ * which operations are actually needed by the generated code.
  * 
- * <p>The helper functions follow the standard FRISC calling convention:
+ * <p><b>Design Pattern: Facade</b>
+ * 
+ * <p>This class implements the <b>facade pattern</b>, providing a simplified interface for
+ * generating multiple related helper functions. It:
  * <ul>
- *   <li>Arguments are pushed right-to-left on the stack</li>
- *   <li>Return value is placed in register R6</li>
- *   <li>Caller cleans up arguments from the stack</li>
+ *   <li>Hides the complexity of managing multiple generators</li>
+ *   <li>Provides a single entry point for helper function generation</li>
+ *   <li>Only generates helpers that are actually needed (lazy generation)</li>
+ *   <li>Manages dependencies between helpers (e.g., float helpers may need integer helpers)</li>
  * </ul>
  * 
- * <p>F_MUL implements multiplication using repeated addition, handling both positive and
- * negative operands correctly. F_DIV implements integer division using repeated subtraction.
+ * <p><b>Helper Functions Generated:</b>
+ * 
+ * <p>This class delegates to specialized generators:
+ * <ul>
+ *   <li><b>{@link MultiplicationHelperGenerator}:</b> Generates F_MUL for 32-bit signed integer
+ *       multiplication using the Russian peasant algorithm (O(32) complexity)</li>
+ *   <li><b>{@link DivisionHelperGenerator}:</b> Generates F_DIV for 32-bit signed integer
+ *       division using binary long division (O(32) complexity)</li>
+ *   <li><b>{@link Mul64HelperGenerator}:</b> Generates F_MUL64 for 64-bit unsigned integer
+ *       multiplication using extended Russian peasant algorithm (O(32) complexity)</li>
+ * </ul>
+ * 
+ * <p><b>Why Helper Functions?</b>
+ * 
+ * <p>FRISC architecture lacks native multiplication and division instructions because:
+ * <ul>
+ *   <li><b>Hardware Simplicity:</b> FRISC is designed as a simple, educational architecture</li>
+ *   <li><b>Cost Reduction:</b> Multiplication and division hardware is expensive</li>
+ *   <li><b>Instruction Set Simplicity:</b> Keeps the instruction set small and easy to understand</li>
+ * </ul>
+ * 
+ * <p>Therefore, these operations must be implemented in software using basic instructions
+ * (ADD, SUB, SHL, SHR, etc.). The helper functions provide efficient implementations using
+ * well-known algorithms from compiler literature.
+ * 
+ * <p><b>FRISC Calling Convention:</b>
+ * 
+ * <p>All helper functions follow the standard FRISC calling convention:
+ * <ul>
+ *   <li><b>Argument Passing:</b> Arguments are pushed right-to-left on the stack
+ *       (C convention). For example, to call F_MUL(a, b):
+ *       <pre>
+ *       PUSH b    ; second argument (right operand)
+ *       PUSH a    ; first argument (left operand)
+ *       CALL F_MUL
+ *       </pre>
+ *   </li>
+ *   <li><b>Return Value:</b> Return value is placed in register R6</li>
+ *   <li><b>Stack Cleanup:</b> Caller cleans up arguments from the stack:
+ *       <pre>
+ *       ADD R7, %D 8, R7  ; remove 2 arguments (2 × 4 bytes)
+ *       </pre>
+ *   </li>
+ *   <li><b>Register Preservation:</b> Helper functions may use R0-R4, but must preserve
+ *       R5 (frame pointer) and R7 (stack pointer)</li>
+ * </ul>
+ * 
+ * <p><b>Lazy Generation Strategy:</b>
+ * 
+ * <p>Helpers are only generated if they are actually needed:
+ * <ol>
+ *   <li>During expression code generation, operations call methods like
+ *       {@code emitter.markMulNeeded()} to mark which helpers are needed</li>
+ *   <li>After processing the translation unit, the main code generator queries
+ *       which helpers are needed</li>
+ *   <li>This class generates only the needed helpers, avoiding unnecessary code bloat</li>
+ * </ol>
+ * 
+ * <p><b>Dependency Management:</b>
+ * 
+ * <p>Some helpers have dependencies:
+ * <ul>
+ *   <li><b>F_MUL64:</b> Used by float multiplication helper (F_FMUL)</li>
+ *   <li><b>F_MUL and F_DIV:</b> Used directly by integer operations in user code</li>
+ * </ul>
+ * 
+ * <p>The float helpers mark these integer helpers as needed during their generation,
+ * ensuring the correct generation order in the pipeline.
+ * 
+ * <p><b>Complexity Analysis:</b>
+ * <ul>
+ *   <li><b>Time Complexity:</b> O(n) where n is the number of helpers to generate
+ *       (typically 0-4 helpers, each O(32) to O(64) depending on the helper)</li>
+ *   <li><b>Space Complexity:</b> O(1) - uses only a few generator objects</li>
+ * </ul>
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */
 public final class HelperFunctionGenerator {
+    
+    private final MultiplicationHelperGenerator mulGenerator = new MultiplicationHelperGenerator();
+    private final DivisionHelperGenerator divGenerator = new DivisionHelperGenerator();
+    private final Mul64HelperGenerator mul64Generator = new Mul64HelperGenerator();
     
     /**
      * Generates helper functions F_MUL and/or F_DIV if needed.
@@ -48,170 +130,24 @@ public final class HelperFunctionGenerator {
         emitter.emitNewline();
         
         if (needsMul) {
-            generateMultiplicationHelper(context);
+            mulGenerator.generate(context);
         }
         
         if (needsDiv) {
-            generateDivisionHelper(context);
+            divGenerator.generate(context);
         }
     }
     
     /**
-     * Generates the F_MUL helper function for multiplication.
+     * Generates the F_MUL64 helper function for 64-bit unsigned integer multiplication.
      * 
-     * <p>Implements multiplication using repeated addition. Handles:
-     * <ul>
-     *   <li>Zero multiplier (returns 0 immediately)</li>
-     *   <li>Negative multiplier (negates both operands to get positive multiplier)</li>
-     *   <li>Positive multiplier (repeated addition loop)</li>
-     * </ul>
-     * 
-     * <p>Calling convention:
-     * <pre>
-     *   push b (right operand)
-     *   push a (left operand)
-     *   CALL F_MUL
-     *   ADD R7, %D 8, R7  ; cleanup arguments
-     *   ; result in R6
-     * </pre>
-     * 
-     * <p>Stack layout after prologue:
-     * <pre>
-     *   (R5+0C) : b (right operand, pushed first)
-     *   (R5+08) : a (left operand, pushed last)
-     *   (R5+04) : return address
-     *   (R5+00) : old R5
-     * </pre>
+     * <p>This function is used by float multiplication to compute the full 64-bit product
+     * of two 32-bit Q16.16 fixed-point values.
      * 
      * @param context the code generation context
      */
-    private void generateMultiplicationHelper(CodeGenContext context) {
-        FriscEmitter emitter = context.emitter();
-        
-        emitter.emitLabel("F_MUL", "Helper function: int mul(int a, int b)");
-        
-        // Function prologue
-        emitter.emitInstruction("PUSH", "R5", null, "save old frame pointer");
-        emitter.emitInstruction("MOVE", "R7", "R5", "R5 = current SP -> base of frame");
-        emitter.emitInstruction("SUB", "R7", "%D 4", "R7", "allocate local for accumulator");
-        
-        // Load arguments from stack
-        // Arguments are pushed right-to-left: push b first, then push a
-        // After prologue: [old_R5, return_addr, b, a]
-        // First parameter (a) is at (R5+08), second parameter (b) is at (R5+0C)
-        emitter.emitInstruction("LOAD", "R0", "(R5+08)", "a (left operand, pushed last, first parameter)");
-        emitter.emitInstruction("LOAD", "R1", "(R5+0C)", "b (right operand, pushed first, second parameter)");
-        emitter.emitInstruction("MOVE", "%D 0", "R2", "acc = 0");
-        
-        // Handle zero multiplier - return 0 immediately
-        String mulEndLabel = context.labelGenerator().generateLabel();
-        emitter.emitInstruction("CMP", "R1", "%D 0", null);
-        emitter.emitInstruction("JR_EQ", mulEndLabel, "if b == 0, result is 0");
-        
-        // Handle negative multiplier: if b < 0, negate both a and b
-        // This ensures we always work with a positive multiplier in the loop
-        String mulPositiveLabel = context.labelGenerator().generateLabel();
-        emitter.emitInstruction("CMP", "R1", "%D 0", null);
-        emitter.emitInstruction("JR_SGT", mulPositiveLabel, "if b > 0, proceed with positive multiplication");
-        
-        // b is negative: negate both a and b to get positive multiplier
-        // This preserves the sign of the result: (-a) * (-b) = a * b
-        emitter.emitInstruction("MOVE", "%D 0", "R3", "zero for negation");
-        emitter.emitInstruction("SUB", "R3", "R0", "R0", "negate a");
-        emitter.emitInstruction("SUB", "R3", "R1", "R1", "negate b");
-        
-        // Multiplication loop: acc += a, b--
-        emitter.emitLabel(mulPositiveLabel, "multiplication loop (b > 0)");
-        String mulLoopLabel = context.labelGenerator().generateLabel();
-        emitter.emitLabel(mulLoopLabel, "multiplication loop");
-        emitter.emitInstruction("ADD", "R2", "R0", "R2", "acc += a");
-        emitter.emitInstruction("SUB", "R1", "%D 1", "R1", "b--");
-        emitter.emitInstruction("CMP", "R1", "%D 0", null);
-        emitter.emitInstruction("JR_SGT", mulLoopLabel, "while (b > 0)");
-        
-        // Function epilogue
-        emitter.emitLabel(mulEndLabel, "multiplication done");
-        emitter.emitInstruction("MOVE", "R2", "R6", "result");
-        emitter.emitInstruction("ADD", "R7", "%D 4", "R7", "deallocate local");
-        emitter.emitInstruction("POP", "R5", null, "restore old frame pointer");
-        emitter.emitInstruction("RET", null, null, "return to caller");
-        emitter.emitNewline();
-    }
-    
-    /**
-     * Generates the F_DIV helper function for integer division.
-     * 
-     * <p>Implements integer division using repeated subtraction. Handles:
-     * <ul>
-     *   <li>Division by zero (returns 0)</li>
-     *   <li>Normal division (repeated subtraction until remainder < divisor)</li>
-     * </ul>
-     * 
-     * <p>Calling convention:
-     * <pre>
-     *   push b (divisor)
-     *   push a (dividend)
-     *   CALL F_DIV
-     *   ADD R7, %D 8, R7  ; cleanup arguments
-     *   ; result in R6
-     * </pre>
-     * 
-     * <p>Stack layout after prologue:
-     * <pre>
-     *   (R5+0C) : b (divisor, pushed first)
-     *   (R5+08) : a (dividend, pushed last)
-     *   (R5+04) : return address
-     *   (R5+00) : old R5
-     * </pre>
-     * 
-     * @param context the code generation context
-     */
-    private void generateDivisionHelper(CodeGenContext context) {
-        FriscEmitter emitter = context.emitter();
-        
-        emitter.emitLabel("F_DIV", "Helper function: int div(int a, int b)");
-        
-        // Function prologue
-        emitter.emitInstruction("PUSH", "R5", null, "save old frame pointer");
-        emitter.emitInstruction("MOVE", "R7", "R5", "R5 = current SP -> base of frame");
-        
-        // Load arguments from stack
-        // Arguments are pushed right-to-left: push b first, then push a
-        // After prologue: [old_R5, return_addr, b, a]
-        // First parameter (a) is at (R5+08), second parameter (b) is at (R5+0C)
-        emitter.emitInstruction("LOAD", "R0", "(R5+08)", "a (dividend, pushed last, first parameter)");
-        emitter.emitInstruction("LOAD", "R1", "(R5+0C)", "b (divisor, pushed first, second parameter)");
-        
-        // Handle division by zero - return 0
-        String divByZeroLabel = context.labelGenerator().generateLabel();
-        String divEndLabel = context.labelGenerator().generateLabel();
-        emitter.emitInstruction("CMP", "R1", "%D 0", null);
-        emitter.emitInstruction("JR_EQ", divByZeroLabel, "division by zero");
-        
-        // Save dividend and divisor, initialize quotient
-        emitter.emitInstruction("MOVE", "R0", "R2", "save dividend");
-        emitter.emitInstruction("MOVE", "R1", "R3", "save divisor");
-        emitter.emitInstruction("MOVE", "%D 0", "R0", "initialize quotient");
-        
-        // Division loop: subtract divisor from dividend until dividend < divisor
-        String divLoopLabel = context.labelGenerator().generateLabel();
-        emitter.emitLabel(divLoopLabel, "division loop");
-        emitter.emitInstruction("CMP", "R2", "R3", null);
-        emitter.emitInstruction("JR_SLT", divEndLabel, "exit if dividend < divisor");
-        emitter.emitInstruction("SUB", "R2", "R3", "R2", "subtract divisor from dividend");
-        emitter.emitInstruction("ADD", "R0", "%D 1", "R0", "increment quotient");
-        emitter.emitInstruction("JR", divLoopLabel, "continue division");
-        
-        // Handle division by zero case
-        emitter.emitLabel(divByZeroLabel, "division by zero");
-        emitter.emitInstruction("MOVE", "%D 0", "R0", "result 0 for division by zero");
-        
-        // Function epilogue
-        emitter.emitLabel(divEndLabel, "end division");
-        emitter.emitInstruction("MOVE", "R0", "R6", "result");
-        emitter.emitInstruction("POP", "R5", null, "restore old frame pointer");
-        emitter.emitInstruction("RET", null, null, "return to caller");
-        emitter.emitNewline();
+    public void generateMul64Helper(CodeGenContext context) {
+        mul64Generator.generate(context);
     }
 }
 

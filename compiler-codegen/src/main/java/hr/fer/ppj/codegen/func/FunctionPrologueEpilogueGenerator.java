@@ -9,48 +9,121 @@ import java.util.Objects;
  * 
  * <p>This class is responsible for generating the standard FRISC function
  * prologue (entry code) and epilogue (exit code) sequences that manage
- * the stack frame and calling convention.
+ * the stack frame and calling convention. It implements the <b>stack frame
+ * management algorithm</b> used by all functions in the generated code.
+ * 
+ * <p><b>Algorithm: Stack Frame Management</b>
+ * 
+ * <p>This class implements the standard stack frame management algorithm used
+ * in compiler code generation:
+ * <ol>
+ *   <li><b>Prologue (Function Entry):</b>
+ *       <ul>
+ *         <li>Save the caller's frame pointer (R5) on the stack</li>
+ *         <li>Set the current frame pointer (R5) to the current stack pointer (R7)</li>
+ *         <li>Allocate space for local variables by decrementing R7</li>
+ *       </ul>
+ *   </li>
+ *   <li><b>Function Body:</b>
+ *       <ul>
+ *         <li>Function executes with R5 pointing to the saved old R5</li>
+ *         <li>Parameters accessed via positive offsets from R5 (R5+8, R5+12, ...)</li>
+ *         <li>Local variables accessed via negative offsets from R5 (R5-4, R5-8, ...)</li>
+ *       </ul>
+ *   </li>
+ *   <li><b>Epilogue (Function Exit):</b>
+ *       <ul>
+ *         <li>Deallocate local variables by incrementing R7</li>
+ *         <li>Restore the caller's frame pointer (R5) from the stack</li>
+ *         <li>Return to the caller (pops return address and jumps)</li>
+ *       </ul>
+ *   </li>
+ * </ol>
  * 
  * <p><b>FRISC Function Prologue:</b>
  * <pre>
- * PUSH R5                ; Save old frame pointer
+ * PUSH R5                ; Save old frame pointer on stack, decrement R7
  * MOVE R7, R5            ; R5 = current SP (new frame pointer)
  * SUB  R7, %D K, R7      ; Allocate K bytes for local variables (stack grows down)
  * </pre>
  * 
  * <p><b>FRISC Function Epilogue:</b>
  * <pre>
- * ADD  R7, %D K, R7      ; Deallocate local variables
- * POP  R5                 ; Restore old frame pointer
+ * ADD  R7, %D K, R7      ; Deallocate local variables (move R7 back up)
+ * POP  R5                 ; Restore old frame pointer from stack, increment R7
  * RET                     ; Return to caller (pops return address and jumps)
  * </pre>
  * 
+ * <p><b>Why This Algorithm?</b>
+ * 
+ * <p>The stack frame management algorithm provides several benefits:
+ * <ul>
+ *   <li><b>Stable Reference Point:</b> R5 (frame pointer) remains fixed during
+ *       function execution, providing a stable base for accessing parameters and
+ *       local variables</li>
+ *   <li><b>Dynamic Stack Growth:</b> R7 (stack pointer) can grow/shrink during
+ *       function execution (e.g., for temporary values), while R5 stays fixed</li>
+ *   <li><b>Nested Function Calls:</b> Each function call creates its own stack frame,
+ *       allowing recursive and nested function calls</li>
+ *   <li><b>Automatic Cleanup:</b> The epilogue automatically restores the stack to
+ *       its pre-call state, ensuring proper stack management</li>
+ * </ul>
+ * 
  * <p><b>FRISC Calling Convention:</b>
  * <ul>
- *   <li>R5 - Frame Pointer (FP), set in prologue</li>
- *   <li>R7 - Stack Pointer (SP), adjusted for local variables</li>
- *   <li>Stack grows downward (R7 decreases for allocation)</li>
- *   <li>Parameters at positive offsets from R5 (R5+8, R5+12, ...)</li>
- *   <li>Local variables at negative offsets from R5 (R5-4, R5-8, ...)</li>
+ *   <li><b>R5 (Frame Pointer):</b> Points to the saved old R5 in the current frame.
+ *       Fixed during function execution, provides stable base for variable access.</li>
+ *   <li><b>R7 (Stack Pointer):</b> Points to the top of the stack (lowest allocated address).
+ *       Adjusted in prologue for local variables, restored in epilogue.</li>
+ *   <li><b>Stack Growth:</b> Stack grows downward (R7 decreases for allocation, increases
+ *       for deallocation). This is the standard convention for most architectures.</li>
+ *   <li><b>Parameters:</b> At positive offsets from R5 (R5+8, R5+12, ...). The first
+ *       parameter is at R5+8 because R5+0 contains saved old R5 and R5+4 contains
+ *       the return address (saved by CALL instruction).</li>
+ *   <li><b>Local Variables:</b> At negative offsets from R5 (R5-4, R5-8, ...). Allocated
+ *       downward from R5 to allow for variable-sized arrays and dynamic allocation.</li>
  * </ul>
  * 
  * <p><b>Stack Frame Layout:</b>
  * <pre>
- * Higher addresses
+ * Higher addresses (lower memory addresses in FRISC)
  * +----------------+
- * | Parameter n    | R5 + (8 + (n-1)*4)
+ * | Parameter n    | R5 + (8 + (n-1)*4)  ; Last parameter
  * | ...            |
- * | Parameter 1    | R5 + 8
- * | Return address | R5 + 4
- * | Old R5         | R5 + 0  (saved by current function)
- * +----------------+ <- R5 (frame pointer, fixed)
- * | Local var 1    | R5 - 4
- * | Local var 2    | R5 - 8
+ * | Parameter 2    | R5 + 12              ; Second parameter
+ * | Parameter 1    | R5 + 8               ; First parameter
+ * | Return address | R5 + 4                ; Saved by CALL instruction
+ * | Old R5         | R5 + 0                ; Saved by current function (prologue)
+ * +----------------+ <- R5 (frame pointer, fixed during function execution)
+ * | Local var 1    | R5 - 4                ; First local variable
+ * | Local var 2    | R5 - 8                ; Second local variable
  * | ...            |
- * | Local var n    | R5 - (n*4)
+ * | Local var n    | R5 - (n*4)            ; Last local variable
  * +----------------+ <- R7 (current stack pointer, after local allocation)
- * Lower addresses
+ * Lower addresses (higher memory addresses in FRISC)
  * </pre>
+ * 
+ * <p><b>Epilogue Sharing:</b>
+ * 
+ * <p>All return paths in a function share the same epilogue code. Return statements
+ * jump to the exit label (which precedes the epilogue) to avoid duplicate code:
+ * <pre>
+ * if (condition) {
+ *     return 1;  // Jumps to L_EXIT
+ * }
+ * return 0;      // Jumps to L_EXIT
+ * 
+ * L_EXIT:        ; Single epilogue for all return paths
+ *     ADD R7, %D K, R7
+ *     POP R5
+ *     RET
+ * </pre>
+ * 
+ * <p><b>Complexity:</b>
+ * <ul>
+ *   <li><b>Time Complexity:</b> O(1) - constant number of instructions</li>
+ *   <li><b>Space Complexity:</b> O(1) - fixed stack overhead (saved R5, return address)</li>
+ * </ul>
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */

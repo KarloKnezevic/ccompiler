@@ -42,7 +42,8 @@ final class GlobalConstraintVerifier {
     FunctionSymbol main = functions.get(SemanticConstants.MAIN_FUNCTION_NAME);
     if (main == null
         || !main.defined()
-        || TypeSystem.stripConst(main.type().returnType()) != PrimitiveType.INT
+        || (TypeSystem.stripConst(main.type().returnType()) != PrimitiveType.INT
+            && TypeSystem.stripConst(main.type().returnType()) != PrimitiveType.FLOAT)
         || !main.type().parameterTypes().isEmpty()) {
       errorReporter.reportGlobalError(SemanticConstants.ERROR_MISSING_MAIN);
     }

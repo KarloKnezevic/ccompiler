@@ -9,40 +9,114 @@ import java.util.Objects;
 /**
  * Generates FRISC assembly code for array indexing operations.
  * 
+ * <p>This class handles the generation of code for array element access and assignment,
+ * implementing the <b>array indexing code generation algorithm</b> that translates C
+ * array operations into FRISC assembly with proper address calculation.
+ * 
  * <p><b>Grammar Rule:</b> Handles array indexing from {@code <postfiks_izraz>}:
  * <pre>
  * &lt;postfiks_izraz&gt; ::= &lt;postfiks_izraz&gt; L_UGL_ZAGRADA &lt;izraz&gt; D_UGL_ZAGRADA
  * </pre>
  * 
- * <p>This class handles the generation of code for:
+ * <p><b>Algorithm: Array Indexing Code Generation</b>
+ * 
+ * <p>The algorithm works as follows:
+ * <ol>
+ *   <li><b>Base Address Resolution:</b> Resolve the base address of the array:
+ *       <ul>
+ *         <li>Global arrays: Use global label (e.g., {@code G_A})</li>
+ *         <li>Local arrays: Use frame pointer with offset (e.g., {@code R5 - 20})</li>
+ *         <li>Array parameters: Load pointer from parameter slot (array decay to pointer)</li>
+ *       </ul>
+ *   </li>
+ *   <li><b>Index Evaluation:</b> Evaluate the index expression (result in R0)</li>
+ *   <li><b>Offset Calculation:</b> Multiply index by element size (4 bytes) using left shift:
+ *       {@code SHL R0, %D 2, R0} (shift left by 2 = multiply by 4)</li>
+ *   <li><b>Address Computation:</b> Add offset to base address: {@code ADD R1, R0, R1}</li>
+ *   <li><b>Memory Access:</b> Load or store element value using computed address</li>
+ * </ol>
+ * 
+ * <p><b>Array Element Size:</b>
+ * 
+ * <p>For this project, both {@code int} and {@code char} arrays use 4-byte elements:
  * <ul>
- *   <li>Array element access: {@code a[i]}</li>
- *   <li>Array element assignment: {@code a[i] = value}</li>
+ *   <li>This simplifies the implementation (no need for different element sizes)</li>
+ *   <li>Chars are stored as 32-bit words (not bytes)</li>
+ *   <li>Uses {@code LOAD} and {@code STORE} instructions (not {@code LOADB} and {@code STOREB})</li>
  * </ul>
  * 
- * <p><b>FRISC Semantics:</b>
+ * <p><b>Address Calculation Formula:</b>
+ * <pre>
+ * element_address = base_address + (index × element_size)
+ *                 = base_address + (index × 4)
+ * </pre>
+ * 
+ * <p><b>Index Multiplication Optimization:</b>
+ * 
+ * <p>Multiplying by 4 is optimized using left shift (more efficient than calling F_MUL):
+ * <pre>
+ * index × 4 = index << 2
+ * </pre>
+ * 
+ * <p>This is implemented as: {@code SHL R0, %D 2, R0}
+ * 
+ * <p><b>Array Parameter Handling:</b>
+ * 
+ * <p>When an array is passed as a parameter, C's array decay to pointer semantics apply:
  * <ul>
- *   <li><b>Element Size:</b> Both {@code int} and {@code char} arrays use 4-byte elements
- *       (chars stored as 4-byte words)</li>
- *   <li><b>Address Calculation:</b> {@code address(a[i]) = base(a) + i * 4}</li>
- *   <li><b>Index Multiplication:</b> Uses {@code SHL R0, %D 2, R0} to multiply index by 4
- *       (shift left by 2 bits = multiply by 4)</li>
- *   <li><b>Memory Access:</b> Uses {@code LOAD} and {@code STORE} instructions (not LOADB/STOREB)</li>
+ *   <li>The parameter slot contains a pointer to the array (not the array itself)</li>
+ *   <li>We must first load the pointer value: {@code LOAD R1, (R5+offset)}</li>
+ *   <li>Then index from that pointer: {@code ADD R1, R0, R1}</li>
  * </ul>
  * 
- * <p><b>Array Types Supported:</b>
- * <ul>
- *   <li><b>Global arrays:</b> Base address is label (e.g., {@code G_A})</li>
- *   <li><b>Local arrays:</b> Base address is stack offset (e.g., {@code (R5-20)})</li>
- *   <li><b>Array parameters:</b> Base address is pointer loaded from parameter slot
- *       (e.g., {@code LOAD R1, (R5+8)} to get pointer, then index from that)</li>
- * </ul>
+ * <p><b>FRISC Code Pattern (Array Access):</b>
+ * <pre>
+ * ; Array access: a[i]
  * 
- * <p><b>Register Usage:</b>
+ * ; Evaluate index
+ * ... (evaluate i, result in R0) ...
+ * 
+ * ; Multiply index by element size (4 bytes)
+ * SHL R0, %D 2, R0              ; index * 4
+ * 
+ * ; Load base address
+ * MOVE G_A, R1                   ; global array
+ * ; OR
+ * MOVE R5, R1                    ; local array
+ * ADD R1, -20, R1                ; add base offset
+ * ; OR
+ * LOAD R1, (R5+08)               ; array parameter (load pointer)
+ * 
+ * ; Compute element address
+ * ADD R1, R0, R1                 ; R1 = base + (index * 4)
+ * 
+ * ; Load element value
+ * LOAD R0, (R1)                  ; load a[i]
+ * </pre>
+ * 
+ * <p><b>FRISC Code Pattern (Array Assignment):</b>
+ * <pre>
+ * ; Array assignment: a[i] = value
+ * 
+ * ; Save value (already in sourceRegister, typically R0)
+ * MOVE R0, R2                    ; save value
+ * 
+ * ; Evaluate index
+ * ... (evaluate i, result in R0) ...
+ * SHL R0, %D 2, R0               ; index * 4
+ * 
+ * ; Compute element address (same as access)
+ * MOVE G_A, R1                   ; base address
+ * ADD R1, R0, R1                 ; element address
+ * 
+ * ; Store value
+ * STORE R2, (R1)                 ; store to a[i]
+ * </pre>
+ * 
+ * <p><b>Complexity Analysis:</b>
  * <ul>
- *   <li>R0: Index value (input), then byte offset (index * 4), then element value (output)</li>
- *   <li>R1: Base address, then element address (base + offset)</li>
- *   <li>R2: Used for saving source value during assignment</li>
+ *   <li><b>Time Complexity:</b> O(1) for code generation (constant number of instructions)</li>
+ *   <li><b>Space Complexity:</b> O(1) - uses only registers</li>
  * </ul>
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
@@ -277,25 +351,7 @@ public final class ArrayExpressionGenerator {
      * @return the variable name, or null if not a simple variable
      */
     private String extractVariableName(NonTerminalNode expr) {
-        // Navigate through the expression hierarchy to find the identifier
-        return findIdentifierInExpression(expr);
-    }
-    
-    /**
-     * Recursively searches for an identifier in an expression.
-     */
-    private String findIdentifierInExpression(NonTerminalNode node) {
-        for (var child : node.children()) {
-            if (child instanceof hr.fer.ppj.semantics.tree.TerminalNode terminal && "IDN".equals(terminal.symbol())) {
-                return terminal.lexeme();
-            } else if (child instanceof NonTerminalNode nonTerminal) {
-                String result = findIdentifierInExpression(nonTerminal);
-                if (result != null) {
-                    return result;
-                }
-            }
-        }
-        return null;
+        return hr.fer.ppj.codegen.utils.IdentifierExtractor.findIdentifier(expr);
     }
     
     /**
@@ -305,14 +361,8 @@ public final class ArrayExpressionGenerator {
      * @return the FRISC address expression
      */
     private String getVariableAddress(String variableName) {
-        // Check if we're in a function and the variable is local
-        if (context.isInFunction() && context.activationRecord().hasVariable(variableName)) {
-            return context.activationRecord().getVariableAddress(variableName);
-        } else {
-            // Global variable
-            String label = context.labelGenerator().getGlobalVariableLabel(variableName);
-            return "(" + label + ")";
-        }
+        var resolver = new hr.fer.ppj.codegen.utils.VariableAddressResolver(context);
+        return resolver.getVariableAddress(variableName);
     }
 }
 

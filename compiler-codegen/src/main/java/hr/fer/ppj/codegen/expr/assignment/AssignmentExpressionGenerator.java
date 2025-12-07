@@ -11,18 +11,96 @@ import java.util.Objects;
 /**
  * Generates FRISC assembly code for assignment expressions and increment/decrement operations.
  * 
- * <p>This class handles the generation of code for:
+ * <p>This class handles the generation of code for assignments and increment/decrement operations,
+ * implementing the <b>assignment code generation algorithm</b> that translates C assignment
+ * operations into FRISC assembly.
+ * 
+ * <p><b>Algorithm: Assignment Code Generation</b>
+ * 
+ * <p>The algorithm works as follows:
+ * <ol>
+ *   <li><b>Right-Hand Side Evaluation:</b> Evaluate the right-hand side expression first
+ *       (result in R0)</li>
+ *   <li><b>Left-Hand Side Resolution:</b> Resolve the left-hand side (lvalue):
+ *       <ul>
+ *         <li>Simple variable: Get address from activation record or global scope</li>
+ *         <li>Array element: Delegate to array generator for address calculation</li>
+ *       </ul>
+ *   </li>
+ *   <li><b>Value Storage:</b> Store the value from R0 to the resolved address</li>
+ * </ol>
+ * 
+ * <p><b>Assignment Types Handled:</b>
  * <ul>
- *   <li>Assignment expressions (=)</li>
- *   <li>Pre-increment (++var)</li>
- *   <li>Pre-decrement (--var)</li>
- *   <li>Post-increment (var++)</li>
- *   <li>Post-decrement (var--)</li>
+ *   <li><b>Simple Variable Assignment:</b> {@code x = value} - direct STORE to variable address</li>
+ *   <li><b>Array Element Assignment:</b> {@code a[i] = value} - delegate to array generator</li>
  * </ul>
  * 
- * <p>Assignments can be to simple variables or array elements.
- * Increment/decrement operations modify variables and return either
- * the new value (pre-) or the old value (post-).
+ * <p><b>Increment/Decrement Operations:</b>
+ * 
+ * <p>Increment and decrement operations are delegated to {@link IncrementDecrementGenerator}:
+ * <ul>
+ *   <li><b>Pre-increment (++var):</b> Increment variable, return new value</li>
+ *   <li><b>Pre-decrement (--var):</b> Decrement variable, return new value</li>
+ *   <li><b>Post-increment (var++):</b> Save old value, increment variable, return old value</li>
+ *   <li><b>Post-decrement (var--):</b> Save old value, decrement variable, return old value</li>
+ * </ul>
+ * 
+ * <p><b>FRISC Code Pattern (Simple Assignment):</b>
+ * <pre>
+ * ; Assignment: x = y + z
+ * 
+ * ; Evaluate right-hand side
+ * ... (evaluate y + z, result in R0) ...
+ * 
+ * ; Store to left-hand side
+ * STORE R0, (R5-04)            ; local variable
+ * ; OR
+ * STORE R0, (G_X)               ; global variable
+ * </pre>
+ * 
+ * <p><b>FRISC Code Pattern (Array Assignment):</b>
+ * <pre>
+ * ; Assignment: a[i] = value
+ * 
+ * ; Evaluate value (already in R0)
+ * MOVE R0, R2                   ; save value
+ * 
+ * ; Evaluate index
+ * ... (evaluate i, result in R0) ...
+ * SHL R0, %D 2, R0              ; index * 4
+ * 
+ * ; Compute element address
+ * MOVE G_A, R1                  ; base address
+ * ADD R1, R0, R1                ; element address
+ * 
+ * ; Store value
+ * STORE R2, (R1)                ; store to array element
+ * </pre>
+ * 
+ * <p><b>Lvalue Resolution:</b>
+ * 
+ * <p>Lvalues (left-hand sides of assignments) must be:
+ * <ul>
+ *   <li><b>Modifiable:</b> Must be a variable or array element (not a constant)</li>
+ *   <li><b>Addressable:</b> Must have a memory address (not a temporary value)</li>
+ * </ul>
+ * 
+ * <p>This implementation supports:
+ * <ul>
+ *   <li>Simple variables (local and global)</li>
+ *   <li>Array elements (via array generator)</li>
+ * </ul>
+ * 
+ * <p>Complex lvalues (e.g., pointer dereferences, structure members) are not supported
+ * in this subset.
+ * 
+ * <p><b>Complexity Analysis:</b>
+ * <ul>
+ *   <li><b>Time Complexity:</b> O(1) for simple assignments, O(1) for array assignments
+ *       (constant number of instructions)</li>
+ *   <li><b>Space Complexity:</b> O(1) - uses only registers</li>
+ * </ul>
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */
@@ -30,6 +108,8 @@ public final class AssignmentExpressionGenerator {
     
     private final CodeGenContext context;
     private final ExpressionCodeGenerator expressionGenerator;
+    private final IncrementDecrementGenerator incDecGenerator;
+    private final VariableAddressResolver addressResolver;
     private hr.fer.ppj.codegen.expr.array.ArrayExpressionGenerator arrayGenerator;
     
     /**
@@ -41,6 +121,8 @@ public final class AssignmentExpressionGenerator {
     public AssignmentExpressionGenerator(CodeGenContext context, ExpressionCodeGenerator expressionGenerator) {
         this.context = Objects.requireNonNull(context, "context must not be null");
         this.expressionGenerator = Objects.requireNonNull(expressionGenerator, "expressionGenerator must not be null");
+        this.incDecGenerator = new IncrementDecrementGenerator(context, expressionGenerator);
+        this.addressResolver = new VariableAddressResolver(context);
     }
     
     /**
@@ -83,24 +165,7 @@ public final class AssignmentExpressionGenerator {
      * @param operand the operand expression
      */
     public void generatePreIncrement(NonTerminalNode operand) {
-        String variableName = extractVariableName(operand);
-        
-        if (variableName != null) {
-            String address = getVariableAddress(variableName);
-            
-            // Load current value
-            context.emitter().emitInstruction("LOAD", "R0", address, "load " + variableName);
-            // Increment by decimal 1
-            context.emitter().emitInstruction("ADD", "R0", "%D 1", "R0", "pre-increment");
-            // Store back
-            context.emitter().emitInstruction("STORE", "R0", address, "store incremented " + variableName);
-            // Result is the new value (already in R0)
-        } else {
-            // Complex pre-increment - evaluate operand, increment, store, return new value
-            expressionGenerator.generateExpression(operand);
-            context.emitter().emitInstruction("ADD", "R0", "%D 1", "R0", "pre-increment");
-            // Note: Cannot store back if operand is not a simple lvalue
-        }
+        incDecGenerator.generatePreIncrement(operand);
     }
     
     /**
@@ -110,23 +175,7 @@ public final class AssignmentExpressionGenerator {
      * @param operand the operand expression
      */
     public void generatePreDecrement(NonTerminalNode operand) {
-        String variableName = extractVariableName(operand);
-        
-        if (variableName != null) {
-            String address = getVariableAddress(variableName);
-            
-            // Load current value
-            context.emitter().emitInstruction("LOAD", "R0", address, "load " + variableName);
-            // Decrement by decimal 1
-            context.emitter().emitInstruction("SUB", "R0", "%D 1", "R0", "pre-decrement");
-            // Store back
-            context.emitter().emitInstruction("STORE", "R0", address, "store decremented " + variableName);
-            // Result is the new value (already in R0)
-        } else {
-            // Complex pre-decrement - evaluate operand, decrement, store, return new value
-            expressionGenerator.generateExpression(operand);
-            context.emitter().emitInstruction("SUB", "R0", "%D 1", "R0", "pre-decrement");
-        }
+        incDecGenerator.generatePreDecrement(operand);
     }
     
     /**
@@ -136,28 +185,7 @@ public final class AssignmentExpressionGenerator {
      * @param operand the operand expression
      */
     public void generatePostIncrement(NonTerminalNode operand) {
-        String variableName = extractVariableName(operand);
-        
-        if (variableName != null) {
-            String address = getVariableAddress(variableName);
-            
-            // Load current value
-            context.emitter().emitInstruction("LOAD", "R0", address, "load " + variableName);
-            // Save old value
-            context.emitter().emitInstruction("MOVE", "R0", "R1", "save old value");
-            // Increment by decimal 1
-            context.emitter().emitInstruction("ADD", "R0", "%D 1", "R0", "post-increment");
-            // Store new value
-            context.emitter().emitInstruction("STORE", "R0", address, "store incremented " + variableName);
-            // Return old value
-            context.emitter().emitInstruction("MOVE", "R1", "R0", "return old value");
-        } else {
-            // Complex post-increment - evaluate operand, save old value, increment, store, return old
-            expressionGenerator.generateExpression(operand);
-            context.emitter().emitInstruction("MOVE", "R0", "R1", "save old value");
-            context.emitter().emitInstruction("ADD", "R0", "%D 1", "R0", "post-increment");
-            context.emitter().emitInstruction("MOVE", "R1", "R0", "return old value");
-        }
+        incDecGenerator.generatePostIncrement(operand);
     }
     
     /**
@@ -167,28 +195,7 @@ public final class AssignmentExpressionGenerator {
      * @param operand the operand expression
      */
     public void generatePostDecrement(NonTerminalNode operand) {
-        String variableName = extractVariableName(operand);
-        
-        if (variableName != null) {
-            String address = getVariableAddress(variableName);
-            
-            // Load current value
-            context.emitter().emitInstruction("LOAD", "R0", address, "load " + variableName);
-            // Save old value
-            context.emitter().emitInstruction("MOVE", "R0", "R1", "save old value");
-            // Decrement by decimal 1
-            context.emitter().emitInstruction("SUB", "R0", "%D 1", "R0", "post-decrement");
-            // Store new value
-            context.emitter().emitInstruction("STORE", "R0", address, "store decremented " + variableName);
-            // Return old value
-            context.emitter().emitInstruction("MOVE", "R1", "R0", "return old value");
-        } else {
-            // Complex post-decrement - evaluate operand, save old value, decrement, store, return old
-            expressionGenerator.generateExpression(operand);
-            context.emitter().emitInstruction("MOVE", "R0", "R1", "save old value");
-            context.emitter().emitInstruction("SUB", "R0", "%D 1", "R0", "post-decrement");
-            context.emitter().emitInstruction("MOVE", "R1", "R0", "return old value");
-        }
+        incDecGenerator.generatePostDecrement(operand);
     }
     
     /**
@@ -210,10 +217,10 @@ public final class AssignmentExpressionGenerator {
         }
         
         // Handle simple variable assignments
-        String variableName = extractVariableName(lvalue);
+        String variableName = addressResolver.extractVariableName(lvalue);
         
         if (variableName != null) {
-            String address = getVariableAddress(variableName);
+            String address = addressResolver.getVariableAddress(variableName);
             context.emitter().emitInstruction("STORE", sourceRegister, address, 
                                             "assign to " + variableName);
         } else {
@@ -280,51 +287,6 @@ public final class AssignmentExpressionGenerator {
         }
         
         return null;
-    }
-    
-    /**
-     * Extracts a variable name from a simple lvalue expression.
-     * 
-     * @param lvalue the lvalue expression
-     * @return the variable name, or null if not a simple variable
-     */
-    private String extractVariableName(NonTerminalNode lvalue) {
-        // Navigate through the expression hierarchy to find the identifier
-        return findIdentifierInExpression(lvalue);
-    }
-    
-    /**
-     * Recursively searches for an identifier in an expression.
-     */
-    private String findIdentifierInExpression(NonTerminalNode node) {
-        for (ParseNode child : node.children()) {
-            if (child instanceof TerminalNode terminal && "IDN".equals(terminal.symbol())) {
-                return terminal.lexeme();
-            } else if (child instanceof NonTerminalNode nonTerminal) {
-                String result = findIdentifierInExpression(nonTerminal);
-                if (result != null) {
-                    return result;
-                }
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Gets the FRISC address for a variable (local or global).
-     * 
-     * @param variableName the variable name
-     * @return the FRISC address expression
-     */
-    private String getVariableAddress(String variableName) {
-        // Check if we're in a function and the variable is local
-        if (context.isInFunction() && context.activationRecord().hasVariable(variableName)) {
-            return context.activationRecord().getVariableAddress(variableName);
-        } else {
-            // Global variable
-            String label = context.labelGenerator().getGlobalVariableLabel(variableName);
-            return "(" + label + ")";
-        }
     }
 }
 

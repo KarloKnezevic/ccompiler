@@ -5,7 +5,6 @@ import hr.fer.ppj.codegen.expr.ExpressionCodeGenerator;
 import hr.fer.ppj.semantics.symbols.VariableSymbol;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
-import hr.fer.ppj.semantics.tree.TerminalNode;
 import hr.fer.ppj.semantics.types.ArrayType;
 import hr.fer.ppj.semantics.types.Type;
 import java.util.ArrayList;
@@ -15,21 +14,116 @@ import java.util.Objects;
 /**
  * Generates FRISC assembly code for function calls.
  * 
- * <p>This class handles the generation of code for function calls including:
+ * <p>This class handles the generation of code for function calls, implementing the
+ * <b>function call code generation algorithm</b> that translates C function calls
+ * into FRISC assembly following the standard calling convention.
+ * 
+ * <p><b>Algorithm: Function Call Code Generation</b>
+ * 
+ * <p>The algorithm works as follows:
+ * <ol>
+ *   <li><b>Function Name Extraction:</b> Extract function name from function expression
+ *       (must be a simple identifier, function pointers not supported)</li>
+ *   <li><b>Argument Evaluation:</b> Evaluate all argument expressions in left-to-right order
+ *       (for side effects), but push them in right-to-left order (for calling convention)</li>
+ *   <li><b>Array Argument Handling:</b> For array arguments, pass the address instead of the value
+ *       (C array decay to pointer semantics)</li>
+ *   <li><b>Function Call:</b> Emit CALL instruction to function label</li>
+ *   <li><b>Stack Cleanup:</b> Remove arguments from stack (caller cleans up)</li>
+ *   <li><b>Result Handling:</b> Move return value from R6 to R0</li>
+ * </ol>
+ * 
+ * <p><b>FRISC Calling Convention:</b>
+ * 
+ * <p>Function calls follow the standard FRISC calling convention:
  * <ul>
- *   <li>Function calls with arguments</li>
- *   <li>Function calls without arguments</li>
- *   <li>Argument passing (right-to-left on stack)</li>
- *   <li>Array arguments (passed as addresses)</li>
+ *   <li><b>Argument Passing:</b> Arguments pushed right-to-left on stack (C convention)
+ *       <ul>
+ *         <li>Last argument pushed first (at highest address)</li>
+ *         <li>First argument pushed last (at lowest address, top of stack)</li>
+ *       </ul>
+ *   </li>
+ *   <li><b>Return Value:</b> Function returns value in register R6</li>
+ *   <li><b>Stack Cleanup:</b> Caller removes arguments from stack after call</li>
+ *   <li><b>Register Preservation:</b> Callee may use R0-R4, must preserve R5 (FP) and R7 (SP)</li>
  * </ul>
  * 
- * <p>Function calls follow the FRISC calling convention:
+ * <p><b>Array Argument Handling:</b>
+ * 
+ * <p>C arrays decay to pointers when passed as arguments. This is implemented by:
  * <ol>
- *   <li>Push arguments onto stack (right-to-left order)</li>
- *   <li>Call the function</li>
- *   <li>Clean up arguments from stack (caller cleans up)</li>
- *   <li>Result is in R6, move to R0</li>
+ *   <li><b>Array Detection:</b> Check if argument is a simple array variable</li>
+ *   <li><b>Address Generation:</b> Generate code to compute array base address:
+ *       <ul>
+ *         <li>Global arrays: {@code MOVE G_ARRAY, R0}</li>
+ *         <li>Local arrays: {@code MOVE R5, R0; ADD R0, -offset, R0}</li>
+ *         <li>Array parameters: {@code LOAD R0, (R5+offset)} (load pointer value)</li>
+ *       </ul>
+ *   </li>
+ *   <li><b>Address Push:</b> Push the address (not the array contents) onto the stack</li>
  * </ol>
+ * 
+ * <p><b>Argument Evaluation Order:</b>
+ * 
+ * <p>C standard specifies left-to-right evaluation order for function arguments (for side effects).
+ * However, arguments are pushed right-to-left for the calling convention:
+ * <ol>
+ *   <li>Evaluate arguments left-to-right (preserves side effect order)</li>
+ *   <li>Store each result temporarily (on stack or in register)</li>
+ *   <li>Push arguments right-to-left (last argument first)</li>
+ * </ol>
+ * 
+ * <p>In this implementation, we evaluate and push immediately, which achieves the correct
+ * order because we iterate through arguments in reverse order.
+ * 
+ * <p><b>FRISC Code Pattern (Function Call with Arguments):</b>
+ * <pre>
+ * ; Function call: foo(x, y, z)
+ * 
+ * ; Evaluate and push arguments (right-to-left)
+ * ... (evaluate z, result in R0) ...
+ * PUSH R0                      ; push z (last argument, pushed first)
+ * 
+ * ... (evaluate y, result in R0) ...
+ * PUSH R0                      ; push y
+ * 
+ * ... (evaluate x, result in R0) ...
+ * PUSH R0                      ; push x (first argument, pushed last)
+ * 
+ * ; Call function
+ * CALL F_FOO                   ; call foo
+ * 
+ * ; Clean up arguments (3 arguments × 4 bytes = 12 bytes)
+ * ADD R7, %D 12, R7            ; remove arguments from stack
+ * 
+ * ; Move return value to R0
+ * MOVE R6, R0                  ; function result
+ * </pre>
+ * 
+ * <p><b>FRISC Code Pattern (Array Argument):</b>
+ * <pre>
+ * ; Function call: foo(arr) where arr is an array
+ * 
+ * ; Generate array address
+ * MOVE G_ARR, R0               ; global array address
+ * ; OR
+ * MOVE R5, R0                  ; local array
+ * ADD R0, -20, R0              ; add base offset
+ * 
+ * ; Push address (not array contents)
+ * PUSH R0                      ; push array address
+ * 
+ * CALL F_FOO
+ * ADD R7, %D 4, R7             ; cleanup
+ * MOVE R6, R0                  ; result
+ * </pre>
+ * 
+ * <p><b>Complexity Analysis:</b>
+ * <ul>
+ *   <li><b>Time Complexity:</b> O(n) where n is the number of arguments (each argument
+ *       is evaluated and pushed once)</li>
+ *   <li><b>Space Complexity:</b> O(1) - uses only registers and stack space for arguments</li>
+ * </ul>
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */
@@ -201,25 +295,7 @@ public final class FunctionCallGenerator {
      * @return the variable name, or null if not a simple variable
      */
     private String extractVariableName(NonTerminalNode expr) {
-        // Use assignment generator's method
-        return findIdentifierInExpression(expr);
-    }
-    
-    /**
-     * Recursively searches for an identifier in an expression.
-     */
-    private String findIdentifierInExpression(NonTerminalNode node) {
-        for (ParseNode child : node.children()) {
-            if (child instanceof TerminalNode terminal && "IDN".equals(terminal.symbol())) {
-                return terminal.lexeme();
-            } else if (child instanceof NonTerminalNode nonTerminal) {
-                String result = findIdentifierInExpression(nonTerminal);
-                if (result != null) {
-                    return result;
-                }
-            }
-        }
-        return null;
+        return hr.fer.ppj.codegen.utils.IdentifierExtractor.findIdentifier(expr);
     }
     
     /**
@@ -229,14 +305,8 @@ public final class FunctionCallGenerator {
      * @return the FRISC address expression
      */
     private String getVariableAddress(String variableName) {
-        // Check if we're in a function and the variable is local
-        if (context.isInFunction() && context.activationRecord().hasVariable(variableName)) {
-            return context.activationRecord().getVariableAddress(variableName);
-        } else {
-            // Global variable
-            String label = context.labelGenerator().getGlobalVariableLabel(variableName);
-            return "(" + label + ")";
-        }
+        var resolver = new hr.fer.ppj.codegen.utils.VariableAddressResolver(context);
+        return resolver.getVariableAddress(variableName);
     }
     
     /**

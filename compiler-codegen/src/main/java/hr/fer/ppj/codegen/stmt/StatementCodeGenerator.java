@@ -8,21 +8,139 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Generates FRISC assembly code for statements.
+ * Orchestrates FRISC assembly code generation for all statement types.
  * 
- * <p>This class handles the generation of code for all types of statements
- * in ppjC, including:
+ * <p>This class serves as the main dispatcher for statement code generation, delegating
+ * to specialized generators based on the statement type. It implements a hierarchical
+ * visitor pattern that matches the C statement grammar structure.
+ * 
+ * <p><b>Design Pattern: Dispatcher/Visitor</b>
+ * 
+ * <p>This class implements the <b>dispatcher pattern</b> (also known as the visitor pattern
+ * for statements), where:
  * <ul>
- *   <li>Expression statements</li>
- *   <li>Compound statements (blocks)</li>
- *   <li>Conditional statements (if-else)</li>
- *   <li>Loop statements (while, for)</li>
- *   <li>Jump statements (break, continue, return)</li>
+ *   <li>The main method ({@code generateStatement}) dispatches to specialized generators
+ *       based on the statement type</li>
+ *   <li>Each statement type has its own generator class that handles the specific
+ *       code generation logic</li>
+ *   <li>The dispatcher maintains the overall control flow and context</li>
  * </ul>
  * 
- * <p>The generator maintains proper control flow by generating appropriate
- * labels and jump instructions, and handles nested scopes for compound
- * statements.
+ * <p><b>Statement Types Handled:</b>
+ * 
+ * <p>This class handles the generation of code for all types of statements in ppjC:
+ * <ul>
+ *   <li><b>Expression Statements:</b> {@code expression;} - evaluates expression, discards result</li>
+ *   <li><b>Compound Statements:</b> {@code { statements } } - blocks with local scope</li>
+ *   <li><b>Conditional Statements:</b> {@code if (condition) statement [else statement]} -
+ *       delegated to {@link BranchingStatementGenerator}</li>
+ *   <li><b>Loop Statements:</b> {@code while (condition) statement} and
+ *       {@code for (init; condition; increment) statement} - delegated to {@link LoopStatementGenerator}</li>
+ *   <li><b>Jump Statements:</b> {@code return [expression];}, {@code break;}, {@code continue;} -
+ *       delegated to {@link JumpStatementGenerator}</li>
+ *   <li><b>Local Declarations:</b> Variable declarations within compound statements -
+ *       delegated to {@link LocalDeclarationGenerator}</li>
+ * </ul>
+ * 
+ * <p><b>Grammar Rules Handled:</b>
+ * <pre>
+ * &lt;naredba&gt; ::= &lt;slozena_naredba&gt;
+ *            | &lt;izraz_naredba&gt;
+ *            | &lt;naredba_grananja&gt;
+ *            | &lt;naredba_petlje&gt;
+ *            | &lt;naredba_skoka&gt;
+ * 
+ * &lt;slozena_naredba&gt; ::= L_VIT_ZAGRADA &lt;lista_deklaracija&gt; &lt;lista_naredbi&gt; D_VIT_ZAGRADA
+ * 
+ * &lt;izraz_naredba&gt; ::= &lt;izraz&gt; TOCKAZAREZ
+ *                   | TOCKAZAREZ
+ * 
+ * &lt;naredba_grananja&gt; ::= KR_IF L_ZAGRADA &lt;izraz&gt; D_ZAGRADA &lt;naredba&gt;
+ *                        | KR_IF L_ZAGRADA &lt;izraz&gt; D_ZAGRADA &lt;naredba&gt; KR_ELSE &lt;naredba&gt;
+ * 
+ * &lt;naredba_petlje&gt; ::= KR_WHILE L_ZAGRADA &lt;izraz&gt; D_ZAGRADA &lt;naredba&gt;
+ *                    | KR_FOR L_ZAGRADA &lt;izraz_naredba&gt; &lt;izraz_naredba&gt; D_ZAGRADA &lt;naredba&gt;
+ *                    | KR_FOR L_ZAGRADA &lt;izraz_naredba&gt; &lt;izraz_naredba&gt; &lt;izraz&gt; D_ZAGRADA &lt;naredba&gt;
+ * 
+ * &lt;naredba_skoka&gt; ::= KR_RETURN &lt;izraz&gt; TOCKAZAREZ
+ *                    | KR_RETURN TOCKAZAREZ
+ *                    | KR_BREAK TOCKAZAREZ
+ *                    | KR_CONTINUE TOCKAZAREZ
+ * </pre>
+ * 
+ * <p><b>Algorithm: Statement Code Generation</b>
+ * 
+ * <p>The statement generation algorithm works as follows:
+ * <ol>
+ *   <li><b>Statement Type Identification:</b> Identify the statement type from the
+ *       nonterminal symbol</li>
+ *   <li><b>Delegation:</b> Delegate to the appropriate specialized generator</li>
+ *   <li><b>Context Propagation:</b> Pass the code generation context (with loop labels,
+ *       function exit labels, etc.) to specialized generators</li>
+ *   <li><b>Control Flow Management:</b> Specialized generators handle labels and jumps
+ *       for their specific control flow patterns</li>
+ * </ol>
+ * 
+ * <p><b>Compound Statement Algorithm:</b>
+ * 
+ * <p>Compound statements (blocks) are handled as follows:
+ * <ol>
+ *   <li><b>Process Local Declarations:</b> Generate code for local variable declarations
+ *       (allocates stack space, handles initializers)</li>
+ *   <li><b>Process Statement List:</b> Generate code for each statement in the block
+ *       sequentially</li>
+ *   <li><b>Scope Management:</b> Local variables are automatically scoped to the block
+ *       (handled by activation record)</li>
+ * </ol>
+ * 
+ * <p><b>Expression Statement Algorithm:</b>
+ * 
+ * <p>Expression statements are handled as follows:
+ * <ol>
+ *   <li><b>Expression Evaluation:</b> Generate code to evaluate the expression</li>
+ *   <li><b>Result Discard:</b> The result is left in R0 but not used (side effects
+ *       of the expression are preserved)</li>
+ * </ol>
+ * 
+ * <p><b>Context Management:</b>
+ * 
+ * <p>This class manages the code generation context for statements:
+ * <ul>
+ *   <li><b>Loop Context:</b> When entering a loop, a new context with loop labels is
+ *       created and passed to the loop generator</li>
+ *   <li><b>Function Context:</b> When in a function, the context includes the activation
+ *       record and function exit label</li>
+ *   <li><b>Nested Contexts:</b> Nested loops and conditionals create nested contexts
+ *       with their own labels</li>
+ * </ul>
+ * 
+ * <p><b>FRISC Code Pattern (Expression Statement):</b>
+ * <pre>
+ * ; Expression statement: x = y + z;
+ * ... (evaluate y + z, result in R0) ...
+ * ... (store result to x) ...
+ * ; Result is discarded (side effects preserved)
+ * </pre>
+ * 
+ * <p><b>FRISC Code Pattern (Compound Statement):</b>
+ * <pre>
+ * ; Compound statement: { int x = 5; x++; }
+ * ; Local declaration: allocate x on stack, initialize to 5
+ * SUB R7, %D 4, R7          ; allocate space for x
+ * MOVE %D 5, R0
+ * STORE R0, (R5-04)         ; x = 5
+ * ; Expression statement: x++
+ * LOAD R0, (R5-04)          ; load x
+ * ADD R0, %D 1, R0          ; increment
+ * STORE R0, (R5-04)         ; store back
+ * </pre>
+ * 
+ * <p><b>Complexity Analysis:</b>
+ * <ul>
+ *   <li><b>Time Complexity:</b> O(n) where n is the number of statements (each statement
+ *       is processed once)</li>
+ *   <li><b>Space Complexity:</b> O(1) - uses only a few generator objects and context</li>
+ * </ul>
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */

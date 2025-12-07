@@ -2,6 +2,7 @@ package hr.fer.ppj.examples;
 
 import hr.fer.ppj.cli.FriscRunner;
 import hr.fer.ppj.codegen.CodeGenerator;
+import hr.fer.ppj.codegen.util.FloatCodegenHelper;
 import hr.fer.ppj.lexer.gen.LexerGenerator;
 import hr.fer.ppj.lexer.gen.LexerGeneratorResult;
 import hr.fer.ppj.lexer.io.Lexer;
@@ -79,6 +80,7 @@ public final class ExamplesReportGenerator {
     final String friscErrors;
     final String expectedOutput;
     final String actualOutput;
+    final String actualFloatValue;  // Float value converted from Q16.16
     final String runtimeError;
     final String simulatorOutput;
     final boolean outputMatches;
@@ -92,7 +94,7 @@ public final class ExamplesReportGenerator {
                   String syntaxTree, String parserErrors, Integer parserErrorLine,
                   String semanticOutput, String semanticErrors, Integer semanticErrorLine,
                   String symbolTable, String semanticTree, String friscCode, String friscErrors,
-                  String expectedOutput, String actualOutput, String runtimeError, String simulatorOutput,
+                  String expectedOutput, String actualOutput, String actualFloatValue, String runtimeError, String simulatorOutput,
                   boolean outputMatches,
                   boolean lexerSuccess, boolean parserSuccess, boolean semanticSuccess, boolean friscSuccess) {
       this.programName = programName;
@@ -113,6 +115,7 @@ public final class ExamplesReportGenerator {
       this.friscErrors = friscErrors;
       this.expectedOutput = expectedOutput;
       this.actualOutput = actualOutput;
+      this.actualFloatValue = actualFloatValue;
       this.runtimeError = runtimeError;
       this.outputMatches = outputMatches;
       this.simulatorOutput = simulatorOutput;
@@ -124,19 +127,32 @@ public final class ExamplesReportGenerator {
   }
   
   public static void main(String[] args) throws Exception {
-    Path root = Paths.get("examples");
-    Path validDir = root.resolve("valid");
-    Path invalidDir = root.resolve("invalid");
+    if (args.length == 0) {
+      System.err.println("Usage: ExamplesReportGenerator <examples-folder-path>");
+      System.err.println("Example: ExamplesReportGenerator examples/floats");
+      System.exit(1);
+    }
     
-    System.out.println("Generating report for valid programs...");
-    generateReport(validDir, root.resolve("report_valid.html"), true);
+    Path examplesFolder = Paths.get(args[0]);
+    if (!Files.exists(examplesFolder) || !Files.isDirectory(examplesFolder)) {
+      System.err.println("Error: Directory does not exist: " + examplesFolder);
+      System.exit(1);
+    }
     
-    System.out.println("Generating report for invalid programs...");
-    generateReport(invalidDir, root.resolve("report_invalid.html"), false);
+    // Generate report name: report_<folder_name>.html
+    String folderName = examplesFolder.getFileName().toString();
+    Path reportFile = examplesFolder.resolve("report_" + folderName + ".html");
     
-    System.out.println("Reports generated successfully!");
-    System.out.println("  - examples/report_valid.html");
-    System.out.println("  - examples/report_invalid.html");
+    System.out.println("Generating report for: " + examplesFolder);
+    System.out.println("Output file: " + reportFile);
+    
+    // Determine if this is a "valid" folder (for error handling expectations)
+    boolean valid = !folderName.equals("invalid");
+    
+    generateReport(examplesFolder, reportFile, valid);
+    
+    System.out.println("Report generated successfully!");
+    System.out.println("  - " + reportFile);
   }
   
   /**
@@ -205,6 +221,7 @@ public final class ExamplesReportGenerator {
             "Analysis failed: " + e.getMessage(),  // friscErrors
             "",  // expectedOutput
             "",  // actualOutput
+            "",  // actualFloatValue
             "Not executed",  // runtimeError
             "",  // simulatorOutput
             false,  // outputMatches
@@ -419,6 +436,7 @@ public final class ExamplesReportGenerator {
       
       String expectedOutput = readExpectedOutput(programFile);
       String actualOutput = "";
+      String actualFloatValue = "";
       String runtimeError = "";
       String simulatorOutput = "";
       boolean outputMatches = false;
@@ -429,12 +447,49 @@ public final class ExamplesReportGenerator {
           FriscRunner.Result execResult = FRISC_RUNNER.run(friscOutputPath);
           simulatorOutput = execResult.output() == null ? "" : execResult.output();
           if (execResult.success()) {
-            // FRISC simulator outputs decimal R6 value to stdout
-            // Simply use it as-is for comparison
-            actualOutput = execResult.r6Value().trim();
+            // FRISC simulator outputs decimal R6 value to stdout (as integer)
+            String r6IntValue = execResult.r6Value().trim();
+            actualOutput = r6IntValue;
+            
+            // Always convert Q16.16 to float for display (using FloatCodegenHelper)
+            try {
+              int q16_16 = Integer.parseInt(r6IntValue);
+              float floatValue = FloatCodegenHelper.q16_16ToFloat(q16_16);
+              // Format float value nicely
+              if (floatValue == (int) floatValue) {
+                actualFloatValue = String.format("%.1f", floatValue);
+              } else {
+                actualFloatValue = String.valueOf(floatValue);
+              }
+            } catch (NumberFormatException e) {
+              actualFloatValue = "N/A";
+            }
             
             if (!expectedOutput.isEmpty()) {
-              outputMatches = expectedOutput.equals(actualOutput);
+              // First, try comparing as integer
+              boolean intMatch = expectedOutput.equals(r6IntValue);
+              
+              // If integer match fails, check if expected output is a float literal
+              // Float literals contain '.' or 'e'/'E' (exponent notation)
+              boolean expectedIsFloat = FloatCodegenHelper.isFloatLiteral(expectedOutput);
+              
+              if (!intMatch && expectedIsFloat) {
+                // Try comparing as float (Q16.16 conversion)
+                try {
+                  float expectedFloat = Float.parseFloat(expectedOutput);
+                  float actualFloat = FloatCodegenHelper.q16_16ToFloat(Integer.parseInt(r6IntValue));
+                  
+                  // Compare floats with small epsilon for floating-point precision
+                  float epsilon = 0.0001f;
+                  outputMatches = Math.abs(expectedFloat - actualFloat) < epsilon;
+                } catch (NumberFormatException e) {
+                  // Expected output is not a valid float, fall back to integer comparison
+                  outputMatches = false;
+                }
+              } else {
+                // Integer comparison (or expected is not a float)
+                outputMatches = intMatch;
+              }
             }
           } else {
             runtimeError = execResult.errorMessage();
@@ -468,6 +523,7 @@ public final class ExamplesReportGenerator {
           friscErrors,
           expectedOutput,
           actualOutput,
+          actualFloatValue,
           runtimeError,
           simulatorOutput,
           outputMatches,
@@ -616,6 +672,7 @@ public final class ExamplesReportGenerator {
         writer.println("      <h2>" + result.programName + "</h2>");
         
         // Prominent pass/fail badge for execution results
+        // Only show badge if Expected is present (don't show FAIL for tests without Expected)
         if (result.friscSuccess && !result.expectedOutput.isEmpty()) {
           String passFailClass = result.outputMatches ? "badge-pass" : "badge-fail";
           String passFailIcon = result.outputMatches ? "✅" : "❌";
@@ -746,22 +803,34 @@ public final class ExamplesReportGenerator {
           writer.println("        <div class=\"simulator-results\">");
           
           if (result.friscSuccess && !result.actualOutput.isEmpty()) {
-            // Show actual output with hex and decimal values
+            // Show actual output with integer and float values
             writer.println("          <div class=\"output-comparison\">");
             writer.println("            <table class=\"output-table\">");
             writer.println("              <tr>");
-            writer.println("                <th>Expected (Decimal)</th>");
-            writer.println("                <th>Actual (Decimal)</th>");
+            writer.println("                <th>Expected</th>");
+            writer.println("                <th>Actual (Q16.16)</th>");
+            writer.println("                <th>Q16.16 Float</th>");
             writer.println("                <th>Status</th>");
             writer.println("              </tr>");
             writer.println("              <tr>");
-            writer.println("                <td><code>" + escapeHtml(result.expectedOutput) + "</code></td>");
+            writer.println("                <td><code>" + escapeHtml(result.expectedOutput.isEmpty() ? "—" : result.expectedOutput) + "</code></td>");
             writer.println("                <td><code>" + escapeHtml(result.actualOutput) + "</code></td>");
-            String statusClass = result.outputMatches ? "status-pass" : "status-fail";
-            String statusText = result.outputMatches ? "✅ PASS" : "❌ FAIL";
+            writer.println("                <td><code>" + escapeHtml(result.actualFloatValue) + "</code></td>");
+            // Status: PASS (green), FAIL (red), or UNKNOWN (grey) if Expected is empty
+            String statusClass;
+            String statusText;
+            if (result.expectedOutput.isEmpty()) {
+              statusClass = "status-unknown";
+              statusText = "❔ UNKNOWN";
+            } else {
+              statusClass = result.outputMatches ? "status-pass" : "status-fail";
+              statusText = result.outputMatches ? "✅ PASS" : "❌ FAIL";
+            }
             writer.println("                <td class=\"" + statusClass + "\">" + statusText + "</td>");
             writer.println("              </tr>");
             writer.println("            </table>");
+            writer.println("            <p><small>Note: Float values are compared using Q16.16 fixed-point representation. " +
+                         "Q16.16 Float column shows the converted float value for comparison.</small></p>");
             writer.println("          </div>");
           } else if (!result.friscSuccess && result.simulatorOutput != null && !result.simulatorOutput.isEmpty()) {
             // Show simulator output only if execution failed
@@ -1020,6 +1089,12 @@ public final class ExamplesReportGenerator {
         .status-fail {
           color: #ef4444;
           font-weight: 700;
+          font-size: 1.1em;
+        }
+        
+        .status-unknown {
+          color: #6b7280;
+          font-weight: normal;
           font-size: 1.1em;
         }
         
