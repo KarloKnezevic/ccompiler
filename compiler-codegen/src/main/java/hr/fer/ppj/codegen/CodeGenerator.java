@@ -44,7 +44,7 @@ import java.util.Objects;
  *   <li><b>Helper Function Generation Phase:</b>
  *       <ul>
  *         <li>Generate float helper functions first ({@link FloatHelperGenerator})</li>
- *         <li>Float helpers may internally require integer helpers (F_MUL, F_DIV, F_MUL64)</li>
+ *         <li>Float helpers may internally require integer helpers (F_MUL, F_DIV)</li>
  *         <li>Generate integer helper functions if needed ({@link HelperFunctionGenerator})</li>
  *         <li><b>Critical ordering:</b> Float helpers must be generated before integer helpers
  *             because float multiplication/division internally call integer helpers, and the
@@ -88,7 +88,6 @@ import java.util.Objects;
  * ; ============================================
  * F_MUL                   ; 32-bit integer multiplication helper
  * F_DIV                   ; 32-bit integer division helper
- * F_MUL64                 ; 64-bit unsigned multiplication (for float ops)
  * F_FADD                  ; Q16.16 float addition
  * F_FSUB                  ; Q16.16 float subtraction
  * F_FMUL                  ; Q16.16 float multiplication
@@ -156,9 +155,9 @@ import java.util.Objects;
  *   <li><b>Deferred Helper Generation:</b> Helper functions are generated <i>after</i> processing
  *       the translation unit because we need to know which operations are used before generating
  *       helpers. This avoids generating unused helper code.</li>
- *   <li><b>Float Helpers Before Integer Helpers:</b> Float multiplication internally
- *       uses integer helper (F_MUL64), so float helpers must be generated first to
- *       properly mark integer helpers as needed.</li>
+ *   <li><b>Float Helpers Before Integer Helpers:</b> Float helpers may mark integer
+ *       helpers as needed during their generation, so float helpers must be generated
+ *       first to properly mark integer helpers as needed.</li>
  *   <li><b>Global Variables Last:</b> Global variables are generated at the end because they
  *       form the data section, which is conventionally placed after code sections.</li>
  *   <li><b>Immutable Context:</b> The {@link CodeGenContext} is immutable, allowing safe
@@ -281,9 +280,8 @@ public final class CodeGenerator {
             // 
             // CRITICAL ORDERING CONSTRAINT: Float helpers must be generated BEFORE integer helpers
             // because:
-            // 1. Float multiplication (F_FMUL) internally calls F_MUL64 (64-bit integer multiply)
-            // 2. These integer helpers are marked as needed DURING float helper generation
-            // 3. Therefore, we must generate float helpers first, then check if integer helpers
+            // 1. Float helpers may mark integer helpers as needed DURING their generation
+            // 2. Therefore, we must generate float helpers first, then check if integer helpers
             //    are needed, then generate integer helpers.
             //
             // The emitter flags are set during float helper generation, so we check them AFTER.
@@ -298,26 +296,18 @@ public final class CodeGenerator {
                 // are called DURING float helper generation (inside generateFloatMul/generateFloatDiv).
             }
             
-            // Generate integer helper functions (F_MUL, F_DIV, F_MUL64) only if needed.
-            // Float helpers (F_FMUL) may call integer helpers (F_MUL, F_DIV, F_MUL64).
+            // Generate integer helper functions (F_MUL, F_DIV) only if needed.
+            // These are used for integer multiplication/division operations in user code.
             // IMPORTANT: This check must happen AFTER generateFloatHelpers() completes,
             // because markMulNeeded()/markDivNeeded() are called DURING float helper generation.
             boolean needsMul = emitter.needsMulHelper();
             boolean needsDiv = emitter.needsDivHelper();
-            boolean needsMul64 = emitter.needsFloatMulHelper(); // F_MUL64 is needed if F_FMUL is needed
             
             // Generate 32-bit integer helpers (F_MUL, F_DIV) if needed
             // These are used for integer multiplication/division operations in user code.
             if (needsMul || needsDiv) {
                 HelperFunctionGenerator helperGen = new HelperFunctionGenerator();
                 helperGen.generateHelperFunctions(context, needsMul, needsDiv);
-            }
-            
-            // Generate 64-bit integer helpers (F_MUL64) if needed
-            // These are used internally by float multiplication helper.
-            if (needsMul64) {
-                HelperFunctionGenerator helperGen = new HelperFunctionGenerator();
-                helperGen.generateMul64Helper(context);
             }
             
             // Phase 5: Write the generated code to file

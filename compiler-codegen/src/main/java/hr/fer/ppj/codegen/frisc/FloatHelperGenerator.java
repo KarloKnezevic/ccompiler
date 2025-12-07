@@ -21,7 +21,7 @@ import java.util.Objects;
  *   <li>Hides the complexity of managing multiple generators</li>
  *   <li>Provides a single entry point for float helper generation</li>
  *   <li>Only generates helpers that are actually needed (lazy generation)</li>
- *   <li>Manages dependencies between helpers (e.g., F_FMUL needs F_MUL64)</li>
+ *   <li>Manages dependencies between helpers</li>
  * </ul>
  * 
  * <p><b>Float Representation: Q16.16 Fixed-Point Format</b>
@@ -79,7 +79,7 @@ import java.util.Objects;
  * 
  * <p>Some float helpers depend on integer helpers:
  * <ul>
- *   <li><b>F_FMUL</b> requires <b>F_MUL64</b> (64-bit multiplication)</li>
+ *   <li>None currently - F_FMUL uses only 32-bit operations internally</li>
  * </ul>
  * 
  * <p>This class marks these integer helpers as needed when generating the corresponding
@@ -154,10 +154,8 @@ public final class FloatHelperGenerator {
             subGenerator.generate(context);
         }
         if (needsMul) {
-            // Mark F_MUL64 as needed when generating F_FMUL, since F_FMUL calls F_MUL64.
-            // This ensures that F_MUL64 is generated later in the code generation pipeline.
-            // The dependency is: F_FMUL → F_MUL64 (float multiplication uses 64-bit integer multiplication).
-            context.emitter().markMulNeeded();
+            // F_FMUL now uses only 32-bit Russian peasant algorithm internally.
+            // No dependency on F_MUL64 or F_MUL.
             mulGenerator.generate(context);
         }
         if (needsDiv) {

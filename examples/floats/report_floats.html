@@ -1169,168 +1169,86 @@ L1                              ; function exit
 ; Float helper functions (IEEE-754 single-precision)
 
 F_FMUL                          ; Helper function: float mul(float a, float b)
-; F_FMUL: Q16.16 float multiplication with explicit sign handling
-; Input:  a at (R5+08), b at (R5+0C) as signed Q16.16
-; Output: R6 = signed Q16.16 result
+; F_FMUL: Q16.16 fixed-point multiplication using 32-bit Russian peasant algorithm
+; Q16.16 representable range: [-32768.0, +32767.9999]
+; Safe multiplication domain: [-181.0, +181.0] per operand (no overflow)
+; Input:  a at (R5+08), b at (R5+0C)
+; Output: R6 = a * b (Q16.16 format)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP
-        LOAD R0, (R5+08)        ; a (Q16.16)
-        LOAD R1, (R5+0C)        ; b (Q16.16)
+        LOAD R0, (R5+08)        ; a (multiplicand, Q16.16)
+        LOAD R1, (R5+0C)        ; b (multiplier, Q16.16)
+        CMP R0, %D 0
+        JR_EQ L2                ; if a == 0, return 0
+        CMP R1, %D 0
+        JR_EQ L2                ; if b == 0, return 0
         MOVE %D 1, R4           ; sign = +1
-        OR R0, R0, R2           ; copy a into R2 and set flags
-        JR_Z L2                 ; a == 0 → nothing
-        JR_N L3                 ; a &lt; 0 → negate
-        JP L2                   ; a &gt; 0 → nothing
-L3                              ; negate a
+        CMP R0, %D 0
+        JR_SGE L4               ; a &gt;= 0 → nothing
+L5                              ; negate a
         MOVE %D 0, R3
-        SUB R3, R0, R0          ; R0 = -R0
+        SUB R3, R0, R0          ; R0 = -R0 (a_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L2                              ; a sign handled
-        OR R1, R1, R2           ; copy b into R2 and set flags
-        JR_Z L4                 ; b == 0 → nothing
-        JR_N L5                 ; b &lt; 0 → negate
-        JP L4                   ; b &gt; 0 → nothing
-L5                              ; negate b
+L4                              ; a sign handled
+        CMP R1, %D 0
+        JR_SGE L6               ; b &gt;= 0 → nothing
+L7                              ; negate b
         MOVE %D 0, R3
-        SUB R3, R1, R1          ; R1 = -R1
+        SUB R3, R1, R1          ; R1 = -R1 (b_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L4                              ; b sign handled
+L6                              ; b sign handled
+; 64-bit Russian peasant multiplication: product = |a| * |b|
         PUSH R4                 ; save sign on stack
-        PUSH R1                 ; push |b|
-        PUSH R0                 ; push |a|
-        CALL F_MUL64            ; unsigned 64-bit product
-        ADD R7, %D 8, R7        ; clean up arguments
-        POP R4                  ; restore sign from stack
-        CMP R4, %D 0
-        JR_EQ L6                ; sign == 0 → result 0
-        JR_SLT L7               ; sign &lt; 0 → negate
-        JP L8                   ; sign &gt; 0 → no change
-L6                              ; sign zero
-        MOVE %D 0, R0
-        MOVE %D 0, R1
-        JP L8
-L7                              ; negate 64-bit result
-        MOVE %D 0, R2
-        SUB R2, %D 1, R2        ; R2 = -1 (0xFFFFFFFF)
-        XOR R0, R2, R0          ; LO = ~LO
-        XOR R1, R2, R1          ; HI = ~HI
-        ADD R0, %D 1, R0        ; LO += 1
-        CMP R0, %D 0
-        JR_NE L9                ; if low != 0, no carry
-        ADD R1, %D 1, R1        ; carry to high if low wrapped
-L9                              ; negation done
-L8                              ; sign applied
-        MOVE R0, R2             ; LO
-        MOVE R1, R3             ; HI
-        SHR R2, %D 16, R2       ; LO &gt;&gt; 16
-        SHL R3, %D 16, R3       ; HI &lt;&lt; 16
-        OR R2, R3, R6           ; R6 = (LO &gt;&gt; 16) | (HI &lt;&lt; 16)
-        POP R5                  ; restore frame pointer
-        RET                     ; return
-
-; Helper functions for multiplication and division
-
-F_MUL                           ; Helper function: int mul(int a, int b)
-; F_MUL: signed 32-bit integer multiplication
-; Input:  a at (R5+08), b at (R5+0C)
-; Output: R6 = a * b
-; Algorithm: binary shift-and-add (Russian peasant), O(32) steps
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (left operand, pushed last, first parameter)
-        LOAD R1, (R5+0C)        ; b (right operand, pushed first, second parameter)
-        CMP R1, %D 0
-        JR_EQ L10               ; if b == 0, return 0
-L11                             ; continue multiplication
-        MOVE %D 0, R4           ; sign = 0 (positive)
-        CMP R0, %D 0
-        JR_SGE L12              ; if a &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R0, R0          ; a = -a
-        XOR R4, %D 1, R4        ; sign ^= 1
-L12                             ; skip negate a
-        CMP R1, %D 0
-        JR_SGE L13              ; if b &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R1, R1          ; b = -b
-        XOR R4, %D 1, R4        ; sign ^= 1
-L13                             ; skip negate b
-; Binary shift-and-add multiplication (Russian peasant algorithm)
-        PUSH R4                 ; save sign flag on stack
-        MOVE %D 0, R2           ; acc = 0 (accumulator)
-L14                             ; binary multiplication loop
-        CMP R1, %D 0
-        JR_EQ L15               ; if b == 0, exit loop
-        AND R1, %D 1, R3        ; R3 = b &amp; 1
-        CMP R3, %D 0
-        JR_EQ L16               ; if (b &amp; 1) == 0, skip add
-        ADD R2, R0, R2          ; acc += a
-L16                             ; skip add
-        SHL R0, %D 1, R0        ; a &lt;&lt;= 1
-        SHR R1, %D 1, R1        ; b &gt;&gt;= 1
-        JR L14                  ; continue loop
-L15                             ; loop done, apply sign
-        POP R4                  ; restore sign flag
-        CMP R4, %D 0
-        JR_EQ L17               ; if sign == 0, result is positive
-        MOVE %D 0, R0
-        SUB R0, R2, R2          ; acc = -acc
-        JP L17                  ; result ready
-L10                             ; zero multiplier
-        MOVE %D 0, R2           ; result 0 for zero multiplier
-L17                             ; end multiplication
-        MOVE R2, R6             ; result
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-
-F_MUL64                         ; Helper function: 64-bit unsigned multiplication
-; F_MUL64: 64-bit unsigned integer multiplication
-; Input:  a at (R5+08), b at (R5+0C) (both assumed non-negative)
-; Output: R1 = high 32 bits, R0 = low 32 bits, R6 = copy of R0
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (int32, unsigned)
-        LOAD R2, (R5+0C)        ; b (int32, unsigned)
-        CMP R2, %D 0
-        JR_NE L18               ; if b != 0, continue
-        MOVE %D 0, R0           ; LO = 0
-        MOVE %D 0, R1           ; HI = 0
-        MOVE %D 0, R6           ; low 32 bits copy
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-L18                             ; continue multiplication
-        MOVE %D 0, R1           ; M_HI = 0 (high 32 bits of multiplicand)
-        MOVE %D 0, R3           ; ACC_LO = 0
+        MOVE %D 0, R3           ; M_HI = 0 (high 32 bits of multiplicand)
+        MOVE %D 0, R2           ; ACC_LO = 0
         MOVE %D 0, R4           ; ACC_HI = 0
-L19                             ; 64-bit multiplication loop
-        CMP R2, %D 0
-        JR_EQ L22               ; if B == 0, exit loop
-        AND R2, %D 1, R6        ; R6 = B &amp; 1
+L8                              ; 64-bit multiplication loop
+        CMP R1, %D 0
+        JR_EQ L9                ; if B == 0, exit loop
+        AND R1, %D 1, R6        ; R6 = B &amp; 1
         CMP R6, %D 0
-        JR_EQ L20               ; if (B &amp; 1) == 0, skip add
-        ADD R3, R0, R6          ; R6 = ACC_LO + M_LO
-        CMP R6, R3
-        JR_SGE L21              ; if no carry, skip increment
-        ADD R4, %D 1, R4        ; ACC_HI += 1
-L21                             ; no carry
-        MOVE R6, R3             ; ACC_LO = temp_lo
-        ADD R4, R1, R4          ; ACC_HI = ACC_HI + M_HI
-L20                             ; skip add
+        JR_EQ L10               ; if (B &amp; 1) == 0, skip add
+        ADD R2, R0, R2          ; ACC_LO += M_LO
+        ADC R4, R3, R4          ; ACC_HI += M_HI + carry
+L10                             ; skip add
         MOVE R0, R6             ; save old M_LO
         SHL R0, %D 1, R0        ; M_LO &lt;&lt;= 1
         SHR R6, %D 31, R6       ; R6 = (old M_LO &gt;&gt; 31) &amp; 1 (carry bit)
-        SHL R1, %D 1, R1        ; M_HI &lt;&lt;= 1
-        OR R1, R6, R1           ; M_HI |= carry_from_LO
-        SHR R2, %D 1, R2        ; B &gt;&gt;= 1
-        JR L19                  ; continue loop
-L22                             ; multiplication done
-        MOVE R3, R0             ; LO → R0
-        MOVE R4, R1             ; HI → R1
-        MOVE R0, R6             ; low 32 bits copy for compatibility
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
+        SHL R3, %D 1, R3        ; M_HI &lt;&lt;= 1
+        OR R3, R6, R3           ; M_HI |= carry_from_LO
+        SHR R1, %D 1, R1        ; B &gt;&gt;= 1
+        JR L8                   ; continue loop
+L9                              ; multiplication done
+; Q16.16 scaling: extract middle 32 bits from 64-bit product
+        MOVE R2, R0             ; R0 = ACC_LO
+        MOVE R4, R1             ; R1 = ACC_HI
+        SHR R0, %D 16, R0       ; R0 = ACC_LO &gt;&gt; 16 (low 16 bits of result)
+        SHL R1, %D 16, R1       ; R1 = ACC_HI &lt;&lt; 16 (high 16 bits)
+        OR R0, R1, R0           ; result_abs = (ACC_HI &lt;&lt; 16) | (ACC_LO &gt;&gt; 16)
+; Apply sign to result
+        POP R4                  ; restore sign from stack
+        CMP R4, %D 0
+        JR_EQ L11               ; if sign == 0, result is 0
+        JR_SLT L12              ; if sign &lt; 0, negate
+        JP L13                  ; sign &gt; 0, no change
+L11                             ; result is zero
+        MOVE %D 0, R0           ; R0 = 0
+        JP L13                  ; jump to done
+L12                             ; negate result
+        MOVE %D 0, R3
+        SUB R3, R0, R0          ; R0 = -R0
+L13                             ; sign applied
+        MOVE R0, R6             ; return value in R6
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+        JP L3                   ; skip zero handler
+L2                              ; zero operand
+        MOVE %D 0, R6           ; return 0 for zero operand
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+L3                              ; end of function
 
 </code></pre>
       </details>
@@ -2314,168 +2232,86 @@ L1                              ; function exit
 ; Float helper functions (IEEE-754 single-precision)
 
 F_FMUL                          ; Helper function: float mul(float a, float b)
-; F_FMUL: Q16.16 float multiplication with explicit sign handling
-; Input:  a at (R5+08), b at (R5+0C) as signed Q16.16
-; Output: R6 = signed Q16.16 result
+; F_FMUL: Q16.16 fixed-point multiplication using 32-bit Russian peasant algorithm
+; Q16.16 representable range: [-32768.0, +32767.9999]
+; Safe multiplication domain: [-181.0, +181.0] per operand (no overflow)
+; Input:  a at (R5+08), b at (R5+0C)
+; Output: R6 = a * b (Q16.16 format)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP
-        LOAD R0, (R5+08)        ; a (Q16.16)
-        LOAD R1, (R5+0C)        ; b (Q16.16)
+        LOAD R0, (R5+08)        ; a (multiplicand, Q16.16)
+        LOAD R1, (R5+0C)        ; b (multiplier, Q16.16)
+        CMP R0, %D 0
+        JR_EQ L2                ; if a == 0, return 0
+        CMP R1, %D 0
+        JR_EQ L2                ; if b == 0, return 0
         MOVE %D 1, R4           ; sign = +1
-        OR R0, R0, R2           ; copy a into R2 and set flags
-        JR_Z L2                 ; a == 0 → nothing
-        JR_N L3                 ; a &lt; 0 → negate
-        JP L2                   ; a &gt; 0 → nothing
-L3                              ; negate a
+        CMP R0, %D 0
+        JR_SGE L4               ; a &gt;= 0 → nothing
+L5                              ; negate a
         MOVE %D 0, R3
-        SUB R3, R0, R0          ; R0 = -R0
+        SUB R3, R0, R0          ; R0 = -R0 (a_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L2                              ; a sign handled
-        OR R1, R1, R2           ; copy b into R2 and set flags
-        JR_Z L4                 ; b == 0 → nothing
-        JR_N L5                 ; b &lt; 0 → negate
-        JP L4                   ; b &gt; 0 → nothing
-L5                              ; negate b
+L4                              ; a sign handled
+        CMP R1, %D 0
+        JR_SGE L6               ; b &gt;= 0 → nothing
+L7                              ; negate b
         MOVE %D 0, R3
-        SUB R3, R1, R1          ; R1 = -R1
+        SUB R3, R1, R1          ; R1 = -R1 (b_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L4                              ; b sign handled
+L6                              ; b sign handled
+; 64-bit Russian peasant multiplication: product = |a| * |b|
         PUSH R4                 ; save sign on stack
-        PUSH R1                 ; push |b|
-        PUSH R0                 ; push |a|
-        CALL F_MUL64            ; unsigned 64-bit product
-        ADD R7, %D 8, R7        ; clean up arguments
-        POP R4                  ; restore sign from stack
-        CMP R4, %D 0
-        JR_EQ L6                ; sign == 0 → result 0
-        JR_SLT L7               ; sign &lt; 0 → negate
-        JP L8                   ; sign &gt; 0 → no change
-L6                              ; sign zero
-        MOVE %D 0, R0
-        MOVE %D 0, R1
-        JP L8
-L7                              ; negate 64-bit result
-        MOVE %D 0, R2
-        SUB R2, %D 1, R2        ; R2 = -1 (0xFFFFFFFF)
-        XOR R0, R2, R0          ; LO = ~LO
-        XOR R1, R2, R1          ; HI = ~HI
-        ADD R0, %D 1, R0        ; LO += 1
-        CMP R0, %D 0
-        JR_NE L9                ; if low != 0, no carry
-        ADD R1, %D 1, R1        ; carry to high if low wrapped
-L9                              ; negation done
-L8                              ; sign applied
-        MOVE R0, R2             ; LO
-        MOVE R1, R3             ; HI
-        SHR R2, %D 16, R2       ; LO &gt;&gt; 16
-        SHL R3, %D 16, R3       ; HI &lt;&lt; 16
-        OR R2, R3, R6           ; R6 = (LO &gt;&gt; 16) | (HI &lt;&lt; 16)
-        POP R5                  ; restore frame pointer
-        RET                     ; return
-
-; Helper functions for multiplication and division
-
-F_MUL                           ; Helper function: int mul(int a, int b)
-; F_MUL: signed 32-bit integer multiplication
-; Input:  a at (R5+08), b at (R5+0C)
-; Output: R6 = a * b
-; Algorithm: binary shift-and-add (Russian peasant), O(32) steps
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (left operand, pushed last, first parameter)
-        LOAD R1, (R5+0C)        ; b (right operand, pushed first, second parameter)
-        CMP R1, %D 0
-        JR_EQ L10               ; if b == 0, return 0
-L11                             ; continue multiplication
-        MOVE %D 0, R4           ; sign = 0 (positive)
-        CMP R0, %D 0
-        JR_SGE L12              ; if a &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R0, R0          ; a = -a
-        XOR R4, %D 1, R4        ; sign ^= 1
-L12                             ; skip negate a
-        CMP R1, %D 0
-        JR_SGE L13              ; if b &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R1, R1          ; b = -b
-        XOR R4, %D 1, R4        ; sign ^= 1
-L13                             ; skip negate b
-; Binary shift-and-add multiplication (Russian peasant algorithm)
-        PUSH R4                 ; save sign flag on stack
-        MOVE %D 0, R2           ; acc = 0 (accumulator)
-L14                             ; binary multiplication loop
-        CMP R1, %D 0
-        JR_EQ L15               ; if b == 0, exit loop
-        AND R1, %D 1, R3        ; R3 = b &amp; 1
-        CMP R3, %D 0
-        JR_EQ L16               ; if (b &amp; 1) == 0, skip add
-        ADD R2, R0, R2          ; acc += a
-L16                             ; skip add
-        SHL R0, %D 1, R0        ; a &lt;&lt;= 1
-        SHR R1, %D 1, R1        ; b &gt;&gt;= 1
-        JR L14                  ; continue loop
-L15                             ; loop done, apply sign
-        POP R4                  ; restore sign flag
-        CMP R4, %D 0
-        JR_EQ L17               ; if sign == 0, result is positive
-        MOVE %D 0, R0
-        SUB R0, R2, R2          ; acc = -acc
-        JP L17                  ; result ready
-L10                             ; zero multiplier
-        MOVE %D 0, R2           ; result 0 for zero multiplier
-L17                             ; end multiplication
-        MOVE R2, R6             ; result
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-
-F_MUL64                         ; Helper function: 64-bit unsigned multiplication
-; F_MUL64: 64-bit unsigned integer multiplication
-; Input:  a at (R5+08), b at (R5+0C) (both assumed non-negative)
-; Output: R1 = high 32 bits, R0 = low 32 bits, R6 = copy of R0
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (int32, unsigned)
-        LOAD R2, (R5+0C)        ; b (int32, unsigned)
-        CMP R2, %D 0
-        JR_NE L18               ; if b != 0, continue
-        MOVE %D 0, R0           ; LO = 0
-        MOVE %D 0, R1           ; HI = 0
-        MOVE %D 0, R6           ; low 32 bits copy
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-L18                             ; continue multiplication
-        MOVE %D 0, R1           ; M_HI = 0 (high 32 bits of multiplicand)
-        MOVE %D 0, R3           ; ACC_LO = 0
+        MOVE %D 0, R3           ; M_HI = 0 (high 32 bits of multiplicand)
+        MOVE %D 0, R2           ; ACC_LO = 0
         MOVE %D 0, R4           ; ACC_HI = 0
-L19                             ; 64-bit multiplication loop
-        CMP R2, %D 0
-        JR_EQ L22               ; if B == 0, exit loop
-        AND R2, %D 1, R6        ; R6 = B &amp; 1
+L8                              ; 64-bit multiplication loop
+        CMP R1, %D 0
+        JR_EQ L9                ; if B == 0, exit loop
+        AND R1, %D 1, R6        ; R6 = B &amp; 1
         CMP R6, %D 0
-        JR_EQ L20               ; if (B &amp; 1) == 0, skip add
-        ADD R3, R0, R6          ; R6 = ACC_LO + M_LO
-        CMP R6, R3
-        JR_SGE L21              ; if no carry, skip increment
-        ADD R4, %D 1, R4        ; ACC_HI += 1
-L21                             ; no carry
-        MOVE R6, R3             ; ACC_LO = temp_lo
-        ADD R4, R1, R4          ; ACC_HI = ACC_HI + M_HI
-L20                             ; skip add
+        JR_EQ L10               ; if (B &amp; 1) == 0, skip add
+        ADD R2, R0, R2          ; ACC_LO += M_LO
+        ADC R4, R3, R4          ; ACC_HI += M_HI + carry
+L10                             ; skip add
         MOVE R0, R6             ; save old M_LO
         SHL R0, %D 1, R0        ; M_LO &lt;&lt;= 1
         SHR R6, %D 31, R6       ; R6 = (old M_LO &gt;&gt; 31) &amp; 1 (carry bit)
-        SHL R1, %D 1, R1        ; M_HI &lt;&lt;= 1
-        OR R1, R6, R1           ; M_HI |= carry_from_LO
-        SHR R2, %D 1, R2        ; B &gt;&gt;= 1
-        JR L19                  ; continue loop
-L22                             ; multiplication done
-        MOVE R3, R0             ; LO → R0
-        MOVE R4, R1             ; HI → R1
-        MOVE R0, R6             ; low 32 bits copy for compatibility
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
+        SHL R3, %D 1, R3        ; M_HI &lt;&lt;= 1
+        OR R3, R6, R3           ; M_HI |= carry_from_LO
+        SHR R1, %D 1, R1        ; B &gt;&gt;= 1
+        JR L8                   ; continue loop
+L9                              ; multiplication done
+; Q16.16 scaling: extract middle 32 bits from 64-bit product
+        MOVE R2, R0             ; R0 = ACC_LO
+        MOVE R4, R1             ; R1 = ACC_HI
+        SHR R0, %D 16, R0       ; R0 = ACC_LO &gt;&gt; 16 (low 16 bits of result)
+        SHL R1, %D 16, R1       ; R1 = ACC_HI &lt;&lt; 16 (high 16 bits)
+        OR R0, R1, R0           ; result_abs = (ACC_HI &lt;&lt; 16) | (ACC_LO &gt;&gt; 16)
+; Apply sign to result
+        POP R4                  ; restore sign from stack
+        CMP R4, %D 0
+        JR_EQ L11               ; if sign == 0, result is 0
+        JR_SLT L12              ; if sign &lt; 0, negate
+        JP L13                  ; sign &gt; 0, no change
+L11                             ; result is zero
+        MOVE %D 0, R0           ; R0 = 0
+        JP L13                  ; jump to done
+L12                             ; negate result
+        MOVE %D 0, R3
+        SUB R3, R0, R0          ; R0 = -R0
+L13                             ; sign applied
+        MOVE R0, R6             ; return value in R6
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+        JP L3                   ; skip zero handler
+L2                              ; zero operand
+        MOVE %D 0, R6           ; return 0 for zero operand
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+L3                              ; end of function
 
 </code></pre>
       </details>
@@ -2771,168 +2607,86 @@ L1                              ; function exit
 ; Float helper functions (IEEE-754 single-precision)
 
 F_FMUL                          ; Helper function: float mul(float a, float b)
-; F_FMUL: Q16.16 float multiplication with explicit sign handling
-; Input:  a at (R5+08), b at (R5+0C) as signed Q16.16
-; Output: R6 = signed Q16.16 result
+; F_FMUL: Q16.16 fixed-point multiplication using 32-bit Russian peasant algorithm
+; Q16.16 representable range: [-32768.0, +32767.9999]
+; Safe multiplication domain: [-181.0, +181.0] per operand (no overflow)
+; Input:  a at (R5+08), b at (R5+0C)
+; Output: R6 = a * b (Q16.16 format)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP
-        LOAD R0, (R5+08)        ; a (Q16.16)
-        LOAD R1, (R5+0C)        ; b (Q16.16)
+        LOAD R0, (R5+08)        ; a (multiplicand, Q16.16)
+        LOAD R1, (R5+0C)        ; b (multiplier, Q16.16)
+        CMP R0, %D 0
+        JR_EQ L2                ; if a == 0, return 0
+        CMP R1, %D 0
+        JR_EQ L2                ; if b == 0, return 0
         MOVE %D 1, R4           ; sign = +1
-        OR R0, R0, R2           ; copy a into R2 and set flags
-        JR_Z L2                 ; a == 0 → nothing
-        JR_N L3                 ; a &lt; 0 → negate
-        JP L2                   ; a &gt; 0 → nothing
-L3                              ; negate a
+        CMP R0, %D 0
+        JR_SGE L4               ; a &gt;= 0 → nothing
+L5                              ; negate a
         MOVE %D 0, R3
-        SUB R3, R0, R0          ; R0 = -R0
+        SUB R3, R0, R0          ; R0 = -R0 (a_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L2                              ; a sign handled
-        OR R1, R1, R2           ; copy b into R2 and set flags
-        JR_Z L4                 ; b == 0 → nothing
-        JR_N L5                 ; b &lt; 0 → negate
-        JP L4                   ; b &gt; 0 → nothing
-L5                              ; negate b
+L4                              ; a sign handled
+        CMP R1, %D 0
+        JR_SGE L6               ; b &gt;= 0 → nothing
+L7                              ; negate b
         MOVE %D 0, R3
-        SUB R3, R1, R1          ; R1 = -R1
+        SUB R3, R1, R1          ; R1 = -R1 (b_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L4                              ; b sign handled
+L6                              ; b sign handled
+; 64-bit Russian peasant multiplication: product = |a| * |b|
         PUSH R4                 ; save sign on stack
-        PUSH R1                 ; push |b|
-        PUSH R0                 ; push |a|
-        CALL F_MUL64            ; unsigned 64-bit product
-        ADD R7, %D 8, R7        ; clean up arguments
-        POP R4                  ; restore sign from stack
-        CMP R4, %D 0
-        JR_EQ L6                ; sign == 0 → result 0
-        JR_SLT L7               ; sign &lt; 0 → negate
-        JP L8                   ; sign &gt; 0 → no change
-L6                              ; sign zero
-        MOVE %D 0, R0
-        MOVE %D 0, R1
-        JP L8
-L7                              ; negate 64-bit result
-        MOVE %D 0, R2
-        SUB R2, %D 1, R2        ; R2 = -1 (0xFFFFFFFF)
-        XOR R0, R2, R0          ; LO = ~LO
-        XOR R1, R2, R1          ; HI = ~HI
-        ADD R0, %D 1, R0        ; LO += 1
-        CMP R0, %D 0
-        JR_NE L9                ; if low != 0, no carry
-        ADD R1, %D 1, R1        ; carry to high if low wrapped
-L9                              ; negation done
-L8                              ; sign applied
-        MOVE R0, R2             ; LO
-        MOVE R1, R3             ; HI
-        SHR R2, %D 16, R2       ; LO &gt;&gt; 16
-        SHL R3, %D 16, R3       ; HI &lt;&lt; 16
-        OR R2, R3, R6           ; R6 = (LO &gt;&gt; 16) | (HI &lt;&lt; 16)
-        POP R5                  ; restore frame pointer
-        RET                     ; return
-
-; Helper functions for multiplication and division
-
-F_MUL                           ; Helper function: int mul(int a, int b)
-; F_MUL: signed 32-bit integer multiplication
-; Input:  a at (R5+08), b at (R5+0C)
-; Output: R6 = a * b
-; Algorithm: binary shift-and-add (Russian peasant), O(32) steps
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (left operand, pushed last, first parameter)
-        LOAD R1, (R5+0C)        ; b (right operand, pushed first, second parameter)
-        CMP R1, %D 0
-        JR_EQ L10               ; if b == 0, return 0
-L11                             ; continue multiplication
-        MOVE %D 0, R4           ; sign = 0 (positive)
-        CMP R0, %D 0
-        JR_SGE L12              ; if a &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R0, R0          ; a = -a
-        XOR R4, %D 1, R4        ; sign ^= 1
-L12                             ; skip negate a
-        CMP R1, %D 0
-        JR_SGE L13              ; if b &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R1, R1          ; b = -b
-        XOR R4, %D 1, R4        ; sign ^= 1
-L13                             ; skip negate b
-; Binary shift-and-add multiplication (Russian peasant algorithm)
-        PUSH R4                 ; save sign flag on stack
-        MOVE %D 0, R2           ; acc = 0 (accumulator)
-L14                             ; binary multiplication loop
-        CMP R1, %D 0
-        JR_EQ L15               ; if b == 0, exit loop
-        AND R1, %D 1, R3        ; R3 = b &amp; 1
-        CMP R3, %D 0
-        JR_EQ L16               ; if (b &amp; 1) == 0, skip add
-        ADD R2, R0, R2          ; acc += a
-L16                             ; skip add
-        SHL R0, %D 1, R0        ; a &lt;&lt;= 1
-        SHR R1, %D 1, R1        ; b &gt;&gt;= 1
-        JR L14                  ; continue loop
-L15                             ; loop done, apply sign
-        POP R4                  ; restore sign flag
-        CMP R4, %D 0
-        JR_EQ L17               ; if sign == 0, result is positive
-        MOVE %D 0, R0
-        SUB R0, R2, R2          ; acc = -acc
-        JP L17                  ; result ready
-L10                             ; zero multiplier
-        MOVE %D 0, R2           ; result 0 for zero multiplier
-L17                             ; end multiplication
-        MOVE R2, R6             ; result
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-
-F_MUL64                         ; Helper function: 64-bit unsigned multiplication
-; F_MUL64: 64-bit unsigned integer multiplication
-; Input:  a at (R5+08), b at (R5+0C) (both assumed non-negative)
-; Output: R1 = high 32 bits, R0 = low 32 bits, R6 = copy of R0
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (int32, unsigned)
-        LOAD R2, (R5+0C)        ; b (int32, unsigned)
-        CMP R2, %D 0
-        JR_NE L18               ; if b != 0, continue
-        MOVE %D 0, R0           ; LO = 0
-        MOVE %D 0, R1           ; HI = 0
-        MOVE %D 0, R6           ; low 32 bits copy
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-L18                             ; continue multiplication
-        MOVE %D 0, R1           ; M_HI = 0 (high 32 bits of multiplicand)
-        MOVE %D 0, R3           ; ACC_LO = 0
+        MOVE %D 0, R3           ; M_HI = 0 (high 32 bits of multiplicand)
+        MOVE %D 0, R2           ; ACC_LO = 0
         MOVE %D 0, R4           ; ACC_HI = 0
-L19                             ; 64-bit multiplication loop
-        CMP R2, %D 0
-        JR_EQ L22               ; if B == 0, exit loop
-        AND R2, %D 1, R6        ; R6 = B &amp; 1
+L8                              ; 64-bit multiplication loop
+        CMP R1, %D 0
+        JR_EQ L9                ; if B == 0, exit loop
+        AND R1, %D 1, R6        ; R6 = B &amp; 1
         CMP R6, %D 0
-        JR_EQ L20               ; if (B &amp; 1) == 0, skip add
-        ADD R3, R0, R6          ; R6 = ACC_LO + M_LO
-        CMP R6, R3
-        JR_SGE L21              ; if no carry, skip increment
-        ADD R4, %D 1, R4        ; ACC_HI += 1
-L21                             ; no carry
-        MOVE R6, R3             ; ACC_LO = temp_lo
-        ADD R4, R1, R4          ; ACC_HI = ACC_HI + M_HI
-L20                             ; skip add
+        JR_EQ L10               ; if (B &amp; 1) == 0, skip add
+        ADD R2, R0, R2          ; ACC_LO += M_LO
+        ADC R4, R3, R4          ; ACC_HI += M_HI + carry
+L10                             ; skip add
         MOVE R0, R6             ; save old M_LO
         SHL R0, %D 1, R0        ; M_LO &lt;&lt;= 1
         SHR R6, %D 31, R6       ; R6 = (old M_LO &gt;&gt; 31) &amp; 1 (carry bit)
-        SHL R1, %D 1, R1        ; M_HI &lt;&lt;= 1
-        OR R1, R6, R1           ; M_HI |= carry_from_LO
-        SHR R2, %D 1, R2        ; B &gt;&gt;= 1
-        JR L19                  ; continue loop
-L22                             ; multiplication done
-        MOVE R3, R0             ; LO → R0
-        MOVE R4, R1             ; HI → R1
-        MOVE R0, R6             ; low 32 bits copy for compatibility
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
+        SHL R3, %D 1, R3        ; M_HI &lt;&lt;= 1
+        OR R3, R6, R3           ; M_HI |= carry_from_LO
+        SHR R1, %D 1, R1        ; B &gt;&gt;= 1
+        JR L8                   ; continue loop
+L9                              ; multiplication done
+; Q16.16 scaling: extract middle 32 bits from 64-bit product
+        MOVE R2, R0             ; R0 = ACC_LO
+        MOVE R4, R1             ; R1 = ACC_HI
+        SHR R0, %D 16, R0       ; R0 = ACC_LO &gt;&gt; 16 (low 16 bits of result)
+        SHL R1, %D 16, R1       ; R1 = ACC_HI &lt;&lt; 16 (high 16 bits)
+        OR R0, R1, R0           ; result_abs = (ACC_HI &lt;&lt; 16) | (ACC_LO &gt;&gt; 16)
+; Apply sign to result
+        POP R4                  ; restore sign from stack
+        CMP R4, %D 0
+        JR_EQ L11               ; if sign == 0, result is 0
+        JR_SLT L12              ; if sign &lt; 0, negate
+        JP L13                  ; sign &gt; 0, no change
+L11                             ; result is zero
+        MOVE %D 0, R0           ; R0 = 0
+        JP L13                  ; jump to done
+L12                             ; negate result
+        MOVE %D 0, R3
+        SUB R3, R0, R0          ; R0 = -R0
+L13                             ; sign applied
+        MOVE R0, R6             ; return value in R6
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+        JP L3                   ; skip zero handler
+L2                              ; zero operand
+        MOVE %D 0, R6           ; return 0 for zero operand
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+L3                              ; end of function
 
 </code></pre>
       </details>
@@ -3516,66 +3270,86 @@ L1                              ; function exit
 ; Float helper functions (IEEE-754 single-precision)
 
 F_FMUL                          ; Helper function: float mul(float a, float b)
-; F_FMUL: Q16.16 float multiplication with explicit sign handling
-; Input:  a at (R5+08), b at (R5+0C) as signed Q16.16
-; Output: R6 = signed Q16.16 result
+; F_FMUL: Q16.16 fixed-point multiplication using 32-bit Russian peasant algorithm
+; Q16.16 representable range: [-32768.0, +32767.9999]
+; Safe multiplication domain: [-181.0, +181.0] per operand (no overflow)
+; Input:  a at (R5+08), b at (R5+0C)
+; Output: R6 = a * b (Q16.16 format)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP
-        LOAD R0, (R5+08)        ; a (Q16.16)
-        LOAD R1, (R5+0C)        ; b (Q16.16)
+        LOAD R0, (R5+08)        ; a (multiplicand, Q16.16)
+        LOAD R1, (R5+0C)        ; b (multiplier, Q16.16)
+        CMP R0, %D 0
+        JR_EQ L2                ; if a == 0, return 0
+        CMP R1, %D 0
+        JR_EQ L2                ; if b == 0, return 0
         MOVE %D 1, R4           ; sign = +1
-        OR R0, R0, R2           ; copy a into R2 and set flags
-        JR_Z L2                 ; a == 0 → nothing
-        JR_N L3                 ; a &lt; 0 → negate
-        JP L2                   ; a &gt; 0 → nothing
-L3                              ; negate a
+        CMP R0, %D 0
+        JR_SGE L4               ; a &gt;= 0 → nothing
+L5                              ; negate a
         MOVE %D 0, R3
-        SUB R3, R0, R0          ; R0 = -R0
+        SUB R3, R0, R0          ; R0 = -R0 (a_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L2                              ; a sign handled
-        OR R1, R1, R2           ; copy b into R2 and set flags
-        JR_Z L4                 ; b == 0 → nothing
-        JR_N L5                 ; b &lt; 0 → negate
-        JP L4                   ; b &gt; 0 → nothing
-L5                              ; negate b
+L4                              ; a sign handled
+        CMP R1, %D 0
+        JR_SGE L6               ; b &gt;= 0 → nothing
+L7                              ; negate b
         MOVE %D 0, R3
-        SUB R3, R1, R1          ; R1 = -R1
+        SUB R3, R1, R1          ; R1 = -R1 (b_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L4                              ; b sign handled
+L6                              ; b sign handled
+; 64-bit Russian peasant multiplication: product = |a| * |b|
         PUSH R4                 ; save sign on stack
-        PUSH R1                 ; push |b|
-        PUSH R0                 ; push |a|
-        CALL F_MUL64            ; unsigned 64-bit product
-        ADD R7, %D 8, R7        ; clean up arguments
+        MOVE %D 0, R3           ; M_HI = 0 (high 32 bits of multiplicand)
+        MOVE %D 0, R2           ; ACC_LO = 0
+        MOVE %D 0, R4           ; ACC_HI = 0
+L8                              ; 64-bit multiplication loop
+        CMP R1, %D 0
+        JR_EQ L9                ; if B == 0, exit loop
+        AND R1, %D 1, R6        ; R6 = B &amp; 1
+        CMP R6, %D 0
+        JR_EQ L10               ; if (B &amp; 1) == 0, skip add
+        ADD R2, R0, R2          ; ACC_LO += M_LO
+        ADC R4, R3, R4          ; ACC_HI += M_HI + carry
+L10                             ; skip add
+        MOVE R0, R6             ; save old M_LO
+        SHL R0, %D 1, R0        ; M_LO &lt;&lt;= 1
+        SHR R6, %D 31, R6       ; R6 = (old M_LO &gt;&gt; 31) &amp; 1 (carry bit)
+        SHL R3, %D 1, R3        ; M_HI &lt;&lt;= 1
+        OR R3, R6, R3           ; M_HI |= carry_from_LO
+        SHR R1, %D 1, R1        ; B &gt;&gt;= 1
+        JR L8                   ; continue loop
+L9                              ; multiplication done
+; Q16.16 scaling: extract middle 32 bits from 64-bit product
+        MOVE R2, R0             ; R0 = ACC_LO
+        MOVE R4, R1             ; R1 = ACC_HI
+        SHR R0, %D 16, R0       ; R0 = ACC_LO &gt;&gt; 16 (low 16 bits of result)
+        SHL R1, %D 16, R1       ; R1 = ACC_HI &lt;&lt; 16 (high 16 bits)
+        OR R0, R1, R0           ; result_abs = (ACC_HI &lt;&lt; 16) | (ACC_LO &gt;&gt; 16)
+; Apply sign to result
         POP R4                  ; restore sign from stack
         CMP R4, %D 0
-        JR_EQ L6                ; sign == 0 → result 0
-        JR_SLT L7               ; sign &lt; 0 → negate
-        JP L8                   ; sign &gt; 0 → no change
-L6                              ; sign zero
-        MOVE %D 0, R0
-        MOVE %D 0, R1
-        JP L8
-L7                              ; negate 64-bit result
-        MOVE %D 0, R2
-        SUB R2, %D 1, R2        ; R2 = -1 (0xFFFFFFFF)
-        XOR R0, R2, R0          ; LO = ~LO
-        XOR R1, R2, R1          ; HI = ~HI
-        ADD R0, %D 1, R0        ; LO += 1
-        CMP R0, %D 0
-        JR_NE L9                ; if low != 0, no carry
-        ADD R1, %D 1, R1        ; carry to high if low wrapped
-L9                              ; negation done
-L8                              ; sign applied
-        MOVE R0, R2             ; LO
-        MOVE R1, R3             ; HI
-        SHR R2, %D 16, R2       ; LO &gt;&gt; 16
-        SHL R3, %D 16, R3       ; HI &lt;&lt; 16
-        OR R2, R3, R6           ; R6 = (LO &gt;&gt; 16) | (HI &lt;&lt; 16)
+        JR_EQ L11               ; if sign == 0, result is 0
+        JR_SLT L12              ; if sign &lt; 0, negate
+        JP L13                  ; sign &gt; 0, no change
+L11                             ; result is zero
+        MOVE %D 0, R0           ; R0 = 0
+        JP L13                  ; jump to done
+L12                             ; negate result
+        MOVE %D 0, R3
+        SUB R3, R0, R0          ; R0 = -R0
+L13                             ; sign applied
+        MOVE R0, R6             ; return value in R6
         POP R5                  ; restore frame pointer
         RET                     ; return
+        JP L3                   ; skip zero handler
+L2                              ; zero operand
+        MOVE %D 0, R6           ; return 0 for zero operand
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+L3                              ; end of function
 
 F_I2F                           ; Helper function: float intToFloat(int value)
         PUSH R5                 ; save old frame pointer
@@ -3585,108 +3359,6 @@ F_I2F                           ; Helper function: float intToFloat(int value)
         MOVE R0, R6             ; result (Q16.16)
         POP R5                  ; restore frame pointer
         RET                     ; return
-
-; Helper functions for multiplication and division
-
-F_MUL                           ; Helper function: int mul(int a, int b)
-; F_MUL: signed 32-bit integer multiplication
-; Input:  a at (R5+08), b at (R5+0C)
-; Output: R6 = a * b
-; Algorithm: binary shift-and-add (Russian peasant), O(32) steps
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (left operand, pushed last, first parameter)
-        LOAD R1, (R5+0C)        ; b (right operand, pushed first, second parameter)
-        CMP R1, %D 0
-        JR_EQ L10               ; if b == 0, return 0
-L11                             ; continue multiplication
-        MOVE %D 0, R4           ; sign = 0 (positive)
-        CMP R0, %D 0
-        JR_SGE L12              ; if a &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R0, R0          ; a = -a
-        XOR R4, %D 1, R4        ; sign ^= 1
-L12                             ; skip negate a
-        CMP R1, %D 0
-        JR_SGE L13              ; if b &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R1, R1          ; b = -b
-        XOR R4, %D 1, R4        ; sign ^= 1
-L13                             ; skip negate b
-; Binary shift-and-add multiplication (Russian peasant algorithm)
-        PUSH R4                 ; save sign flag on stack
-        MOVE %D 0, R2           ; acc = 0 (accumulator)
-L14                             ; binary multiplication loop
-        CMP R1, %D 0
-        JR_EQ L15               ; if b == 0, exit loop
-        AND R1, %D 1, R3        ; R3 = b &amp; 1
-        CMP R3, %D 0
-        JR_EQ L16               ; if (b &amp; 1) == 0, skip add
-        ADD R2, R0, R2          ; acc += a
-L16                             ; skip add
-        SHL R0, %D 1, R0        ; a &lt;&lt;= 1
-        SHR R1, %D 1, R1        ; b &gt;&gt;= 1
-        JR L14                  ; continue loop
-L15                             ; loop done, apply sign
-        POP R4                  ; restore sign flag
-        CMP R4, %D 0
-        JR_EQ L17               ; if sign == 0, result is positive
-        MOVE %D 0, R0
-        SUB R0, R2, R2          ; acc = -acc
-        JP L17                  ; result ready
-L10                             ; zero multiplier
-        MOVE %D 0, R2           ; result 0 for zero multiplier
-L17                             ; end multiplication
-        MOVE R2, R6             ; result
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-
-F_MUL64                         ; Helper function: 64-bit unsigned multiplication
-; F_MUL64: 64-bit unsigned integer multiplication
-; Input:  a at (R5+08), b at (R5+0C) (both assumed non-negative)
-; Output: R1 = high 32 bits, R0 = low 32 bits, R6 = copy of R0
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (int32, unsigned)
-        LOAD R2, (R5+0C)        ; b (int32, unsigned)
-        CMP R2, %D 0
-        JR_NE L18               ; if b != 0, continue
-        MOVE %D 0, R0           ; LO = 0
-        MOVE %D 0, R1           ; HI = 0
-        MOVE %D 0, R6           ; low 32 bits copy
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-L18                             ; continue multiplication
-        MOVE %D 0, R1           ; M_HI = 0 (high 32 bits of multiplicand)
-        MOVE %D 0, R3           ; ACC_LO = 0
-        MOVE %D 0, R4           ; ACC_HI = 0
-L19                             ; 64-bit multiplication loop
-        CMP R2, %D 0
-        JR_EQ L22               ; if B == 0, exit loop
-        AND R2, %D 1, R6        ; R6 = B &amp; 1
-        CMP R6, %D 0
-        JR_EQ L20               ; if (B &amp; 1) == 0, skip add
-        ADD R3, R0, R6          ; R6 = ACC_LO + M_LO
-        CMP R6, R3
-        JR_SGE L21              ; if no carry, skip increment
-        ADD R4, %D 1, R4        ; ACC_HI += 1
-L21                             ; no carry
-        MOVE R6, R3             ; ACC_LO = temp_lo
-        ADD R4, R1, R4          ; ACC_HI = ACC_HI + M_HI
-L20                             ; skip add
-        MOVE R0, R6             ; save old M_LO
-        SHL R0, %D 1, R0        ; M_LO &lt;&lt;= 1
-        SHR R6, %D 31, R6       ; R6 = (old M_LO &gt;&gt; 31) &amp; 1 (carry bit)
-        SHL R1, %D 1, R1        ; M_HI &lt;&lt;= 1
-        OR R1, R6, R1           ; M_HI |= carry_from_LO
-        SHR R2, %D 1, R2        ; B &gt;&gt;= 1
-        JR L19                  ; continue loop
-L22                             ; multiplication done
-        MOVE R3, R0             ; LO → R0
-        MOVE R4, R1             ; HI → R1
-        MOVE R0, R6             ; low 32 bits copy for compatibility
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
 
 </code></pre>
       </details>
@@ -4293,66 +3965,86 @@ L1                              ; function exit
 ; Float helper functions (IEEE-754 single-precision)
 
 F_FMUL                          ; Helper function: float mul(float a, float b)
-; F_FMUL: Q16.16 float multiplication with explicit sign handling
-; Input:  a at (R5+08), b at (R5+0C) as signed Q16.16
-; Output: R6 = signed Q16.16 result
+; F_FMUL: Q16.16 fixed-point multiplication using 32-bit Russian peasant algorithm
+; Q16.16 representable range: [-32768.0, +32767.9999]
+; Safe multiplication domain: [-181.0, +181.0] per operand (no overflow)
+; Input:  a at (R5+08), b at (R5+0C)
+; Output: R6 = a * b (Q16.16 format)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP
-        LOAD R0, (R5+08)        ; a (Q16.16)
-        LOAD R1, (R5+0C)        ; b (Q16.16)
+        LOAD R0, (R5+08)        ; a (multiplicand, Q16.16)
+        LOAD R1, (R5+0C)        ; b (multiplier, Q16.16)
+        CMP R0, %D 0
+        JR_EQ L2                ; if a == 0, return 0
+        CMP R1, %D 0
+        JR_EQ L2                ; if b == 0, return 0
         MOVE %D 1, R4           ; sign = +1
-        OR R0, R0, R2           ; copy a into R2 and set flags
-        JR_Z L2                 ; a == 0 → nothing
-        JR_N L3                 ; a &lt; 0 → negate
-        JP L2                   ; a &gt; 0 → nothing
-L3                              ; negate a
+        CMP R0, %D 0
+        JR_SGE L4               ; a &gt;= 0 → nothing
+L5                              ; negate a
         MOVE %D 0, R3
-        SUB R3, R0, R0          ; R0 = -R0
+        SUB R3, R0, R0          ; R0 = -R0 (a_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L2                              ; a sign handled
-        OR R1, R1, R2           ; copy b into R2 and set flags
-        JR_Z L4                 ; b == 0 → nothing
-        JR_N L5                 ; b &lt; 0 → negate
-        JP L4                   ; b &gt; 0 → nothing
-L5                              ; negate b
+L4                              ; a sign handled
+        CMP R1, %D 0
+        JR_SGE L6               ; b &gt;= 0 → nothing
+L7                              ; negate b
         MOVE %D 0, R3
-        SUB R3, R1, R1          ; R1 = -R1
+        SUB R3, R1, R1          ; R1 = -R1 (b_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L4                              ; b sign handled
+L6                              ; b sign handled
+; 64-bit Russian peasant multiplication: product = |a| * |b|
         PUSH R4                 ; save sign on stack
-        PUSH R1                 ; push |b|
-        PUSH R0                 ; push |a|
-        CALL F_MUL64            ; unsigned 64-bit product
-        ADD R7, %D 8, R7        ; clean up arguments
+        MOVE %D 0, R3           ; M_HI = 0 (high 32 bits of multiplicand)
+        MOVE %D 0, R2           ; ACC_LO = 0
+        MOVE %D 0, R4           ; ACC_HI = 0
+L8                              ; 64-bit multiplication loop
+        CMP R1, %D 0
+        JR_EQ L9                ; if B == 0, exit loop
+        AND R1, %D 1, R6        ; R6 = B &amp; 1
+        CMP R6, %D 0
+        JR_EQ L10               ; if (B &amp; 1) == 0, skip add
+        ADD R2, R0, R2          ; ACC_LO += M_LO
+        ADC R4, R3, R4          ; ACC_HI += M_HI + carry
+L10                             ; skip add
+        MOVE R0, R6             ; save old M_LO
+        SHL R0, %D 1, R0        ; M_LO &lt;&lt;= 1
+        SHR R6, %D 31, R6       ; R6 = (old M_LO &gt;&gt; 31) &amp; 1 (carry bit)
+        SHL R3, %D 1, R3        ; M_HI &lt;&lt;= 1
+        OR R3, R6, R3           ; M_HI |= carry_from_LO
+        SHR R1, %D 1, R1        ; B &gt;&gt;= 1
+        JR L8                   ; continue loop
+L9                              ; multiplication done
+; Q16.16 scaling: extract middle 32 bits from 64-bit product
+        MOVE R2, R0             ; R0 = ACC_LO
+        MOVE R4, R1             ; R1 = ACC_HI
+        SHR R0, %D 16, R0       ; R0 = ACC_LO &gt;&gt; 16 (low 16 bits of result)
+        SHL R1, %D 16, R1       ; R1 = ACC_HI &lt;&lt; 16 (high 16 bits)
+        OR R0, R1, R0           ; result_abs = (ACC_HI &lt;&lt; 16) | (ACC_LO &gt;&gt; 16)
+; Apply sign to result
         POP R4                  ; restore sign from stack
         CMP R4, %D 0
-        JR_EQ L6                ; sign == 0 → result 0
-        JR_SLT L7               ; sign &lt; 0 → negate
-        JP L8                   ; sign &gt; 0 → no change
-L6                              ; sign zero
-        MOVE %D 0, R0
-        MOVE %D 0, R1
-        JP L8
-L7                              ; negate 64-bit result
-        MOVE %D 0, R2
-        SUB R2, %D 1, R2        ; R2 = -1 (0xFFFFFFFF)
-        XOR R0, R2, R0          ; LO = ~LO
-        XOR R1, R2, R1          ; HI = ~HI
-        ADD R0, %D 1, R0        ; LO += 1
-        CMP R0, %D 0
-        JR_NE L9                ; if low != 0, no carry
-        ADD R1, %D 1, R1        ; carry to high if low wrapped
-L9                              ; negation done
-L8                              ; sign applied
-        MOVE R0, R2             ; LO
-        MOVE R1, R3             ; HI
-        SHR R2, %D 16, R2       ; LO &gt;&gt; 16
-        SHL R3, %D 16, R3       ; HI &lt;&lt; 16
-        OR R2, R3, R6           ; R6 = (LO &gt;&gt; 16) | (HI &lt;&lt; 16)
+        JR_EQ L11               ; if sign == 0, result is 0
+        JR_SLT L12              ; if sign &lt; 0, negate
+        JP L13                  ; sign &gt; 0, no change
+L11                             ; result is zero
+        MOVE %D 0, R0           ; R0 = 0
+        JP L13                  ; jump to done
+L12                             ; negate result
+        MOVE %D 0, R3
+        SUB R3, R0, R0          ; R0 = -R0
+L13                             ; sign applied
+        MOVE R0, R6             ; return value in R6
         POP R5                  ; restore frame pointer
         RET                     ; return
+        JP L3                   ; skip zero handler
+L2                              ; zero operand
+        MOVE %D 0, R6           ; return 0 for zero operand
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+L3                              ; end of function
 
 F_I2F                           ; Helper function: float intToFloat(int value)
         PUSH R5                 ; save old frame pointer
@@ -4362,108 +4054,6 @@ F_I2F                           ; Helper function: float intToFloat(int value)
         MOVE R0, R6             ; result (Q16.16)
         POP R5                  ; restore frame pointer
         RET                     ; return
-
-; Helper functions for multiplication and division
-
-F_MUL                           ; Helper function: int mul(int a, int b)
-; F_MUL: signed 32-bit integer multiplication
-; Input:  a at (R5+08), b at (R5+0C)
-; Output: R6 = a * b
-; Algorithm: binary shift-and-add (Russian peasant), O(32) steps
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (left operand, pushed last, first parameter)
-        LOAD R1, (R5+0C)        ; b (right operand, pushed first, second parameter)
-        CMP R1, %D 0
-        JR_EQ L10               ; if b == 0, return 0
-L11                             ; continue multiplication
-        MOVE %D 0, R4           ; sign = 0 (positive)
-        CMP R0, %D 0
-        JR_SGE L12              ; if a &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R0, R0          ; a = -a
-        XOR R4, %D 1, R4        ; sign ^= 1
-L12                             ; skip negate a
-        CMP R1, %D 0
-        JR_SGE L13              ; if b &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R1, R1          ; b = -b
-        XOR R4, %D 1, R4        ; sign ^= 1
-L13                             ; skip negate b
-; Binary shift-and-add multiplication (Russian peasant algorithm)
-        PUSH R4                 ; save sign flag on stack
-        MOVE %D 0, R2           ; acc = 0 (accumulator)
-L14                             ; binary multiplication loop
-        CMP R1, %D 0
-        JR_EQ L15               ; if b == 0, exit loop
-        AND R1, %D 1, R3        ; R3 = b &amp; 1
-        CMP R3, %D 0
-        JR_EQ L16               ; if (b &amp; 1) == 0, skip add
-        ADD R2, R0, R2          ; acc += a
-L16                             ; skip add
-        SHL R0, %D 1, R0        ; a &lt;&lt;= 1
-        SHR R1, %D 1, R1        ; b &gt;&gt;= 1
-        JR L14                  ; continue loop
-L15                             ; loop done, apply sign
-        POP R4                  ; restore sign flag
-        CMP R4, %D 0
-        JR_EQ L17               ; if sign == 0, result is positive
-        MOVE %D 0, R0
-        SUB R0, R2, R2          ; acc = -acc
-        JP L17                  ; result ready
-L10                             ; zero multiplier
-        MOVE %D 0, R2           ; result 0 for zero multiplier
-L17                             ; end multiplication
-        MOVE R2, R6             ; result
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-
-F_MUL64                         ; Helper function: 64-bit unsigned multiplication
-; F_MUL64: 64-bit unsigned integer multiplication
-; Input:  a at (R5+08), b at (R5+0C) (both assumed non-negative)
-; Output: R1 = high 32 bits, R0 = low 32 bits, R6 = copy of R0
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (int32, unsigned)
-        LOAD R2, (R5+0C)        ; b (int32, unsigned)
-        CMP R2, %D 0
-        JR_NE L18               ; if b != 0, continue
-        MOVE %D 0, R0           ; LO = 0
-        MOVE %D 0, R1           ; HI = 0
-        MOVE %D 0, R6           ; low 32 bits copy
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-L18                             ; continue multiplication
-        MOVE %D 0, R1           ; M_HI = 0 (high 32 bits of multiplicand)
-        MOVE %D 0, R3           ; ACC_LO = 0
-        MOVE %D 0, R4           ; ACC_HI = 0
-L19                             ; 64-bit multiplication loop
-        CMP R2, %D 0
-        JR_EQ L22               ; if B == 0, exit loop
-        AND R2, %D 1, R6        ; R6 = B &amp; 1
-        CMP R6, %D 0
-        JR_EQ L20               ; if (B &amp; 1) == 0, skip add
-        ADD R3, R0, R6          ; R6 = ACC_LO + M_LO
-        CMP R6, R3
-        JR_SGE L21              ; if no carry, skip increment
-        ADD R4, %D 1, R4        ; ACC_HI += 1
-L21                             ; no carry
-        MOVE R6, R3             ; ACC_LO = temp_lo
-        ADD R4, R1, R4          ; ACC_HI = ACC_HI + M_HI
-L20                             ; skip add
-        MOVE R0, R6             ; save old M_LO
-        SHL R0, %D 1, R0        ; M_LO &lt;&lt;= 1
-        SHR R6, %D 31, R6       ; R6 = (old M_LO &gt;&gt; 31) &amp; 1 (carry bit)
-        SHL R1, %D 1, R1        ; M_HI &lt;&lt;= 1
-        OR R1, R6, R1           ; M_HI |= carry_from_LO
-        SHR R2, %D 1, R2        ; B &gt;&gt;= 1
-        JR L19                  ; continue loop
-L22                             ; multiplication done
-        MOVE R3, R0             ; LO → R0
-        MOVE R4, R1             ; HI → R1
-        MOVE R0, R6             ; low 32 bits copy for compatibility
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
 
 </code></pre>
       </details>
@@ -6042,168 +5632,86 @@ L1                              ; function exit
 ; Float helper functions (IEEE-754 single-precision)
 
 F_FMUL                          ; Helper function: float mul(float a, float b)
-; F_FMUL: Q16.16 float multiplication with explicit sign handling
-; Input:  a at (R5+08), b at (R5+0C) as signed Q16.16
-; Output: R6 = signed Q16.16 result
+; F_FMUL: Q16.16 fixed-point multiplication using 32-bit Russian peasant algorithm
+; Q16.16 representable range: [-32768.0, +32767.9999]
+; Safe multiplication domain: [-181.0, +181.0] per operand (no overflow)
+; Input:  a at (R5+08), b at (R5+0C)
+; Output: R6 = a * b (Q16.16 format)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP
-        LOAD R0, (R5+08)        ; a (Q16.16)
-        LOAD R1, (R5+0C)        ; b (Q16.16)
+        LOAD R0, (R5+08)        ; a (multiplicand, Q16.16)
+        LOAD R1, (R5+0C)        ; b (multiplier, Q16.16)
+        CMP R0, %D 0
+        JR_EQ L2                ; if a == 0, return 0
+        CMP R1, %D 0
+        JR_EQ L2                ; if b == 0, return 0
         MOVE %D 1, R4           ; sign = +1
-        OR R0, R0, R2           ; copy a into R2 and set flags
-        JR_Z L2                 ; a == 0 → nothing
-        JR_N L3                 ; a &lt; 0 → negate
-        JP L2                   ; a &gt; 0 → nothing
-L3                              ; negate a
+        CMP R0, %D 0
+        JR_SGE L4               ; a &gt;= 0 → nothing
+L5                              ; negate a
         MOVE %D 0, R3
-        SUB R3, R0, R0          ; R0 = -R0
+        SUB R3, R0, R0          ; R0 = -R0 (a_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L2                              ; a sign handled
-        OR R1, R1, R2           ; copy b into R2 and set flags
-        JR_Z L4                 ; b == 0 → nothing
-        JR_N L5                 ; b &lt; 0 → negate
-        JP L4                   ; b &gt; 0 → nothing
-L5                              ; negate b
+L4                              ; a sign handled
+        CMP R1, %D 0
+        JR_SGE L6               ; b &gt;= 0 → nothing
+L7                              ; negate b
         MOVE %D 0, R3
-        SUB R3, R1, R1          ; R1 = -R1
+        SUB R3, R1, R1          ; R1 = -R1 (b_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L4                              ; b sign handled
+L6                              ; b sign handled
+; 64-bit Russian peasant multiplication: product = |a| * |b|
         PUSH R4                 ; save sign on stack
-        PUSH R1                 ; push |b|
-        PUSH R0                 ; push |a|
-        CALL F_MUL64            ; unsigned 64-bit product
-        ADD R7, %D 8, R7        ; clean up arguments
-        POP R4                  ; restore sign from stack
-        CMP R4, %D 0
-        JR_EQ L6                ; sign == 0 → result 0
-        JR_SLT L7               ; sign &lt; 0 → negate
-        JP L8                   ; sign &gt; 0 → no change
-L6                              ; sign zero
-        MOVE %D 0, R0
-        MOVE %D 0, R1
-        JP L8
-L7                              ; negate 64-bit result
-        MOVE %D 0, R2
-        SUB R2, %D 1, R2        ; R2 = -1 (0xFFFFFFFF)
-        XOR R0, R2, R0          ; LO = ~LO
-        XOR R1, R2, R1          ; HI = ~HI
-        ADD R0, %D 1, R0        ; LO += 1
-        CMP R0, %D 0
-        JR_NE L9                ; if low != 0, no carry
-        ADD R1, %D 1, R1        ; carry to high if low wrapped
-L9                              ; negation done
-L8                              ; sign applied
-        MOVE R0, R2             ; LO
-        MOVE R1, R3             ; HI
-        SHR R2, %D 16, R2       ; LO &gt;&gt; 16
-        SHL R3, %D 16, R3       ; HI &lt;&lt; 16
-        OR R2, R3, R6           ; R6 = (LO &gt;&gt; 16) | (HI &lt;&lt; 16)
-        POP R5                  ; restore frame pointer
-        RET                     ; return
-
-; Helper functions for multiplication and division
-
-F_MUL                           ; Helper function: int mul(int a, int b)
-; F_MUL: signed 32-bit integer multiplication
-; Input:  a at (R5+08), b at (R5+0C)
-; Output: R6 = a * b
-; Algorithm: binary shift-and-add (Russian peasant), O(32) steps
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (left operand, pushed last, first parameter)
-        LOAD R1, (R5+0C)        ; b (right operand, pushed first, second parameter)
-        CMP R1, %D 0
-        JR_EQ L10               ; if b == 0, return 0
-L11                             ; continue multiplication
-        MOVE %D 0, R4           ; sign = 0 (positive)
-        CMP R0, %D 0
-        JR_SGE L12              ; if a &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R0, R0          ; a = -a
-        XOR R4, %D 1, R4        ; sign ^= 1
-L12                             ; skip negate a
-        CMP R1, %D 0
-        JR_SGE L13              ; if b &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R1, R1          ; b = -b
-        XOR R4, %D 1, R4        ; sign ^= 1
-L13                             ; skip negate b
-; Binary shift-and-add multiplication (Russian peasant algorithm)
-        PUSH R4                 ; save sign flag on stack
-        MOVE %D 0, R2           ; acc = 0 (accumulator)
-L14                             ; binary multiplication loop
-        CMP R1, %D 0
-        JR_EQ L15               ; if b == 0, exit loop
-        AND R1, %D 1, R3        ; R3 = b &amp; 1
-        CMP R3, %D 0
-        JR_EQ L16               ; if (b &amp; 1) == 0, skip add
-        ADD R2, R0, R2          ; acc += a
-L16                             ; skip add
-        SHL R0, %D 1, R0        ; a &lt;&lt;= 1
-        SHR R1, %D 1, R1        ; b &gt;&gt;= 1
-        JR L14                  ; continue loop
-L15                             ; loop done, apply sign
-        POP R4                  ; restore sign flag
-        CMP R4, %D 0
-        JR_EQ L17               ; if sign == 0, result is positive
-        MOVE %D 0, R0
-        SUB R0, R2, R2          ; acc = -acc
-        JP L17                  ; result ready
-L10                             ; zero multiplier
-        MOVE %D 0, R2           ; result 0 for zero multiplier
-L17                             ; end multiplication
-        MOVE R2, R6             ; result
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-
-F_MUL64                         ; Helper function: 64-bit unsigned multiplication
-; F_MUL64: 64-bit unsigned integer multiplication
-; Input:  a at (R5+08), b at (R5+0C) (both assumed non-negative)
-; Output: R1 = high 32 bits, R0 = low 32 bits, R6 = copy of R0
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (int32, unsigned)
-        LOAD R2, (R5+0C)        ; b (int32, unsigned)
-        CMP R2, %D 0
-        JR_NE L18               ; if b != 0, continue
-        MOVE %D 0, R0           ; LO = 0
-        MOVE %D 0, R1           ; HI = 0
-        MOVE %D 0, R6           ; low 32 bits copy
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-L18                             ; continue multiplication
-        MOVE %D 0, R1           ; M_HI = 0 (high 32 bits of multiplicand)
-        MOVE %D 0, R3           ; ACC_LO = 0
+        MOVE %D 0, R3           ; M_HI = 0 (high 32 bits of multiplicand)
+        MOVE %D 0, R2           ; ACC_LO = 0
         MOVE %D 0, R4           ; ACC_HI = 0
-L19                             ; 64-bit multiplication loop
-        CMP R2, %D 0
-        JR_EQ L22               ; if B == 0, exit loop
-        AND R2, %D 1, R6        ; R6 = B &amp; 1
+L8                              ; 64-bit multiplication loop
+        CMP R1, %D 0
+        JR_EQ L9                ; if B == 0, exit loop
+        AND R1, %D 1, R6        ; R6 = B &amp; 1
         CMP R6, %D 0
-        JR_EQ L20               ; if (B &amp; 1) == 0, skip add
-        ADD R3, R0, R6          ; R6 = ACC_LO + M_LO
-        CMP R6, R3
-        JR_SGE L21              ; if no carry, skip increment
-        ADD R4, %D 1, R4        ; ACC_HI += 1
-L21                             ; no carry
-        MOVE R6, R3             ; ACC_LO = temp_lo
-        ADD R4, R1, R4          ; ACC_HI = ACC_HI + M_HI
-L20                             ; skip add
+        JR_EQ L10               ; if (B &amp; 1) == 0, skip add
+        ADD R2, R0, R2          ; ACC_LO += M_LO
+        ADC R4, R3, R4          ; ACC_HI += M_HI + carry
+L10                             ; skip add
         MOVE R0, R6             ; save old M_LO
         SHL R0, %D 1, R0        ; M_LO &lt;&lt;= 1
         SHR R6, %D 31, R6       ; R6 = (old M_LO &gt;&gt; 31) &amp; 1 (carry bit)
-        SHL R1, %D 1, R1        ; M_HI &lt;&lt;= 1
-        OR R1, R6, R1           ; M_HI |= carry_from_LO
-        SHR R2, %D 1, R2        ; B &gt;&gt;= 1
-        JR L19                  ; continue loop
-L22                             ; multiplication done
-        MOVE R3, R0             ; LO → R0
-        MOVE R4, R1             ; HI → R1
-        MOVE R0, R6             ; low 32 bits copy for compatibility
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
+        SHL R3, %D 1, R3        ; M_HI &lt;&lt;= 1
+        OR R3, R6, R3           ; M_HI |= carry_from_LO
+        SHR R1, %D 1, R1        ; B &gt;&gt;= 1
+        JR L8                   ; continue loop
+L9                              ; multiplication done
+; Q16.16 scaling: extract middle 32 bits from 64-bit product
+        MOVE R2, R0             ; R0 = ACC_LO
+        MOVE R4, R1             ; R1 = ACC_HI
+        SHR R0, %D 16, R0       ; R0 = ACC_LO &gt;&gt; 16 (low 16 bits of result)
+        SHL R1, %D 16, R1       ; R1 = ACC_HI &lt;&lt; 16 (high 16 bits)
+        OR R0, R1, R0           ; result_abs = (ACC_HI &lt;&lt; 16) | (ACC_LO &gt;&gt; 16)
+; Apply sign to result
+        POP R4                  ; restore sign from stack
+        CMP R4, %D 0
+        JR_EQ L11               ; if sign == 0, result is 0
+        JR_SLT L12              ; if sign &lt; 0, negate
+        JP L13                  ; sign &gt; 0, no change
+L11                             ; result is zero
+        MOVE %D 0, R0           ; R0 = 0
+        JP L13                  ; jump to done
+L12                             ; negate result
+        MOVE %D 0, R3
+        SUB R3, R0, R0          ; R0 = -R0
+L13                             ; sign applied
+        MOVE R0, R6             ; return value in R6
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+        JP L3                   ; skip zero handler
+L2                              ; zero operand
+        MOVE %D 0, R6           ; return 0 for zero operand
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+L3                              ; end of function
 
 </code></pre>
       </details>
@@ -7066,168 +6574,86 @@ L1                              ; function exit
 ; Float helper functions (IEEE-754 single-precision)
 
 F_FMUL                          ; Helper function: float mul(float a, float b)
-; F_FMUL: Q16.16 float multiplication with explicit sign handling
-; Input:  a at (R5+08), b at (R5+0C) as signed Q16.16
-; Output: R6 = signed Q16.16 result
+; F_FMUL: Q16.16 fixed-point multiplication using 32-bit Russian peasant algorithm
+; Q16.16 representable range: [-32768.0, +32767.9999]
+; Safe multiplication domain: [-181.0, +181.0] per operand (no overflow)
+; Input:  a at (R5+08), b at (R5+0C)
+; Output: R6 = a * b (Q16.16 format)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP
-        LOAD R0, (R5+08)        ; a (Q16.16)
-        LOAD R1, (R5+0C)        ; b (Q16.16)
+        LOAD R0, (R5+08)        ; a (multiplicand, Q16.16)
+        LOAD R1, (R5+0C)        ; b (multiplier, Q16.16)
+        CMP R0, %D 0
+        JR_EQ L2                ; if a == 0, return 0
+        CMP R1, %D 0
+        JR_EQ L2                ; if b == 0, return 0
         MOVE %D 1, R4           ; sign = +1
-        OR R0, R0, R2           ; copy a into R2 and set flags
-        JR_Z L2                 ; a == 0 → nothing
-        JR_N L3                 ; a &lt; 0 → negate
-        JP L2                   ; a &gt; 0 → nothing
-L3                              ; negate a
+        CMP R0, %D 0
+        JR_SGE L4               ; a &gt;= 0 → nothing
+L5                              ; negate a
         MOVE %D 0, R3
-        SUB R3, R0, R0          ; R0 = -R0
+        SUB R3, R0, R0          ; R0 = -R0 (a_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L2                              ; a sign handled
-        OR R1, R1, R2           ; copy b into R2 and set flags
-        JR_Z L4                 ; b == 0 → nothing
-        JR_N L5                 ; b &lt; 0 → negate
-        JP L4                   ; b &gt; 0 → nothing
-L5                              ; negate b
+L4                              ; a sign handled
+        CMP R1, %D 0
+        JR_SGE L6               ; b &gt;= 0 → nothing
+L7                              ; negate b
         MOVE %D 0, R3
-        SUB R3, R1, R1          ; R1 = -R1
+        SUB R3, R1, R1          ; R1 = -R1 (b_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L4                              ; b sign handled
+L6                              ; b sign handled
+; 64-bit Russian peasant multiplication: product = |a| * |b|
         PUSH R4                 ; save sign on stack
-        PUSH R1                 ; push |b|
-        PUSH R0                 ; push |a|
-        CALL F_MUL64            ; unsigned 64-bit product
-        ADD R7, %D 8, R7        ; clean up arguments
-        POP R4                  ; restore sign from stack
-        CMP R4, %D 0
-        JR_EQ L6                ; sign == 0 → result 0
-        JR_SLT L7               ; sign &lt; 0 → negate
-        JP L8                   ; sign &gt; 0 → no change
-L6                              ; sign zero
-        MOVE %D 0, R0
-        MOVE %D 0, R1
-        JP L8
-L7                              ; negate 64-bit result
-        MOVE %D 0, R2
-        SUB R2, %D 1, R2        ; R2 = -1 (0xFFFFFFFF)
-        XOR R0, R2, R0          ; LO = ~LO
-        XOR R1, R2, R1          ; HI = ~HI
-        ADD R0, %D 1, R0        ; LO += 1
-        CMP R0, %D 0
-        JR_NE L9                ; if low != 0, no carry
-        ADD R1, %D 1, R1        ; carry to high if low wrapped
-L9                              ; negation done
-L8                              ; sign applied
-        MOVE R0, R2             ; LO
-        MOVE R1, R3             ; HI
-        SHR R2, %D 16, R2       ; LO &gt;&gt; 16
-        SHL R3, %D 16, R3       ; HI &lt;&lt; 16
-        OR R2, R3, R6           ; R6 = (LO &gt;&gt; 16) | (HI &lt;&lt; 16)
-        POP R5                  ; restore frame pointer
-        RET                     ; return
-
-; Helper functions for multiplication and division
-
-F_MUL                           ; Helper function: int mul(int a, int b)
-; F_MUL: signed 32-bit integer multiplication
-; Input:  a at (R5+08), b at (R5+0C)
-; Output: R6 = a * b
-; Algorithm: binary shift-and-add (Russian peasant), O(32) steps
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (left operand, pushed last, first parameter)
-        LOAD R1, (R5+0C)        ; b (right operand, pushed first, second parameter)
-        CMP R1, %D 0
-        JR_EQ L10               ; if b == 0, return 0
-L11                             ; continue multiplication
-        MOVE %D 0, R4           ; sign = 0 (positive)
-        CMP R0, %D 0
-        JR_SGE L12              ; if a &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R0, R0          ; a = -a
-        XOR R4, %D 1, R4        ; sign ^= 1
-L12                             ; skip negate a
-        CMP R1, %D 0
-        JR_SGE L13              ; if b &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R1, R1          ; b = -b
-        XOR R4, %D 1, R4        ; sign ^= 1
-L13                             ; skip negate b
-; Binary shift-and-add multiplication (Russian peasant algorithm)
-        PUSH R4                 ; save sign flag on stack
-        MOVE %D 0, R2           ; acc = 0 (accumulator)
-L14                             ; binary multiplication loop
-        CMP R1, %D 0
-        JR_EQ L15               ; if b == 0, exit loop
-        AND R1, %D 1, R3        ; R3 = b &amp; 1
-        CMP R3, %D 0
-        JR_EQ L16               ; if (b &amp; 1) == 0, skip add
-        ADD R2, R0, R2          ; acc += a
-L16                             ; skip add
-        SHL R0, %D 1, R0        ; a &lt;&lt;= 1
-        SHR R1, %D 1, R1        ; b &gt;&gt;= 1
-        JR L14                  ; continue loop
-L15                             ; loop done, apply sign
-        POP R4                  ; restore sign flag
-        CMP R4, %D 0
-        JR_EQ L17               ; if sign == 0, result is positive
-        MOVE %D 0, R0
-        SUB R0, R2, R2          ; acc = -acc
-        JP L17                  ; result ready
-L10                             ; zero multiplier
-        MOVE %D 0, R2           ; result 0 for zero multiplier
-L17                             ; end multiplication
-        MOVE R2, R6             ; result
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-
-F_MUL64                         ; Helper function: 64-bit unsigned multiplication
-; F_MUL64: 64-bit unsigned integer multiplication
-; Input:  a at (R5+08), b at (R5+0C) (both assumed non-negative)
-; Output: R1 = high 32 bits, R0 = low 32 bits, R6 = copy of R0
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (int32, unsigned)
-        LOAD R2, (R5+0C)        ; b (int32, unsigned)
-        CMP R2, %D 0
-        JR_NE L18               ; if b != 0, continue
-        MOVE %D 0, R0           ; LO = 0
-        MOVE %D 0, R1           ; HI = 0
-        MOVE %D 0, R6           ; low 32 bits copy
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-L18                             ; continue multiplication
-        MOVE %D 0, R1           ; M_HI = 0 (high 32 bits of multiplicand)
-        MOVE %D 0, R3           ; ACC_LO = 0
+        MOVE %D 0, R3           ; M_HI = 0 (high 32 bits of multiplicand)
+        MOVE %D 0, R2           ; ACC_LO = 0
         MOVE %D 0, R4           ; ACC_HI = 0
-L19                             ; 64-bit multiplication loop
-        CMP R2, %D 0
-        JR_EQ L22               ; if B == 0, exit loop
-        AND R2, %D 1, R6        ; R6 = B &amp; 1
+L8                              ; 64-bit multiplication loop
+        CMP R1, %D 0
+        JR_EQ L9                ; if B == 0, exit loop
+        AND R1, %D 1, R6        ; R6 = B &amp; 1
         CMP R6, %D 0
-        JR_EQ L20               ; if (B &amp; 1) == 0, skip add
-        ADD R3, R0, R6          ; R6 = ACC_LO + M_LO
-        CMP R6, R3
-        JR_SGE L21              ; if no carry, skip increment
-        ADD R4, %D 1, R4        ; ACC_HI += 1
-L21                             ; no carry
-        MOVE R6, R3             ; ACC_LO = temp_lo
-        ADD R4, R1, R4          ; ACC_HI = ACC_HI + M_HI
-L20                             ; skip add
+        JR_EQ L10               ; if (B &amp; 1) == 0, skip add
+        ADD R2, R0, R2          ; ACC_LO += M_LO
+        ADC R4, R3, R4          ; ACC_HI += M_HI + carry
+L10                             ; skip add
         MOVE R0, R6             ; save old M_LO
         SHL R0, %D 1, R0        ; M_LO &lt;&lt;= 1
         SHR R6, %D 31, R6       ; R6 = (old M_LO &gt;&gt; 31) &amp; 1 (carry bit)
-        SHL R1, %D 1, R1        ; M_HI &lt;&lt;= 1
-        OR R1, R6, R1           ; M_HI |= carry_from_LO
-        SHR R2, %D 1, R2        ; B &gt;&gt;= 1
-        JR L19                  ; continue loop
-L22                             ; multiplication done
-        MOVE R3, R0             ; LO → R0
-        MOVE R4, R1             ; HI → R1
-        MOVE R0, R6             ; low 32 bits copy for compatibility
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
+        SHL R3, %D 1, R3        ; M_HI &lt;&lt;= 1
+        OR R3, R6, R3           ; M_HI |= carry_from_LO
+        SHR R1, %D 1, R1        ; B &gt;&gt;= 1
+        JR L8                   ; continue loop
+L9                              ; multiplication done
+; Q16.16 scaling: extract middle 32 bits from 64-bit product
+        MOVE R2, R0             ; R0 = ACC_LO
+        MOVE R4, R1             ; R1 = ACC_HI
+        SHR R0, %D 16, R0       ; R0 = ACC_LO &gt;&gt; 16 (low 16 bits of result)
+        SHL R1, %D 16, R1       ; R1 = ACC_HI &lt;&lt; 16 (high 16 bits)
+        OR R0, R1, R0           ; result_abs = (ACC_HI &lt;&lt; 16) | (ACC_LO &gt;&gt; 16)
+; Apply sign to result
+        POP R4                  ; restore sign from stack
+        CMP R4, %D 0
+        JR_EQ L11               ; if sign == 0, result is 0
+        JR_SLT L12              ; if sign &lt; 0, negate
+        JP L13                  ; sign &gt; 0, no change
+L11                             ; result is zero
+        MOVE %D 0, R0           ; R0 = 0
+        JP L13                  ; jump to done
+L12                             ; negate result
+        MOVE %D 0, R3
+        SUB R3, R0, R0          ; R0 = -R0
+L13                             ; sign applied
+        MOVE R0, R6             ; return value in R6
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+        JP L3                   ; skip zero handler
+L2                              ; zero operand
+        MOVE %D 0, R6           ; return 0 for zero operand
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+L3                              ; end of function
 
 </code></pre>
       </details>
@@ -7244,8 +6670,8 @@ L22                             ; multiplication done
               </tr>
               <tr>
                 <td><code>—</code></td>
-                <td><code>1155072</code></td>
-                <td><code>17.625</code></td>
+                <td><code>860160</code></td>
+                <td><code>13.125</code></td>
                 <td class="status-unknown">❔ UNKNOWN</td>
               </tr>
             </table>
@@ -7916,168 +7342,86 @@ L1                              ; function exit
 ; Float helper functions (IEEE-754 single-precision)
 
 F_FMUL                          ; Helper function: float mul(float a, float b)
-; F_FMUL: Q16.16 float multiplication with explicit sign handling
-; Input:  a at (R5+08), b at (R5+0C) as signed Q16.16
-; Output: R6 = signed Q16.16 result
+; F_FMUL: Q16.16 fixed-point multiplication using 32-bit Russian peasant algorithm
+; Q16.16 representable range: [-32768.0, +32767.9999]
+; Safe multiplication domain: [-181.0, +181.0] per operand (no overflow)
+; Input:  a at (R5+08), b at (R5+0C)
+; Output: R6 = a * b (Q16.16 format)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP
-        LOAD R0, (R5+08)        ; a (Q16.16)
-        LOAD R1, (R5+0C)        ; b (Q16.16)
+        LOAD R0, (R5+08)        ; a (multiplicand, Q16.16)
+        LOAD R1, (R5+0C)        ; b (multiplier, Q16.16)
+        CMP R0, %D 0
+        JR_EQ L2                ; if a == 0, return 0
+        CMP R1, %D 0
+        JR_EQ L2                ; if b == 0, return 0
         MOVE %D 1, R4           ; sign = +1
-        OR R0, R0, R2           ; copy a into R2 and set flags
-        JR_Z L2                 ; a == 0 → nothing
-        JR_N L3                 ; a &lt; 0 → negate
-        JP L2                   ; a &gt; 0 → nothing
-L3                              ; negate a
+        CMP R0, %D 0
+        JR_SGE L4               ; a &gt;= 0 → nothing
+L5                              ; negate a
         MOVE %D 0, R3
-        SUB R3, R0, R0          ; R0 = -R0
+        SUB R3, R0, R0          ; R0 = -R0 (a_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L2                              ; a sign handled
-        OR R1, R1, R2           ; copy b into R2 and set flags
-        JR_Z L4                 ; b == 0 → nothing
-        JR_N L5                 ; b &lt; 0 → negate
-        JP L4                   ; b &gt; 0 → nothing
-L5                              ; negate b
+L4                              ; a sign handled
+        CMP R1, %D 0
+        JR_SGE L6               ; b &gt;= 0 → nothing
+L7                              ; negate b
         MOVE %D 0, R3
-        SUB R3, R1, R1          ; R1 = -R1
+        SUB R3, R1, R1          ; R1 = -R1 (b_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L4                              ; b sign handled
+L6                              ; b sign handled
+; 64-bit Russian peasant multiplication: product = |a| * |b|
         PUSH R4                 ; save sign on stack
-        PUSH R1                 ; push |b|
-        PUSH R0                 ; push |a|
-        CALL F_MUL64            ; unsigned 64-bit product
-        ADD R7, %D 8, R7        ; clean up arguments
-        POP R4                  ; restore sign from stack
-        CMP R4, %D 0
-        JR_EQ L6                ; sign == 0 → result 0
-        JR_SLT L7               ; sign &lt; 0 → negate
-        JP L8                   ; sign &gt; 0 → no change
-L6                              ; sign zero
-        MOVE %D 0, R0
-        MOVE %D 0, R1
-        JP L8
-L7                              ; negate 64-bit result
-        MOVE %D 0, R2
-        SUB R2, %D 1, R2        ; R2 = -1 (0xFFFFFFFF)
-        XOR R0, R2, R0          ; LO = ~LO
-        XOR R1, R2, R1          ; HI = ~HI
-        ADD R0, %D 1, R0        ; LO += 1
-        CMP R0, %D 0
-        JR_NE L9                ; if low != 0, no carry
-        ADD R1, %D 1, R1        ; carry to high if low wrapped
-L9                              ; negation done
-L8                              ; sign applied
-        MOVE R0, R2             ; LO
-        MOVE R1, R3             ; HI
-        SHR R2, %D 16, R2       ; LO &gt;&gt; 16
-        SHL R3, %D 16, R3       ; HI &lt;&lt; 16
-        OR R2, R3, R6           ; R6 = (LO &gt;&gt; 16) | (HI &lt;&lt; 16)
-        POP R5                  ; restore frame pointer
-        RET                     ; return
-
-; Helper functions for multiplication and division
-
-F_MUL                           ; Helper function: int mul(int a, int b)
-; F_MUL: signed 32-bit integer multiplication
-; Input:  a at (R5+08), b at (R5+0C)
-; Output: R6 = a * b
-; Algorithm: binary shift-and-add (Russian peasant), O(32) steps
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (left operand, pushed last, first parameter)
-        LOAD R1, (R5+0C)        ; b (right operand, pushed first, second parameter)
-        CMP R1, %D 0
-        JR_EQ L10               ; if b == 0, return 0
-L11                             ; continue multiplication
-        MOVE %D 0, R4           ; sign = 0 (positive)
-        CMP R0, %D 0
-        JR_SGE L12              ; if a &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R0, R0          ; a = -a
-        XOR R4, %D 1, R4        ; sign ^= 1
-L12                             ; skip negate a
-        CMP R1, %D 0
-        JR_SGE L13              ; if b &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R1, R1          ; b = -b
-        XOR R4, %D 1, R4        ; sign ^= 1
-L13                             ; skip negate b
-; Binary shift-and-add multiplication (Russian peasant algorithm)
-        PUSH R4                 ; save sign flag on stack
-        MOVE %D 0, R2           ; acc = 0 (accumulator)
-L14                             ; binary multiplication loop
-        CMP R1, %D 0
-        JR_EQ L15               ; if b == 0, exit loop
-        AND R1, %D 1, R3        ; R3 = b &amp; 1
-        CMP R3, %D 0
-        JR_EQ L16               ; if (b &amp; 1) == 0, skip add
-        ADD R2, R0, R2          ; acc += a
-L16                             ; skip add
-        SHL R0, %D 1, R0        ; a &lt;&lt;= 1
-        SHR R1, %D 1, R1        ; b &gt;&gt;= 1
-        JR L14                  ; continue loop
-L15                             ; loop done, apply sign
-        POP R4                  ; restore sign flag
-        CMP R4, %D 0
-        JR_EQ L17               ; if sign == 0, result is positive
-        MOVE %D 0, R0
-        SUB R0, R2, R2          ; acc = -acc
-        JP L17                  ; result ready
-L10                             ; zero multiplier
-        MOVE %D 0, R2           ; result 0 for zero multiplier
-L17                             ; end multiplication
-        MOVE R2, R6             ; result
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-
-F_MUL64                         ; Helper function: 64-bit unsigned multiplication
-; F_MUL64: 64-bit unsigned integer multiplication
-; Input:  a at (R5+08), b at (R5+0C) (both assumed non-negative)
-; Output: R1 = high 32 bits, R0 = low 32 bits, R6 = copy of R0
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (int32, unsigned)
-        LOAD R2, (R5+0C)        ; b (int32, unsigned)
-        CMP R2, %D 0
-        JR_NE L18               ; if b != 0, continue
-        MOVE %D 0, R0           ; LO = 0
-        MOVE %D 0, R1           ; HI = 0
-        MOVE %D 0, R6           ; low 32 bits copy
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-L18                             ; continue multiplication
-        MOVE %D 0, R1           ; M_HI = 0 (high 32 bits of multiplicand)
-        MOVE %D 0, R3           ; ACC_LO = 0
+        MOVE %D 0, R3           ; M_HI = 0 (high 32 bits of multiplicand)
+        MOVE %D 0, R2           ; ACC_LO = 0
         MOVE %D 0, R4           ; ACC_HI = 0
-L19                             ; 64-bit multiplication loop
-        CMP R2, %D 0
-        JR_EQ L22               ; if B == 0, exit loop
-        AND R2, %D 1, R6        ; R6 = B &amp; 1
+L8                              ; 64-bit multiplication loop
+        CMP R1, %D 0
+        JR_EQ L9                ; if B == 0, exit loop
+        AND R1, %D 1, R6        ; R6 = B &amp; 1
         CMP R6, %D 0
-        JR_EQ L20               ; if (B &amp; 1) == 0, skip add
-        ADD R3, R0, R6          ; R6 = ACC_LO + M_LO
-        CMP R6, R3
-        JR_SGE L21              ; if no carry, skip increment
-        ADD R4, %D 1, R4        ; ACC_HI += 1
-L21                             ; no carry
-        MOVE R6, R3             ; ACC_LO = temp_lo
-        ADD R4, R1, R4          ; ACC_HI = ACC_HI + M_HI
-L20                             ; skip add
+        JR_EQ L10               ; if (B &amp; 1) == 0, skip add
+        ADD R2, R0, R2          ; ACC_LO += M_LO
+        ADC R4, R3, R4          ; ACC_HI += M_HI + carry
+L10                             ; skip add
         MOVE R0, R6             ; save old M_LO
         SHL R0, %D 1, R0        ; M_LO &lt;&lt;= 1
         SHR R6, %D 31, R6       ; R6 = (old M_LO &gt;&gt; 31) &amp; 1 (carry bit)
-        SHL R1, %D 1, R1        ; M_HI &lt;&lt;= 1
-        OR R1, R6, R1           ; M_HI |= carry_from_LO
-        SHR R2, %D 1, R2        ; B &gt;&gt;= 1
-        JR L19                  ; continue loop
-L22                             ; multiplication done
-        MOVE R3, R0             ; LO → R0
-        MOVE R4, R1             ; HI → R1
-        MOVE R0, R6             ; low 32 bits copy for compatibility
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
+        SHL R3, %D 1, R3        ; M_HI &lt;&lt;= 1
+        OR R3, R6, R3           ; M_HI |= carry_from_LO
+        SHR R1, %D 1, R1        ; B &gt;&gt;= 1
+        JR L8                   ; continue loop
+L9                              ; multiplication done
+; Q16.16 scaling: extract middle 32 bits from 64-bit product
+        MOVE R2, R0             ; R0 = ACC_LO
+        MOVE R4, R1             ; R1 = ACC_HI
+        SHR R0, %D 16, R0       ; R0 = ACC_LO &gt;&gt; 16 (low 16 bits of result)
+        SHL R1, %D 16, R1       ; R1 = ACC_HI &lt;&lt; 16 (high 16 bits)
+        OR R0, R1, R0           ; result_abs = (ACC_HI &lt;&lt; 16) | (ACC_LO &gt;&gt; 16)
+; Apply sign to result
+        POP R4                  ; restore sign from stack
+        CMP R4, %D 0
+        JR_EQ L11               ; if sign == 0, result is 0
+        JR_SLT L12              ; if sign &lt; 0, negate
+        JP L13                  ; sign &gt; 0, no change
+L11                             ; result is zero
+        MOVE %D 0, R0           ; R0 = 0
+        JP L13                  ; jump to done
+L12                             ; negate result
+        MOVE %D 0, R3
+        SUB R3, R0, R0          ; R0 = -R0
+L13                             ; sign applied
+        MOVE R0, R6             ; return value in R6
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+        JP L3                   ; skip zero handler
+L2                              ; zero operand
+        MOVE %D 0, R6           ; return 0 for zero operand
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+L3                              ; end of function
 
 </code></pre>
       </details>
@@ -9030,168 +8374,86 @@ L1                              ; function exit
 ; Float helper functions (IEEE-754 single-precision)
 
 F_FMUL                          ; Helper function: float mul(float a, float b)
-; F_FMUL: Q16.16 float multiplication with explicit sign handling
-; Input:  a at (R5+08), b at (R5+0C) as signed Q16.16
-; Output: R6 = signed Q16.16 result
+; F_FMUL: Q16.16 fixed-point multiplication using 32-bit Russian peasant algorithm
+; Q16.16 representable range: [-32768.0, +32767.9999]
+; Safe multiplication domain: [-181.0, +181.0] per operand (no overflow)
+; Input:  a at (R5+08), b at (R5+0C)
+; Output: R6 = a * b (Q16.16 format)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP
-        LOAD R0, (R5+08)        ; a (Q16.16)
-        LOAD R1, (R5+0C)        ; b (Q16.16)
+        LOAD R0, (R5+08)        ; a (multiplicand, Q16.16)
+        LOAD R1, (R5+0C)        ; b (multiplier, Q16.16)
+        CMP R0, %D 0
+        JR_EQ L2                ; if a == 0, return 0
+        CMP R1, %D 0
+        JR_EQ L2                ; if b == 0, return 0
         MOVE %D 1, R4           ; sign = +1
-        OR R0, R0, R2           ; copy a into R2 and set flags
-        JR_Z L2                 ; a == 0 → nothing
-        JR_N L3                 ; a &lt; 0 → negate
-        JP L2                   ; a &gt; 0 → nothing
-L3                              ; negate a
+        CMP R0, %D 0
+        JR_SGE L4               ; a &gt;= 0 → nothing
+L5                              ; negate a
         MOVE %D 0, R3
-        SUB R3, R0, R0          ; R0 = -R0
+        SUB R3, R0, R0          ; R0 = -R0 (a_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L2                              ; a sign handled
-        OR R1, R1, R2           ; copy b into R2 and set flags
-        JR_Z L4                 ; b == 0 → nothing
-        JR_N L5                 ; b &lt; 0 → negate
-        JP L4                   ; b &gt; 0 → nothing
-L5                              ; negate b
+L4                              ; a sign handled
+        CMP R1, %D 0
+        JR_SGE L6               ; b &gt;= 0 → nothing
+L7                              ; negate b
         MOVE %D 0, R3
-        SUB R3, R1, R1          ; R1 = -R1
+        SUB R3, R1, R1          ; R1 = -R1 (b_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L4                              ; b sign handled
+L6                              ; b sign handled
+; 64-bit Russian peasant multiplication: product = |a| * |b|
         PUSH R4                 ; save sign on stack
-        PUSH R1                 ; push |b|
-        PUSH R0                 ; push |a|
-        CALL F_MUL64            ; unsigned 64-bit product
-        ADD R7, %D 8, R7        ; clean up arguments
-        POP R4                  ; restore sign from stack
-        CMP R4, %D 0
-        JR_EQ L6                ; sign == 0 → result 0
-        JR_SLT L7               ; sign &lt; 0 → negate
-        JP L8                   ; sign &gt; 0 → no change
-L6                              ; sign zero
-        MOVE %D 0, R0
-        MOVE %D 0, R1
-        JP L8
-L7                              ; negate 64-bit result
-        MOVE %D 0, R2
-        SUB R2, %D 1, R2        ; R2 = -1 (0xFFFFFFFF)
-        XOR R0, R2, R0          ; LO = ~LO
-        XOR R1, R2, R1          ; HI = ~HI
-        ADD R0, %D 1, R0        ; LO += 1
-        CMP R0, %D 0
-        JR_NE L9                ; if low != 0, no carry
-        ADD R1, %D 1, R1        ; carry to high if low wrapped
-L9                              ; negation done
-L8                              ; sign applied
-        MOVE R0, R2             ; LO
-        MOVE R1, R3             ; HI
-        SHR R2, %D 16, R2       ; LO &gt;&gt; 16
-        SHL R3, %D 16, R3       ; HI &lt;&lt; 16
-        OR R2, R3, R6           ; R6 = (LO &gt;&gt; 16) | (HI &lt;&lt; 16)
-        POP R5                  ; restore frame pointer
-        RET                     ; return
-
-; Helper functions for multiplication and division
-
-F_MUL                           ; Helper function: int mul(int a, int b)
-; F_MUL: signed 32-bit integer multiplication
-; Input:  a at (R5+08), b at (R5+0C)
-; Output: R6 = a * b
-; Algorithm: binary shift-and-add (Russian peasant), O(32) steps
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (left operand, pushed last, first parameter)
-        LOAD R1, (R5+0C)        ; b (right operand, pushed first, second parameter)
-        CMP R1, %D 0
-        JR_EQ L10               ; if b == 0, return 0
-L11                             ; continue multiplication
-        MOVE %D 0, R4           ; sign = 0 (positive)
-        CMP R0, %D 0
-        JR_SGE L12              ; if a &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R0, R0          ; a = -a
-        XOR R4, %D 1, R4        ; sign ^= 1
-L12                             ; skip negate a
-        CMP R1, %D 0
-        JR_SGE L13              ; if b &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R1, R1          ; b = -b
-        XOR R4, %D 1, R4        ; sign ^= 1
-L13                             ; skip negate b
-; Binary shift-and-add multiplication (Russian peasant algorithm)
-        PUSH R4                 ; save sign flag on stack
-        MOVE %D 0, R2           ; acc = 0 (accumulator)
-L14                             ; binary multiplication loop
-        CMP R1, %D 0
-        JR_EQ L15               ; if b == 0, exit loop
-        AND R1, %D 1, R3        ; R3 = b &amp; 1
-        CMP R3, %D 0
-        JR_EQ L16               ; if (b &amp; 1) == 0, skip add
-        ADD R2, R0, R2          ; acc += a
-L16                             ; skip add
-        SHL R0, %D 1, R0        ; a &lt;&lt;= 1
-        SHR R1, %D 1, R1        ; b &gt;&gt;= 1
-        JR L14                  ; continue loop
-L15                             ; loop done, apply sign
-        POP R4                  ; restore sign flag
-        CMP R4, %D 0
-        JR_EQ L17               ; if sign == 0, result is positive
-        MOVE %D 0, R0
-        SUB R0, R2, R2          ; acc = -acc
-        JP L17                  ; result ready
-L10                             ; zero multiplier
-        MOVE %D 0, R2           ; result 0 for zero multiplier
-L17                             ; end multiplication
-        MOVE R2, R6             ; result
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-
-F_MUL64                         ; Helper function: 64-bit unsigned multiplication
-; F_MUL64: 64-bit unsigned integer multiplication
-; Input:  a at (R5+08), b at (R5+0C) (both assumed non-negative)
-; Output: R1 = high 32 bits, R0 = low 32 bits, R6 = copy of R0
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (int32, unsigned)
-        LOAD R2, (R5+0C)        ; b (int32, unsigned)
-        CMP R2, %D 0
-        JR_NE L18               ; if b != 0, continue
-        MOVE %D 0, R0           ; LO = 0
-        MOVE %D 0, R1           ; HI = 0
-        MOVE %D 0, R6           ; low 32 bits copy
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-L18                             ; continue multiplication
-        MOVE %D 0, R1           ; M_HI = 0 (high 32 bits of multiplicand)
-        MOVE %D 0, R3           ; ACC_LO = 0
+        MOVE %D 0, R3           ; M_HI = 0 (high 32 bits of multiplicand)
+        MOVE %D 0, R2           ; ACC_LO = 0
         MOVE %D 0, R4           ; ACC_HI = 0
-L19                             ; 64-bit multiplication loop
-        CMP R2, %D 0
-        JR_EQ L22               ; if B == 0, exit loop
-        AND R2, %D 1, R6        ; R6 = B &amp; 1
+L8                              ; 64-bit multiplication loop
+        CMP R1, %D 0
+        JR_EQ L9                ; if B == 0, exit loop
+        AND R1, %D 1, R6        ; R6 = B &amp; 1
         CMP R6, %D 0
-        JR_EQ L20               ; if (B &amp; 1) == 0, skip add
-        ADD R3, R0, R6          ; R6 = ACC_LO + M_LO
-        CMP R6, R3
-        JR_SGE L21              ; if no carry, skip increment
-        ADD R4, %D 1, R4        ; ACC_HI += 1
-L21                             ; no carry
-        MOVE R6, R3             ; ACC_LO = temp_lo
-        ADD R4, R1, R4          ; ACC_HI = ACC_HI + M_HI
-L20                             ; skip add
+        JR_EQ L10               ; if (B &amp; 1) == 0, skip add
+        ADD R2, R0, R2          ; ACC_LO += M_LO
+        ADC R4, R3, R4          ; ACC_HI += M_HI + carry
+L10                             ; skip add
         MOVE R0, R6             ; save old M_LO
         SHL R0, %D 1, R0        ; M_LO &lt;&lt;= 1
         SHR R6, %D 31, R6       ; R6 = (old M_LO &gt;&gt; 31) &amp; 1 (carry bit)
-        SHL R1, %D 1, R1        ; M_HI &lt;&lt;= 1
-        OR R1, R6, R1           ; M_HI |= carry_from_LO
-        SHR R2, %D 1, R2        ; B &gt;&gt;= 1
-        JR L19                  ; continue loop
-L22                             ; multiplication done
-        MOVE R3, R0             ; LO → R0
-        MOVE R4, R1             ; HI → R1
-        MOVE R0, R6             ; low 32 bits copy for compatibility
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
+        SHL R3, %D 1, R3        ; M_HI &lt;&lt;= 1
+        OR R3, R6, R3           ; M_HI |= carry_from_LO
+        SHR R1, %D 1, R1        ; B &gt;&gt;= 1
+        JR L8                   ; continue loop
+L9                              ; multiplication done
+; Q16.16 scaling: extract middle 32 bits from 64-bit product
+        MOVE R2, R0             ; R0 = ACC_LO
+        MOVE R4, R1             ; R1 = ACC_HI
+        SHR R0, %D 16, R0       ; R0 = ACC_LO &gt;&gt; 16 (low 16 bits of result)
+        SHL R1, %D 16, R1       ; R1 = ACC_HI &lt;&lt; 16 (high 16 bits)
+        OR R0, R1, R0           ; result_abs = (ACC_HI &lt;&lt; 16) | (ACC_LO &gt;&gt; 16)
+; Apply sign to result
+        POP R4                  ; restore sign from stack
+        CMP R4, %D 0
+        JR_EQ L11               ; if sign == 0, result is 0
+        JR_SLT L12              ; if sign &lt; 0, negate
+        JP L13                  ; sign &gt; 0, no change
+L11                             ; result is zero
+        MOVE %D 0, R0           ; R0 = 0
+        JP L13                  ; jump to done
+L12                             ; negate result
+        MOVE %D 0, R3
+        SUB R3, R0, R0          ; R0 = -R0
+L13                             ; sign applied
+        MOVE R0, R6             ; return value in R6
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+        JP L3                   ; skip zero handler
+L2                              ; zero operand
+        MOVE %D 0, R6           ; return 0 for zero operand
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+L3                              ; end of function
 
 </code></pre>
       </details>
@@ -9609,66 +8871,86 @@ F_FADD                          ; Helper function: float add(float a, float b)
         RET                     ; return
 
 F_FMUL                          ; Helper function: float mul(float a, float b)
-; F_FMUL: Q16.16 float multiplication with explicit sign handling
-; Input:  a at (R5+08), b at (R5+0C) as signed Q16.16
-; Output: R6 = signed Q16.16 result
+; F_FMUL: Q16.16 fixed-point multiplication using 32-bit Russian peasant algorithm
+; Q16.16 representable range: [-32768.0, +32767.9999]
+; Safe multiplication domain: [-181.0, +181.0] per operand (no overflow)
+; Input:  a at (R5+08), b at (R5+0C)
+; Output: R6 = a * b (Q16.16 format)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP
-        LOAD R0, (R5+08)        ; a (Q16.16)
-        LOAD R1, (R5+0C)        ; b (Q16.16)
+        LOAD R0, (R5+08)        ; a (multiplicand, Q16.16)
+        LOAD R1, (R5+0C)        ; b (multiplier, Q16.16)
+        CMP R0, %D 0
+        JR_EQ L2                ; if a == 0, return 0
+        CMP R1, %D 0
+        JR_EQ L2                ; if b == 0, return 0
         MOVE %D 1, R4           ; sign = +1
-        OR R0, R0, R2           ; copy a into R2 and set flags
-        JR_Z L2                 ; a == 0 → nothing
-        JR_N L3                 ; a &lt; 0 → negate
-        JP L2                   ; a &gt; 0 → nothing
-L3                              ; negate a
+        CMP R0, %D 0
+        JR_SGE L4               ; a &gt;= 0 → nothing
+L5                              ; negate a
         MOVE %D 0, R3
-        SUB R3, R0, R0          ; R0 = -R0
+        SUB R3, R0, R0          ; R0 = -R0 (a_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L2                              ; a sign handled
-        OR R1, R1, R2           ; copy b into R2 and set flags
-        JR_Z L4                 ; b == 0 → nothing
-        JR_N L5                 ; b &lt; 0 → negate
-        JP L4                   ; b &gt; 0 → nothing
-L5                              ; negate b
+L4                              ; a sign handled
+        CMP R1, %D 0
+        JR_SGE L6               ; b &gt;= 0 → nothing
+L7                              ; negate b
         MOVE %D 0, R3
-        SUB R3, R1, R1          ; R1 = -R1
+        SUB R3, R1, R1          ; R1 = -R1 (b_abs)
         MOVE %D 0, R3
         SUB R3, R4, R4          ; sign = -sign
-L4                              ; b sign handled
+L6                              ; b sign handled
+; 64-bit Russian peasant multiplication: product = |a| * |b|
         PUSH R4                 ; save sign on stack
-        PUSH R1                 ; push |b|
-        PUSH R0                 ; push |a|
-        CALL F_MUL64            ; unsigned 64-bit product
-        ADD R7, %D 8, R7        ; clean up arguments
+        MOVE %D 0, R3           ; M_HI = 0 (high 32 bits of multiplicand)
+        MOVE %D 0, R2           ; ACC_LO = 0
+        MOVE %D 0, R4           ; ACC_HI = 0
+L8                              ; 64-bit multiplication loop
+        CMP R1, %D 0
+        JR_EQ L9                ; if B == 0, exit loop
+        AND R1, %D 1, R6        ; R6 = B &amp; 1
+        CMP R6, %D 0
+        JR_EQ L10               ; if (B &amp; 1) == 0, skip add
+        ADD R2, R0, R2          ; ACC_LO += M_LO
+        ADC R4, R3, R4          ; ACC_HI += M_HI + carry
+L10                             ; skip add
+        MOVE R0, R6             ; save old M_LO
+        SHL R0, %D 1, R0        ; M_LO &lt;&lt;= 1
+        SHR R6, %D 31, R6       ; R6 = (old M_LO &gt;&gt; 31) &amp; 1 (carry bit)
+        SHL R3, %D 1, R3        ; M_HI &lt;&lt;= 1
+        OR R3, R6, R3           ; M_HI |= carry_from_LO
+        SHR R1, %D 1, R1        ; B &gt;&gt;= 1
+        JR L8                   ; continue loop
+L9                              ; multiplication done
+; Q16.16 scaling: extract middle 32 bits from 64-bit product
+        MOVE R2, R0             ; R0 = ACC_LO
+        MOVE R4, R1             ; R1 = ACC_HI
+        SHR R0, %D 16, R0       ; R0 = ACC_LO &gt;&gt; 16 (low 16 bits of result)
+        SHL R1, %D 16, R1       ; R1 = ACC_HI &lt;&lt; 16 (high 16 bits)
+        OR R0, R1, R0           ; result_abs = (ACC_HI &lt;&lt; 16) | (ACC_LO &gt;&gt; 16)
+; Apply sign to result
         POP R4                  ; restore sign from stack
         CMP R4, %D 0
-        JR_EQ L6                ; sign == 0 → result 0
-        JR_SLT L7               ; sign &lt; 0 → negate
-        JP L8                   ; sign &gt; 0 → no change
-L6                              ; sign zero
-        MOVE %D 0, R0
-        MOVE %D 0, R1
-        JP L8
-L7                              ; negate 64-bit result
-        MOVE %D 0, R2
-        SUB R2, %D 1, R2        ; R2 = -1 (0xFFFFFFFF)
-        XOR R0, R2, R0          ; LO = ~LO
-        XOR R1, R2, R1          ; HI = ~HI
-        ADD R0, %D 1, R0        ; LO += 1
-        CMP R0, %D 0
-        JR_NE L9                ; if low != 0, no carry
-        ADD R1, %D 1, R1        ; carry to high if low wrapped
-L9                              ; negation done
-L8                              ; sign applied
-        MOVE R0, R2             ; LO
-        MOVE R1, R3             ; HI
-        SHR R2, %D 16, R2       ; LO &gt;&gt; 16
-        SHL R3, %D 16, R3       ; HI &lt;&lt; 16
-        OR R2, R3, R6           ; R6 = (LO &gt;&gt; 16) | (HI &lt;&lt; 16)
+        JR_EQ L11               ; if sign == 0, result is 0
+        JR_SLT L12              ; if sign &lt; 0, negate
+        JP L13                  ; sign &gt; 0, no change
+L11                             ; result is zero
+        MOVE %D 0, R0           ; R0 = 0
+        JP L13                  ; jump to done
+L12                             ; negate result
+        MOVE %D 0, R3
+        SUB R3, R0, R0          ; R0 = -R0
+L13                             ; sign applied
+        MOVE R0, R6             ; return value in R6
         POP R5                  ; restore frame pointer
         RET                     ; return
+        JP L3                   ; skip zero handler
+L2                              ; zero operand
+        MOVE %D 0, R6           ; return 0 for zero operand
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+L3                              ; end of function
 
 F_FDIV                          ; Helper function: float div(float a, float b)
 ; F_FDIV: Q16.16 fixed-point division using 32-bit arithmetic
@@ -9679,196 +8961,94 @@ F_FDIV                          ; Helper function: float div(float a, float b)
         LOAD R0, (R5+08)        ; a (dividend, Q16.16)
         LOAD R1, (R5+0C)        ; b (divisor, Q16.16)
         CMP R1, %D 0
-        JR_EQ L10               ; if b == 0, return 0
+        JR_EQ L14               ; if b == 0, return 0
         MOVE %D 1, R4           ; sign = +1
         CMP R0, %D 0
-        JR_EQ L13               ; a == 0 → sign = 0
-        JR_SLT L12              ; a &lt; 0 → negate
-        JP L11                  ; a &gt; 0 → nothing
-L13                             ; a is zero
+        JR_EQ L17               ; a == 0 → sign = 0
+        JR_SLT L16              ; a &lt; 0 → negate
+        JP L15                  ; a &gt; 0 → nothing
+L17                             ; a is zero
         MOVE %D 0, R4           ; sign = 0 (result will be 0)
-        JP L11
-L12                             ; negate a
+        JP L15
+L16                             ; negate a
         MOVE %D 0, R2
         SUB R2, R0, R0          ; R0 = -R0 (a_abs)
         MOVE %D 0, R2
         SUB R2, R4, R4          ; sign = -sign
-L11                             ; a sign handled
+L15                             ; a sign handled
         CMP R1, %D 0
-        JR_SGE L14              ; b &gt;= 0 → nothing
-L15                             ; negate b
+        JR_SGE L18              ; b &gt;= 0 → nothing
+L19                             ; negate b
         MOVE %D 0, R2
         SUB R2, R1, R1          ; R1 = -R1 (b_abs)
         MOVE %D 0, R2
         SUB R2, R4, R4          ; sign = -sign
-L14                             ; b sign handled
+L18                             ; b sign handled
         CMP R4, %D 0
-        JR_EQ L10               ; if sign == 0, result is 0
+        JR_EQ L14               ; if sign == 0, result is 0
         PUSH R4                 ; save sign on stack
 ; 32-bit unsigned division: integer_part = a_abs / b_abs
         MOVE R0, R4             ; save dividend a_abs in R4
         MOVE %D 0, R0           ; integer_part = 0 (quotient)
         MOVE %D 0, R2           ; remainder = 0
         MOVE %D 31, R3          ; i = 31 (loop counter)
-L16                             ; 32-bit integer division loop
+L20                             ; 32-bit integer division loop
         CMP R3, %D 0
-        JR_SLT L17              ; if i &lt; 0, done
+        JR_SLT L21              ; if i &lt; 0, done
         SHL R2, %D 1, R2        ; remainder &lt;&lt;= 1
         MOVE R4, R5             ; temp = dividend
         SHR R5, R3, R5          ; temp = dividend &gt;&gt; i
         AND R5, %D 1, R5        ; temp = (dividend &gt;&gt; i) &amp; 1
         OR R2, R5, R2           ; remainder |= (dividend &gt;&gt; i) &amp; 1
         CMP R2, R1
-        JR_SLT L18              ; if remainder &lt; b_abs, skip subtraction
+        JR_SLT L22              ; if remainder &lt; b_abs, skip subtraction
         SUB R2, R1, R2          ; remainder -= b_abs
         MOVE %D 1, R5
         SHL R5, R3, R5          ; R5 = 1 &lt;&lt; i
         OR R0, R5, R0           ; integer_part |= (1 &lt;&lt; i)
-L18                             ; skip subtraction
+L22                             ; skip subtraction
         SUB R3, %D 1, R3        ; i--
-        JR L16                  ; continue loop
-L17                             ; integer division done
+        JR L20                  ; continue loop
+L21                             ; integer division done
 ; 16-step fractional refinement loop
         MOVE %D 0, R3           ; frac = 0 (fractional accumulator)
         MOVE %D 0, R5           ; i = 0 (loop counter)
-L19                             ; fractional refinement loop
+L23                             ; fractional refinement loop
         CMP R5, %D 16
-        JR_SGE L20              ; if i &gt;= 16, done
+        JR_SGE L24              ; if i &gt;= 16, done
         SHL R2, %D 1, R2        ; remainder &lt;&lt;= 1
         SHL R3, %D 1, R3        ; frac &lt;&lt;= 1
         CMP R2, R1
-        JR_SLT L21              ; if remainder &lt; b_abs, skip subtraction
+        JR_SLT L25              ; if remainder &lt; b_abs, skip subtraction
         SUB R2, R1, R2          ; remainder -= b_abs
         OR R3, %D 1, R3         ; frac |= 1
-L21                             ; skip subtraction
+L25                             ; skip subtraction
         ADD R5, %D 1, R5        ; i++
-        JR L19                  ; continue loop
-L20                             ; fractional loop done
+        JR L23                  ; continue loop
+L24                             ; fractional loop done
 ; Combine integer_part and frac into Q16.16 result
         SHL R0, %D 16, R0       ; integer_part &lt;&lt;= 16
         OR R0, R3, R0           ; result_abs = (integer_part &lt;&lt; 16) | frac
 ; Apply sign to result
         POP R4                  ; restore sign from stack
         CMP R4, %D 0
-        JR_EQ L22               ; sign == 0 → result 0
-        JR_SLT L23              ; sign &lt; 0 → negate
-        JP L24                  ; sign &gt; 0 → no change
-L22                             ; sign zero
+        JR_EQ L26               ; sign == 0 → result 0
+        JR_SLT L27              ; sign &lt; 0 → negate
+        JP L28                  ; sign &gt; 0 → no change
+L26                             ; sign zero
         MOVE %D 0, R0
-        JP L24
-L23                             ; negate result
+        JP L28
+L27                             ; negate result
         MOVE %D 0, R2
         SUB R2, R0, R0          ; R0 = -R0
-L24                             ; sign applied
+L28                             ; sign applied
         MOVE R0, R6             ; return value in R6
         POP R5                  ; restore frame pointer
         RET                     ; return
-L10                             ; division by zero or dividend is zero
+L14                             ; division by zero or dividend is zero
         MOVE %D 0, R6           ; return 0 for division by zero or zero dividend
         POP R5                  ; restore frame pointer
         RET                     ; return
-
-; Helper functions for multiplication and division
-
-F_MUL                           ; Helper function: int mul(int a, int b)
-; F_MUL: signed 32-bit integer multiplication
-; Input:  a at (R5+08), b at (R5+0C)
-; Output: R6 = a * b
-; Algorithm: binary shift-and-add (Russian peasant), O(32) steps
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (left operand, pushed last, first parameter)
-        LOAD R1, (R5+0C)        ; b (right operand, pushed first, second parameter)
-        CMP R1, %D 0
-        JR_EQ L25               ; if b == 0, return 0
-L26                             ; continue multiplication
-        MOVE %D 0, R4           ; sign = 0 (positive)
-        CMP R0, %D 0
-        JR_SGE L27              ; if a &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R0, R0          ; a = -a
-        XOR R4, %D 1, R4        ; sign ^= 1
-L27                             ; skip negate a
-        CMP R1, %D 0
-        JR_SGE L28              ; if b &gt;= 0, skip negation
-        MOVE %D 0, R2
-        SUB R2, R1, R1          ; b = -b
-        XOR R4, %D 1, R4        ; sign ^= 1
-L28                             ; skip negate b
-; Binary shift-and-add multiplication (Russian peasant algorithm)
-        PUSH R4                 ; save sign flag on stack
-        MOVE %D 0, R2           ; acc = 0 (accumulator)
-L29                             ; binary multiplication loop
-        CMP R1, %D 0
-        JR_EQ L30               ; if b == 0, exit loop
-        AND R1, %D 1, R3        ; R3 = b &amp; 1
-        CMP R3, %D 0
-        JR_EQ L31               ; if (b &amp; 1) == 0, skip add
-        ADD R2, R0, R2          ; acc += a
-L31                             ; skip add
-        SHL R0, %D 1, R0        ; a &lt;&lt;= 1
-        SHR R1, %D 1, R1        ; b &gt;&gt;= 1
-        JR L29                  ; continue loop
-L30                             ; loop done, apply sign
-        POP R4                  ; restore sign flag
-        CMP R4, %D 0
-        JR_EQ L32               ; if sign == 0, result is positive
-        MOVE %D 0, R0
-        SUB R0, R2, R2          ; acc = -acc
-        JP L32                  ; result ready
-L25                             ; zero multiplier
-        MOVE %D 0, R2           ; result 0 for zero multiplier
-L32                             ; end multiplication
-        MOVE R2, R6             ; result
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-
-F_MUL64                         ; Helper function: 64-bit unsigned multiplication
-; F_MUL64: 64-bit unsigned integer multiplication
-; Input:  a at (R5+08), b at (R5+0C) (both assumed non-negative)
-; Output: R1 = high 32 bits, R0 = low 32 bits, R6 = copy of R0
-        PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
-        LOAD R0, (R5+08)        ; a (int32, unsigned)
-        LOAD R2, (R5+0C)        ; b (int32, unsigned)
-        CMP R2, %D 0
-        JR_NE L33               ; if b != 0, continue
-        MOVE %D 0, R0           ; LO = 0
-        MOVE %D 0, R1           ; HI = 0
-        MOVE %D 0, R6           ; low 32 bits copy
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
-L33                             ; continue multiplication
-        MOVE %D 0, R1           ; M_HI = 0 (high 32 bits of multiplicand)
-        MOVE %D 0, R3           ; ACC_LO = 0
-        MOVE %D 0, R4           ; ACC_HI = 0
-L34                             ; 64-bit multiplication loop
-        CMP R2, %D 0
-        JR_EQ L37               ; if B == 0, exit loop
-        AND R2, %D 1, R6        ; R6 = B &amp; 1
-        CMP R6, %D 0
-        JR_EQ L35               ; if (B &amp; 1) == 0, skip add
-        ADD R3, R0, R6          ; R6 = ACC_LO + M_LO
-        CMP R6, R3
-        JR_SGE L36              ; if no carry, skip increment
-        ADD R4, %D 1, R4        ; ACC_HI += 1
-L36                             ; no carry
-        MOVE R6, R3             ; ACC_LO = temp_lo
-        ADD R4, R1, R4          ; ACC_HI = ACC_HI + M_HI
-L35                             ; skip add
-        MOVE R0, R6             ; save old M_LO
-        SHL R0, %D 1, R0        ; M_LO &lt;&lt;= 1
-        SHR R6, %D 31, R6       ; R6 = (old M_LO &gt;&gt; 31) &amp; 1 (carry bit)
-        SHL R1, %D 1, R1        ; M_HI &lt;&lt;= 1
-        OR R1, R6, R1           ; M_HI |= carry_from_LO
-        SHR R2, %D 1, R2        ; B &gt;&gt;= 1
-        JR L34                  ; continue loop
-L37                             ; multiplication done
-        MOVE R3, R0             ; LO → R0
-        MOVE R4, R1             ; HI → R1
-        MOVE R0, R6             ; low 32 bits copy for compatibility
-        POP R5                  ; restore old frame pointer
-        RET                     ; return to caller
 
 </code></pre>
       </details>

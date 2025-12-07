@@ -31,8 +31,6 @@ import java.util.Objects;
  *       multiplication using the Russian peasant algorithm (O(32) complexity)</li>
  *   <li><b>{@link DivisionHelperGenerator}:</b> Generates F_DIV for 32-bit signed integer
  *       division using binary long division (O(32) complexity)</li>
- *   <li><b>{@link Mul64HelperGenerator}:</b> Generates F_MUL64 for 64-bit unsigned integer
- *       multiplication using extended Russian peasant algorithm (O(32) complexity)</li>
  * </ul>
  * 
  * <p><b>Why Helper Functions?</b>
@@ -85,7 +83,6 @@ import java.util.Objects;
  * 
  * <p>Some helpers have dependencies:
  * <ul>
- *   <li><b>F_MUL64:</b> Used by float multiplication helper (F_FMUL)</li>
  *   <li><b>F_MUL and F_DIV:</b> Used directly by integer operations in user code</li>
  * </ul>
  * 
@@ -105,7 +102,6 @@ public final class HelperFunctionGenerator {
     
     private final MultiplicationHelperGenerator mulGenerator = new MultiplicationHelperGenerator();
     private final DivisionHelperGenerator divGenerator = new DivisionHelperGenerator();
-    private final Mul64HelperGenerator mul64Generator = new Mul64HelperGenerator();
     
     /**
      * Generates helper functions F_MUL and/or F_DIV if needed.
@@ -138,16 +134,5 @@ public final class HelperFunctionGenerator {
         }
     }
     
-    /**
-     * Generates the F_MUL64 helper function for 64-bit unsigned integer multiplication.
-     * 
-     * <p>This function is used by float multiplication to compute the full 64-bit product
-     * of two 32-bit Q16.16 fixed-point values.
-     * 
-     * @param context the code generation context
-     */
-    public void generateMul64Helper(CodeGenContext context) {
-        mul64Generator.generate(context);
-    }
 }
 

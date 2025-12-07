@@ -119,7 +119,7 @@ public final class HelperFunctionFlags {
     }
     
     /**
-     * Checks if F_FMUL (and thus F_MUL64) helper function is needed.
+     * Checks if F_FMUL helper function is needed.
      * 
      * @return true if F_FMUL is needed
      */
