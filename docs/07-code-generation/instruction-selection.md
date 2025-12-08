@@ -1,4 +1,10 @@
-# Code Generation Implementation
+# Instruction Selection
+
+## Overview
+
+This document provides detailed technical documentation for the code generation implementation, covering algorithms, data structures, and code generation strategies used to transform annotated ASTs into FRISC assembly code.
+
+**Implementation Details**: Based on Javadoc from `hr.fer.ppj.codegen.CodeGenerator` and related classes.
 
 This document provides a comprehensive technical reference for the FRISC code generation implementation in the PPJ compiler. It covers detailed algorithms, data structures, implementation patterns, and technical decisions that enable the transformation of semantically validated C programs into executable FRISC assembly code.
 
@@ -15,6 +21,44 @@ This document provides a comprehensive technical reference for the FRISC code ge
 - [Optimization Techniques](#optimization-techniques)
 - [Error Recovery](#error-recovery)
 - [Testing and Validation](#testing-and-validation)
+
+## Code Generation Pipeline
+
+Based on the `CodeGenerator` class implementation, the code generation process follows these phases in order:
+
+```mermaid
+flowchart TD
+    A[Semantic Analysis<br/>AST + Symbol Table] --> B[Initialization Phase]
+    B --> C[Translation Unit Processing]
+    C --> D[Helper Function Generation]
+    D --> E[Global Variable Generation]
+    E --> F[Code Emission]
+    F --> G[FRISC Assembly]
+    
+    B --> B1[Create FriscEmitter<br/>Create LabelGenerator<br/>Generate Entry Point]
+    C --> C1[Process Functions<br/>Track Helper Needs]
+    D --> D1[Generate Float Helpers First<br/>Generate Integer Helpers Second]
+    E --> E1[Initialized Globals<br/>Uninitialized Arrays]
+    
+    style A fill:#e8f5e9
+    style G fill:#c8e6c9
+    style D1 fill:#fff3e0
+```
+
+**Critical Ordering**: Float helpers must be generated before integer helpers because float multiplication/division internally call integer helpers, and the emitter flags are set during float helper generation.
+
+### Syntax-Directed Translation Algorithm
+
+The code generator uses a **syntax-directed translation** approach:
+
+1. **Tree Traversal**: Recursively traverse the parse tree in depth-first order
+2. **Rule Matching**: For each nonterminal node, identify the grammar rule that produced it
+3. **Code Generation**: Emit FRISC instructions according to the semantic action associated with that grammar rule
+4. **Context Propagation**: Pass code generation context (symbol table, activation record, labels) down the tree
+5. **Result Assembly**: Combine code fragments from child nodes into complete instructions
+
+**Time Complexity**: O(n) where n is the number of nodes in the parse tree  
+**Space Complexity**: O(n) for the parse tree + O(m) for generated code buffer, where m is the number of generated instructions
 
 ## Implementation Architecture
 
@@ -82,22 +126,38 @@ graph TB
 
 ```
 hr.fer.ppj.codegen/
-├── CodeGenerator.java              # Main orchestrator
-├── CodeGenContext.java             # Shared state management
+├── CodeGenerator.java              # Main orchestrator - syntax-directed translation
+├── CodeGenContext.java             # Immutable shared state management
 ├── CodeGenerationException.java    # Error handling
-├── FriscEmitter.java              # Assembly output
-├── LabelGenerator.java            # Label management
-├── GlobalVariableGenerator.java   # Global data
+├── FriscEmitter.java              # Assembly output with formatting
+├── LabelGenerator.java            # Unique label generation
+├── GlobalVariableGenerator.java   # Global data section generation
 │
-├── expr/
-│   └── ExpressionCodeGenerator.java   # Expression evaluation
+├── expr/                          # Expression code generation
+│   ├── ExpressionCodeGenerator.java
+│   ├── binary/                    # Binary operations
+│   ├── unary/                     # Unary operations
+│   ├── primary/                   # Primary expressions
+│   └── ...
 │
-├── stmt/
-│   └── StatementCodeGenerator.java    # Statement processing
+├── stmt/                          # Statement code generation
+│   ├── StatementCodeGenerator.java
+│   ├── BranchingStatementGenerator.java
+│   ├── LoopStatementGenerator.java
+│   └── ...
 │
-└── func/
-    ├── FunctionCodeGenerator.java     # Function processing
-    └── ActivationRecord.java          # Stack frame management
+└── func/                          # Function code generation
+    ├── FunctionCodeGenerator.java
+    ├── FunctionPrologueEpilogueGenerator.java
+    └── ActivationRecord.java      # Stack frame management
+```
+
+**Key Design Decisions** (from `CodeGenerator` Javadoc):
+
+- **Deferred Helper Generation**: Helper functions are generated *after* processing the translation unit because we need to know which operations are used before generating helpers. This avoids generating unused helper code.
+- **Float Helpers Before Integer Helpers**: Float helpers may mark integer helpers as needed during their generation, so float helpers must be generated first to properly mark integer helpers as needed.
+- **Global Variables Last**: Global variables are generated at the end because they form the data section, which is conventionally placed after code sections.
+- **Immutable Context**: The `CodeGenContext` is immutable, allowing safe recursive traversal without side effects on parent contexts.
 ```
 
 ### Design Patterns

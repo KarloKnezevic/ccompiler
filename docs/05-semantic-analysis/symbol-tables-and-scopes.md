@@ -1,6 +1,12 @@
-# Semantic Analyzer
+# Symbol Tables and Scopes
 
 The semantic analyzer constitutes the third phase of the PPJ compiler pipeline, responsible for enforcing language-specific semantic constraints that cannot be expressed through context-free grammars. This phase validates type compatibility, scope resolution, control flow semantics, and ensures adherence to the PPJ-C language specification.
+
+**See Also**:
+- **[Type System and Checking](type-system-and-checking.md)**: Detailed type system implementation
+- **[Semantic Passes](semantic-passes.md)**: Semantic analysis pipeline and passes
+- **[Syntax Analysis](../04-syntax-analysis/grammar-specification.md)**: Parser output format
+- **[Intermediate Representation](../06-intermediate-representation/ir-design.md)**: AST structure used by semantic analyzer
 
 ## Compilation Pipeline Integration
 

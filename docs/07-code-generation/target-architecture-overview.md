@@ -1,6 +1,15 @@
-# Code Generation Overview
+# Target Architecture Overview
 
 The code generation phase represents the final stage of the PPJ compiler pipeline, transforming semantically validated abstract syntax trees into executable FRISC assembly code. This phase bridges the gap between high-level language constructs and low-level machine instructions, implementing the runtime semantics of the PPJ-C language.
+
+**See Also**:
+- **[Instruction Selection](instruction-selection.md)**: Detailed code generation algorithms
+- **[Calling Conventions and Runtime](calling-conventions-and-runtime.md)**: Function calling conventions and stack management
+- **[FRISC Codegen Details](frisc-codegen-details.md)**: Complete FRISC architecture reference
+- **[Codegen Module Structure](codegen_module_structure.md)**: Complete guide to code generation module architecture
+- **[Codegen Rules and Conventions](codegen_rules_and_conventions.md)**: Detailed rules and conventions for code generation
+- **[Semantic Analysis](../05-semantic-analysis/symbol-tables-and-scopes.md)**: Input from semantic analyzer
+- **[Intermediate Representation](../06-intermediate-representation/ir-design.md)**: AST structure used for code generation
 
 ## Table of Contents
 
@@ -15,6 +24,40 @@ The code generation phase represents the final stage of the PPJ compiler pipelin
 - [Control Flow Implementation](#control-flow-implementation)
 - [Error Handling and Diagnostics](#error-handling-and-diagnostics)
 - [Output Format](#output-format)
+
+## Code Generation Pipeline
+
+The code generation process follows a well-defined pipeline with distinct phases:
+
+```mermaid
+flowchart TD
+    A[Semantic Analysis<br/>Annotated AST + Symbol Table] --> B[Initialization Phase]
+    B --> C[Translation Unit Processing]
+    C --> D[Helper Function Generation]
+    D --> E[Global Variable Generation]
+    E --> F[Code Emission]
+    F --> G[FRISC Assembly<br/>a.frisc]
+    
+    B --> B1[Create FriscEmitter]
+    B --> B2[Create LabelGenerator]
+    B --> B3[Generate Entry Point]
+    
+    C --> C1[Process Functions]
+    C --> C2[Track Helper Needs]
+    
+    D --> D1[Generate Float Helpers]
+    D --> D2[Generate Integer Helpers]
+    
+    E --> E1[Initialized Globals]
+    E --> E2[Uninitialized Arrays]
+    
+    style A fill:#e8f5e9
+    style G fill:#c8e6c9
+    style D1 fill:#fff3e0
+    style D2 fill:#fff3e0
+```
+
+**Critical Ordering**: Float helpers must be generated before integer helpers because float operations may internally require integer helpers (multiplication, division).
 
 ## Compilation Pipeline Integration
 
