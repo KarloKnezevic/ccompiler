@@ -92,13 +92,12 @@ public final class ReturnStatementGenerator {
                 context.emitter().emitLoadIntConstant(value, "R6", "return constant " + literal);
                 return true;
             } catch (NumberFormatException e) {
-                // If parsing fails, fall through to normal generation
+                // If parsing fails (e.g., float literal), fall through to normal generation
+                // This prevents incorrect optimization of float expressions
             }
         }
         
-        // For other cases, we'd need to modify ExpressionCodeGenerator to support
-        // generating directly into R6, which is more complex. For now, we'll
-        // generate into R0 and move to R6 (which is acceptable).
+        // For other cases (including float expressions), generate into R0 and move to R6
         return false;
     }
     
@@ -148,6 +147,14 @@ public final class ReturnStatementGenerator {
                 for (ParseNode child : children) {
                     if (child instanceof hr.fer.ppj.semantics.tree.TerminalNode terminal && "BROJ".equals(terminal.symbol())) {
                         String value = terminal.lexeme();
+                        // CRITICAL FIX: Only optimize if this is truly an INTEGER literal, not a float
+                        // This prevents incorrect optimization of expressions like -(3.0 * 4.0)
+                        // where we might extract "3.0" and treat it as "-3.0", ignoring the multiplication
+                        if (hr.fer.ppj.codegen.util.FloatCodegenHelper.isFloatLiteral(value)) {
+                            // This is a float literal - do not optimize it here
+                            // Let the normal expression generation handle it
+                            return null;
+                        }
                         return isNegative ? "-" + value : value;
                     }
                 }

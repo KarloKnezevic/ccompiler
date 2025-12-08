@@ -2,7 +2,6 @@ package hr.fer.ppj.codegen.expr.unary;
 
 import hr.fer.ppj.codegen.CodeGenContext;
 import hr.fer.ppj.codegen.expr.ExpressionCodeGenerator;
-import hr.fer.ppj.codegen.utils.LiteralExtractor;
 import hr.fer.ppj.codegen.utils.TypeConverter;
 import hr.fer.ppj.codegen.utils.TypeNodeExtractor;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
@@ -329,7 +328,7 @@ public final class UnaryExpressionGenerator {
      *   <li>If operand is int: Generate integer negation</li>
      * </ul>
      * 
-     * <p><b>Optimization:</b> For integer literals, directly emits the negated value
+     * <p><b>Optimization:</b> For simple literals (not complex expressions), directly emits the negated value
      * using {@code emitLoadIntConstant} (which handles large negative values correctly).
      * 
      * <p><b>FRISC Code Pattern:</b>
@@ -346,38 +345,35 @@ public final class UnaryExpressionGenerator {
      * @param operand the operand expression ({@code <cast_izraz>})
      */
     private void generateUnaryMinus(NonTerminalNode operand) {
-        // Check if operand is a float literal
-        String literalValue = LiteralExtractor.tryExtractFloatLiteral(operand);
-        if (literalValue != null) {
-            // Float literal: convert to Q16.16 and negate
-            try {
-                int q16_16 = hr.fer.ppj.codegen.util.FloatCodegenHelper.parseFloatLiteral(literalValue);
-                int negatedQ16_16 = -q16_16;
-                context.emitter().emitLoadIntConstant(negatedQ16_16, "R0", "load float constant -" + literalValue + " (Q16.16)");
-                return;
-            } catch (NumberFormatException e) {
-                // Fall back to runtime negation
-            }
-        }
+        // CRITICAL FIX: Always evaluate the operand at runtime and then negate.
+        // This ensures correct behavior for complex expressions like -(3.0 * 4.0).
+        //
+        // Previous optimization attempts to directly negate float literals were problematic
+        // because LiteralExtractor.tryExtractFloatLiteral() can extract a literal from
+        // a complex expression (e.g., extracting "3.0" from "3.0 * 4.0"), leading to
+        // incorrect code generation.
+        //
+        // By always evaluating at runtime, we ensure that:
+        // 1. Complex expressions (e.g., 3.0 * 4.0) are correctly evaluated first
+        // 2. The result is then negated using 0 - result
+        // 3. This works correctly for both int and float (Q16.16) types
+        //
+        // IMPORTANT: We NEVER optimize unary minus by extracting literals from the operand.
+        // The operand must be fully evaluated at runtime, even if it contains literals.
+        // This prevents bugs where expressions like -(3.0 * 4.0) are incorrectly
+        // compiled as -3.0 (ignoring the multiplication).
         
-        // Check if operand is an integer literal
-        String intLiteralValue = LiteralExtractor.tryExtractIntegerLiteral(operand);
-        if (intLiteralValue != null) {
-            // Integer literal: directly emit negative literal
-            try {
-                int value = Integer.parseInt(intLiteralValue);
-                int negatedValue = -value;
-                context.emitter().emitLoadIntConstant(negatedValue, "R0", "load constant -" + intLiteralValue);
-                return;
-            } catch (NumberFormatException e) {
-                // Fall back to runtime negation
-            }
-        }
-        
-        // Runtime negation: 0 - R0 = -R0
-        // This works for both int and float (Q16.16) - no conversion needed
         generateRuntimeNegation(operand);
     }
+    
+    // NOTE: The following methods (isSimpleLiteral and isOperatorTerminal) were removed
+    // as dead code. They were previously used to optimize unary minus by directly negating
+    // literals, but this optimization was removed because it incorrectly handled complex
+    // expressions like -(3.0 * 4.0) by extracting only the first literal (3.0) and ignoring
+    // the multiplication. The current implementation always evaluates the operand at runtime
+    // and then negates the result, which is correct but slightly less efficient for simple
+    // literals. If literal optimization is needed in the future, it should be implemented
+    // more carefully to avoid partial expression evaluation.
     
     /**
      * Generates code for runtime negation of an expression.
@@ -385,7 +381,11 @@ public final class UnaryExpressionGenerator {
      * @param operand the operand expression
      */
     private void generateRuntimeNegation(NonTerminalNode operand) {
+        // Evaluate the operand expression first (result in R0)
+        // This will correctly handle complex expressions like 3.0 * 4.0
         expressionGenerator.generateExpression(operand);
+        // Negate the result: 0 - R0 = -R0
+        // This works for both int and float (Q16.16) - no conversion needed
         context.emitter().emitInstruction("MOVE", "%D 0", "R1", "zero for negation");
         context.emitter().emitInstruction("SUB", "R1", "R0", "R0", "unary minus");
     }

@@ -3512,7 +3512,9 @@ F_MAIN                          ; Function main
         MOVE R6, R0             ; function result
         PUSH R0                 ; save left operand
 ; Function call: f
-        MOVE %D -4, R0          ; load constant -4
+        MOVE %D 4, R0           ; load constant 4
+        MOVE %D 0, R1           ; zero for negation
+        SUB R1, R0, R0          ; unary minus
         PUSH R0                 ; push argument 1
         CALL F_F                ; call f
         ADD R7, %D 4, R7        ; cleanup 1 arguments
@@ -6725,8 +6727,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_X      DW %D 2                ; global INT x = 2
 G_C      DW %D 97               ; global CHAR c = 97
+G_X      DW %D 2                ; global INT x = 2
 
 </code></pre>
       </details>

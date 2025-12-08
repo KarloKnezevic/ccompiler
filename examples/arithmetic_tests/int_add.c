@@ -1,0 +1,8 @@
+// EXPECT: 7
+
+int main(void) {
+    int a = 3;
+    int b = 4;
+    return a + b;
+}
+

@@ -3176,8 +3176,10 @@ F_MAIN                          ; Function main
 ; Compound statement
 ; Local variable declarations
 ; Local variable a at (R5-04) with initializer
-        MOVE %D -15, R0         ; load float constant -15.0 (Q16.16) (hi part)
+        MOVE %D 15, R0          ; load float constant 15.0 (Q16.16) (hi part)
         SHL R0, %D 16, R0       ; shift hi part left by 16
+        MOVE %D 0, R1           ; zero for negation
+        SUB R1, R0, R0          ; unary minus
         STORE R0, (R5-04)       ; initialize a
 ; Local variable b at (R5-08) with initializer
         MOVE %D 196608, R0      ; load float constant 3.0 (Q16.16)
@@ -3862,7 +3864,9 @@ F_MAIN                          ; Function main
         MOVE %D 327680, R0      ; load float constant 5.0 (Q16.16)
         STORE R0, (R5-04)       ; initialize a
 ; Local variable b at (R5-08) with initializer
-        MOVE %D -131072, R0     ; load float constant -2.0 (Q16.16)
+        MOVE %D 131072, R0      ; load float constant 2.0 (Q16.16)
+        MOVE %D 0, R1           ; zero for negation
+        SUB R1, R0, R0          ; unary minus
         STORE R0, (R5-08)       ; initialize b
 ; Local variable result at (R5-0C) with initializer
         LOAD R0, (R5-04)        ; load variable a

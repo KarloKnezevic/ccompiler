@@ -271,13 +271,13 @@ public final class CodeGenerator {
             // - Generates code for each function (prologue, body, epilogue)
             // - Tracks which helper functions are needed (via emitter flags)
             // - Prepares global variable information (but doesn't emit them yet)
-            // 
+            //
             // IMPORTANT: We process functions BEFORE globals because functions may reference
             // global variables, but the linker/simulator can resolve forward references.
             processTranslationUnit(context, parseTree);
             
             // Phase 4: Generate helper functions
-            // 
+            //
             // CRITICAL ORDERING CONSTRAINT: Float helpers must be generated BEFORE integer helpers
             // because:
             // 1. Float helpers may mark integer helpers as needed DURING their generation

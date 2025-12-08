@@ -2211,7 +2211,9 @@ F_MAIN                          ; Function main
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
-        MOVE %D -196608, R0     ; load float constant -3.0 (Q16.16)
+        MOVE %D 196608, R0      ; load float constant 3.0 (Q16.16)
+        MOVE %D 0, R1           ; zero for negation
+        SUB R1, R0, R0          ; unary minus
         PUSH R0                 ; save left operand
         MOVE %D 262144, R0      ; load float constant 4.0 (Q16.16)
         MOVE R0, R1             ; right operand to R1
@@ -2588,7 +2590,9 @@ F_MAIN                          ; Function main
 ; Compound statement
         MOVE %D 131072, R0      ; load float constant 2.0 (Q16.16)
         PUSH R0                 ; save left operand
-        MOVE %D -196608, R0     ; load float constant -3.0 (Q16.16)
+        MOVE %D 196608, R0      ; load float constant 3.0 (Q16.16)
+        MOVE %D 0, R1           ; zero for negation
+        SUB R1, R0, R0          ; unary minus
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         PUSH R1                 ; push second arg
@@ -3245,7 +3249,9 @@ F_MAIN                          ; Function main
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
-        MOVE %D -3, R0          ; load constant -3
+        MOVE %D 3, R0           ; load constant 3
+        MOVE %D 0, R1           ; zero for negation
+        SUB R1, R0, R0          ; unary minus
         PUSH R0                 ; push integer value
         CALL F_I2F              ; convert int to float
         ADD R7, %D 4, R7        ; cleanup argument
@@ -3940,7 +3946,9 @@ F_MAIN                          ; Function main
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
-        MOVE %D -3, R0          ; load constant -3
+        MOVE %D 3, R0           ; load constant 3
+        MOVE %D 0, R1           ; zero for negation
+        SUB R1, R0, R0          ; unary minus
         PUSH R0                 ; push integer value
         CALL F_I2F              ; convert int to float
         ADD R7, %D 4, R7        ; cleanup argument
@@ -4861,7 +4869,18 @@ F_MAIN                          ; Function main
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
-        MOVE %D -196608, R0     ; load float constant -3.0 (Q16.16)
+        MOVE %D 196608, R0      ; load float constant 3.0 (Q16.16)
+        PUSH R0                 ; save left operand
+        MOVE %D 262144, R0      ; load float constant 4.0 (Q16.16)
+        MOVE R0, R1             ; right operand to R1
+        POP R0                  ; restore left operand
+        PUSH R1                 ; push second arg
+        PUSH R0                 ; push first arg
+        CALL F_FMUL             ; call F_FMUL
+        ADD R7, %D 8, R7        ; cleanup arguments
+        MOVE R6, R0             ; move result to R0
+        MOVE %D 0, R1           ; zero for negation
+        SUB R1, R0, R0          ; unary minus
         MOVE R0, R6             ; return value
         JP L1                   ; jump to function exit
 L1                              ; function exit
@@ -4869,6 +4888,90 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
+
+; Float helper functions (IEEE-754 single-precision)
+
+F_FMUL                          ; Helper function: float mul(float a, float b)
+; F_FMUL: Q16.16 fixed-point multiplication using 32-bit Russian peasant algorithm
+; Q16.16 representable range: [-32768.0, +32767.9999]
+; Safe multiplication domain: [-181.0, +181.0] per operand (no overflow)
+; Input:  a at (R5+08), b at (R5+0C)
+; Output: R6 = a * b (Q16.16 format)
+        PUSH R5                 ; save old frame pointer
+        MOVE R7, R5             ; R5 = current SP
+        LOAD R0, (R5+08)        ; a (multiplicand, Q16.16)
+        LOAD R1, (R5+0C)        ; b (multiplier, Q16.16)
+        CMP R0, %D 0
+        JR_EQ L2                ; if a == 0, return 0
+        CMP R1, %D 0
+        JR_EQ L2                ; if b == 0, return 0
+        MOVE %D 1, R4           ; sign = +1
+        CMP R0, %D 0
+        JR_SGE L4               ; a &gt;= 0 → nothing
+L5                              ; negate a
+        MOVE %D 0, R3
+        SUB R3, R0, R0          ; R0 = -R0 (a_abs)
+        MOVE %D 0, R3
+        SUB R3, R4, R4          ; sign = -sign
+L4                              ; a sign handled
+        CMP R1, %D 0
+        JR_SGE L6               ; b &gt;= 0 → nothing
+L7                              ; negate b
+        MOVE %D 0, R3
+        SUB R3, R1, R1          ; R1 = -R1 (b_abs)
+        MOVE %D 0, R3
+        SUB R3, R4, R4          ; sign = -sign
+L6                              ; b sign handled
+; 64-bit Russian peasant multiplication: product = |a| * |b|
+        PUSH R4                 ; save sign on stack
+        MOVE %D 0, R3           ; M_HI = 0 (high 32 bits of multiplicand)
+        MOVE %D 0, R2           ; ACC_LO = 0
+        MOVE %D 0, R4           ; ACC_HI = 0
+L8                              ; 64-bit multiplication loop
+        CMP R1, %D 0
+        JR_EQ L9                ; if B == 0, exit loop
+        AND R1, %D 1, R6        ; R6 = B &amp; 1
+        CMP R6, %D 0
+        JR_EQ L10               ; if (B &amp; 1) == 0, skip add
+        ADD R2, R0, R2          ; ACC_LO += M_LO
+        ADC R4, R3, R4          ; ACC_HI += M_HI + carry
+L10                             ; skip add
+        MOVE R0, R6             ; save old M_LO
+        SHL R0, %D 1, R0        ; M_LO &lt;&lt;= 1
+        SHR R6, %D 31, R6       ; R6 = (old M_LO &gt;&gt; 31) &amp; 1 (carry bit)
+        SHL R3, %D 1, R3        ; M_HI &lt;&lt;= 1
+        OR R3, R6, R3           ; M_HI |= carry_from_LO
+        SHR R1, %D 1, R1        ; B &gt;&gt;= 1
+        JR L8                   ; continue loop
+L9                              ; multiplication done
+; Q16.16 scaling: extract middle 32 bits from 64-bit product
+        MOVE R2, R0             ; R0 = ACC_LO
+        MOVE R4, R1             ; R1 = ACC_HI
+        SHR R0, %D 16, R0       ; R0 = ACC_LO &gt;&gt; 16 (low 16 bits of result)
+        SHL R1, %D 16, R1       ; R1 = ACC_HI &lt;&lt; 16 (high 16 bits)
+        OR R0, R1, R0           ; result_abs = (ACC_HI &lt;&lt; 16) | (ACC_LO &gt;&gt; 16)
+; Apply sign to result
+        POP R4                  ; restore sign from stack
+        CMP R4, %D 0
+        JR_EQ L11               ; if sign == 0, result is 0
+        JR_SLT L12              ; if sign &lt; 0, negate
+        JP L13                  ; sign &gt; 0, no change
+L11                             ; result is zero
+        MOVE %D 0, R0           ; R0 = 0
+        JP L13                  ; jump to done
+L12                             ; negate result
+        MOVE %D 0, R3
+        SUB R3, R0, R0          ; R0 = -R0
+L13                             ; sign applied
+        MOVE R0, R6             ; return value in R6
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+        JP L3                   ; skip zero handler
+L2                              ; zero operand
+        MOVE %D 0, R6           ; return 0 for zero operand
+        POP R5                  ; restore frame pointer
+        RET                     ; return
+L3                              ; end of function
 
 </code></pre>
       </details>
@@ -4885,8 +4988,8 @@ L1                              ; function exit
               </tr>
               <tr>
                 <td><code>—</code></td>
-                <td><code>-196608</code></td>
-                <td><code>-3.0</code></td>
+                <td><code>-786432</code></td>
+                <td><code>-12.0</code></td>
                 <td class="status-unknown">❔ UNKNOWN</td>
               </tr>
             </table>
@@ -5964,7 +6067,9 @@ F_MAIN                          ; Function main
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
-        MOVE %D -98304, R0      ; load float constant -1.5 (Q16.16)
+        MOVE %D 98304, R0       ; load float constant 1.5 (Q16.16)
+        MOVE %D 0, R1           ; zero for negation
+        SUB R1, R0, R0          ; unary minus
         MOVE R0, R6             ; return value
         JP L1                   ; jump to function exit
 L1                              ; function exit
@@ -8344,7 +8449,9 @@ F_MAIN                          ; Function main
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
-        MOVE %D -98304, R0      ; load float constant -1.5 (Q16.16)
+        MOVE %D 98304, R0       ; load float constant 1.5 (Q16.16)
+        MOVE %D 0, R1           ; zero for negation
+        SUB R1, R0, R0          ; unary minus
         PUSH R0                 ; save left operand
         MOVE %D 131072, R0      ; load float constant 2.0 (Q16.16)
         MOVE R0, R1             ; right operand to R1
@@ -8355,7 +8462,9 @@ F_MAIN                          ; Function main
         ADD R7, %D 8, R7        ; cleanup arguments
         MOVE R6, R0             ; move result to R0
         PUSH R0                 ; save left operand
-        MOVE %D -196608, R0     ; load float constant -3.0 (Q16.16)
+        MOVE %D 196608, R0      ; load float constant 3.0 (Q16.16)
+        MOVE %D 0, R1           ; zero for negation
+        SUB R1, R0, R0          ; unary minus
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         PUSH R1                 ; push second arg
@@ -9704,7 +9813,9 @@ F_MAIN                          ; Function main
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
-        MOVE %D -393216, R0     ; load float constant -6.0 (Q16.16)
+        MOVE %D 393216, R0      ; load float constant 6.0 (Q16.16)
+        MOVE %D 0, R1           ; zero for negation
+        SUB R1, R0, R0          ; unary minus
         PUSH R0                 ; save left operand
         MOVE %D 131072, R0      ; load float constant 2.0 (Q16.16)
         MOVE R0, R1             ; right operand to R1
@@ -10345,7 +10456,9 @@ F_MAIN                          ; Function main
 ; Compound statement
         MOVE %D 393216, R0      ; load float constant 6.0 (Q16.16)
         PUSH R0                 ; save left operand
-        MOVE %D -131072, R0     ; load float constant -2.0 (Q16.16)
+        MOVE %D 131072, R0      ; load float constant 2.0 (Q16.16)
+        MOVE %D 0, R1           ; zero for negation
+        SUB R1, R0, R0          ; unary minus
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         PUSH R1                 ; push second arg
@@ -10995,9 +11108,13 @@ F_MAIN                          ; Function main
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
-        MOVE %D -393216, R0     ; load float constant -6.0 (Q16.16)
+        MOVE %D 393216, R0      ; load float constant 6.0 (Q16.16)
+        MOVE %D 0, R1           ; zero for negation
+        SUB R1, R0, R0          ; unary minus
         PUSH R0                 ; save left operand
-        MOVE %D -131072, R0     ; load float constant -2.0 (Q16.16)
+        MOVE %D 131072, R0      ; load float constant 2.0 (Q16.16)
+        MOVE %D 0, R1           ; zero for negation
+        SUB R1, R0, R0          ; unary minus
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         PUSH R1                 ; push second arg
