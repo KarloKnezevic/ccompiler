@@ -1,5 +1,6 @@
 package hr.fer.ppj.cli;
 
+import hr.fer.ppj.codegen.util.FloatCodegenHelper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -122,6 +123,56 @@ public final class FriscRunner {
 
     public String r6Value() {
       return r6Value;
+    }
+    
+    /**
+     * Returns the R6 register value as an integer.
+     * 
+     * @return the integer value of R6, or 0 if parsing fails
+     */
+    public int r6ValueAsInt() {
+      try {
+        return Integer.parseInt(r6Value);
+      } catch (NumberFormatException e) {
+        return 0;
+      }
+    }
+    
+    /**
+     * Converts the R6 register value from Q16.16 fixed-point format to float.
+     * 
+     * <p>If the R6 value represents a Q16.16 fixed-point number (used for float return values),
+     * this method converts it to the actual float value by dividing by 65536.0.
+     * 
+     * <p>Example: If R6 = 65536 (Q16.16), this returns 1.0f
+     * 
+     * @return the float value represented by the Q16.16 integer in R6
+     */
+    public float r6ValueAsFloat() {
+      try {
+        int q16_16 = Integer.parseInt(r6Value);
+        return FloatCodegenHelper.q16_16ToFloat(q16_16);
+      } catch (NumberFormatException e) {
+        return 0.0f;
+      }
+    }
+    
+    /**
+     * Returns the R6 register value formatted as a float string.
+     * 
+     * <p>This converts the Q16.16 integer value to float and formats it as a string.
+     * Useful for displaying float results in test output.
+     * 
+     * @return the float value as a string (e.g., "3.0", "1.5", "-2.25")
+     */
+    public String r6ValueAsFloatString() {
+      float floatValue = r6ValueAsFloat();
+      // Format to remove unnecessary trailing zeros, but keep at least one decimal place for floats
+      if (floatValue == (int) floatValue) {
+        return String.format("%.1f", floatValue);
+      } else {
+        return String.valueOf(floatValue);
+      }
     }
 
     public String output() {

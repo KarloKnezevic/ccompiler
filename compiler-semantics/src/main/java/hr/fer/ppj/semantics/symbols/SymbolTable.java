@@ -8,9 +8,45 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Hierarchical symbol table used for lexical scoping. Each table stores the symbols declared in a
- * single block and keeps a pointer to its parent. Lookup walks up the parent chain which mimics the
- * lexical scoping rules of ppjC.
+ * Hierarchical symbol table used for lexical scoping in PPJ-C.
+ *
+ * <p>This class implements a tree-structured symbol table that mirrors the lexical scoping
+ * structure of C programs. Each symbol table represents a single scope (global scope, function
+ * scope, or block scope) and maintains:
+ * <ul>
+ *   <li>A map of symbols declared in this scope</li>
+ *   <li>A reference to the parent scope (null for global scope)</li>
+ *   <li>A list of child scopes (for debug output generation)</li>
+ * </ul>
+ *
+ * <p>Symbol lookup follows lexical scoping rules:
+ * <ol>
+ *   <li>Search starts in the current scope</li>
+ *   <li>If not found, search proceeds to the parent scope</li>
+ *   <li>Continues up the parent chain until found or global scope is reached</li>
+ *   <li>Inner declarations shadow outer declarations with the same name</li>
+ * </ol>
+ *
+ * <p>Scope management:
+ * <ul>
+ *   <li>Global scope: Created at the start of semantic analysis</li>
+ *   <li>Function scope: Created when entering a function body</li>
+ *   <li>Block scope: Created when entering a compound statement</li>
+ *   <li>Scopes are entered using {@link #enterChildScope()} and restored by the caller</li>
+ * </ul>
+ *
+ * <p>Symbol types:
+ * <ul>
+ *   <li>{@link VariableSymbol}: Variables and constants</li>
+ *   <li>{@link FunctionSymbol}: Function declarations and definitions</li>
+ * </ul>
+ *
+ * <p>Thread safety: This class is not thread-safe. It is designed for single-threaded
+ * semantic analysis during compilation.
+ *
+ * @see Symbol for the base symbol interface
+ * @see VariableSymbol for variable symbol representation
+ * @see FunctionSymbol for function symbol representation
  *
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */

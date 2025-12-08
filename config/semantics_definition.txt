@@ -7,6 +7,7 @@
 	| <postfiks_izraz> L_UGL_ZAGRADA <izraz> D_UGL_ZAGRADA
 	| <postfiks_izraz> L_ZAGRADA D_ZAGRADA
 	| <postfiks_izraz> L_ZAGRADA <lista_argumenata> D_ZAGRADA
+	| <postfiks_izraz> TOCKA IDN
 	| <postfiks_izraz> OP_INC
 	| <postfiks_izraz> OP_DEC
 <lista_argumenata> ::= <izraz_pridruzivanja>
@@ -15,17 +16,40 @@
 	| OP_INC <unarni_izraz>
 	| OP_DEC <unarni_izraz>
 	| <unarni_operator> <cast_izraz>
+	| AMPERSAND <cast_izraz>
+	| ASTERISK <cast_izraz>
 <unarni_operator> ::= PLUS
 	| MINUS
 	| OP_TILDA
 	| OP_NEG
 <cast_izraz> ::= <unarni_izraz>
 	| L_ZAGRADA <ime_tipa> D_ZAGRADA <cast_izraz>
-<ime_tipa> ::= <specifikator_tipa>
-	| KR_CONST <specifikator_tipa>
+<ime_tipa> ::= <lista_specifikatora_kvalifikatora>
+	| <lista_specifikatora_kvalifikatora> <pokazivac>
+<lista_specifikatora_kvalifikatora> ::= <specifikator_tipa>
+	| <lista_specifikatora_kvalifikatora> <specifikator_tipa>
+	| <lista_specifikatora_kvalifikatora> KR_CONST
 <specifikator_tipa> ::= KR_VOID
 	| KR_CHAR
 	| KR_INT
+	| KR_FLOAT
+	| <struct_specifikator>
+<pokazivac> ::= ASTERISK
+	| ASTERISK KR_CONST
+	| ASTERISK <pokazivac>
+	| ASTERISK KR_CONST <pokazivac>
+<struct_specifikator> ::= KR_STRUCT IDN L_VIT_ZAGRADA <struct_lista_deklaracija> D_VIT_ZAGRADA
+	| KR_STRUCT L_VIT_ZAGRADA <struct_lista_deklaracija> D_VIT_ZAGRADA
+	| KR_STRUCT IDN
+<struct_lista_deklaracija> ::= <struct_deklaracija>
+	| <struct_lista_deklaracija> <struct_deklaracija>
+<struct_deklaracija> ::= <lista_specifikatora_kvalifikatora> <struct_lista_deklaratora> TOCKAZAREZ
+<struct_lista_deklaratora> ::= <struct_deklarator>
+	| <struct_lista_deklaratora> ZAREZ <struct_deklarator>
+<struct_deklarator> ::= IDN
+	| IDN L_UGL_ZAGRADA BROJ D_UGL_ZAGRADA
+	| <pokazivac> IDN
+	| <pokazivac> IDN L_UGL_ZAGRADA BROJ D_UGL_ZAGRADA
 <multiplikativni_izraz> ::= <cast_izraz>
 	| <multiplikativni_izraz> OP_PUTA <cast_izraz>
 	| <multiplikativni_izraz> OP_DIJELI <cast_izraz>

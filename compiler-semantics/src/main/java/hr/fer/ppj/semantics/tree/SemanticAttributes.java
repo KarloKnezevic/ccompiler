@@ -4,7 +4,9 @@ import hr.fer.ppj.semantics.types.FunctionType;
 import hr.fer.ppj.semantics.types.Type;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -31,6 +33,7 @@ public final class SemanticAttributes {
   private String identifier;
   private boolean stringLiteral;
   private int stringLiteralLength;
+  private Map<String, Type> structFields;
 
   public Type type() {
     return type;
@@ -152,6 +155,7 @@ public final class SemanticAttributes {
     identifier = null;
     stringLiteral = false;
     stringLiteralLength = 0;
+    structFields = null;
   }
 
   public String identifier() {
@@ -178,6 +182,19 @@ public final class SemanticAttributes {
 
   public SemanticAttributes stringLiteralLength(int stringLiteralLength) {
     this.stringLiteralLength = stringLiteralLength;
+    return this;
+  }
+
+  public Map<String, Type> structFields() {
+    return structFields == null ? null : Collections.unmodifiableMap(structFields);
+  }
+
+  public SemanticAttributes structFields(Map<String, Type> fields) {
+    if (fields == null) {
+      this.structFields = null;
+    } else {
+      this.structFields = new LinkedHashMap<>(fields);
+    }
     return this;
   }
 }

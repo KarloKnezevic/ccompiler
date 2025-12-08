@@ -8,30 +8,94 @@ import java.util.Objects;
  * Represents the activation record (stack frame) for a function.
  * 
  * <p>This class manages the layout of local variables and parameters on the stack
- * for a single function. It tracks the offsets of variables relative to the
- * frame pointer (R5) and provides methods for allocating space for new variables.
+ * for a single function. It implements the <b>stack frame allocation algorithm</b>
+ * used by the FRISC calling convention, tracking the offsets of variables relative
+ * to the frame pointer (R5) and providing methods for allocating space for new variables.
  * 
- * <p>Stack layout using frame pointer R5:
+ * <p><b>Algorithm: Stack Frame Layout</b>
+ * 
+ * <p>This class implements a <b>linear stack frame layout</b> algorithm:
+ * <ol>
+ *   <li><b>Parameter Allocation:</b> Parameters are allocated first, starting at R5+8.
+ *       Each parameter takes 4 bytes (32 bits), regardless of type (int, char, pointer).
+ *       Parameters are allocated in declaration order (left-to-right).</li>
+ *   <li><b>Local Variable Allocation:</b> Local variables are allocated after parameters,
+ *       starting at R5-4 and growing downward (negative offsets). Each variable's size
+ *       is rounded up to a multiple of 4 bytes for stack alignment.</li>
+ *   <li><b>Array Allocation:</b> Arrays are allocated as contiguous blocks. For example,
+ *       {@code int a[5]} uses 20 bytes (5 * 4) at offsets R5-20 to R5-1.</li>
+ * </ol>
+ * 
+ * <p><b>Stack Frame Layout (FRISC Calling Convention):</b>
+ * 
+ * <p>The stack frame layout using frame pointer R5 is as follows:
  * <pre>
- * Higher addresses
+ * Higher addresses (lower memory addresses in FRISC)
  * +----------------+
- * | Parameter n    | R5 + (8 + (n-1)*4)
+ * | Parameter n    | R5 + (8 + (n-1)*4)  ; Last parameter
  * | ...            |
- * | Parameter 1    | R5 + 8
- * | Return address | R5 + 4
- * | Old R5         | R5 + 0  (saved by current function)
- * +----------------+ <- R5 (frame pointer, fixed)
- * | Local var 1    | R5 - 4
- * | Local var 2    | R5 - 8
+ * | Parameter 2    | R5 + 12              ; Second parameter
+ * | Parameter 1    | R5 + 8               ; First parameter
+ * | Return address | R5 + 4                ; Saved by CALL instruction
+ * | Old R5         | R5 + 0                ; Saved by function prologue
+ * +----------------+ <- R5 (frame pointer, fixed during function execution)
+ * | Local var 1    | R5 - 4                ; First local variable
+ * | Local var 2    | R5 - 8                ; Second local variable
  * | ...            |
- * | Local var n    | R5 - (n*4)
+ * | Local var n    | R5 - (n*4)            ; Last local variable
  * +----------------+ <- R7 (current stack pointer, after local allocation)
- * Lower addresses
+ * Lower addresses (higher memory addresses in FRISC)
  * </pre>
  * 
- * <p>Parameters are accessed with positive offsets from R5 (R5+8, R5+12, etc.),
- * while local variables are accessed with negative offsets (R5-4, R5-8, etc.).
- * All offsets are formatted as hexadecimal for FRISC assembly.
+ * <p><b>Key Invariants:</b>
+ * <ul>
+ *   <li><b>Frame Pointer (R5):</b> Points to the saved old R5 value. This is fixed
+ *       during function execution and provides a stable reference point for accessing
+ *       parameters and local variables.</li>
+ *   <li><b>Parameter Offsets:</b> Always positive (R5+8, R5+12, etc.). The first parameter
+ *       is at R5+8 because R5+0 contains the saved old R5 and R5+4 contains the return address.</li>
+ *   <li><b>Local Variable Offsets:</b> Always negative (R5-4, R5-8, etc.). Local variables
+ *       are allocated downward from R5 to allow for variable-sized arrays and dynamic allocation.</li>
+ *   <li><b>Stack Alignment:</b> All allocations are rounded up to multiples of 4 bytes to
+ *       maintain 4-byte alignment, which is required for efficient memory access on FRISC.</li>
+ * </ul>
+ * 
+ * <p><b>FRISC Calling Convention Details:</b>
+ * 
+ * <ul>
+ *   <li><b>Parameter Passing:</b> Arguments are pushed on the stack by the caller in
+ *       right-to-left order (C convention). The callee accesses them via positive offsets
+ *       from R5.</li>
+ *   <li><b>Return Value:</b> Returned in register R6, not on the stack.</li>
+ *   <li><b>Stack Pointer (R7):</b> Points to the top of the stack (lowest allocated address).
+ *       It is decremented when allocating local variables and incremented when deallocating.</li>
+ *   <li><b>Frame Pointer (R5):</b> Set in the function prologue by saving the old R5 and
+ *       setting R5 = R7. Restored in the epilogue before returning.</li>
+ * </ul>
+ * 
+ * <p><b>Complexity:</b>
+ * <ul>
+ *   <li><b>Time Complexity:</b> O(1) for addParameter() and addLocalVariable() operations</li>
+ *   <li><b>Space Complexity:</b> O(n) where n is the number of variables (parameters + locals)</li>
+ * </ul>
+ * 
+ * <p><b>Usage Example:</b>
+ * <pre>
+ * ActivationRecord ar = new ActivationRecord();
+ * 
+ * // Add parameters (in declaration order)
+ * ar.addParameter("x");      // R5+8
+ * ar.addParameter("y");      // R5+12
+ * 
+ * // Add local variables
+ * ar.addLocalVariable("a");  // R5-4
+ * ar.addLocalVariable("b");  // R5-8
+ * ar.addLocalVariable("arr", 20);  // Array: R5-20 to R5-1 (20 bytes)
+ * 
+ * // Get variable addresses for code generation
+ * String addr = ar.getVariableAddress("x");  // "(R5+08)"
+ * String addr2 = ar.getVariableAddress("a"); // "(R5-04)"
+ * </pre>
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */

@@ -24,7 +24,7 @@ Before you begin, ensure you have:
 
 - **Java 21+** (uses modern features: records, sealed classes, pattern matching)
 - **Maven 3.8+** for build management
-- **Node.js 18+** (for running FRISC simulator—see [FRISC Simulator Guide](docs/frisc_simulator_guide.md))
+- **Node.js 18+** (for running FRISC simulator—see [FRISC Simulator Guide](docs/09-runtime-and-support/frisc_simulator_guide.md))
 - **Bash** (Unix-like environment recommended)
 
 **Check your setup:**
@@ -200,45 +200,78 @@ cat compiler-bin/tablica_simbola.txt
 
 ## 📚 Comprehensive Documentation
 
-This project includes extensive documentation covering every aspect of the compiler. All documentation is located in the [`docs/`](docs/) directory:
+This project includes extensive documentation organized as a comprehensive guide to compiler construction. All documentation is located in the [`docs/`](docs/) directory and organized into logical chapters:
 
-### 🎓 Getting Started Guides
+### 📖 Documentation Structure
 
-- **[FRISC Simulator Guide](docs/frisc_simulator_guide.md)**: Complete guide to running and debugging FRISC assembly code
-  - Console and web interfaces
-  - Debugging techniques
-  - Integration with the compiler
-  - Step-by-step execution examples
+The documentation is organized into chapter-like sections covering all aspects of compiler construction:
 
-### 🔧 Code Generation Documentation
+#### 1. Introduction
+- **[Overview](docs/01-introduction/overview.md)**: Project overview, architecture, and quick start guide
+- **[Project Architecture](docs/01-introduction/project-architecture.md)**: Detailed architecture overview, module organization, and design patterns
 
-- **[Code Generation Overview](docs/code_generation_overview.md)**: High-level overview of code generation strategy, runtime model, and implementation approach
-- **[Code Generation Implementation](docs/code_generation_implementation.md)**: Deep technical dive into algorithms, data structures, and optimization techniques
-- **[Codegen Module Structure](docs/codegen_module_structure.md)**: Complete guide to the code generation module architecture, package organization, and component responsibilities
-- **[Codegen Rules and Conventions](docs/codegen_rules_and_conventions.md)**: Detailed rules and conventions for code generation (37 rules covering expressions, statements, functions, memory, types, labels, formatting, stack, and registers)
-- **[FRISC Architecture](docs/frisc_architecture.md)**: Complete FRISC processor reference including instruction set, addressing modes, and assembly directives
+#### 2. Theoretical Foundations
+- **[Formal Languages and Grammars](docs/02-theoretical-foundations/formal-languages-and-grammars.md)**: Formal language theory, regular languages, context-free grammars, and LR parsing foundations
+- **[Automata and Parsing Theory](docs/02-theoretical-foundations/automata-and-parsing-theory.md)**: Detailed automata algorithms, parsing algorithms, and error recovery techniques
 
-### 🔍 Lexical Analysis Documentation
+#### 3. Lexical Analysis
+- **[Lexer Design](docs/03-lexical-analysis/lexer-design.md)**: Lexer architecture, token specification, and design principles
+- **[Implementation Notes](docs/03-lexical-analysis/implementation-notes.md)**: Complete technical documentation including regex parsing and NFA/DFA conversion algorithms
+- **[Token Specification](docs/03-lexical-analysis/token-specification.md)**: User guide for writing lexer specifications and token patterns
 
-- **[Lexer Documentation](docs/lexer_documentation.md)**: General lexer overview and architecture
-- **[Lexer Implementation](docs/lexer_implementation.md)**: Complete technical documentation including regex parsing and NFA/DFA conversion algorithms
-- **[Lexer User Guide](docs/lexer_user_guide.md)**: User guide for writing lexer specifications
-- **[Lexer Consistency Check](docs/lexer_consistency_check.md)**: Validation and consistency verification procedures
+#### 4. Syntax Analysis
+- **[Grammar Specification](docs/04-syntax-analysis/grammar-specification.md)**: Grammar format, production rules, and parser module overview
+- **[Parser Construction](docs/04-syntax-analysis/parser-construction.md)**: Parser architecture, grammar parsing, and FIRST set computation
+- **[Parsing Tables and Algorithms](docs/04-syntax-analysis/parsing-tables-and-algorithms.md)**: Detailed LR(1) parser implementation, table construction, and runtime parsing
 
-### 🌳 Syntax Analysis Documentation
+#### 5. Semantic Analysis
+- **[Symbol Tables and Scopes](docs/05-semantic-analysis/symbol-tables-and-scopes.md)**: Symbol table implementation, scope management, and identifier resolution
+- **[Type System and Checking](docs/05-semantic-analysis/type-system-and-checking.md)**: Type system design, type checking algorithms, and semantic validation
+- **[Semantic Passes](docs/05-semantic-analysis/semantic-passes.md)**: Semantic analysis pipeline, attribute synthesis, and error reporting
 
-- **[Parser Documentation](docs/parser_documentation.md)**: Parser module overview, architecture, and usage
-- **[LR Parser Technical](docs/lr_parser_technical.md)**: Detailed technical documentation of canonical LR(1) parser implementation
+#### 6. Intermediate Representation
+- **[IR Design](docs/06-intermediate-representation/ir-design.md)**: AST structure, node hierarchy, and IR design principles
+- **[AST Structure and Walkers](docs/06-intermediate-representation/ast-structure-and-walkers.md)**: Detailed AST node specifications and traversal mechanisms
 
-### 🧠 Semantic Analysis Documentation
+#### 7. Code Generation
+- **[Target Architecture Overview](docs/07-code-generation/target-architecture-overview.md)**: FRISC architecture overview, code generation strategy, and runtime model
+- **[Instruction Selection](docs/07-code-generation/instruction-selection.md)**: Code generation algorithms, expression code generation, and statement code generation
+- **[Calling Conventions and Runtime](docs/07-code-generation/calling-conventions-and-runtime.md)**: Function calling conventions, stack management, and activation records
+- **[FRISC Codegen Details](docs/07-code-generation/frisc-codegen-details.md)**: Complete FRISC processor reference including instruction set, addressing modes, and assembly directives
+- **[Codegen Module Structure](docs/07-code-generation/codegen_module_structure.md)**: Complete guide to code generation module architecture and package organization
+- **[Codegen Rules and Conventions](docs/07-code-generation/codegen_rules_and_conventions.md)**: Detailed rules and conventions for code generation (37 rules covering expressions, statements, functions, memory, types, labels, formatting, stack, and registers)
 
-- **[Semantic Analyzer](docs/semantic_analyzer.md)**: High-level overview of semantic analysis phase
-- **[Semantic Analyzer Implementation](docs/semantic_analyzer_implementation.md)**: Detailed technical reference covering algorithms and data structures
+#### 8. Optimizations
+- **[Basic Optimizations](docs/08-optimizations/basic-optimizations.md)**: Optimization techniques including constant folding, dead code elimination, and register allocation
 
-### 📊 Additional Resources
+#### 9. Runtime and Support
+- **[Runtime Library](docs/09-runtime-and-support/runtime-library.md)**: Runtime functions, helper function generation, and memory management
+- **[Helper Functions on FRISC](docs/09-runtime-and-support/helper-functions-on-frisc.md)**: Detailed implementation of helper functions including float operations (Q16.16 fixed-point)
+- **[FRISC Simulator Guide](docs/09-runtime-and-support/frisc_simulator_guide.md)**: Complete guide to using the FRISC simulator for testing and debugging
 
-- **[Implementation Notes](docs/implementation_notes.md)**: Design decisions, architectural rationale, and implementation notes
-- **[Testing Status](docs/testing_status.md)**: Testing coverage, validation status, and quality metrics
+#### 10. Configuration
+- **[Configuration Overview](docs/10-configuration/configuration-overview.md)**: Configuration system overview, file loading, and validation
+- **[Config File Reference](docs/10-configuration/config-file-reference.md)**: Complete reference for lexer, parser, and semantics configuration file formats
+- **[Examples and Best Practices](docs/10-configuration/examples-and-best-practices.md)**: Configuration examples and usage patterns
+
+#### 11. Testing and Tooling
+- **[Test Strategy](docs/11-testing-and-tooling/test-strategy.md)**: Testing methodology, test organization, and execution
+- **[Example Programs](docs/11-testing-and-tooling/example-programs.md)**: Test program catalog and validation results
+- **[Debugging Workflow](docs/11-testing-and-tooling/debugging-workflow.md)**: Debugging techniques and tools
+
+#### 12. Appendices
+- **[Glossary](docs/12-appendices/glossary.md)**: Complete glossary of compiler construction terms
+- **[Notation and Conventions](docs/12-appendices/notation-and-conventions.md)**: Documentation notation, code conventions, and terminology
+- **[Bibliography and Further Reading](docs/12-appendices/bibliography-and-further-reading.md)**: References to textbooks, papers, and online resources
+
+### 🎓 Quick Start Documentation
+
+For new users, start with:
+1. **[Introduction Overview](docs/01-introduction/overview.md)**: Project overview and quick start
+2. **[Project Architecture](docs/01-introduction/project-architecture.md)**: Understanding the compiler structure
+3. **[Theoretical Foundations](docs/02-theoretical-foundations/formal-languages-and-grammars.md)**: Learn the theoretical background
+4. **[Lexical Analysis](docs/03-lexical-analysis/lexer-design.md)**: Start with the first compiler phase
+5. **[FRISC Simulator Guide](docs/09-runtime-and-support/frisc_simulator_guide.md)**: Running and debugging FRISC assembly
 
 ## 🏛️ Architecture Overview
 
@@ -391,13 +424,13 @@ mvn spotless:apply        # Auto-format
 ### For Users
 
 1. **Try the Examples**: Explore `examples/valid/` to see what the compiler can do
-2. **Read the Documentation**: Start with [FRISC Simulator Guide](docs/frisc_simulator_guide.md) and [Code Generation Overview](docs/code_generation_overview.md)
+2. **Read the Documentation**: Start with [Introduction Overview](docs/01-introduction/overview.md) and [FRISC Simulator Guide](docs/09-runtime-and-support/frisc_simulator_guide.md)
 3. **Write Your Own Programs**: Compile your C programs and run them on the FRISC simulator
 
 ### For Developers
 
-1. **Explore the Architecture**: Read [Codegen Module Structure](docs/codegen_module_structure.md) to understand the codebase
-2. **Study the Rules**: Review [Codegen Rules and Conventions](docs/codegen_rules_and_conventions.md) for implementation details
+1. **Explore the Architecture**: Read [Project Architecture](docs/01-introduction/project-architecture.md) and [Codegen Module Structure](docs/07-code-generation/codegen_module_structure.md) to understand the codebase
+2. **Study the Rules**: Review [Codegen Rules and Conventions](docs/07-code-generation/codegen_rules_and_conventions.md) for implementation details
 3. **Contribute**: Check out the code quality standards and start contributing!
 
 ## 📊 Project Status
@@ -409,7 +442,7 @@ mvn spotless:apply        # Auto-format
 - **Semantic Analysis**: Complete type system with scope resolution
 - **Code Generation**: Full FRISC assembly generation for all supported constructs
 - **Testing**: Comprehensive test suite with HTML report generation
-- **Documentation**: 15+ detailed documentation files
+- **Documentation**: 36+ detailed documentation files organized into 12 chapters
 
 ### 🔮 Future Enhancements
 
@@ -461,6 +494,7 @@ cat compiler-bin/a.frisc
 node node_modules/friscjs/consoleapp/frisc-console.js compiler-bin/a.frisc
 
 # 6. Explore the comprehensive documentation
+# All documentation is organized in docs/ directory by chapter
 ls docs/
 ```
 
@@ -468,37 +502,20 @@ ls docs/
 
 ---
 
-## 📚 Documentation Index
+## 📚 Documentation Quick Links
 
-All documentation files are available in the [`docs/`](docs/) directory:
+The documentation is comprehensively organized into 12 chapters covering all aspects of compiler construction. See the [Comprehensive Documentation](#-comprehensive-documentation) section above for the complete structure.
 
-### 🎓 Getting Started
-- [FRISC Simulator Guide](docs/frisc_simulator_guide.md) - Complete guide to running FRISC assembly
-
-### 🔧 Code Generation
-- [Code Generation Overview](docs/code_generation_overview.md) - High-level code generation strategy
-- [Code Generation Implementation](docs/code_generation_implementation.md) - Deep technical implementation details
-- [Codegen Module Structure](docs/codegen_module_structure.md) - Complete module architecture guide
-- [Codegen Rules and Conventions](docs/codegen_rules_and_conventions.md) - 37 detailed code generation rules
-- [FRISC Architecture](docs/frisc_architecture.md) - Complete FRISC processor reference
-
-### 🔍 Lexical Analysis
-- [Lexer Documentation](docs/lexer_documentation.md) - Lexer overview and architecture
-- [Lexer Implementation](docs/lexer_implementation.md) - Technical implementation details
-- [Lexer User Guide](docs/lexer_user_guide.md) - Writing lexer specifications
-- [Lexer Consistency Check](docs/lexer_consistency_check.md) - Validation procedures
-
-### 🌳 Syntax Analysis
-- [Parser Documentation](docs/parser_documentation.md) - Parser overview and usage
-- [LR Parser Technical](docs/lr_parser_technical.md) - LR(1) parser implementation
-
-### 🧠 Semantic Analysis
-- [Semantic Analyzer](docs/semantic_analyzer.md) - Semantic analysis overview
-- [Semantic Analyzer Implementation](docs/semantic_analyzer_implementation.md) - Technical reference
-
-### 📊 Additional Resources
-- [Implementation Notes](docs/implementation_notes.md) - Design decisions and rationale
-- [Testing Status](docs/testing_status.md) - Testing coverage and metrics
+**Quick Links**:
+- **[Introduction](docs/01-introduction/overview.md)** - Start here for project overview
+- **[Theoretical Foundations](docs/02-theoretical-foundations/formal-languages-and-grammars.md)** - Formal language theory
+- **[Lexical Analysis](docs/03-lexical-analysis/lexer-design.md)** - Token specification and lexer implementation
+- **[Syntax Analysis](docs/04-syntax-analysis/grammar-specification.md)** - Grammar and parser construction
+- **[Semantic Analysis](docs/05-semantic-analysis/symbol-tables-and-scopes.md)** - Type checking and symbol resolution
+- **[Code Generation](docs/07-code-generation/target-architecture-overview.md)** - FRISC assembly generation
+- **[Configuration](docs/10-configuration/configuration-overview.md)** - Configuration file reference
+- **[Testing](docs/11-testing-and-tooling/test-strategy.md)** - Testing methodology
+- **[Appendices](docs/12-appendices/glossary.md)** - Glossary and references
 
 ---
 

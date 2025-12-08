@@ -11,10 +11,25 @@ import java.util.Objects;
 /**
  * Generates FRISC assembly code for loop statements (while and for).
  * 
- * <p>This class handles the generation of iterative control flow:
+ * <p>This class handles the generation of iterative control flow, implementing the
+ * <b>loop code generation algorithm</b> that translates C loop constructs into
+ * FRISC assembly with proper label management and control flow.
+ * 
+ * <p><b>Algorithm: Loop Code Generation</b>
+ * 
+ * <p>Loops are translated using a <b>structured control flow pattern</b>:
+ * <ol>
+ *   <li><b>Label Generation:</b> Generate unique labels for loop start, continue point, and break point</li>
+ *   <li><b>Context Setup:</b> Create a new code generation context with loop labels for break/continue</li>
+ *   <li><b>Condition Check:</b> Evaluate condition at the start of each iteration</li>
+ *   <li><b>Body Execution:</b> Generate code for loop body with break/continue support</li>
+ *   <li><b>Iteration Control:</b> Jump back to condition check (continue) or exit loop (break)</li>
+ * </ol>
+ * 
+ * <p><b>Loop Types Handled:</b>
  * <ul>
- *   <li>While loops: {@code while (condition) statement}</li>
- *   <li>For loops: {@code for (init; condition; increment) statement}</li>
+ *   <li><b>While Loops:</b> {@code while (condition) statement}</li>
+ *   <li><b>For Loops:</b> {@code for (init; condition; increment) statement}</li>
  * </ul>
  * 
  * <p><b>Grammar Rules Handled:</b>
@@ -24,24 +39,86 @@ import java.util.Objects;
  *                    | KR_FOR L_ZAGRADA &lt;izraz_naredba&gt; &lt;izraz_naredba&gt; &lt;izraz&gt; D_ZAGRADA &lt;naredba&gt;
  * </pre>
  * 
- * <p><b>FRISC Code Pattern (While):</b>
+ * <p><b>While Loop Algorithm:</b>
+ * 
+ * <p>The while loop is translated as follows:
+ * <ol>
+ *   <li><b>Loop Start Label:</b> Marks the beginning of each iteration</li>
+ *   <li><b>Condition Evaluation:</b> Evaluate condition, result in R0</li>
+ *   <li><b>Exit Check:</b> If condition is false (R0 == 0), jump to break label</li>
+ *   <li><b>Body Execution:</b> Generate loop body code (with break/continue context)</li>
+ *   <li><b>Continue Label:</b> Marks the continue point (for continue statements)</li>
+ *   <li><b>Loop Back:</b> Jump back to loop start label</li>
+ *   <li><b>Break Label:</b> Marks the loop exit point (for break statements)</li>
+ * </ol>
+ * 
+ * <p><b>For Loop Algorithm:</b>
+ * 
+ * <p>The for loop is translated as follows:
+ * <ol>
+ *   <li><b>Initialization:</b> Execute initialization expression once (before loop)</li>
+ *   <li><b>Loop Start Label:</b> Marks the beginning of each iteration</li>
+ *   <li><b>Condition Evaluation:</b> Evaluate condition, result in R0</li>
+ *   <li><b>Exit Check:</b> If condition is false (R0 == 0), jump to break label</li>
+ *   <li><b>Body Execution:</b> Generate loop body code (with break/continue context)</li>
+ *   <li><b>Continue Label:</b> Marks the continue point (for continue statements and increment)</li>
+ *   <li><b>Increment:</b> Execute increment expression (if present)</li>
+ *   <li><b>Loop Back:</b> Jump back to loop start label</li>
+ *   <li><b>Break Label:</b> Marks the loop exit point (for break statements)</li>
+ * </ol>
+ * 
+ * <p><b>Break and Continue Statements:</b>
+ * 
+ * <p>Break and continue statements are handled via labels in the code generation context:
+ * <ul>
+ *   <li><b>Break:</b> Jumps to the break label, exiting the loop</li>
+ *   <li><b>Continue:</b> Jumps to the continue label, skipping to the next iteration</li>
+ * </ul>
+ * 
+ * <p>The loop generator creates a new context with these labels, allowing nested loops
+ * to have their own break/continue labels.
+ * 
+ * <p><b>FRISC Code Pattern (While Loop):</b>
  * <pre>
- * L_LOOP                    ; loop start
- * &lt;condition evaluation&gt;   ; result in R0
- * CMP R0, %D 0              ; compare with 0
- * JP_EQ L_BREAK              ; exit if false
- * &lt;loop body&gt;
- * L_CONTINUE                 ; continue point
- * JP L_LOOP                  ; repeat
- * L_BREAK                    ; loop end
+ * L_LOOP1:                   ; loop start label
+ *     &lt;condition evaluation&gt; ; result in R0
+ *     CMP R0, %D 0           ; compare with 0
+ *     JP_EQ L_BREAK1         ; exit if false
+ *     &lt;loop body&gt;           ; may contain break/continue
+ * L_CONTINUE1:               ; continue label (for continue statements)
+ *     JP L_LOOP1             ; repeat loop
+ * L_BREAK1:                  ; break label (for break statements and loop exit)
  * </pre>
  * 
- * <p><b>FRISC Semantics:</b>
+ * <p><b>FRISC Code Pattern (For Loop):</b>
+ * <pre>
+ * &lt;initialization&gt;           ; executed once
+ * L_LOOP1:                   ; loop start label
+ *     &lt;condition evaluation&gt; ; result in R0
+ *     CMP R0, %D 0           ; compare with 0
+ *     JP_EQ L_BREAK1         ; exit if false
+ *     &lt;loop body&gt;           ; may contain break/continue
+ * L_CONTINUE1:               ; continue label (for continue statements and increment)
+ *     &lt;increment&gt;            ; executed each iteration (if present)
+ *     JP L_LOOP1             ; repeat loop
+ * L_BREAK1:                  ; break label (for break statements and loop exit)
+ * </pre>
+ * 
+ * <p><b>Nested Loops:</b>
+ * 
+ * <p>Nested loops are handled correctly because:
  * <ul>
- *   <li>Loop labels generated via LabelGenerator (loop, break, continue)</li>
- *   <li>Break statements jump to break label</li>
- *   <li>Continue statements jump to continue label</li>
- *   <li>For loops: init executed once, condition checked each iteration, increment at continue point</li>
+ *   <li>Each loop creates its own set of labels (loop, continue, break)</li>
+ *   <li>Each loop creates a new context with its labels</li>
+ *   <li>Break/continue statements in inner loops use the inner loop's labels</li>
+ *   <li>Break/continue statements in outer loops use the outer loop's labels</li>
+ * </ul>
+ * 
+ * <p><b>Complexity Analysis:</b>
+ * <ul>
+ *   <li><b>Time Complexity:</b> O(1) for code generation (constant number of instructions),
+ *       but actual runtime depends on loop body and iteration count</li>
+ *   <li><b>Space Complexity:</b> O(1) - uses only a few labels and registers</li>
  * </ul>
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>

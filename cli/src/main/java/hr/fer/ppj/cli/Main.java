@@ -272,7 +272,7 @@ public final class Main {
       codeGen.generate(semanticResults.globalScope(), semanticResults.parseTree(), friscOutputPath);
       System.err.println("Code generation completed. Generated " + friscOutputPath);
 
-    } catch (hr.fer.ppj.semantics.analysis.SemanticException e) {
+    } catch (hr.fer.ppj.semantics.errors.SemanticException e) {
       // Production already printed by SemanticChecker.fail()
       // Print error message and exit without stack trace
       System.err.println("Error: semantic error");

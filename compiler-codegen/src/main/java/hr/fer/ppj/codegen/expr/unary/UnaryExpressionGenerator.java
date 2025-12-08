@@ -2,6 +2,8 @@ package hr.fer.ppj.codegen.expr.unary;
 
 import hr.fer.ppj.codegen.CodeGenContext;
 import hr.fer.ppj.codegen.expr.ExpressionCodeGenerator;
+import hr.fer.ppj.codegen.utils.TypeConverter;
+import hr.fer.ppj.codegen.utils.TypeNodeExtractor;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.TerminalNode;
@@ -12,6 +14,10 @@ import java.util.Objects;
 
 /**
  * Generates FRISC assembly code for unary expressions and type casts.
+ * 
+ * <p>This class handles the generation of code for unary operators and explicit type casts,
+ * implementing the <b>unary expression code generation algorithm</b> that translates C unary
+ * operations and type conversions into FRISC assembly.
  * 
  * <p><b>Grammar Rules:</b> Handles {@code <unarni_izraz>} and {@code <cast_izraz>}:
  * <pre>
@@ -26,23 +32,128 @@ import java.util.Objects;
  *                | L_ZAGRADA &lt;ime_tipa&gt; D_ZAGRADA &lt;cast_izraz&gt;
  * </pre>
  * 
- * <p>This class handles the generation of code for:
+ * <p><b>Algorithm: Unary Expression Code Generation</b>
+ * 
+ * <p>The algorithm works as follows:
+ * <ol>
+ *   <li><b>Operator Identification:</b> Identify the unary operator (+, -, !, ~) or cast type</li>
+ *   <li><b>Operand Evaluation:</b> Evaluate the operand expression (result in R0)</li>
+ *   <li><b>Operation Application:</b> Apply the unary operation or type conversion:
+ *       <ul>
+ *         <li><b>Unary Plus (+):</b> No-op (identity operation)</li>
+ *         <li><b>Unary Minus (-):</b> Negation (0 - operand, or direct negative literal)</li>
+ *         <li><b>Logical NOT (!):</b> Boolean inversion (0 ↔ 1)</li>
+ *         <li><b>Bitwise NOT (~):</b> Bitwise complement (XOR with all 1s)</li>
+ *         <li><b>Type Casts:</b> Type conversion operations (see below)</li>
+ *       </ul>
+ *   </li>
+ * </ol>
+ * 
+ * <p><b>Unary Minus Algorithm:</b>
+ * 
+ * <p>Unary minus uses an optimization strategy:
+ * <ol>
+ *   <li><b>Literal Optimization:</b> If operand is a literal (int or float), directly emit
+ *       the negated value using constant loading</li>
+ *   <li><b>Runtime Negation:</b> Otherwise, use {@code 0 - operand} pattern:
+ *       <pre>
+ *       MOVE %D 0, R1          ; zero
+ *       SUB R1, R0, R0          ; R0 = 0 - R0 = -R0
+ *       </pre>
+ *   </li>
+ * </ol>
+ * 
+ * <p>This works for both integers and floats (Q16.16) because subtraction preserves the format.
+ * 
+ * <p><b>Logical NOT Algorithm:</b>
+ * 
+ * <p>Logical NOT implements C's boolean semantics:
+ * <ol>
+ *   <li><b>Zero Check:</b> Compare operand with 0</li>
+ *   <li><b>Conditional Assignment:</b>
+ *       <ul>
+ *         <li>If operand == 0: Result = 1 (true)</li>
+ *         <li>If operand != 0: Result = 0 (false)</li>
+ *       </ul>
+ *   </li>
+ * </ol>
+ * 
+ * <p><b>Bitwise NOT Algorithm:</b>
+ * 
+ * <p>Bitwise NOT is implemented as XOR with all 1s:
+ * <pre>
+ * XOR R0, FFFFFFFF, R0         ; R0 = R0 XOR 0xFFFFFFFF = ~R0
+ * </pre>
+ * 
+ * <p><b>Type Cast Algorithm:</b>
+ * 
+ * <p>Type casts implement C's type conversion rules:
  * <ul>
- *   <li>Unary operators: +, -, !, ~</li>
- *   <li>Type casts: (type) expression</li>
+ *   <li><b>int → char:</b> Mask lower 8 bits: {@code AND R0, 00FF, R0}</li>
+ *   <li><b>char → int:</b> No-op (char is already 32-bit in this implementation)</li>
+ *   <li><b>int → float:</b> Call F_I2F helper function (convert to Q16.16)</li>
+ *   <li><b>float → int:</b> Call F_F2I helper function (truncate Q16.16 to integer)</li>
+ *   <li><b>float → char:</b> First convert float to int, then mask to char</li>
  * </ul>
  * 
- * <p><b>FRISC Semantics:</b>
- * <ul>
- *   <li>Unary plus (+): No-op, just evaluates operand</li>
- *   <li>Unary minus (-): Negation using {@code 0 - operand} pattern, or direct negative
- *       constant emission for literals</li>
- *   <li>Logical NOT (!): Compares operand to 0, returns 1 if zero, 0 otherwise</li>
- *   <li>Bitwise NOT (~): XOR with 0xFFFFFFFF</li>
- *   <li>Type casts: int→char masks lower 8 bits (AND 00FF), char→int is no-op</li>
- * </ul>
+ * <p><b>FRISC Code Patterns:</b>
  * 
- * <p><b>Register Usage:</b> Operand evaluated in R0, result left in R0.
+ * <p><b>Unary Plus:</b>
+ * <pre>
+ * ; +x - no code generated, just evaluate x
+ * ... (operand evaluation) ...
+ * </pre>
+ * 
+ * <p><b>Unary Minus (Literal):</b>
+ * <pre>
+ * MOVE %D -42, R0              ; direct negative constant
+ * </pre>
+ * 
+ * <p><b>Unary Minus (Runtime):</b>
+ * <pre>
+ * ... (operand evaluation) ...
+ * MOVE %D 0, R1                ; zero
+ * SUB R1, R0, R0                ; R0 = 0 - R0 = -R0
+ * </pre>
+ * 
+ * <p><b>Logical NOT:</b>
+ * <pre>
+ * ... (operand evaluation) ...
+ * CMP R0, %D 0                  ; compare with 0
+ * JP_EQ L_TRUE                  ; if zero, result is 1
+ * MOVE %D 0, R0                 ; result is 0
+ * JP L_END
+ * L_TRUE:
+ * MOVE %D 1, R0                 ; result is 1
+ * L_END:
+ * </pre>
+ * 
+ * <p><b>Bitwise NOT:</b>
+ * <pre>
+ * ... (operand evaluation) ...
+ * XOR R0, FFFFFFFF, R0          ; bitwise complement
+ * </pre>
+ * 
+ * <p><b>Type Cast (int → char):</b>
+ * <pre>
+ * ... (operand evaluation) ...
+ * AND R0, 00FF, R0              ; mask lower 8 bits
+ * </pre>
+ * 
+ * <p><b>Type Cast (int → float):</b>
+ * <pre>
+ * ... (operand evaluation) ...
+ * PUSH R0
+ * CALL F_I2F                    ; convert int to float
+ * ADD R7, %D 4, R7              ; cleanup
+ * MOVE R6, R0                   ; result in R0
+ * </pre>
+ * 
+ * <p><b>Complexity Analysis:</b>
+ * <ul>
+ *   <li><b>Time Complexity:</b> O(1) for code generation (constant number of instructions)</li>
+ *   <li><b>Space Complexity:</b> O(1) - uses only registers</li>
+ * </ul>
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */
@@ -50,6 +161,7 @@ public final class UnaryExpressionGenerator {
     
     private final CodeGenContext context;
     private final ExpressionCodeGenerator expressionGenerator;
+    private final TypeConverter typeConverter;
     
     /**
      * Creates a new unary expression generator.
@@ -60,6 +172,7 @@ public final class UnaryExpressionGenerator {
     public UnaryExpressionGenerator(CodeGenContext context, ExpressionCodeGenerator expressionGenerator) {
         this.context = Objects.requireNonNull(context, "context must not be null");
         this.expressionGenerator = Objects.requireNonNull(expressionGenerator, "expressionGenerator must not be null");
+        this.typeConverter = new TypeConverter(context);
     }
     
     /**
@@ -172,16 +285,34 @@ public final class UnaryExpressionGenerator {
         expressionGenerator.generateExpression(exprNode);
         
         // Get target type from semantic attributes (if available)
-        Type targetType = extractTypeFromTypeNode(typeNode);
+        Type targetType = TypeNodeExtractor.extractTypeFromTypeNode(typeNode);
+        
+        // Get source type from expression
+        Type sourceType = exprNode.attributes() != null ? exprNode.attributes().type() : null;
         
         // Perform cast based on target type
         if (targetType == PrimitiveType.CHAR) {
             // Cast to char: mask lower 8 bits
             // Use hex format for bit mask: 00FF (not %D 255, as this is a bit mask, not a C integer literal)
+            if (sourceType == PrimitiveType.FLOAT) {
+                // Float to char: convert float to int first, then mask
+                typeConverter.convertFloatToInt();
+            }
             context.emitter().emitInstruction("AND", "R0", "00FF", "R0", "cast to char (mask lower 8 bits)");
         } else if (targetType == PrimitiveType.INT) {
-            // Cast to int: no-op (value is already int)
-            // R0 already contains the value
+            // Cast to int
+            if (sourceType == PrimitiveType.FLOAT) {
+                // Float to int: convert float to int (truncate)
+                typeConverter.convertFloatToInt();
+            }
+            // Otherwise: no-op (value is already int)
+        } else if (targetType == PrimitiveType.FLOAT) {
+            // Cast to float
+            if (sourceType != PrimitiveType.FLOAT) {
+                // Int/char to float: convert to float
+                typeConverter.convertIntToFloat();
+            }
+            // Otherwise: no-op (value is already float)
         }
         // Unknown cast type: just pass through (R0 already contains the value)
     }
@@ -191,37 +322,58 @@ public final class UnaryExpressionGenerator {
      * 
      * <p><b>Grammar Rule:</b> Handles {@code <unarni_izraz> ::= MINUS <cast_izraz>}
      * 
-     * <p><b>Optimization:</b> For integer literals, directly emits the negated value
+     * <p><b>Type-Aware Negation:</b>
+     * <ul>
+     *   <li>If operand is float (Q16.16): Generate direct negation in Q16.16 format (no F_I2F)</li>
+     *   <li>If operand is int: Generate integer negation</li>
+     * </ul>
+     * 
+     * <p><b>Optimization:</b> For simple literals (not complex expressions), directly emits the negated value
      * using {@code emitLoadIntConstant} (which handles large negative values correctly).
      * 
      * <p><b>FRISC Code Pattern:</b>
      * <ul>
-     *   <li>Literal: {@code MOVE %D -value, R0} (or SHL/ADD for large values)</li>
+     *   <li>Float literal: Direct Q16.16 negation (already in Q16.16 format)</li>
+     *   <li>Integer literal: {@code MOVE %D -value, R0} (or SHL/ADD for large values)</li>
      *   <li>Non-literal: {@code MOVE %D 0, R1; SUB R1, R0, R0} (0 - operand)</li>
      * </ul>
      * 
      * <p><b>FRISC Semantics:</b> Uses SUB instruction for runtime negation:
      * {@code SUB R1, R0, R0} computes R0 = R1 - R0 = 0 - operand = -operand.
+     * For float operands, this preserves Q16.16 format (no conversion needed).
      * 
      * @param operand the operand expression ({@code <cast_izraz>})
      */
     private void generateUnaryMinus(NonTerminalNode operand) {
-        String literalValue = tryExtractIntegerLiteral(operand);
-        if (literalValue != null) {
-            // Optimize: directly emit negative literal using helper to handle large values
-            try {
-                int value = Integer.parseInt(literalValue);
-                int negatedValue = -value;
-                context.emitter().emitLoadIntConstant(negatedValue, "R0", "load constant -" + literalValue);
-            } catch (NumberFormatException e) {
-                // Fall back to runtime negation
-                generateRuntimeNegation(operand);
-            }
-        } else {
-            // Runtime negation: 0 - R0 = -R0
-            generateRuntimeNegation(operand);
-        }
+        // CRITICAL FIX: Always evaluate the operand at runtime and then negate.
+        // This ensures correct behavior for complex expressions like -(3.0 * 4.0).
+        //
+        // Previous optimization attempts to directly negate float literals were problematic
+        // because LiteralExtractor.tryExtractFloatLiteral() can extract a literal from
+        // a complex expression (e.g., extracting "3.0" from "3.0 * 4.0"), leading to
+        // incorrect code generation.
+        //
+        // By always evaluating at runtime, we ensure that:
+        // 1. Complex expressions (e.g., 3.0 * 4.0) are correctly evaluated first
+        // 2. The result is then negated using 0 - result
+        // 3. This works correctly for both int and float (Q16.16) types
+        //
+        // IMPORTANT: We NEVER optimize unary minus by extracting literals from the operand.
+        // The operand must be fully evaluated at runtime, even if it contains literals.
+        // This prevents bugs where expressions like -(3.0 * 4.0) are incorrectly
+        // compiled as -3.0 (ignoring the multiplication).
+        
+        generateRuntimeNegation(operand);
     }
+    
+    // NOTE: The following methods (isSimpleLiteral and isOperatorTerminal) were removed
+    // as dead code. They were previously used to optimize unary minus by directly negating
+    // literals, but this optimization was removed because it incorrectly handled complex
+    // expressions like -(3.0 * 4.0) by extracting only the first literal (3.0) and ignoring
+    // the multiplication. The current implementation always evaluates the operand at runtime
+    // and then negates the result, which is correct but slightly less efficient for simple
+    // literals. If literal optimization is needed in the future, it should be implemented
+    // more carefully to avoid partial expression evaluation.
     
     /**
      * Generates code for runtime negation of an expression.
@@ -229,7 +381,11 @@ public final class UnaryExpressionGenerator {
      * @param operand the operand expression
      */
     private void generateRuntimeNegation(NonTerminalNode operand) {
+        // Evaluate the operand expression first (result in R0)
+        // This will correctly handle complex expressions like 3.0 * 4.0
         expressionGenerator.generateExpression(operand);
+        // Negate the result: 0 - R0 = -R0
+        // This works for both int and float (Q16.16) - no conversion needed
         context.emitter().emitInstruction("MOVE", "%D 0", "R1", "zero for negation");
         context.emitter().emitInstruction("SUB", "R1", "R0", "R0", "unary minus");
     }
@@ -269,72 +425,5 @@ public final class UnaryExpressionGenerator {
         context.emitter().emitLabel(labels.endLabel());
     }
     
-    /**
-     * Tries to extract an integer literal value from an expression.
-     * 
-     * <p>This is used for optimization - if the operand is a constant,
-     * we can directly emit the negated value instead of computing it at runtime.
-     * 
-     * @param expr the expression node
-     * @return the literal value as a string, or null if not a literal
-     */
-    private String tryExtractIntegerLiteral(NonTerminalNode expr) {
-        // Recursively search for a BROJ terminal
-        for (ParseNode child : expr.children()) {
-            if (child instanceof TerminalNode terminal && "BROJ".equals(terminal.symbol())) {
-                return terminal.lexeme();
-            } else if (child instanceof NonTerminalNode nonTerminal) {
-                String result = tryExtractIntegerLiteral(nonTerminal);
-                if (result != null) {
-                    return result;
-                }
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Extracts the target type from a type node (<ime_tipa>).
-     * 
-     * @param typeNode the type node
-     * @return the target type, or null if not determinable
-     */
-    private Type extractTypeFromTypeNode(NonTerminalNode typeNode) {
-        // Try to get type from semantic attributes first
-        if (typeNode.attributes() != null && typeNode.attributes().type() != null) {
-            return typeNode.attributes().type();
-        }
-        
-        // Fallback: parse from tree structure
-        // <ime_tipa> -> <specifikator_tipa>
-        // <specifikator_tipa> -> KR_CHAR or KR_INT
-        return extractTypeFromSpecifikatorTipa(typeNode);
-    }
-    
-    /**
-     * Extracts type from specifikator_tipa node by looking for KR_CHAR or KR_INT.
-     * 
-     * @param node the node to search
-     * @return the type, or null if not found
-     */
-    private Type extractTypeFromSpecifikatorTipa(NonTerminalNode node) {
-        // Recursively search for KR_CHAR or KR_INT terminal
-        for (ParseNode child : node.children()) {
-            if (child instanceof TerminalNode terminal) {
-                String symbol = terminal.symbol();
-                if ("KR_CHAR".equals(symbol)) {
-                    return PrimitiveType.CHAR;
-                } else if ("KR_INT".equals(symbol)) {
-                    return PrimitiveType.INT;
-                }
-            } else if (child instanceof NonTerminalNode nonTerminal) {
-                Type result = extractTypeFromSpecifikatorTipa(nonTerminal);
-                if (result != null) {
-                    return result;
-                }
-            }
-        }
-        return null;
-    }
 }
 

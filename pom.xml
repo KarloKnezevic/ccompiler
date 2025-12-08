@@ -39,7 +39,6 @@
         <module>compiler-semantics</module>
         <module>compiler-codegen</module>
         <module>cli</module>
-        <module>test-fixtures</module>
     </modules>
 
     <dependencyManagement>
