@@ -4,7 +4,7 @@ import hr.fer.ppj.codegen.CodeGenContext;
 import hr.fer.ppj.codegen.expr.ExpressionCodeGenerator;
 import hr.fer.ppj.codegen.func.FunctionPrologueEpilogueGenerator;
 import hr.fer.ppj.codegen.utils.LValueAddressGenerator;
-import hr.fer.ppj.codegen.utils.StructLayoutCalculator;
+import hr.fer.ppj.codegen.structs.StructSizeCalculator;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.types.StructType;
@@ -271,7 +271,7 @@ public final class ReturnStatementGenerator {
             throw new IllegalStateException("Struct return but expression is not a struct type: " + strippedType);
         }
         
-        int structSize = StructLayoutCalculator.calculateStructSize(structType);
+        int structSize = StructSizeCalculator.calculateStructSize(structType);
         
         // Compute address of return expression (source struct)
         // This handles variables, field access, etc.

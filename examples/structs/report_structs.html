@@ -1768,12 +1768,12 @@ F_MAIN                          ; Function main
         STORE R1, (R0)          ; assign value
         MOVE R1, R0             ; assignment result
 ; Struct assignment: copy 8 bytes
-        MOVE R5, R0             ; load frame pointer
-        SUB R0, %D 8, R0        ; add variable offset
-        MOVE R0, R2             ; source addr (struct)
-        MOVE R5, R0             ; load frame pointer
-        SUB R0, %D 16, R0       ; add variable offset
-        MOVE R0, R3             ; dest addr (struct)
+        MOVE R5, R2             ; load frame pointer
+        SUB R2, %D 8, R2        ; add variable offset
+        MOVE R2, R2             ; source addr (struct rvalue)
+        MOVE R5, R3             ; load frame pointer
+        SUB R3, %D 16, R3       ; add variable offset
+        MOVE R3, R3             ; dest addr (struct lvalue)
         MOVE %D 8, R4           ; remaining bytes
 L2                              ; struct copy loop
         CMP R4, %D 0
@@ -16568,12 +16568,12 @@ F_MAIN                          ; Function main
         STORE R1, (R0)          ; assign value
         MOVE R1, R0             ; assignment result
 ; Struct assignment: copy 8 bytes
-        MOVE R5, R0             ; load frame pointer
-        SUB R0, %D 8, R0        ; add variable offset
-        MOVE R0, R2             ; source addr (struct)
-        MOVE R5, R0             ; load frame pointer
-        SUB R0, %D 16, R0       ; add variable offset
-        MOVE R0, R3             ; dest addr (struct)
+        MOVE R5, R2             ; load frame pointer
+        SUB R2, %D 8, R2        ; add variable offset
+        MOVE R2, R2             ; source addr (struct rvalue)
+        MOVE R5, R3             ; load frame pointer
+        SUB R3, %D 16, R3       ; add variable offset
+        MOVE R3, R3             ; dest addr (struct lvalue)
         MOVE %D 8, R4           ; remaining bytes
 L2                              ; struct copy loop
         CMP R4, %D 0
@@ -23148,8 +23148,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_P2     `DS %D 8               ; global StructType[tag=Point, fields={x=INT, y=INT}] p2
 G_P1     `DS %D 8               ; global StructType[tag=Point, fields={x=INT, y=INT}] p1
+G_P2     `DS %D 8               ; global StructType[tag=Point, fields={x=INT, y=INT}] p2
 
 </code></pre>
       </details>
@@ -26763,12 +26763,12 @@ F_MAIN                          ; Function main
         STORE R1, (R0)          ; assign value
         MOVE R1, R0             ; assignment result
 ; Struct assignment: copy 16 bytes
-        MOVE R5, R0             ; load frame pointer
-        SUB R0, %D 16, R0       ; add variable offset
-        MOVE R0, R2             ; source addr (struct)
-        MOVE R5, R0             ; load frame pointer
-        SUB R0, %D 32, R0       ; add variable offset
-        MOVE R0, R3             ; dest addr (struct)
+        MOVE R5, R2             ; load frame pointer
+        SUB R2, %D 16, R2       ; add variable offset
+        MOVE R2, R2             ; source addr (struct rvalue)
+        MOVE R5, R3             ; load frame pointer
+        SUB R3, %D 32, R3       ; add variable offset
+        MOVE R3, R3             ; dest addr (struct lvalue)
         MOVE %D 16, R4          ; remaining bytes
 L3                              ; struct copy loop
         CMP R4, %D 0
@@ -35284,12 +35284,12 @@ F_MAIN                          ; Function main
         STORE R1, (R0)          ; assign value
         MOVE R1, R0             ; assignment result
 ; Struct assignment: copy 16 bytes
-        MOVE R5, R0             ; load frame pointer
-        SUB R0, %D 16, R0       ; add variable offset
-        MOVE R0, R2             ; source addr (struct)
-        MOVE R5, R0             ; load frame pointer
-        SUB R0, %D 32, R0       ; add variable offset
-        MOVE R0, R3             ; dest addr (struct)
+        MOVE R5, R2             ; load frame pointer
+        SUB R2, %D 16, R2       ; add variable offset
+        MOVE R2, R2             ; source addr (struct rvalue)
+        MOVE R5, R3             ; load frame pointer
+        SUB R3, %D 32, R3       ; add variable offset
+        MOVE R3, R3             ; dest addr (struct lvalue)
         MOVE %D 16, R4          ; remaining bytes
 L3                              ; struct copy loop
         CMP R4, %D 0

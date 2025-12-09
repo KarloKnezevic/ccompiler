@@ -377,7 +377,7 @@ public final class ArrayExpressionGenerator {
      * @return the FRISC address expression
      */
     private String getVariableAddress(String variableName) {
-        var resolver = new hr.fer.ppj.codegen.utils.VariableAddressResolver(context);
+        var resolver = new hr.fer.ppj.codegen.env.VariableAddressResolver(context);
         return resolver.getVariableAddress(variableName);
     }
 }

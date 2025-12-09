@@ -3,8 +3,9 @@ package hr.fer.ppj.codegen.expr.call;
 import hr.fer.ppj.codegen.CodeGenContext;
 import hr.fer.ppj.codegen.expr.ExpressionCodeGenerator;
 import hr.fer.ppj.codegen.utils.LValueAddressGenerator;
-import hr.fer.ppj.codegen.utils.StructArraySizeExtractor;
-import hr.fer.ppj.codegen.utils.StructLayoutCalculator;
+import hr.fer.ppj.codegen.structs.NestedStructArraySizeExtractor;
+import hr.fer.ppj.codegen.structs.StructArraySizeExtractor;
+import hr.fer.ppj.codegen.structs.StructSizeCalculator;
 import hr.fer.ppj.semantics.symbols.FunctionSymbol;
 import hr.fer.ppj.semantics.symbols.VariableSymbol;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
@@ -140,6 +141,7 @@ public final class FunctionCallGenerator {
     private final CodeGenContext context;
     private final ExpressionCodeGenerator expressionGenerator;
     private final LValueAddressGenerator addressGenerator;
+    private final StructArgumentGenerator structArgumentGenerator;
     
     /**
      * Creates a new function call generator.
@@ -151,6 +153,7 @@ public final class FunctionCallGenerator {
         this.context = Objects.requireNonNull(context, "context must not be null");
         this.expressionGenerator = Objects.requireNonNull(expressionGenerator, "expressionGenerator must not be null");
         this.addressGenerator = new LValueAddressGenerator(context, expressionGenerator);
+        this.structArgumentGenerator = new StructArgumentGenerator(context, addressGenerator);
     }
     
     /**
@@ -294,12 +297,12 @@ public final class FunctionCallGenerator {
                         // CRITICAL: Must recursively extract for ALL nested structs at ALL levels
                         // This ensures we get array sizes for Inner when processing Outer
                         nestedStructArraySizes = new java.util.HashMap<>();
-                        extractNestedStructArraySizes(structType, arraySizeExtractor, nestedStructArraySizes);
+                        NestedStructArraySizeExtractor.extractNestedStructArraySizes(structType, arraySizeExtractor, nestedStructArraySizes);
                     }
                 }
                 
-                int structSize = StructLayoutCalculator.calculateStructSize(structType, arraySizes, nestedStructArraySizes);
-                generateStructArgument(arg, structType, arraySizes, nestedStructArraySizes);
+                int structSize = StructSizeCalculator.calculateStructSize(structType, arraySizes, nestedStructArraySizes);
+                structArgumentGenerator.generateStructArgument(arg, structType, arraySizes, nestedStructArraySizes);
                 totalSizeBytes += structSize;
             } else if (strippedArgType instanceof ArrayType) {
                 // Array argument: pass address (array decay to pointer)
@@ -354,117 +357,7 @@ public final class FunctionCallGenerator {
         return totalSizeBytes;
     }
     
-    /**
-     * Generates code to pass a struct argument by copying it onto the stack.
-     * 
-     * <p>Struct arguments are passed by value, so we need to copy the entire struct
-     * onto the stack word-by-word. We push words individually starting from offset 0
-     * and moving forward through the struct.
-     * 
-     * <p>The callee expects the struct with field 0 at the lowest address (R5+8 for
-     * the first parameter). When we push from offset 0 forward:
-     * - First word (offset 0) is pushed first → ends up at lowest address (R5+8) ✓
-     * - Last word (offset N) is pushed last → ends up at highest address ✓
-     * 
-     * @param argExpr the argument expression (must evaluate to a struct)
-     * @param structType the struct type
-     * @param arraySizes optional map from field name to array length (for array fields in this struct)
-     * @param nestedStructArraySizes optional map from struct tag to array sizes map (for nested structs with arrays)
-     */
-    private void generateStructArgument(NonTerminalNode argExpr, StructType structType, 
-                                       Map<String, Integer> arraySizes, 
-                                       Map<String, Map<String, Integer>> nestedStructArraySizes) {
-        // Calculate struct size using provided array sizes
-        int structSize = StructLayoutCalculator.calculateStructSize(structType, arraySizes, nestedStructArraySizes);
-        
-        context.emitter().emitComment("Struct argument: push " + structSize + " bytes onto stack");
-        
-        // Compute source address (struct argument address)
-        addressGenerator.generateAddress(argExpr, "R0");
-        context.emitter().emitInstruction("MOVE", "R0", "R2", "source addr (struct arg)");
-        
-        // Push struct word-by-word from beginning (offset 0) forward
-        String loopLabel = context.labelGenerator().generateLabel();
-        String endLabel = context.labelGenerator().generateLabel();
-        
-        // Initialize: R4 = remaining bytes
-        context.emitter().emitInstruction("MOVE", "%D " + structSize, "R4", "remaining bytes");
-        
-        context.emitter().emitLabel(loopLabel, "struct arg push loop");
-        
-        // Check if counter is zero
-        context.emitter().emitInstruction("CMP", "R4", "%D 0", null);
-        context.emitter().emitInstruction("JP_EQ", endLabel, "done if counter == 0");
-        
-        // Load word from source: R0 = *R2 (starting from offset 0)
-        context.emitter().emitInstruction("LOAD", "R0", "(R2)", "load word from source");
-        
-        // Push word onto stack
-        context.emitter().emitInstruction("PUSH", "R0", null, "push struct word");
-        
-        // Increment source pointer: R2 += 4 (move forward through struct)
-        context.emitter().emitInstruction("ADD", "R2", "%D 4", "R2", "increment source pointer");
-        
-        // Decrement counter: R4 -= 4
-        context.emitter().emitInstruction("SUB", "R4", "%D 4", "R4", "decrement remaining bytes");
-        
-        // Loop back
-        context.emitter().emitInstruction("JP", loopLabel, "continue push loop");
-        
-        context.emitter().emitLabel(endLabel, "end struct arg push");
-    }
     
-    /**
-     * Recursively extracts array sizes for all nested structs in a struct type.
-     * 
-     * <p>This method traverses all fields of the struct and extracts array sizes
-     * for any nested struct fields, recursively handling deeply nested structs.
-     * 
-     * @param structType the struct type to extract nested array sizes for
-     * @param arraySizeExtractor the extractor to use for extracting array sizes
-     * @param nestedStructArraySizes the map to populate with nested struct array sizes
-     */
-    private void extractNestedStructArraySizes(StructType structType, 
-                                               StructArraySizeExtractor arraySizeExtractor,
-                                               Map<String, Map<String, Integer>> nestedStructArraySizes) {
-        if (structType == null || arraySizeExtractor == null) {
-            return;
-        }
-        
-        // Extract array sizes for all fields that are struct types (recursively)
-        for (Map.Entry<String, Type> field : structType.fields().entrySet()) {
-            Type fieldType = TypeSystem.stripConst(field.getValue());
-            
-            if (fieldType instanceof StructType nestedStructType) {
-                String nestedTag = nestedStructType.tag();
-                
-                // Skip if tag is null (anonymous structs - can't extract by tag)
-                if (nestedTag == null) {
-                    // For anonymous structs, still try to recursively extract (they might have nested structs)
-                    extractNestedStructArraySizes(nestedStructType, arraySizeExtractor, nestedStructArraySizes);
-                    continue;
-                }
-                
-                // Skip if we've already extracted array sizes for this struct
-                if (nestedStructArraySizes.containsKey(nestedTag)) {
-                    continue;
-                }
-                
-                // Extract array sizes for this nested struct
-                // CRITICAL: Always extract, even if empty, so we know we've tried
-                // If the struct has array fields, this will populate the map with array sizes
-                Map<String, Integer> nestedArraySizes = arraySizeExtractor.extractArraySizes(nestedTag);
-                // Always put in map, even if empty (needed for calculateStructSize to know we've tried)
-                nestedStructArraySizes.put(nestedTag, nestedArraySizes);
-                
-                // CRITICAL: Recursively extract array sizes for even deeper nested structs
-                // This ensures we get array sizes for Inner when processing Outer
-                // This must be done AFTER extracting array sizes for the current nested struct,
-                // so that deeper nested structs can also be found
-                extractNestedStructArraySizes(nestedStructType, arraySizeExtractor, nestedStructArraySizes);
-            }
-        }
-    }
     
     /**
      * Checks if a variable is an array variable.
@@ -540,7 +433,7 @@ public final class FunctionCallGenerator {
      * @return the FRISC address expression
      */
     private String getVariableAddress(String variableName) {
-        var resolver = new hr.fer.ppj.codegen.utils.VariableAddressResolver(context);
+        var resolver = new hr.fer.ppj.codegen.env.VariableAddressResolver(context);
         return resolver.getVariableAddress(variableName);
     }
     

@@ -2,7 +2,8 @@ package hr.fer.ppj.codegen.stmt;
 
 import hr.fer.ppj.codegen.CodeGenContext;
 import hr.fer.ppj.codegen.expr.ExpressionCodeGenerator;
-import hr.fer.ppj.codegen.utils.StructLayoutCalculator;
+import hr.fer.ppj.codegen.structs.StructSizeCalculator;
+import hr.fer.ppj.codegen.types.TypeSizeCalculator;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.TerminalNode;
@@ -242,7 +243,7 @@ public final class LocalDeclarationGenerator {
     private int calculateVariableSize(Type variableType, NonTerminalNode declarator) {
         if (variableType != null) {
             Type strippedType = TypeSystem.stripConst(variableType);
-            return StructLayoutCalculator.calculateTypeSize(strippedType);
+            return TypeSizeCalculator.calculateTypeSize(strippedType);
         }
         
         // Fallback: extract array size from parse tree

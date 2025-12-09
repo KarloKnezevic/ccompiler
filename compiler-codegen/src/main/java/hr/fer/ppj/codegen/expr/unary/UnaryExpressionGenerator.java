@@ -2,8 +2,8 @@ package hr.fer.ppj.codegen.expr.unary;
 
 import hr.fer.ppj.codegen.CodeGenContext;
 import hr.fer.ppj.codegen.expr.ExpressionCodeGenerator;
-import hr.fer.ppj.codegen.utils.TypeConverter;
-import hr.fer.ppj.codegen.utils.TypeNodeExtractor;
+import hr.fer.ppj.codegen.types.TypeConverter;
+import hr.fer.ppj.codegen.types.TypeNodeExtractor;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.TerminalNode;

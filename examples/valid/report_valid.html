@@ -1038,8 +1038,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_X      DW %D 27               ; global INT x = 27
 G_Y      DW %D 65               ; global INT y = 65
+G_X      DW %D 27               ; global INT x = 27
 
 </code></pre>
       </details>
@@ -1516,8 +1516,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_X      DW %D 27               ; global INT x = 27
 G_Y      DW %D 65               ; global INT y = 65
+G_X      DW %D 27               ; global INT x = 27
 
 </code></pre>
       </details>
@@ -1997,8 +1997,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_X      DW %D 27               ; global INT x = 27
 G_Y      DW %D 65               ; global INT y = 65
+G_X      DW %D 27               ; global INT x = 27
 
 </code></pre>
       </details>
@@ -2878,7 +2878,7 @@ Global Scope:
 
 ; Function definitions
 F_F                             ; Function f
-; Parameter x at (R5+08)
+; Parameter x (4 bytes) at (R5+08)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
@@ -2900,9 +2900,9 @@ F_MAIN                          ; Function main
 ; Compound statement
 ; Function call: f
         MOVE %D 7, R0           ; load constant 7
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_F                ; call f
-        ADD R7, %D 4, R7        ; cleanup 1 arguments
+        ADD R7, %D 4, R7        ; cleanup 4 bytes of arguments
         MOVE R6, R0             ; function result
         MOVE R0, R6             ; return value
         JP L2                   ; jump to function exit
@@ -3484,7 +3484,7 @@ Global Scope:
 
 ; Function definitions
 F_F                             ; Function f
-; Parameter x at (R5+08)
+; Parameter x (4 bytes) at (R5+08)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
@@ -3506,18 +3506,18 @@ F_MAIN                          ; Function main
 ; Compound statement
 ; Function call: f
         MOVE %D 7, R0           ; load constant 7
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_F                ; call f
-        ADD R7, %D 4, R7        ; cleanup 1 arguments
+        ADD R7, %D 4, R7        ; cleanup 4 bytes of arguments
         MOVE R6, R0             ; function result
         PUSH R0                 ; save left operand
 ; Function call: f
         MOVE %D 4, R0           ; load constant 4
         MOVE %D 0, R1           ; zero for negation
         SUB R1, R0, R0          ; unary minus
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_F                ; call f
-        ADD R7, %D 4, R7        ; cleanup 1 arguments
+        ADD R7, %D 4, R7        ; cleanup 4 bytes of arguments
         MOVE R6, R0             ; function result
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
@@ -8950,8 +8950,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_X      DW %D 1234             ; global INT x = 1234
 G_Y      DW %D 12345            ; global INT y = 12345
+G_X      DW %D 1234             ; global INT x = 1234
 
 </code></pre>
       </details>
@@ -9690,8 +9690,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_X      DW %D 1234             ; global INT x = 1234
 G_Y      DW %D 125              ; global INT y = 125
+G_X      DW %D 1234             ; global INT x = 1234
 
 </code></pre>
       </details>
@@ -10372,10 +10372,12 @@ F_MAIN                          ; Function main
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
         MOVE %D 1, R0           ; load constant 1
-        SHL R0, %D 2, R0        ; index * 4 (element size)
-        MOVE G_A, R1            ; load base address
-        ADD R1, R0, R1          ; compute element address
-        LOAD R0, (R1)           ; load array element
+        PUSH R0                 ; save array index
+        MOVE G_A, R0            ; load global variable address
+        POP R1                  ; restore array index
+        SHL R1, %D 2, R1        ; index * 4 (element size)
+        ADD R0, R1, R0          ; element address = base + (index * 4)
+        LOAD R0, (R0)           ; load array element (char)
         MOVE R0, R6             ; return value
         JP L1                   ; jump to function exit
 L1                              ; function exit
@@ -10950,17 +10952,23 @@ F_MAIN                          ; Function main
 ; Compound statement
         MOVE %D 12, R0          ; load constant 12
         AND R0, 00FF, R0        ; cast to char (mask lower 8 bits)
-        MOVE R0, R2             ; save value to assign
+        PUSH R0                 ; save RHS value
         MOVE %D 3, R0           ; load constant 3
-        SHL R0, %D 2, R0        ; index * 4 (element size)
-        MOVE G_A, R1            ; load base address
-        ADD R1, R0, R1          ; compute element address
-        STORE R2, (R1)          ; store array element
+        PUSH R0                 ; save array index
+        MOVE G_A, R0            ; load global variable address
+        POP R1                  ; restore array index
+        SHL R1, %D 2, R1        ; index * 4 (element size)
+        ADD R0, R1, R0          ; element address = base + (index * 4)
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         MOVE %D 3, R0           ; load constant 3
-        SHL R0, %D 2, R0        ; index * 4 (element size)
-        MOVE G_A, R1            ; load base address
-        ADD R1, R0, R1          ; compute element address
-        LOAD R0, (R1)           ; load array element
+        PUSH R0                 ; save array index
+        MOVE G_A, R0            ; load global variable address
+        POP R1                  ; restore array index
+        SHL R1, %D 2, R1        ; index * 4 (element size)
+        ADD R0, R1, R0          ; element address = base + (index * 4)
+        LOAD R0, (R0)           ; load array element (char)
         MOVE R0, R6             ; return value
         JP L1                   ; jump to function exit
 L1                              ; function exit
@@ -11972,46 +11980,64 @@ F_MAIN                          ; Function main
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
         MOVE %D 0, R0           ; load constant 0
-        MOVE R0, R2             ; save value to assign
+        PUSH R0                 ; save RHS value
         MOVE %D 0, R0           ; load constant 0
-        SHL R0, %D 2, R0        ; index * 4 (element size)
-        MOVE G_A, R1            ; load base address
-        ADD R1, R0, R1          ; compute element address
-        STORE R2, (R1)          ; store array element
+        PUSH R0                 ; save array index
+        MOVE G_A, R0            ; load global variable address
+        POP R1                  ; restore array index
+        SHL R1, %D 2, R1        ; index * 4 (element size)
+        ADD R0, R1, R0          ; element address = base + (index * 4)
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         MOVE %D 123, R0         ; load constant 123
-        MOVE R0, R2             ; save value to assign
+        PUSH R0                 ; save RHS value
         MOVE %D 4, R0           ; load constant 4
-        SHL R0, %D 2, R0        ; index * 4 (element size)
-        MOVE G_A, R1            ; load base address
-        ADD R1, R0, R1          ; compute element address
-        STORE R2, (R1)          ; store array element
+        PUSH R0                 ; save array index
+        MOVE G_A, R0            ; load global variable address
+        POP R1                  ; restore array index
+        SHL R1, %D 2, R1        ; index * 4 (element size)
+        ADD R0, R1, R0          ; element address = base + (index * 4)
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         MOVE %D 1, R0           ; load constant 1
-        MOVE R0, R2             ; save value to assign
+        PUSH R0                 ; save RHS value
         MOVE %D 2, R0           ; load constant 2
-        SHL R0, %D 2, R0        ; index * 4 (element size)
-        MOVE G_A, R1            ; load base address
-        ADD R1, R0, R1          ; compute element address
-        STORE R2, (R1)          ; store array element
+        PUSH R0                 ; save array index
+        MOVE G_A, R0            ; load global variable address
+        POP R1                  ; restore array index
+        SHL R1, %D 2, R1        ; index * 4 (element size)
+        ADD R0, R1, R0          ; element address = base + (index * 4)
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         MOVE %D 0, R0           ; load constant 0
-        SHL R0, %D 2, R0        ; index * 4 (element size)
-        MOVE G_A, R1            ; load base address
-        ADD R1, R0, R1          ; compute element address
-        LOAD R0, (R1)           ; load array element
+        PUSH R0                 ; save array index
+        MOVE G_A, R0            ; load global variable address
+        POP R1                  ; restore array index
+        SHL R1, %D 2, R1        ; index * 4 (element size)
+        ADD R0, R1, R0          ; element address = base + (index * 4)
+        LOAD R0, (R0)           ; load array element
         PUSH R0                 ; save left operand
         MOVE %D 4, R0           ; load constant 4
-        SHL R0, %D 2, R0        ; index * 4 (element size)
-        MOVE G_A, R1            ; load base address
-        ADD R1, R0, R1          ; compute element address
-        LOAD R0, (R1)           ; load array element
+        PUSH R0                 ; save array index
+        MOVE G_A, R0            ; load global variable address
+        POP R1                  ; restore array index
+        SHL R1, %D 2, R1        ; index * 4 (element size)
+        ADD R0, R1, R0          ; element address = base + (index * 4)
+        LOAD R0, (R0)           ; load array element
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
         PUSH R0                 ; save left operand
         MOVE %D 2, R0           ; load constant 2
-        SHL R0, %D 2, R0        ; index * 4 (element size)
-        MOVE G_A, R1            ; load base address
-        ADD R1, R0, R1          ; compute element address
-        LOAD R0, (R1)           ; load array element
+        PUSH R0                 ; save array index
+        MOVE G_A, R0            ; load global variable address
+        POP R1                  ; restore array index
+        SHL R1, %D 2, R1        ; index * 4 (element size)
+        ADD R0, R1, R0          ; element address = base + (index * 4)
+        LOAD R0, (R0)           ; load array element
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
@@ -12053,7 +12079,7 @@ G_A      `DS %D 4               ; global ArrayType[elementType=INT] a
     <section id="program29" class="program-card">
       <h2>program29.c</h2>
       <div class="result-badge">
-        <span class="badge badge-pass">✅ PASS</span>
+        <span class="badge badge-fail">❌ FAIL</span>
       </div>
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
@@ -12772,17 +12798,22 @@ Global Scope:
 
 ; Function definitions
 F_F                             ; Function f
-; Parameter a at (R5+08)
+; Parameter a (4 bytes) at (R5+08)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
         MOVE %D 123, R0         ; load constant 123
-        MOVE R0, R2             ; save value to assign
+        PUSH R0                 ; save RHS value
         MOVE %D 3, R0           ; load constant 3
-        SHL R0, %D 2, R0        ; index * 4 (element size)
-        LOAD R1, (R5+08)        ; load array pointer from parameter
-        ADD R1, R0, R1          ; compute element address
-        STORE R2, (R1)          ; store array element
+        PUSH R0                 ; save array index
+        MOVE R5, R0             ; load frame pointer
+        ADD R0, %D 8, R0        ; add variable offset
+        POP R1                  ; restore array index
+        SHL R1, %D 2, R1        ; index * 4 (element size)
+        ADD R0, R1, R0          ; element address = base + (index * 4)
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
 L1                              ; function exit
         POP R5                  ; restore old frame pointer
         RET                     ; return to caller
@@ -12800,14 +12831,16 @@ F_MAIN                          ; Function main
         ADD R0, -14, R0         ; compute array address
         PUSH R0                 ; push argument 1
         CALL F_F                ; call f
-        ADD R7, %D 4, R7        ; cleanup 1 arguments
+        ADD R7, %D 4, R7        ; cleanup 4 bytes of arguments
         MOVE R6, R0             ; function result
         MOVE %D 3, R0           ; load constant 3
-        SHL R0, %D 2, R0        ; index * 4 (element size)
-        MOVE R5, R1             ; load frame pointer
-        ADD R1, -14, R1         ; add base offset
-        ADD R1, R0, R1          ; compute element address
-        LOAD R0, (R1)           ; load array element
+        PUSH R0                 ; save array index
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 20, R0       ; add variable offset
+        POP R1                  ; restore array index
+        SHL R1, %D 2, R1        ; index * 4 (element size)
+        ADD R0, R1, R0          ; element address = base + (index * 4)
+        LOAD R0, (R0)           ; load array element
         MOVE R0, R6             ; return value
         JP L2                   ; jump to function exit
 L2                              ; function exit
@@ -12832,9 +12865,9 @@ L2                              ; function exit
               </tr>
               <tr>
                 <td><code>123</code></td>
-                <td><code>123</code></td>
-                <td><code>0.001876831</code></td>
-                <td class="status-pass">✅ PASS</td>
+                <td><code>0</code></td>
+                <td><code>0.0</code></td>
+                <td class="status-fail">❌ FAIL</td>
               </tr>
             </table>
             <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
@@ -13916,7 +13949,7 @@ Global Scope:
 
 ; Function definitions
 F_F                             ; Function f
-; Parameter n at (R5+08)
+; Parameter n (4 bytes) at (R5+08)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
@@ -13949,9 +13982,9 @@ L_ELSE1                         ; else clause
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         SUB R0, R1, R0          ; subtraction
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_F                ; call f
-        ADD R7, %D 4, R7        ; cleanup 1 arguments
+        ADD R7, %D 4, R7        ; cleanup 4 bytes of arguments
         MOVE R6, R0             ; function result
         PUSH R0                 ; save left operand
 ; Function call: f
@@ -13961,9 +13994,9 @@ L_ELSE1                         ; else clause
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         SUB R0, R1, R0          ; subtraction
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_F                ; call f
-        ADD R7, %D 4, R7        ; cleanup 1 arguments
+        ADD R7, %D 4, R7        ; cleanup 4 bytes of arguments
         MOVE R6, R0             ; function result
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
@@ -13981,9 +14014,9 @@ F_MAIN                          ; Function main
 ; Compound statement
 ; Function call: f
         MOVE %D 5, R0           ; load constant 5
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_F                ; call f
-        ADD R7, %D 4, R7        ; cleanup 1 arguments
+        ADD R7, %D 4, R7        ; cleanup 4 bytes of arguments
         MOVE R6, R0             ; function result
         MOVE R0, R6             ; return value
         JP L2                   ; jump to function exit
@@ -14714,7 +14747,11 @@ L_ELSE1                         ; else clause
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         SUB R0, R1, R0          ; subtraction
-        STORE R0, (G_N)         ; assign to n
+        PUSH R0                 ; save RHS value
+        MOVE G_N, R0            ; load global variable address
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         MOVE %D 1, R0           ; load constant 1
         PUSH R0                 ; save left operand
 ; Function call: main
@@ -15480,7 +15517,12 @@ F_MAIN                          ; Function main
 ; Local variable i at (R5-08) (no initializer)
 ; For loop with increment
         MOVE %D 0, R0           ; load constant 0
-        STORE R0, (R5-08)       ; assign to i
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 8, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
 L_LOOP1                         ; for loop start
         LOAD R0, (R5-08)        ; load variable i
         PUSH R0                 ; save left operand
@@ -15503,7 +15545,12 @@ L_SC_END1
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
-        STORE R0, (R5-04)       ; assign to x
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
 L_CONTINUE1                     ; for loop increment
         LOAD R0, (R5-08)        ; load i
         ADD R0, %D 1, R0        ; pre-increment
@@ -16313,14 +16360,24 @@ L_SC_END1
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
-        STORE R0, (R5-04)       ; assign to x
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         LOAD R0, (R5-08)        ; load variable i
         PUSH R0                 ; save left operand
         MOVE %D 1, R0           ; load constant 1
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         SUB R0, R1, R0          ; subtraction
-        STORE R0, (R5-08)       ; assign to i
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 8, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
 L_CONTINUE1                     ; while continue
         JP L_LOOP1              ; repeat while loop
 L_BREAK1                        ; while loop end
@@ -16974,7 +17031,12 @@ F_MAIN                          ; Function main
         LOAD R0, (R5-08)        ; load y
         ADD R0, %D 1, R0        ; pre-increment
         STORE R0, (R5-08)       ; store incremented y
-        STORE R0, (R5-04)       ; assign to x
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         LOAD R0, (R5-04)        ; load variable x
         PUSH R0                 ; save left operand
         LOAD R0, (R5-08)        ; load y
@@ -17874,8 +17936,8 @@ Global Scope:
 
 ; Function definitions
 F_GCD                           ; Function gcd
-; Parameter m at (R5+08)
-; Parameter n at (R5+0C)
+; Parameter m (4 bytes) at (R5+08)
+; Parameter n (4 bytes) at (R5+0C)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
@@ -17903,7 +17965,7 @@ L_ELSE1                         ; else clause
 ; Compound statement
 ; Function call: gcd
         LOAD R0, (R5+08)        ; load variable m
-        PUSH R0                 ; push argument 2
+        PUSH R0                 ; push argument 2 (value)
         LOAD R0, (R5+0C)        ; load variable n
         PUSH R0                 ; save left operand
         LOAD R0, (R5+08)        ; load variable m
@@ -17923,9 +17985,9 @@ L2                              ; modulo by zero
         MOVE %D 0, R2           ; result 0 for modulo by zero
 L_BREAK1                        ; end modulo
         MOVE R2, R0             ; move remainder to result
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_GCD              ; call gcd
-        ADD R7, %D 8, R7        ; cleanup 2 arguments
+        ADD R7, %D 8, R7        ; cleanup 8 bytes of arguments
         MOVE R6, R0             ; function result
         MOVE R0, R6             ; return value
         JP L1                   ; jump to function exit
@@ -17940,11 +18002,11 @@ F_MAIN                          ; Function main
 ; Compound statement
 ; Function call: gcd
         MOVE %D 6, R0           ; load constant 6
-        PUSH R0                 ; push argument 2
+        PUSH R0                 ; push argument 2 (value)
         MOVE %D 20, R0          ; load constant 20
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_GCD              ; call gcd
-        ADD R7, %D 8, R7        ; cleanup 2 arguments
+        ADD R7, %D 8, R7        ; cleanup 8 bytes of arguments
         MOVE R6, R0             ; function result
         MOVE R0, R6             ; return value
         JP L3                   ; jump to function exit
@@ -18730,7 +18792,12 @@ L_SC_END2
         CMP R0, %D 0
         JP_NE L_SC_TRUE1        ; if left is true, result is true
         MOVE %D 1, R0           ; load constant 1
-        STORE R0, (R5-04)       ; assign to x
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         CMP R0, %D 0
         JP_NE L_SC_TRUE1        ; if right is true, result is true
         MOVE %D 0, R0           ; result is false
@@ -18753,7 +18820,12 @@ L_SC_END4
         CMP R0, %D 0
         JP_EQ L_SC_FALSE3       ; if left is false, result is false
         MOVE %D 2, R0           ; load constant 2
-        STORE R0, (R5-04)       ; assign to x
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         CMP R0, %D 0
         JP_NE L_SC_TRUE3        ; if right is true, result is true
         MOVE %D 0, R0           ; result is false
@@ -20533,7 +20605,7 @@ Global Scope:
 
 ; Function definitions
 F_F                             ; Function f
-; Parameter x at (R5+08)
+; Parameter x (4 bytes) at (R5+08)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
@@ -20642,9 +20714,9 @@ F_MAIN                          ; Function main
         PUSH R0                 ; save left operand
 ; Function call: f
         MOVE %D 1, R0           ; load constant 1
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_F                ; call f
-        ADD R7, %D 4, R7        ; cleanup 1 arguments
+        ADD R7, %D 4, R7        ; cleanup 4 bytes of arguments
         MOVE R6, R0             ; function result
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
@@ -20652,9 +20724,9 @@ F_MAIN                          ; Function main
         PUSH R0                 ; save left operand
 ; Function call: f
         MOVE %D 5, R0           ; load constant 5
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_F                ; call f
-        ADD R7, %D 4, R7        ; cleanup 1 arguments
+        ADD R7, %D 4, R7        ; cleanup 4 bytes of arguments
         MOVE R6, R0             ; function result
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
@@ -20662,9 +20734,9 @@ F_MAIN                          ; Function main
         PUSH R0                 ; save left operand
 ; Function call: f
         MOVE %D 15, R0          ; load constant 15
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_F                ; call f
-        ADD R7, %D 4, R7        ; cleanup 1 arguments
+        ADD R7, %D 4, R7        ; cleanup 4 bytes of arguments
         MOVE R6, R0             ; function result
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
@@ -21763,13 +21835,13 @@ Global Scope:
 
 ; Function definitions
 F_F                             ; Function f
-; Parameter x at (R5+08)
-; Parameter y at (R5+0C)
-; Parameter z at (R5+10)
-; Parameter a at (R5+14)
-; Parameter b at (R5+18)
-; Parameter c at (R5+1C)
-; Parameter d at (R5+20)
+; Parameter x (4 bytes) at (R5+08)
+; Parameter y (4 bytes) at (R5+0C)
+; Parameter z (4 bytes) at (R5+10)
+; Parameter a (4 bytes) at (R5+14)
+; Parameter b (4 bytes) at (R5+18)
+; Parameter c (4 bytes) at (R5+1C)
+; Parameter d (4 bytes) at (R5+20)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
@@ -21811,21 +21883,21 @@ F_MAIN                          ; Function main
 ; Compound statement
 ; Function call: f
         MOVE %D 7, R0           ; load constant 7
-        PUSH R0                 ; push argument 7
+        PUSH R0                 ; push argument 7 (value)
         MOVE %D 6, R0           ; load constant 6
-        PUSH R0                 ; push argument 6
+        PUSH R0                 ; push argument 6 (value)
         MOVE %D 5, R0           ; load constant 5
-        PUSH R0                 ; push argument 5
+        PUSH R0                 ; push argument 5 (value)
         MOVE %D 4, R0           ; load constant 4
-        PUSH R0                 ; push argument 4
+        PUSH R0                 ; push argument 4 (value)
         MOVE %D 3, R0           ; load constant 3
-        PUSH R0                 ; push argument 3
+        PUSH R0                 ; push argument 3 (value)
         MOVE %D 2, R0           ; load constant 2
-        PUSH R0                 ; push argument 2
+        PUSH R0                 ; push argument 2 (value)
         MOVE %D 1, R0           ; load constant 1
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_F                ; call f
-        ADD R7, %D 28, R7       ; cleanup 7 arguments
+        ADD R7, %D 28, R7       ; cleanup 28 bytes of arguments
         MOVE R6, R0             ; function result
         MOVE R0, R6             ; return value
         JP L2                   ; jump to function exit
@@ -23902,14 +23974,14 @@ Global Scope:
 
 ; Function definitions
 F_F                             ; Function f
-; Parameter x at (R5+08)
-; Parameter y at (R5+0C)
-; Parameter z at (R5+10)
-; Parameter a at (R5+14)
-; Parameter b at (R5+18)
-; Parameter c at (R5+1C)
-; Parameter d at (R5+20)
-; Parameter arr at (R5+24)
+; Parameter x (4 bytes) at (R5+08)
+; Parameter y (4 bytes) at (R5+0C)
+; Parameter z (4 bytes) at (R5+10)
+; Parameter a (4 bytes) at (R5+14)
+; Parameter b (4 bytes) at (R5+18)
+; Parameter c (4 bytes) at (R5+1C)
+; Parameter d (4 bytes) at (R5+20)
+; Parameter arr (4 bytes) at (R5+24)
 ; Local variable ret at (R5-04)
 ; Local variable xx at (R5-08)
         PUSH R5                 ; save old frame pointer
@@ -23936,29 +24008,50 @@ F_F                             ; Function f
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
-        STORE R0, (R5-04)       ; assign to ret
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         LOAD R0, (R5-04)        ; load variable ret
         PUSH R0                 ; save left operand
         LOAD R0, (R5+08)        ; load variable x
-        SHL R0, %D 2, R0        ; index * 4 (element size)
-        LOAD R1, (R5+24)        ; load array pointer from parameter
-        ADD R1, R0, R1          ; compute element address
-        LOAD R0, (R1)           ; load array element
+        PUSH R0                 ; save array index
+        MOVE R5, R0             ; load frame pointer
+        ADD R0, %D 36, R0       ; add variable offset
+        POP R1                  ; restore array index
+        SHL R1, %D 2, R1        ; index * 4 (element size)
+        ADD R0, R1, R0          ; element address = base + (index * 4)
+        LOAD R0, (R0)           ; load array element
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
-        STORE R0, (R5-04)       ; assign to ret
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         LOAD R0, (R5-04)        ; load variable ret
         PUSH R0                 ; save left operand
         LOAD R0, (R5+08)        ; load variable x
-        SHL R0, %D 2, R0        ; index * 4 (element size)
-        LOAD R1, (R5+24)        ; load array pointer from parameter
-        ADD R1, R0, R1          ; compute element address
-        LOAD R0, (R1)           ; load array element
+        PUSH R0                 ; save array index
+        MOVE R5, R0             ; load frame pointer
+        ADD R0, %D 36, R0       ; add variable offset
+        POP R1                  ; restore array index
+        SHL R1, %D 2, R1        ; index * 4 (element size)
+        ADD R0, R1, R0          ; element address = base + (index * 4)
+        LOAD R0, (R0)           ; load array element
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
-        STORE R0, (R5-04)       ; assign to ret
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         LOAD R0, (R5-04)        ; load variable ret
         PUSH R0                 ; save left operand
         LOAD R0, (R5+20)        ; load variable d
@@ -23987,23 +24080,23 @@ F_MAIN                          ; Function main
         ADD R0, -0C, R0         ; compute array address
         PUSH R0                 ; push argument 8
         MOVE %D 7, R0           ; load constant 7
-        PUSH R0                 ; push argument 7
+        PUSH R0                 ; push argument 7 (value)
         MOVE %D 6, R0           ; load constant 6
-        PUSH R0                 ; push argument 6
+        PUSH R0                 ; push argument 6 (value)
         MOVE %D 5, R0           ; load constant 5
-        PUSH R0                 ; push argument 5
+        PUSH R0                 ; push argument 5 (value)
         MOVE %D 4, R0           ; load constant 4
         AND R0, 00FF, R0        ; cast to char (mask lower 8 bits)
-        PUSH R0                 ; push argument 4
+        PUSH R0                 ; push argument 4 (value)
         MOVE %D 3, R0           ; load constant 3
-        PUSH R0                 ; push argument 3
+        PUSH R0                 ; push argument 3 (value)
         MOVE %D 2, R0           ; load constant 2
         AND R0, 00FF, R0        ; cast to char (mask lower 8 bits)
-        PUSH R0                 ; push argument 2
+        PUSH R0                 ; push argument 2 (value)
         MOVE %D 1, R0           ; load constant 1
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_F                ; call f
-        ADD R7, %D 32, R7       ; cleanup 8 arguments
+        ADD R7, %D 32, R7       ; cleanup 32 bytes of arguments
         MOVE R6, R0             ; function result
         MOVE R0, R6             ; return value
         JP L2                   ; jump to function exit
@@ -25585,7 +25678,7 @@ Global Scope:
 
 ; Function definitions
 F_C                             ; Function c
-; Parameter w at (R5+08)
+; Parameter w (4 bytes) at (R5+08)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
@@ -25597,7 +25690,7 @@ L1                              ; function exit
         RET                     ; return to caller
 
 F_B                             ; Function b
-; Parameter z at (R5+08)
+; Parameter z (4 bytes) at (R5+08)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
@@ -25610,9 +25703,9 @@ F_B                             ; Function b
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_C                ; call c
-        ADD R7, %D 4, R7        ; cleanup 1 arguments
+        ADD R7, %D 4, R7        ; cleanup 4 bytes of arguments
         MOVE R6, R0             ; function result
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
@@ -25624,7 +25717,7 @@ L2                              ; function exit
         RET                     ; return to caller
 
 F_A                             ; Function a
-; Parameter y at (R5+08)
+; Parameter y (4 bytes) at (R5+08)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
@@ -25637,9 +25730,9 @@ F_A                             ; Function a
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_B                ; call b
-        ADD R7, %D 4, R7        ; cleanup 1 arguments
+        ADD R7, %D 4, R7        ; cleanup 4 bytes of arguments
         MOVE R6, R0             ; function result
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
@@ -25651,7 +25744,7 @@ L3                              ; function exit
         RET                     ; return to caller
 
 F_F                             ; Function f
-; Parameter x at (R5+08)
+; Parameter x (4 bytes) at (R5+08)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
@@ -25662,9 +25755,9 @@ F_F                             ; Function f
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_A                ; call a
-        ADD R7, %D 4, R7        ; cleanup 1 arguments
+        ADD R7, %D 4, R7        ; cleanup 4 bytes of arguments
         MOVE R6, R0             ; function result
         PUSH R0                 ; save left operand
         LOAD R0, (R5+08)        ; load variable x
@@ -25683,9 +25776,9 @@ F_MAIN                          ; Function main
 ; Compound statement
 ; Function call: f
         MOVE %D 1, R0           ; load constant 1
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_F                ; call f
-        ADD R7, %D 4, R7        ; cleanup 1 arguments
+        ADD R7, %D 4, R7        ; cleanup 4 bytes of arguments
         MOVE R6, R0             ; function result
         MOVE R0, R6             ; return value
         JP L5                   ; jump to function exit
@@ -26357,7 +26450,12 @@ L_SC_END2
         CMP R0, %D 0
         JP_NE L_SC_TRUE1        ; if left is true, result is true
         MOVE %D 5, R0           ; load constant 5
-        STORE R0, (R5-04)       ; assign to x
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         CMP R0, %D 0
         JP_NE L_SC_TRUE1        ; if right is true, result is true
         MOVE %D 0, R0           ; result is false
@@ -27040,7 +27138,12 @@ L_SC_END2
         CMP R0, %D 0
         JP_EQ L_SC_FALSE1       ; if left is false, result is false
         MOVE %D 5, R0           ; load constant 5
-        STORE R0, (R5-04)       ; assign to x
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         CMP R0, %D 0
         JP_NE L_SC_TRUE1        ; if right is true, result is true
         MOVE %D 0, R0           ; result is false
@@ -27729,7 +27832,12 @@ L_SC_END2
         CMP R0, %D 0
         JP_NE L_SC_TRUE1        ; if left is true, result is true
         MOVE %D 5, R0           ; load constant 5
-        STORE R0, (R5-04)       ; assign to x
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         CMP R0, %D 0
         JP_NE L_SC_TRUE1        ; if right is true, result is true
         MOVE %D 0, R0           ; result is false
@@ -28411,7 +28519,12 @@ L_SC_END2
         CMP R0, %D 0
         JP_EQ L_SC_FALSE1       ; if left is false, result is false
         MOVE %D 5, R0           ; load constant 5
-        STORE R0, (R5-04)       ; assign to x
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         CMP R0, %D 0
         JP_NE L_SC_TRUE1        ; if right is true, result is true
         MOVE %D 0, R0           ; result is false
@@ -29409,8 +29522,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_X      DW %D 15               ; global INT x = 15
 G_Y      DW %D 16               ; global INT y = 16
+G_X      DW %D 15               ; global INT x = 15
 
 </code></pre>
       </details>
@@ -29892,8 +30005,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_X      DW %D 15               ; global INT x = 15
 G_Y      DW %D -12              ; global INT y = -12
+G_X      DW %D 15               ; global INT x = 15
 
 </code></pre>
       </details>
@@ -30361,8 +30474,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_X      DW %D 15               ; global INT x = 15
 G_Y      DW %D 12               ; global INT y = 12
+G_X      DW %D 15               ; global INT x = 15
 
 </code></pre>
       </details>

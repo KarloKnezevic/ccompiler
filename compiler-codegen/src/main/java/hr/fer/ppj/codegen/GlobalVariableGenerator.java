@@ -2,7 +2,7 @@ package hr.fer.ppj.codegen;
 
 import hr.fer.ppj.codegen.global.ArraySizeExtractor;
 import hr.fer.ppj.codegen.global.InitializerExtractor;
-import hr.fer.ppj.codegen.utils.StructLayoutCalculator;
+import hr.fer.ppj.codegen.structs.StructSizeCalculator;
 import hr.fer.ppj.semantics.symbols.Symbol;
 import hr.fer.ppj.semantics.symbols.VariableSymbol;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
@@ -238,7 +238,7 @@ public final class GlobalVariableGenerator {
      * @param structType the struct type
      */
     private void generateStructVariable(String label, VariableSymbol variable, StructType structType) {
-        int structSize = StructLayoutCalculator.calculateStructSize(structType);
+        int structSize = StructSizeCalculator.calculateStructSize(structType);
         String comment = "global " + variable.type() + " " + variable.name();
         
         // For now, treat all struct globals as uninitialized (zero-initialized)

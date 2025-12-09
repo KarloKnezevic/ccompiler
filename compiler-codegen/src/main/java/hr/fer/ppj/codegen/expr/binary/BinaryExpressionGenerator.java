@@ -6,7 +6,7 @@ import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.TerminalNode;
 import hr.fer.ppj.semantics.types.PrimitiveType;
-import hr.fer.ppj.codegen.utils.TypeExtractor;
+import hr.fer.ppj.codegen.types.TypeExtractor;
 import java.util.List;
 import java.util.Objects;
 

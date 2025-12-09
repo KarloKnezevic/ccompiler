@@ -36,7 +36,7 @@ public final class FunctionInfoExtractor {
     private final FunctionNameExtractor nameExtractor = new FunctionNameExtractor();
     private final ParameterExtractor parameterExtractor = new ParameterExtractor();
     private LocalVariableExtractor variableExtractor;
-    private final hr.fer.ppj.codegen.utils.StructArraySizeExtractor arraySizeExtractor;
+    private final hr.fer.ppj.codegen.structs.StructArraySizeExtractor arraySizeExtractor;
     
     /**
      * Creates a new function info extractor.
@@ -45,7 +45,7 @@ public final class FunctionInfoExtractor {
      */
     public FunctionInfoExtractor(NonTerminalNode parseTree) {
         this.variableExtractor = new LocalVariableExtractor(parseTree);
-        this.arraySizeExtractor = new hr.fer.ppj.codegen.utils.StructArraySizeExtractor(parseTree);
+        this.arraySizeExtractor = new hr.fer.ppj.codegen.structs.StructArraySizeExtractor(parseTree);
     }
     
     /**
@@ -53,7 +53,7 @@ public final class FunctionInfoExtractor {
      * 
      * @return the array size extractor
      */
-    public hr.fer.ppj.codegen.utils.StructArraySizeExtractor getArraySizeExtractor() {
+    public hr.fer.ppj.codegen.structs.StructArraySizeExtractor getArraySizeExtractor() {
         return arraySizeExtractor;
     }
     

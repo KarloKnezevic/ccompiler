@@ -5,8 +5,8 @@ import hr.fer.ppj.codegen.expr.ExpressionCodeGenerator;
 import hr.fer.ppj.codegen.expr.call.FunctionCallGenerator;
 import hr.fer.ppj.codegen.expr.field.FieldAccessGenerator;
 import hr.fer.ppj.codegen.utils.LValueAddressGenerator;
-import hr.fer.ppj.codegen.utils.StructLayoutCalculator;
-import hr.fer.ppj.codegen.utils.VariableAddressResolver;
+import hr.fer.ppj.codegen.structs.StructSizeCalculator;
+import hr.fer.ppj.codegen.env.VariableAddressResolver;
 import hr.fer.ppj.semantics.symbols.FunctionSymbol;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
@@ -122,6 +122,8 @@ public final class AssignmentExpressionGenerator {
     private final IncrementDecrementGenerator incDecGenerator;
     private final VariableAddressResolver addressResolver;
     private final LValueAddressGenerator addressGenerator;
+    private final StructAssignmentGenerator structAssignmentGenerator;
+    private final FunctionCallExtractor functionCallExtractor;
     private hr.fer.ppj.codegen.expr.array.ArrayExpressionGenerator arrayGenerator;
     private FieldAccessGenerator fieldAccessGenerator;
     
@@ -137,6 +139,8 @@ public final class AssignmentExpressionGenerator {
         this.incDecGenerator = new IncrementDecrementGenerator(context, expressionGenerator);
         this.addressResolver = new VariableAddressResolver(context);
         this.addressGenerator = new LValueAddressGenerator(context, expressionGenerator);
+        this.structAssignmentGenerator = new StructAssignmentGenerator(context, expressionGenerator, addressGenerator);
+        this.functionCallExtractor = new FunctionCallExtractor(context);
     }
     
     /**
@@ -195,12 +199,16 @@ public final class AssignmentExpressionGenerator {
             
             if (strippedLvalueType instanceof StructType) {
                 // LHS is a struct - check if RHS is a struct-returning function call
-                if (isStructReturningFunctionCall(rvalue)) {
+                if (functionCallExtractor.isStructReturningFunctionCall(rvalue)) {
                     // Optimized path: p = makePoint(...) - pass &p as hidden return pointer
-                    generateStructAssignmentFromFunctionCall(lvalue, rvalue, (StructType) strippedLvalueType);
+                    FunctionCallExtractor.FunctionCallInfo callInfo = functionCallExtractor.extractFunctionCallInfo(rvalue);
+                    if (callInfo == null) {
+                        throw new IllegalStateException("RHS is not a function call");
+                    }
+                    structAssignmentGenerator.generateFromFunctionCall(lvalue, rvalue, (StructType) strippedLvalueType, callInfo);
                 } else if (strippedRvalueType instanceof StructType) {
                     // Struct assignment: p = q (byte-wise copy)
-                    generateStructAssignment(lvalue, rvalue, (StructType) strippedLvalueType);
+                    structAssignmentGenerator.generateStructCopy(lvalue, rvalue, (StructType) strippedLvalueType);
                 } else {
                     throw new IllegalStateException("Cannot assign non-struct to struct: " + strippedRvalueType);
                 }
@@ -294,389 +302,6 @@ public final class AssignmentExpressionGenerator {
         context.emitter().emitInstruction("MOVE", "R1", "R0", "assignment result");
     }
     
-    /**
-     * Generates code for struct assignment from a struct-returning function call: p = makePoint(...).
-     * 
-     * <p>This is an optimized path that passes the LHS address as a hidden return pointer,
-     * avoiding an extra copy.
-     * 
-     * @param lvalue the left-hand side (destination struct)
-     * @param rvalue the right-hand side (function call expression)
-     * @param structType the struct type
-     */
-    private void generateStructAssignmentFromFunctionCall(NonTerminalNode lvalue, NonTerminalNode rvalue, StructType structType) {
-        // Extract function call information
-        FunctionCallInfo callInfo = extractFunctionCallInfo(rvalue);
-        if (callInfo == null) {
-            throw new IllegalStateException("RHS is not a function call");
-        }
-        
-        // Compute LHS address (destination for struct return)
-        addressGenerator.generateAddress(lvalue, "R0");
-        
-        // Generate function call with hidden return pointer
-        // The return pointer is pushed inside generateFunctionCallWithReturnPointer
-        FunctionCallGenerator callGen = new FunctionCallGenerator(context, expressionGenerator);
-        callGen.generateFunctionCallWithReturnPointer(callInfo.function(), callInfo.arguments(), "R0");
-        
-        // Struct is already written to LHS by callee, no extra copy needed
-        // Assignment result can be ignored (struct assignment returns void-like)
-    }
-    
-    /**
-     * Generates code for struct assignment: p = q (byte-wise copy).
-     * 
-     * <p>This performs a memory copy of the entire struct from source to destination.
-     * Uses address generator to handle complex expressions.
-     * 
-     * @param lvalue the left-hand side (destination struct)
-     * @param rvalue the right-hand side (source struct)
-     * @param structType the struct type
-     */
-    private void generateStructAssignment(NonTerminalNode lvalue, NonTerminalNode rvalue, StructType structType) {
-        // Calculate struct size - try without array sizes first, then with if needed
-        int structSize;
-        try {
-            structSize = StructLayoutCalculator.calculateStructSize(structType);
-        } catch (IllegalArgumentException e) {
-            // Struct has array fields - need to extract array sizes
-            // Extract array sizes for this struct and nested structs (similar to generateStructArgument)
-            Map<String, Integer> arraySizes = null;
-            Map<String, Map<String, Integer>> nestedStructArraySizes = null;
-            
-            if (addressGenerator != null) {
-                var arraySizeExtractor = addressGenerator.getArraySizeExtractor();
-                if (arraySizeExtractor != null) {
-                    String structTag = structType.tag();
-                    arraySizes = arraySizeExtractor.extractArraySizes(structTag);
-                    
-                    // Extract array sizes for nested struct fields
-                    nestedStructArraySizes = new java.util.HashMap<>();
-                    for (Map.Entry<String, Type> field : structType.fields().entrySet()) {
-                        Type fieldType = TypeSystem.stripConst(field.getValue());
-                        if (fieldType instanceof StructType nestedStructType) {
-                            String nestedTag = nestedStructType.tag();
-                            Map<String, Integer> nestedArraySizes = arraySizeExtractor.extractArraySizes(nestedTag);
-                            if (!nestedArraySizes.isEmpty()) {
-                                nestedStructArraySizes.put(nestedTag, nestedArraySizes);
-                            }
-                        }
-                    }
-                    
-                    structSize = StructLayoutCalculator.calculateStructSize(structType, arraySizes, nestedStructArraySizes);
-                } else {
-                    // Can't extract array sizes - throw helpful error
-                    throw new IllegalStateException("Cannot calculate struct size for assignment: struct has array fields. " +
-                        "Array sizes must be available from parse tree. Call setParseTree() on AssignmentExpressionGenerator. " +
-                        "Error: " + e.getMessage());
-                }
-            } else {
-                // Can't extract array sizes - throw helpful error
-                throw new IllegalStateException("Cannot calculate struct size for assignment: struct has array fields. " +
-                    "Array sizes must be available from parse tree. Error: " + e.getMessage());
-            }
-        }
-        
-        context.emitter().emitComment("Struct assignment: copy " + structSize + " bytes");
-        
-        // Compute source address (RHS) using address generator (handles field access, etc.)
-        addressGenerator.generateAddress(rvalue, "R0");
-        context.emitter().emitInstruction("MOVE", "R0", "R2", "source addr (struct)");
-        
-        // Compute destination address (LHS) using address generator
-        addressGenerator.generateAddress(lvalue, "R0");
-        context.emitter().emitInstruction("MOVE", "R0", "R3", "dest addr (struct)");
-        
-        // Generate word-wise copy loop (more efficient than byte-wise for 4-byte fields)
-        String loopLabel = context.labelGenerator().generateLabel();
-        String endLabel = context.labelGenerator().generateLabel();
-        
-        // Initialize counter: R4 = remaining bytes
-        context.emitter().emitInstruction("MOVE", "%D " + structSize, "R4", "remaining bytes");
-        
-        context.emitter().emitLabel(loopLabel, "struct copy loop");
-        
-        // Check if counter is zero
-        context.emitter().emitInstruction("CMP", "R4", "%D 0", null);
-        context.emitter().emitInstruction("JP_EQ", endLabel, "done if counter == 0");
-        
-        // Load word from source: R0 = *R2
-        context.emitter().emitInstruction("LOAD", "R0", "(R2)", "load word from source");
-        
-        // Store word to destination: *R3 = R0
-        context.emitter().emitInstruction("STORE", "R0", "(R3)", "store word to destination");
-        
-        // Increment pointers: R2 += 4, R3 += 4
-        context.emitter().emitInstruction("ADD", "R2", "%D 4", "R2", "increment source pointer");
-        context.emitter().emitInstruction("ADD", "R3", "%D 4", "R3", "increment dest pointer");
-        
-        // Decrement counter: R4 -= 4
-        context.emitter().emitInstruction("SUB", "R4", "%D 4", "R4", "decrement remaining bytes");
-        
-        // Loop back
-        context.emitter().emitInstruction("JP", loopLabel, "continue copy loop");
-        
-        context.emitter().emitLabel(endLabel, "end struct copy");
-        
-        // Assignment result: address of LHS (for consistency with C semantics)
-        context.emitter().emitInstruction("MOVE", "R3", "R0", "assignment result (addr of LHS)");
-    }
-    
-    /**
-     * Information about a function call expression.
-     */
-    private record FunctionCallInfo(NonTerminalNode function, NonTerminalNode arguments) {}
-    
-    /**
-     * Extracts function call information from an expression node.
-     * 
-     * <p>Recursively searches through expression wrappers to find a function call.
-     * Handles cases where the function call is wrapped in expression nodes like
-     * {@code <izraz_pridruzivanja>}, {@code <log_ili_izraz>}, etc.
-     * 
-     * @param expr the expression node (may be wrapped)
-     * @return FunctionCallInfo if the expression is a function call, null otherwise
-     */
-    private FunctionCallInfo extractFunctionCallInfo(NonTerminalNode expr) {
-        // Check if this is a postfix expression with function call pattern
-        if ("<postfiks_izraz>".equals(expr.symbol())) {
-            List<ParseNode> children = expr.children();
-            if (children.size() == 3) {
-                // Pattern: <postfiks_izraz> L_ZAGRADA D_ZAGRADA (no arguments)
-                ParseNode second = children.get(1);
-                ParseNode third = children.get(2);
-                if (second instanceof TerminalNode leftParen && "L_ZAGRADA".equals(leftParen.symbol()) &&
-                    third instanceof TerminalNode rightParen && "D_ZAGRADA".equals(rightParen.symbol())) {
-                    return new FunctionCallInfo((NonTerminalNode) children.get(0), null);
-                }
-            } else if (children.size() == 4) {
-                // Pattern: <postfiks_izraz> L_ZAGRADA <lista_argumenata> D_ZAGRADA
-                ParseNode second = children.get(1);
-                ParseNode third = children.get(2);
-                ParseNode fourth = children.get(3);
-                if (second instanceof TerminalNode leftParen && "L_ZAGRADA".equals(leftParen.symbol()) &&
-                    third instanceof NonTerminalNode &&
-                    fourth instanceof TerminalNode rightParen && "D_ZAGRADA".equals(rightParen.symbol())) {
-                    return new FunctionCallInfo((NonTerminalNode) children.get(0), (NonTerminalNode) third);
-                }
-            }
-        }
-        
-        // If not a direct function call, check if it's wrapped in expression nodes
-        // Recursively search through single-child expression wrappers
-        List<ParseNode> children = expr.children();
-        if (children.size() == 1 && children.get(0) instanceof NonTerminalNode child) {
-            // Single child - might be an expression wrapper
-            String symbol = expr.symbol();
-            if ("<izraz_pridruzivanja>".equals(symbol) ||
-                "<log_ili_izraz>".equals(symbol) ||
-                "<log_i_izraz>".equals(symbol) ||
-                "<bin_ili_izraz>".equals(symbol) ||
-                "<bin_xili_izraz>".equals(symbol) ||
-                "<bin_i_izraz>".equals(symbol) ||
-                "<jednakosni_izraz>".equals(symbol) ||
-                "<odnosni_izraz>".equals(symbol) ||
-                "<aditivni_izraz>".equals(symbol) ||
-                "<multiplikativni_izraz>".equals(symbol) ||
-                "<cast_izraz>".equals(symbol) ||
-                "<unarni_izraz>".equals(symbol) ||
-                "<postfiks_izraz>".equals(symbol) ||
-                "<primarni_izraz>".equals(symbol)) {
-                // Recursively check the child
-                return extractFunctionCallInfo(child);
-            }
-        }
-        
-        return null;
-    }
-    
-    /**
-     * Checks if an expression is a struct-returning function call.
-     * 
-     * @param expr the expression node
-     * @return true if the expression is a function call that returns a struct
-     */
-    private boolean isStructReturningFunctionCall(NonTerminalNode expr) {
-        FunctionCallInfo callInfo = extractFunctionCallInfo(expr);
-        if (callInfo == null) {
-            return false;
-        }
-        
-        // Extract function name
-        String functionName = addressResolver.extractVariableName(callInfo.function());
-        if (functionName == null) {
-            return false;
-        }
-        
-        // Look up function in global scope
-        var symbolOpt = context.globalScope().lookup(functionName);
-        if (symbolOpt.isEmpty() || !(symbolOpt.get() instanceof FunctionSymbol funcSymbol)) {
-            return false;
-        }
-        
-        // Check if return type is a struct
-        FunctionType funcType = funcSymbol.type();
-        Type returnType = funcType.returnType();
-        Type strippedReturnType = TypeSystem.stripConst(returnType);
-        return strippedReturnType instanceof StructType;
-    }
-    
-    /**
-     * Loads the address of a variable into a register.
-     * 
-     * @param variableName the variable name
-     * @param targetRegister the register to load the address into
-     */
-    private void loadVariableAddress(String variableName, String targetRegister) {
-        String address = addressResolver.getVariableAddress(variableName);
-        
-        if (address.startsWith("(G_")) {
-            // Global variable: extract label
-            String label = address.substring(1, address.length() - 1);
-            context.emitter().emitInstruction("MOVE", label, targetRegister, "load global struct address");
-        } else if (address.startsWith("(R5")) {
-            // Local variable: compute address from frame pointer
-            context.emitter().emitInstruction("MOVE", "R5", targetRegister, "load frame pointer");
-            String offsetStr = extractOffsetFromAddress(address);
-            if (offsetStr != null) {
-                context.emitter().emitInstruction("ADD", targetRegister, offsetStr, targetRegister, "add struct offset");
-            }
-        }
-    }
-    
-    /**
-     * Extracts the offset part from an address expression.
-     * 
-     * @param address the address expression (e.g., "(R5-04)" or "(R5+08)")
-     * @return the offset string (e.g., "-04" or "+08"), or null if not found
-     */
-    private String extractOffsetFromAddress(String address) {
-        int r5Index = address.indexOf("R5");
-        if (r5Index == -1) {
-            return null;
-        }
-        
-        int offsetStart = r5Index + 2;
-        if (offsetStart >= address.length()) {
-            return null;
-        }
-        
-        char firstChar = address.charAt(offsetStart);
-        if (firstChar != '+' && firstChar != '-') {
-            return null;
-        }
-        
-        int offsetEnd = address.indexOf(')', offsetStart);
-        if (offsetEnd == -1) {
-            return null;
-        }
-        
-        return address.substring(offsetStart, offsetEnd);
-    }
-    
-    /**
-     * Gets the type of a variable by looking it up in the symbol table.
-     * 
-     * @param variableName the variable name
-     * @return the variable type, or null if not found
-     */
-    private Type getVariableType(String variableName) {
-        // Check local scope first
-        if (context.isInFunction() && context.activationRecord().hasVariable(variableName)) {
-            // Local variable - type info not stored in activation record
-            // Would need to look up in symbol table, but we don't have function scope access
-            return null;
-        }
-        
-        // Check global scope
-        return context.globalScope().lookup(variableName)
-            .filter(s -> s instanceof hr.fer.ppj.semantics.symbols.VariableSymbol)
-            .map(s -> ((hr.fer.ppj.semantics.symbols.VariableSymbol) s).type())
-            .orElse(null);
-    }
-    
-    /**
-     * Checks if an expression is a field access expression.
-     * 
-     * @param expr the expression to check
-     * @return true if the expression is field access (p.x)
-     */
-    /**
-     * Checks if an expression node represents a field access.
-     * 
-     * <p>Recursively checks for field access pattern, handling cases where
-     * the field access is wrapped in `<unarni_izraz>` (as in assignments).
-     * 
-     * @param expr the expression node to check
-     * @return true if the expression is a field access
-     */
-    private boolean isFieldAccess(NonTerminalNode expr) {
-        // Check if this is a direct field access: <postfiks_izraz> TOCKA IDN
-        if ("<postfiks_izraz>".equals(expr.symbol())) {
-            List<ParseNode> children = expr.children();
-            if (children.size() == 3) {
-                ParseNode second = children.get(1);
-                if (second instanceof TerminalNode terminal && "TOCKA".equals(terminal.symbol())) {
-                    return true;
-                }
-            }
-        }
-        // Check if this is wrapped in <unarni_izraz> (common in assignments)
-        // <unarni_izraz> -> <postfiks_izraz> TOCKA IDN
-        if ("<unarni_izraz>".equals(expr.symbol())) {
-            List<ParseNode> children = expr.children();
-            if (children.size() == 1 && children.get(0) instanceof NonTerminalNode child) {
-                // Recursively check the child
-                return isFieldAccess(child);
-            }
-        }
-        return false;
-    }
-    
-    /**
-     * Extracts the base expression from a field access node.
-     * 
-     * <p>Handles cases where field access is wrapped in `<unarni_izraz>`.
-     * 
-     * @param fieldAccessNode the field access node (may be wrapped in <unarni_izraz>)
-     * @return the base expression
-     */
-    private NonTerminalNode extractFieldAccessBase(NonTerminalNode fieldAccessNode) {
-        // If wrapped in <unarni_izraz>, unwrap it
-        if ("<unarni_izraz>".equals(fieldAccessNode.symbol())) {
-            NonTerminalNode child = (NonTerminalNode) fieldAccessNode.children().get(0);
-            return extractFieldAccessBase(child);
-        }
-        // Direct field access: <postfiks_izraz> TOCKA IDN
-        if ("<postfiks_izraz>".equals(fieldAccessNode.symbol())) {
-            return (NonTerminalNode) fieldAccessNode.children().get(0);
-        }
-        throw new IllegalStateException("Not a field access node: " + fieldAccessNode.symbol());
-    }
-    
-    /**
-     * Extracts the field name from a field access node.
-     * 
-     * <p>Handles cases where field access is wrapped in `<unarni_izraz>`.
-     * 
-     * @param fieldAccessNode the field access node (may be wrapped in <unarni_izraz>)
-     * @return the field name (IDN lexeme)
-     */
-    private String extractFieldAccessFieldName(NonTerminalNode fieldAccessNode) {
-        // If wrapped in <unarni_izraz>, unwrap it
-        if ("<unarni_izraz>".equals(fieldAccessNode.symbol())) {
-            NonTerminalNode child = (NonTerminalNode) fieldAccessNode.children().get(0);
-            return extractFieldAccessFieldName(child);
-        }
-        // Direct field access: <postfiks_izraz> TOCKA IDN
-        if ("<postfiks_izraz>".equals(fieldAccessNode.symbol())) {
-            ParseNode fieldNode = fieldAccessNode.children().get(2);
-            if (fieldNode instanceof TerminalNode terminal && "IDN".equals(terminal.symbol())) {
-                return terminal.lexeme();
-            }
-        }
-        throw new IllegalStateException("Field access node does not contain IDN: " + fieldAccessNode.symbol());
-    }
     
     /**
      * Generates code to assign a value to an lvalue (simple variable only).

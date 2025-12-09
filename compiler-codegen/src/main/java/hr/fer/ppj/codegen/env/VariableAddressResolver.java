@@ -1,4 +1,4 @@
-package hr.fer.ppj.codegen.utils;
+package hr.fer.ppj.codegen.env;
 
 import hr.fer.ppj.codegen.CodeGenContext;
 import hr.fer.ppj.codegen.utils.IdentifierExtractor;

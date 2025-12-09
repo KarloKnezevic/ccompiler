@@ -1,6 +1,7 @@
 package hr.fer.ppj.codegen.expr.assignment;
 
 import hr.fer.ppj.codegen.CodeGenContext;
+import hr.fer.ppj.codegen.env.VariableAddressResolver;
 import hr.fer.ppj.codegen.expr.ExpressionCodeGenerator;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import java.util.Objects;

@@ -3,7 +3,9 @@ package hr.fer.ppj.codegen.func;
 import hr.fer.ppj.codegen.CodeGenContext;
 import hr.fer.ppj.codegen.model.ActivationRecord;
 import hr.fer.ppj.codegen.stmt.StatementCodeGenerator;
-import hr.fer.ppj.codegen.utils.StructLayoutCalculator;
+import hr.fer.ppj.codegen.structs.NestedStructArraySizeExtractor;
+import hr.fer.ppj.codegen.structs.StructArraySizeExtractor;
+import hr.fer.ppj.codegen.structs.StructSizeCalculator;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.types.ArrayType;
@@ -273,10 +275,10 @@ public final class FunctionCodeGenerator {
                             // CRITICAL: Must recursively extract for ALL nested structs at ALL levels
                             // This ensures we get array sizes for Inner when processing Outer
                             nestedStructArraySizes = new java.util.HashMap<>();
-                            extractNestedStructArraySizes(structType, infoExtractor.getArraySizeExtractor(), nestedStructArraySizes);
+                            NestedStructArraySizeExtractor.extractNestedStructArraySizes(structType, infoExtractor.getArraySizeExtractor(), nestedStructArraySizes);
                         }
                         
-                        paramSize = StructLayoutCalculator.calculateStructSize(structType, arraySizes, nestedStructArraySizes);
+                        paramSize = StructSizeCalculator.calculateStructSize(structType, arraySizes, nestedStructArraySizes);
                     } else if (strippedParamType instanceof ArrayType) {
                         // Array parameters decay to pointers: 4 bytes
                         paramSize = 4;
@@ -331,49 +333,4 @@ public final class FunctionCodeGenerator {
         context.emitter().emitNewline();
     }
     
-    /**
-     * Recursively extracts array sizes for all nested struct fields.
-     * 
-     * <p>This method traverses the struct type hierarchy and extracts array sizes
-     * for all nested structs at all levels, ensuring that deeply nested structs
-     * with array fields have their array sizes available for size calculation.
-     * 
-     * @param structType the struct type to extract nested struct array sizes for
-     * @param arraySizeExtractor the extractor to use for extracting array sizes
-     * @param nestedStructArraySizes the map to populate with nested struct array sizes
-     */
-    private void extractNestedStructArraySizes(StructType structType, 
-                                               hr.fer.ppj.codegen.utils.StructArraySizeExtractor arraySizeExtractor,
-                                               Map<String, Map<String, Integer>> nestedStructArraySizes) {
-        if (structType == null || arraySizeExtractor == null) {
-            return;
-        }
-        
-        // Extract array sizes for all fields that are struct types (recursively)
-        for (Map.Entry<String, Type> field : structType.fields().entrySet()) {
-            Type fieldType = TypeSystem.stripConst(field.getValue());
-            
-            if (fieldType instanceof StructType nestedStructType) {
-                String nestedTag = nestedStructType.tag();
-                
-                // Skip if we've already extracted array sizes for this struct
-                if (nestedStructArraySizes.containsKey(nestedTag)) {
-                    continue;
-                }
-                
-                // Extract array sizes for this nested struct
-                // CRITICAL: Always extract, even if empty, so we know we've tried
-                // If the struct has array fields, this will populate the map with array sizes
-                Map<String, Integer> nestedArraySizes = arraySizeExtractor.extractArraySizes(nestedTag);
-                // Always put in map, even if empty (needed for calculateStructSize to know we've tried)
-                nestedStructArraySizes.put(nestedTag, nestedArraySizes);
-                
-                // CRITICAL: Recursively extract array sizes for even deeper nested structs
-                // This ensures we get array sizes for Inner when processing Outer
-                // This must be done AFTER extracting array sizes for the current nested struct,
-                // so that deeper nested structs can also be found
-                extractNestedStructArraySizes(nestedStructType, arraySizeExtractor, nestedStructArraySizes);
-            }
-        }
-    }
 }

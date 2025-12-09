@@ -3,8 +3,9 @@ package hr.fer.ppj.codegen.expr.field;
 import hr.fer.ppj.codegen.CodeGenContext;
 import hr.fer.ppj.codegen.expr.ExpressionCodeGenerator;
 import hr.fer.ppj.codegen.utils.LValueAddressGenerator;
-import hr.fer.ppj.codegen.utils.StructArraySizeExtractor;
-import hr.fer.ppj.codegen.utils.StructLayoutCalculator;
+import hr.fer.ppj.codegen.structs.NestedStructArraySizeExtractor;
+import hr.fer.ppj.codegen.structs.StructArraySizeExtractor;
+import hr.fer.ppj.codegen.structs.StructFieldOffsetCalculator;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.TerminalNode;
@@ -213,10 +214,10 @@ public final class FieldAccessGenerator {
             }
             
             // Then extract recursively for all nested structs at any depth
-            extractNestedStructArraySizes(structType, arraySizeExtractor, nestedStructArraySizes);
+            NestedStructArraySizeExtractor.extractNestedStructArraySizes(structType, arraySizeExtractor, nestedStructArraySizes);
         }
         
-        Integer fieldOffset = StructLayoutCalculator.getFieldOffset(structType, fieldName, arraySizes, nestedStructArraySizes);
+        Integer fieldOffset = StructFieldOffsetCalculator.getFieldOffset(structType, fieldName, arraySizes, nestedStructArraySizes);
         if (fieldOffset == null) {
             throw new IllegalStateException("Field '" + fieldName + "' not found in struct");
         }
@@ -287,10 +288,10 @@ public final class FieldAccessGenerator {
             }
             
             // Then extract recursively for all nested structs at any depth
-            extractNestedStructArraySizes(structType, arraySizeExtractor, nestedStructArraySizes);
+            NestedStructArraySizeExtractor.extractNestedStructArraySizes(structType, arraySizeExtractor, nestedStructArraySizes);
         }
         
-        Integer fieldOffset = StructLayoutCalculator.getFieldOffset(structType, fieldName, arraySizes, nestedStructArraySizes);
+        Integer fieldOffset = StructFieldOffsetCalculator.getFieldOffset(structType, fieldName, arraySizes, nestedStructArraySizes);
         if (fieldOffset == null) {
             throw new IllegalStateException("Field '" + fieldName + "' not found in struct");
         }
@@ -334,44 +335,5 @@ public final class FieldAccessGenerator {
         context.emitter().emitInstruction("STORE", tempRegister, "(R0)", "store field '" + fieldName + "'");
     }
     
-    /**
-     * Recursively extracts array sizes for all nested structs at any depth.
-     * 
-     * @param structType the struct type to extract nested struct array sizes for
-     * @param arraySizeExtractor the extractor to use
-     * @param resultMap the map to populate with nested struct array sizes
-     */
-    private void extractNestedStructArraySizes(StructType structType, 
-                                               StructArraySizeExtractor arraySizeExtractor,
-                                               Map<String, Map<String, Integer>> resultMap) {
-        if (arraySizeExtractor == null) {
-            return;
-        }
-        
-        // Extract array sizes for the current struct first (if not already extracted)
-        String structTag = structType.tag();
-        if (structTag != null && !resultMap.containsKey(structTag)) {
-            Map<String, Integer> currentArraySizes = arraySizeExtractor.extractArraySizes(structTag);
-            resultMap.put(structTag, currentArraySizes);
-        }
-        
-        // Extract array sizes for all nested struct fields recursively
-        for (Map.Entry<String, Type> field : structType.fields().entrySet()) {
-            Type fieldType = TypeSystem.stripConst(field.getValue());
-            if (fieldType instanceof StructType nestedStructType) {
-                String nestedTag = nestedStructType.tag();
-                
-                // Only extract if we haven't already extracted for this struct tag
-                if (!resultMap.containsKey(nestedTag)) {
-                    Map<String, Integer> nestedArraySizes = arraySizeExtractor.extractArraySizes(nestedTag);
-                    // Always put in map, even if empty (needed for calculateTypeSize)
-                    resultMap.put(nestedTag, nestedArraySizes);
-                    
-                    // Recursively extract for deeper nested structs
-                    extractNestedStructArraySizes(nestedStructType, arraySizeExtractor, resultMap);
-                }
-            }
-        }
-    }
     
 }

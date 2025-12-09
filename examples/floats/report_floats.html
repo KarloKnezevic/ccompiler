@@ -7123,7 +7123,12 @@ F_MAIN                          ; Function main
 ; Local variable declarations
 ; Local variable x at (R5-04) (no initializer)
         MOVE %D 163840, R0      ; load float constant 2.5 (Q16.16)
-        STORE R0, (R5-04)       ; assign to x
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         LOAD R0, (R5-04)        ; load variable x
         MOVE R0, R6             ; return value
         JP L1                   ; jump to function exit
@@ -8086,8 +8091,8 @@ Global Scope:
 
 ; Function definitions
 F_ADD                           ; Function add
-; Parameter x at (R5+08)
-; Parameter y at (R5+0C)
+; Parameter x (4 bytes) at (R5+08)
+; Parameter y (4 bytes) at (R5+0C)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
@@ -8113,11 +8118,11 @@ F_MAIN                          ; Function main
 ; Compound statement
 ; Function call: add
         MOVE %D 163840, R0      ; load float constant 2.5 (Q16.16)
-        PUSH R0                 ; push argument 2
+        PUSH R0                 ; push argument 2 (value)
         MOVE %D 98304, R0       ; load float constant 1.5 (Q16.16)
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_ADD              ; call add
-        ADD R7, %D 8, R7        ; cleanup 2 arguments
+        ADD R7, %D 8, R7        ; cleanup 8 bytes of arguments
         MOVE R6, R0             ; function result
         MOVE R0, R6             ; return value
         JP L2                   ; jump to function exit
