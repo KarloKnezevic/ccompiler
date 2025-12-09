@@ -35,7 +35,27 @@ public final class FunctionInfoExtractor {
     
     private final FunctionNameExtractor nameExtractor = new FunctionNameExtractor();
     private final ParameterExtractor parameterExtractor = new ParameterExtractor();
-    private final LocalVariableExtractor variableExtractor = new LocalVariableExtractor();
+    private LocalVariableExtractor variableExtractor;
+    private final hr.fer.ppj.codegen.utils.StructArraySizeExtractor arraySizeExtractor;
+    
+    /**
+     * Creates a new function info extractor.
+     * 
+     * @param parseTree the parse tree from semantic analysis (for extracting struct array sizes)
+     */
+    public FunctionInfoExtractor(NonTerminalNode parseTree) {
+        this.variableExtractor = new LocalVariableExtractor(parseTree);
+        this.arraySizeExtractor = new hr.fer.ppj.codegen.utils.StructArraySizeExtractor(parseTree);
+    }
+    
+    /**
+     * Gets the array size extractor for extracting struct array sizes.
+     * 
+     * @return the array size extractor
+     */
+    public hr.fer.ppj.codegen.utils.StructArraySizeExtractor getArraySizeExtractor() {
+        return arraySizeExtractor;
+    }
     
     /**
      * Extracts the function name from a deklarator node.

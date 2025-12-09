@@ -1,6 +1,11 @@
 package hr.fer.ppj.codegen.utils;
 
 import hr.fer.ppj.codegen.CodeGenContext;
+import hr.fer.ppj.codegen.utils.IdentifierExtractor;
+import hr.fer.ppj.semantics.tree.NonTerminalNode;
+import hr.fer.ppj.semantics.tree.ParseNode;
+import hr.fer.ppj.semantics.tree.TerminalNode;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -114,18 +119,56 @@ public final class VariableAddressResolver {
      * <p>This method checks if the variable is local (in the current function's
      * activation record) or global, and returns the appropriate address expression.
      * 
+     * <p><b>Key invariant:</b> Parameters are ALWAYS accessed via R5+offset,
+     * never via global labels. This method ensures that if a variable exists
+     * in the activation record (whether parameter or local), it uses the
+     * activation record address, not a global label.
+     * 
      * @param variableName the variable name
      * @return the FRISC address expression
      */
     public String getVariableAddress(String variableName) {
-        // Check if we're in a function and the variable is local
+        // CRITICAL: Always check activation record first if we're in a function.
+        // Parameters (positive offsets) and locals (negative offsets) are both
+        // stored in the activation record. This ensures parameters are never
+        // treated as globals.
         if (context.isInFunction() && context.activationRecord().hasVariable(variableName)) {
+            // Variable is in activation record (parameter or local)
+            // ActivationRecord.getVariableAddress() handles both cases:
+            // - Parameters: positive offsets -> (R5+08), (R5+0C), etc.
+            // - Locals: negative offsets -> (R5-04), (R5-08), etc.
             return context.activationRecord().getVariableAddress(variableName);
         } else {
-            // Global variable
+            // Variable not found in activation record -> must be global
             String label = context.labelGenerator().getGlobalVariableLabel(variableName);
             return "(" + label + ")";
         }
+    }
+    
+    /**
+     * Extracts variable name from an expression node.
+     * 
+     * <p>This method checks if the expression is a simple identifier (variable reference)
+     * and returns the variable name. It does NOT extract field names from field access
+     * expressions (p.x should return null, not "p").
+     * 
+     * @param expr the expression node
+     * @return the variable name, or null if not a simple variable
+     */
+    public String extractVariableName(NonTerminalNode expr) {
+        // Check if this is a field access - if so, return null (not a simple variable)
+        if ("<postfiks_izraz>".equals(expr.symbol())) {
+            List<ParseNode> children = expr.children();
+            if (children.size() == 3) {
+                ParseNode second = children.get(1);
+                if (second instanceof TerminalNode terminal && "TOCKA".equals(terminal.symbol())) {
+                    // This is a field access, not a simple variable
+                    return null;
+                }
+            }
+        }
+        // For simple variables, use IdentifierExtractor
+        return IdentifierExtractor.findIdentifier(expr);
     }
 }
 

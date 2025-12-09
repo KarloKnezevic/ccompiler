@@ -2,9 +2,12 @@ package hr.fer.ppj.codegen.stmt;
 
 import hr.fer.ppj.codegen.CodeGenContext;
 import hr.fer.ppj.codegen.expr.ExpressionCodeGenerator;
+import hr.fer.ppj.codegen.utils.StructLayoutCalculator;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.TerminalNode;
+import hr.fer.ppj.semantics.types.Type;
+import hr.fer.ppj.semantics.types.TypeSystem;
 import java.util.List;
 import java.util.Objects;
 
@@ -194,8 +197,16 @@ public final class LocalDeclarationGenerator {
         if (varName != null && context.activationRecord() != null) {
             // Ensure variable is in activation record (fallback if not added during pre-processing)
             if (!context.activationRecord().hasVariable(varName)) {
-                // Extract array size if it's an array
-                int size = extractArraySize((NonTerminalNode) children.get(0));
+                // Try to get type from semantic attributes
+                Type variableType = null;
+                if (children.get(0) instanceof NonTerminalNode declarator) {
+                    if (declarator.attributes() != null) {
+                        variableType = declarator.attributes().type();
+                    }
+                }
+                
+                // Calculate size based on type
+                int size = calculateVariableSize(variableType, (NonTerminalNode) children.get(0));
                 context.activationRecord().addLocalVariable(varName, size);
             }
             
@@ -216,6 +227,26 @@ public final class LocalDeclarationGenerator {
                 context.emitter().emitInstruction("STORE", "R0", address, "initialize " + varName);
             }
         }
+    }
+    
+    /**
+     * Calculates the size of a variable based on its type and declaration.
+     * 
+     * <p>This method tries to get type from semantic attributes first, then falls back
+     * to extracting array size from the parse tree.
+     * 
+     * @param variableType the variable type (from semantic attributes, may be null)
+     * @param declarator the declarator node ({@code <deklarator>})
+     * @return the size in bytes
+     */
+    private int calculateVariableSize(Type variableType, NonTerminalNode declarator) {
+        if (variableType != null) {
+            Type strippedType = TypeSystem.stripConst(variableType);
+            return StructLayoutCalculator.calculateTypeSize(strippedType);
+        }
+        
+        // Fallback: extract array size from parse tree
+        return extractArraySize(declarator);
     }
     
     /**

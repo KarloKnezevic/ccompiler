@@ -5,6 +5,7 @@ import hr.fer.ppj.codegen.expr.array.ArrayExpressionGenerator;
 import hr.fer.ppj.codegen.expr.assignment.AssignmentExpressionGenerator;
 import hr.fer.ppj.codegen.expr.binary.BinaryExpressionGenerator;
 import hr.fer.ppj.codegen.expr.call.FunctionCallGenerator;
+import hr.fer.ppj.codegen.expr.field.FieldAccessGenerator;
 import hr.fer.ppj.codegen.expr.logical.LogicalExpressionGenerator;
 import hr.fer.ppj.codegen.expr.primary.PrimaryExpressionGenerator;
 import hr.fer.ppj.codegen.expr.unary.UnaryExpressionGenerator;
@@ -76,6 +77,7 @@ import java.util.Objects;
  *                      | &lt;postfiks_izraz&gt; L_ZAGRADA D_ZAGRADA
  *                      | &lt;postfiks_izraz&gt; L_ZAGRADA &lt;lista_argumenata&gt; D_ZAGRADA
  *                      | &lt;postfiks_izraz&gt; L_UGL_ZAGRADA &lt;izraz&gt; D_UGL_ZAGRADA
+ *                      | &lt;postfiks_izraz&gt; TOCKA IDN
  *                      | &lt;postfiks_izraz&gt; OP_INC
  *                      | &lt;postfiks_izraz&gt; OP_DEC
  * 
@@ -131,6 +133,7 @@ public final class ExpressionCodeGenerator {
     private final AssignmentExpressionGenerator assignmentGenerator;
     private final ArrayExpressionGenerator arrayGenerator;
     private final FunctionCallGenerator functionCallGenerator;
+    private final FieldAccessGenerator fieldAccessGenerator;
     
     /**
      * Creates a new expression code generator.
@@ -170,6 +173,10 @@ public final class ExpressionCodeGenerator {
         // Assignment generator needs unary generator (for pre/post inc/dec)
         this.assignmentGenerator = new AssignmentExpressionGenerator(context, this);
         
+        // Field access generator needs expression generator (for base expression evaluation)
+        // Initialize before assignment generator to avoid initialization order issues
+        this.fieldAccessGenerator = new FieldAccessGenerator(context, this);
+        
         // Array generator needs assignment generator (for array assignments)
         this.arrayGenerator = new ArrayExpressionGenerator(context, this, assignmentGenerator);
         
@@ -177,12 +184,41 @@ public final class ExpressionCodeGenerator {
         // for handling array element assignments (a[i] = value)
         this.assignmentGenerator.setArrayGenerator(this.arrayGenerator);
         
+        // Assignment generator also needs field access generator for struct field assignments
+        this.assignmentGenerator.setFieldAccessGenerator(this.fieldAccessGenerator);
+        
         // Function call generator needs expression generator (for argument evaluation)
         this.functionCallGenerator = new FunctionCallGenerator(context, this);
         
         // Binary and logical generators need expression generator (for operand evaluation)
         this.binaryGenerator = new BinaryExpressionGenerator(context, this);
         this.logicalGenerator = new LogicalExpressionGenerator(context, this);
+    }
+    
+    /**
+     * Sets the parse tree for extracting struct array sizes.
+     * 
+     * <p>This method propagates the parse tree to all generators that need it,
+     * particularly those that create LValueAddressGenerator instances for handling
+     * nested struct field access with arrays.
+     * 
+     * @param parseTree the parse tree from semantic analysis
+     */
+    public void setParseTree(NonTerminalNode parseTree) {
+        // Set parse tree on all generators that create LValueAddressGenerator instances
+        // These generators need the parse tree to extract array sizes for nested structs
+        if (assignmentGenerator != null) {
+            assignmentGenerator.setParseTree(parseTree);
+        }
+        if (arrayGenerator != null) {
+            arrayGenerator.setParseTree(parseTree);
+        }
+        if (fieldAccessGenerator != null) {
+            fieldAccessGenerator.setParseTree(parseTree);
+        }
+        if (functionCallGenerator != null) {
+            functionCallGenerator.setParseTree(parseTree);
+        }
     }
     
     /**
@@ -344,15 +380,17 @@ public final class ExpressionCodeGenerator {
      *                      | &lt;postfiks_izraz&gt; OP_DEC
      * </pre>
      * 
-     * <p><b>Postfix Operations:</b>
-     * <ul>
-     *   <li><b>Post-increment/decrement (x++, x--):</b> Handled by {@link AssignmentExpressionGenerator}
-     *       - returns old value, then increments/decrements</li>
-     *   <li><b>Function calls (f(), f(args)):</b> Handled by {@link FunctionCallGenerator}
-     *       - evaluates arguments, calls function, returns R6</li>
-     *   <li><b>Array indexing (a[i]):</b> Handled by {@link ArrayExpressionGenerator}
-     *       - computes base + index*4, loads/stores element</li>
-     * </ul>
+ * <p><b>Postfix Operations:</b>
+ * <ul>
+ *   <li><b>Post-increment/decrement (x++, x--):</b> Handled by {@link AssignmentExpressionGenerator}
+ *       - returns old value, then increments/decrements</li>
+ *   <li><b>Function calls (f(), f(args)):</b> Handled by {@link FunctionCallGenerator}
+ *       - evaluates arguments, calls function, returns R6</li>
+ *   <li><b>Array indexing (a[i]):</b> Handled by {@link ArrayExpressionGenerator}
+ *       - computes base + index*4, loads/stores element</li>
+ *   <li><b>Field access (p.x):</b> Handled by {@link FieldAccessGenerator}
+ *       - computes base + field_offset, loads/stores field</li>
+ * </ul>
      * 
      * <p><b>FRISC Semantics:</b>
      * <ul>
@@ -393,19 +431,28 @@ public final class ExpressionCodeGenerator {
                 }
             }
         } else if (children.size() == 3) {
-            // Function call without arguments: <postfiks_izraz> L_ZAGRADA D_ZAGRADA
-            NonTerminalNode function = (NonTerminalNode) children.get(0);
-            ParseNode leftParen = children.get(1);
-            ParseNode rightParen = children.get(2);
+            // Could be: function call without arguments OR field access
+            ParseNode second = children.get(1);
+            ParseNode third = children.get(2);
             
-            if (leftParen instanceof hr.fer.ppj.semantics.tree.TerminalNode leftTerm && "L_ZAGRADA".equals(leftTerm.symbol()) &&
-                rightParen instanceof hr.fer.ppj.semantics.tree.TerminalNode rightTerm && "D_ZAGRADA".equals(rightTerm.symbol())) {
+            // Check for field access: <postfiks_izraz> TOCKA IDN
+            if (second instanceof hr.fer.ppj.semantics.tree.TerminalNode dot && "TOCKA".equals(dot.symbol()) &&
+                third instanceof hr.fer.ppj.semantics.tree.TerminalNode fieldId && "IDN".equals(fieldId.symbol())) {
+                
+                // Field access: compute base + field_offset, load field
+                String fieldName = fieldId.lexeme();
+                fieldAccessGenerator.generateFieldAccess((NonTerminalNode) children.get(0), fieldName);
+                return; // CRITICAL: do not fall through to old logic
+            }
+            // Check for function call without arguments: <postfiks_izraz> L_ZAGRADA D_ZAGRADA
+            else if (second instanceof hr.fer.ppj.semantics.tree.TerminalNode leftParen && "L_ZAGRADA".equals(leftParen.symbol()) &&
+                     third instanceof hr.fer.ppj.semantics.tree.TerminalNode rightParen && "D_ZAGRADA".equals(rightParen.symbol())) {
                 
                 // No arguments - call function with empty argument list
-                functionCallGenerator.generateFunctionCall(function, null);
+                functionCallGenerator.generateFunctionCall((NonTerminalNode) children.get(0), null);
             } else {
                 // Complex postfix expression - fall back to evaluating the base expression
-                generateExpression(function);
+                generateExpression((NonTerminalNode) children.get(0));
             }
         } else if (children.size() == 4) {
             // Array indexing or function call with arguments
@@ -418,8 +465,8 @@ public final class ExpressionCodeGenerator {
                 second instanceof NonTerminalNode indexExpr &&
                 third instanceof hr.fer.ppj.semantics.tree.TerminalNode rightBracket && "D_UGL_ZAGRADA".equals(rightBracket.symbol())) {
                 
-                // Array indexing: compute base + index*4, load element
-                arrayGenerator.generateArrayIndexing((NonTerminalNode) children.get(0), indexExpr);
+                // Array indexing: pass the full node to handle field access bases (m.arr[i])
+                arrayGenerator.generateArrayIndexing(node);
             }
             // Check for function call with arguments: <postfiks_izraz> L_ZAGRADA <lista_argumenata> D_ZAGRADA
             else if (first instanceof hr.fer.ppj.semantics.tree.TerminalNode leftParen && "L_ZAGRADA".equals(leftParen.symbol()) &&

@@ -416,7 +416,7 @@ public final class CodeGenerator {
         // Create specialized generators for functions and global variables.
         // These generators encapsulate the logic for traversing the parse tree and
         // generating appropriate FRISC code for each construct.
-        FunctionCodeGenerator funcGen = new FunctionCodeGenerator(context);
+        FunctionCodeGenerator funcGen = new FunctionCodeGenerator(context, translationUnit);
         GlobalVariableGenerator globalGen = new GlobalVariableGenerator(context);
         
         // Set the parse tree for global variable initializers.

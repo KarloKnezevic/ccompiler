@@ -135,14 +135,31 @@ public final class ActivationRecord {
      * @return the stack offset for this parameter (positive, relative to R5)
      */
     public int addParameter(String name) {
+        return addParameter(name, 4); // Default: 4 bytes for scalar types
+    }
+    
+    /**
+     * Adds a parameter to the activation record with specified size.
+     * 
+     * <p>Parameters are added in declaration order and assigned offsets starting
+     * at R5+8. For struct parameters, the size is the struct size in bytes.
+     * 
+     * @param name the parameter name
+     * @param sizeInBytes the size of the parameter in bytes (4 for scalars, sizeof(struct) for structs)
+     * @return the stack offset for this parameter (positive, relative to R5)
+     */
+    public int addParameter(String name, int sizeInBytes) {
         Objects.requireNonNull(name, "name must not be null");
         
+        // Round up to multiple of 4 for alignment
+        int alignedSize = ((sizeInBytes + 3) / 4) * 4;
+        
         int offset = currentParameterOffset;
-        currentParameterOffset += 4; // Each parameter takes 4 bytes
+        currentParameterOffset += alignedSize; // Each parameter takes alignedSize bytes
         
         // Store parameter with positive offset (R5+8, R5+12, etc.)
         variableOffsets.put(name, offset);
-        variableSizes.put(name, 4); // Parameters are always 4 bytes (pointers)
+        variableSizes.put(name, sizeInBytes); // Store actual size (not aligned)
         return offset;
     }
     
@@ -227,6 +244,31 @@ public final class ActivationRecord {
      */
     public boolean hasVariable(String name) {
         return variableOffsets.containsKey(name);
+    }
+    
+    /**
+     * Checks if a variable is a parameter (has positive offset).
+     * 
+     * <p>Parameters have positive offsets (R5+8, R5+12, etc.),
+     * while local variables have negative offsets (R5-4, R5-8, etc.).
+     * 
+     * @param name the variable name
+     * @return true if the variable is a parameter, false if local or not found
+     */
+    public boolean isParameter(String name) {
+        Integer offset = getVariableOffset(name);
+        return offset != null && offset >= 0;
+    }
+    
+    /**
+     * Checks if a variable is a local variable (has negative offset).
+     * 
+     * @param name the variable name
+     * @return true if the variable is a local variable, false if parameter or not found
+     */
+    public boolean isLocalVariable(String name) {
+        Integer offset = getVariableOffset(name);
+        return offset != null && offset < 0;
     }
     
     /**

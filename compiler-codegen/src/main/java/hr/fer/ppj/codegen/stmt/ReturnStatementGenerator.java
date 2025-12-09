@@ -3,8 +3,13 @@ package hr.fer.ppj.codegen.stmt;
 import hr.fer.ppj.codegen.CodeGenContext;
 import hr.fer.ppj.codegen.expr.ExpressionCodeGenerator;
 import hr.fer.ppj.codegen.func.FunctionPrologueEpilogueGenerator;
+import hr.fer.ppj.codegen.utils.LValueAddressGenerator;
+import hr.fer.ppj.codegen.utils.StructLayoutCalculator;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
+import hr.fer.ppj.semantics.types.StructType;
+import hr.fer.ppj.semantics.types.Type;
+import hr.fer.ppj.semantics.types.TypeSystem;
 import java.util.List;
 import java.util.Objects;
 
@@ -21,6 +26,7 @@ public final class ReturnStatementGenerator {
     private final CodeGenContext context;
     private final ExpressionCodeGenerator exprGen;
     private final FunctionPrologueEpilogueGenerator prologueEpilogueGenerator;
+    private final LValueAddressGenerator addressGenerator;
     
     /**
      * Creates a new return statement generator.
@@ -32,6 +38,21 @@ public final class ReturnStatementGenerator {
         this.context = Objects.requireNonNull(context, "context must not be null");
         this.exprGen = Objects.requireNonNull(exprGen, "exprGen must not be null");
         this.prologueEpilogueGenerator = new FunctionPrologueEpilogueGenerator();
+        this.addressGenerator = new LValueAddressGenerator(context, exprGen);
+    }
+    
+    /**
+     * Sets the parse tree for extracting struct array sizes.
+     * 
+     * <p>This propagates the parse tree to the LValueAddressGenerator so it can
+     * extract array sizes for nested structs with arrays.
+     * 
+     * @param parseTree the parse tree from semantic analysis
+     */
+    public void setParseTree(NonTerminalNode parseTree) {
+        if (addressGenerator != null) {
+            addressGenerator.setParseTree(parseTree);
+        }
     }
     
     /**
@@ -48,13 +69,31 @@ public final class ReturnStatementGenerator {
             // KR_RETURN <izraz> TOCKAZAREZ
             NonTerminalNode expression = (NonTerminalNode) children.get(1);
             
-            // Optimization: try to generate expression directly into R6 when possible
-            if (tryGenerateReturnExpressionDirectly(expression)) {
-                // Expression was generated directly into R6
+            // Check if function returns a struct
+            // For struct returns, the return pointer is passed in R2 by the caller
+            boolean returnsStruct = false;
+            if (context.isInFunction()) {
+                // Check return expression type to determine if function returns struct
+                Type exprType = expression.attributes() != null ? expression.attributes().type() : null;
+                if (exprType != null) {
+                    Type strippedType = TypeSystem.stripConst(exprType);
+                    returnsStruct = strippedType instanceof StructType;
+                }
+            }
+            
+            if (returnsStruct) {
+                // Function returns struct: copy struct to hidden return pointer
+                generateStructReturn(expression);
             } else {
-                // Fallback: generate into R0, then move to R6
-                exprGen.generateExpression(expression);
-                context.emitter().emitInstruction("MOVE", "R0", "R6", "return value");
+                // Scalar return: use normal return mechanism
+                // Optimization: try to generate expression directly into R6 when possible
+                if (tryGenerateReturnExpressionDirectly(expression)) {
+                    // Expression was generated directly into R6
+                } else {
+                    // Fallback: generate into R0, then move to R6
+                    exprGen.generateExpression(expression);
+                    context.emitter().emitInstruction("MOVE", "R0", "R6", "return value");
+                }
             }
         } else {
             // KR_RETURN TOCKAZAREZ (void return)
@@ -203,6 +242,82 @@ public final class ReturnStatementGenerator {
         }
         
         return null;
+    }
+    
+    /**
+     * Generates code for returning a struct by value.
+     * 
+     * <p>For struct returns, the caller provides the address of a result buffer in R2.
+     * This method copies the struct from the return expression to that memory location.
+     * 
+     * <p><b>Calling Convention:</b>
+     * <ul>
+     *   <li>Caller sets R2 = address of result buffer before CALL</li>
+     *   <li>Callee copies struct from return expression to [R2]</li>
+     *   <li>R6 is unused for struct returns</li>
+     * </ul>
+     * 
+     * @param expression the return expression (must evaluate to a struct)
+     */
+    private void generateStructReturn(NonTerminalNode expression) {
+        // Get return expression type to determine struct size
+        Type exprType = expression.attributes() != null ? expression.attributes().type() : null;
+        if (exprType == null) {
+            throw new IllegalStateException("Return expression has no type annotation");
+        }
+        
+        Type strippedType = TypeSystem.stripConst(exprType);
+        if (!(strippedType instanceof StructType structType)) {
+            throw new IllegalStateException("Struct return but expression is not a struct type: " + strippedType);
+        }
+        
+        int structSize = StructLayoutCalculator.calculateStructSize(structType);
+        
+        // Compute address of return expression (source struct)
+        // This handles variables, field access, etc.
+        addressGenerator.generateAddress(expression, "R0"); // Source address in R0
+        
+        // R2 contains the return buffer address (set by caller)
+        // Copy struct from source (R0) to destination (R2)
+        
+        // Save R2 (return buffer) to R3, since we'll use R2 for counter
+        context.emitter().emitInstruction("MOVE", "R2", "R3", "save return buffer address");
+        
+        // Source address is already in R0
+        // Destination address is now in R3
+        
+        String copyLoopLabel = context.labelGenerator().generateLabel();
+        String copyEndLabel = context.labelGenerator().generateLabel();
+        
+        // Initialize counter: R2 = remaining bytes
+        context.emitter().emitInstruction("MOVE", "%D " + structSize, "R2", "remaining bytes");
+        
+        context.emitter().emitLabel(copyLoopLabel, "struct copy loop");
+        
+        // Check if counter is zero
+        context.emitter().emitInstruction("CMP", "R2", "%D 0", null);
+        context.emitter().emitInstruction("JP_EQ", copyEndLabel, "done if counter == 0");
+        
+        // Load word from source: R1 = *R0
+        context.emitter().emitInstruction("LOAD", "R1", "(R0)", "load word from source");
+        
+        // Store word to destination: *R3 = R1
+        context.emitter().emitInstruction("STORE", "R1", "(R3)", "store word to destination");
+        
+        // Increment pointers: R0 += 4, R3 += 4
+        context.emitter().emitInstruction("ADD", "R0", "%D 4", "R0", "increment source pointer");
+        context.emitter().emitInstruction("ADD", "R3", "%D 4", "R3", "increment dest pointer");
+        
+        // Decrement counter: R2 -= 4
+        context.emitter().emitInstruction("SUB", "R2", "%D 4", "R2", "decrement remaining bytes");
+        
+        // Loop back
+        context.emitter().emitInstruction("JP", copyLoopLabel, "continue copy loop");
+        
+        context.emitter().emitLabel(copyEndLabel, "end struct copy");
+        
+        // R6 is unused for struct returns (can optionally set to 0)
+        context.emitter().emitInstruction("MOVE", "%D 0", "R6", "struct return (R6 unused)");
     }
     
     /**

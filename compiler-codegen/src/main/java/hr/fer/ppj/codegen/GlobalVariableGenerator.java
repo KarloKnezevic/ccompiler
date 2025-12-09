@@ -2,11 +2,13 @@ package hr.fer.ppj.codegen;
 
 import hr.fer.ppj.codegen.global.ArraySizeExtractor;
 import hr.fer.ppj.codegen.global.InitializerExtractor;
+import hr.fer.ppj.codegen.utils.StructLayoutCalculator;
 import hr.fer.ppj.semantics.symbols.Symbol;
 import hr.fer.ppj.semantics.symbols.VariableSymbol;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.types.ArrayType;
 import hr.fer.ppj.semantics.types.PrimitiveType;
+import hr.fer.ppj.semantics.types.StructType;
 import hr.fer.ppj.semantics.types.Type;
 import hr.fer.ppj.semantics.types.TypeSystem;
 import java.util.List;
@@ -196,6 +198,12 @@ public final class GlobalVariableGenerator {
             return;
         }
         
+        // Check if it's a struct type
+        if (varType instanceof StructType structType) {
+            generateStructVariable(label, variable, structType);
+            return;
+        }
+        
         // Check if it's a char type
         boolean isChar = varType == PrimitiveType.CHAR;
         
@@ -217,6 +225,25 @@ public final class GlobalVariableGenerator {
         String dataValue = "%D " + initValue;
         
         context.emitter().emitData(label, "DW", dataValue, comment);
+    }
+    
+    /**
+     * Generates FRISC data declaration for a struct variable.
+     * 
+     * <p>For struct variables, we allocate space equal to the struct size.
+     * Uninitialized structs are zero-initialized (allocated with `DS directive).
+     * 
+     * @param label the global variable label
+     * @param variable the variable symbol
+     * @param structType the struct type
+     */
+    private void generateStructVariable(String label, VariableSymbol variable, StructType structType) {
+        int structSize = StructLayoutCalculator.calculateStructSize(structType);
+        String comment = "global " + variable.type() + " " + variable.name();
+        
+        // For now, treat all struct globals as uninitialized (zero-initialized)
+        // Full aggregate initialization would require parsing struct initializers
+        context.emitter().emitData(label, "`DS", "%D " + structSize, comment);
     }
     
     /**

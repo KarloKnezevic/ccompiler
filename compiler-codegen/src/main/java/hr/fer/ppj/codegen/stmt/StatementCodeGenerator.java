@@ -176,6 +176,22 @@ public final class StatementCodeGenerator {
     }
     
     /**
+     * Sets the parse tree for extracting struct array sizes.
+     * 
+     * <p>This propagates the parse tree to ExpressionCodeGenerator and other generators
+     * that need it for handling nested struct field access with arrays.
+     * 
+     * @param parseTree the parse tree from semantic analysis
+     */
+    public void setParseTree(NonTerminalNode parseTree) {
+        if (exprGen != null) {
+            exprGen.setParseTree(parseTree);
+        }
+        // JumpStatementGenerator uses ReturnStatementGenerator which has its own LValueAddressGenerator
+        // ReturnStatementGenerator.setParseTree is called via ExpressionCodeGenerator
+    }
+    
+    /**
      * Generates code for a statement.
      * 
      * @param statement the statement node to generate code for

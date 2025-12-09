@@ -2,13 +2,21 @@ package hr.fer.ppj.codegen.expr.call;
 
 import hr.fer.ppj.codegen.CodeGenContext;
 import hr.fer.ppj.codegen.expr.ExpressionCodeGenerator;
+import hr.fer.ppj.codegen.utils.LValueAddressGenerator;
+import hr.fer.ppj.codegen.utils.StructArraySizeExtractor;
+import hr.fer.ppj.codegen.utils.StructLayoutCalculator;
+import hr.fer.ppj.semantics.symbols.FunctionSymbol;
 import hr.fer.ppj.semantics.symbols.VariableSymbol;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.types.ArrayType;
+import hr.fer.ppj.semantics.types.FunctionType;
+import hr.fer.ppj.semantics.types.StructType;
 import hr.fer.ppj.semantics.types.Type;
+import hr.fer.ppj.semantics.types.TypeSystem;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -131,6 +139,7 @@ public final class FunctionCallGenerator {
     
     private final CodeGenContext context;
     private final ExpressionCodeGenerator expressionGenerator;
+    private final LValueAddressGenerator addressGenerator;
     
     /**
      * Creates a new function call generator.
@@ -141,6 +150,21 @@ public final class FunctionCallGenerator {
     public FunctionCallGenerator(CodeGenContext context, ExpressionCodeGenerator expressionGenerator) {
         this.context = Objects.requireNonNull(context, "context must not be null");
         this.expressionGenerator = Objects.requireNonNull(expressionGenerator, "expressionGenerator must not be null");
+        this.addressGenerator = new LValueAddressGenerator(context, expressionGenerator);
+    }
+    
+    /**
+     * Sets the parse tree for extracting struct array sizes.
+     * 
+     * <p>This propagates the parse tree to the LValueAddressGenerator so it can
+     * extract array sizes for nested structs with arrays.
+     * 
+     * @param parseTree the parse tree from semantic analysis
+     */
+    public void setParseTree(NonTerminalNode parseTree) {
+        if (addressGenerator != null) {
+            addressGenerator.setParseTree(parseTree);
+        }
     }
     
     /**
@@ -150,6 +174,17 @@ public final class FunctionCallGenerator {
      * @param arguments the argument list (may be null for no arguments)
      */
     public void generateFunctionCall(NonTerminalNode function, NonTerminalNode arguments) {
+        generateFunctionCallWithReturnPointer(function, arguments, null);
+    }
+    
+    /**
+     * Generates code for a function call, optionally with a hidden return pointer for struct returns.
+     * 
+     * @param function the function expression (should be an identifier)
+     * @param arguments the argument list (may be null for no arguments)
+     * @param returnPointerRegister register containing the return pointer (null if not struct return)
+     */
+    public void generateFunctionCallWithReturnPointer(NonTerminalNode function, NonTerminalNode arguments, String returnPointerRegister) {
         // Extract function name
         String functionName = extractVariableName(function);
         
@@ -160,10 +195,45 @@ public final class FunctionCallGenerator {
         
         context.emitter().emitComment("Function call: " + functionName);
         
+        // Check if function returns a struct
+        boolean returnsStruct = returnPointerRegister != null;
+        if (!returnsStruct) {
+            // Check function type to see if it returns a struct
+            var symbolOpt = context.globalScope().lookup(functionName);
+            if (symbolOpt.isPresent() && symbolOpt.get() instanceof FunctionSymbol funcSymbol) {
+                FunctionType funcType = funcSymbol.type();
+                Type returnType = funcType.returnType();
+                Type strippedReturnType = TypeSystem.stripConst(returnType);
+                returnsStruct = strippedReturnType instanceof StructType;
+            }
+        }
+        
+        // If function returns a struct, save return pointer address before argument evaluation
+        // Argument evaluation may use R0-R4, so we save the return pointer in R1 temporarily
+        // (R1 is less likely to be used than R0, and R2 needs to be free for the calling convention)
+        if (returnsStruct) {
+            if (returnPointerRegister != null) {
+                // Save return pointer address in R1 (temporary storage)
+                // R1 will be preserved through argument evaluation
+                context.emitter().emitInstruction("MOVE", returnPointerRegister, "R1", "save struct return buffer address");
+            } else {
+                // No return pointer provided - this shouldn't happen for struct returns
+                throw new IllegalStateException("Struct-returning function call requires return pointer register");
+            }
+        }
+        
         // Generate arguments and push them onto the stack
-        int argumentCount = 0;
+        // Argument evaluation may use R0-R4, but R1 contains our saved return pointer
+        int argumentSizeBytes = 0;
         if (arguments != null) {
-            argumentCount = generateFunctionArguments(arguments);
+            argumentSizeBytes = generateFunctionArguments(arguments);
+        }
+        
+        // Set return pointer in R2 (after argument evaluation, before CALL)
+        // R2 is the calling convention register for struct return pointer
+        if (returnsStruct) {
+            // Move saved return pointer from R1 to R2
+            context.emitter().emitInstruction("MOVE", "R1", "R2", "set struct return buffer in R2");
         }
         
         // Generate the function call
@@ -171,64 +241,229 @@ public final class FunctionCallGenerator {
         context.emitter().emitInstruction("CALL", functionLabel, null, "call " + functionName);
         
         // Clean up arguments from the stack (caller cleans up)
-        if (argumentCount > 0) {
-            int stackCleanup = argumentCount * 4; // Each argument is 4 bytes
-            context.emitter().emitInstruction("ADD", "R7", "%D " + stackCleanup, "R7", 
-                                            "cleanup " + argumentCount + " arguments");
+        // Note: struct return pointer is in R2 (register), not on stack, so no cleanup needed for it
+        if (argumentSizeBytes > 0) {
+            context.emitter().emitInstruction("ADD", "R7", "%D " + argumentSizeBytes, "R7", 
+                                            "cleanup " + argumentSizeBytes + " bytes of arguments");
         }
         
-        // Function result is now in R6, move to R0 for expression result
-        context.emitter().emitInstruction("MOVE", "R6", "R0", "function result");
+        // For struct returns, result is already written to return pointer, no need to move R6
+        if (!returnsStruct) {
+            // Function result is now in R6, move to R0 for expression result
+            context.emitter().emitInstruction("MOVE", "R6", "R0", "function result");
+        }
     }
     
     /**
-     * Generates code for function arguments and returns the number of arguments.
+     * Generates code for function arguments and returns the total size in bytes.
      * 
      * <p>Arguments are pushed onto the stack in right-to-left order (last argument first).
      * Array variables are passed as addresses rather than values.
+     * Struct arguments are copied word-by-word onto the stack.
      * 
      * @param arguments the argument list node
-     * @return the number of arguments processed
+     * @return the total size in bytes of all arguments pushed
      */
     private int generateFunctionArguments(NonTerminalNode arguments) {
         List<NonTerminalNode> argumentExpressions = extractArgumentExpressions(arguments);
+        int totalSizeBytes = 0;
         
         // Generate arguments in reverse order (last argument pushed first)
         // This way, the first argument will be at the top of the stack
         for (int i = argumentExpressions.size() - 1; i >= 0; i--) {
             NonTerminalNode arg = argumentExpressions.get(i);
             
-            // Check if this is a simple array variable that should be passed as address
-            String arrayVarName = extractVariableName(arg);
-            if (arrayVarName != null && isArrayVariable(arrayVarName)) {
-                // Generate address of array variable instead of value
-                String baseAddress = getVariableAddress(arrayVarName);
-                if (baseAddress.startsWith("(G_")) {
-                    // Global array: extract label and use as address
-                    String label = baseAddress.substring(1, baseAddress.length() - 1);
-                    context.emitter().emitInstruction("MOVE", label, "R0", "load array address " + arrayVarName);
-                } else {
-                    // Local array: compute address from frame pointer
-                    String offsetStr = extractOffsetFromAddress(baseAddress);
-                    if (offsetStr != null) {
-                        context.emitter().emitInstruction("MOVE", "R5", "R0", "load frame pointer");
-                        // Use hex offset directly (address offsets are always hex in FRISC)
-                        String formattedOffset = offsetStr; // Keep hex format (e.g., "-0C" or "+08")
-                        context.emitter().emitInstruction("ADD", "R0", formattedOffset, "R0", "compute array address");
-                    } else {
-                        // Fallback: generate expression normally
-                        expressionGenerator.generateExpression(arg);
+            // Check argument type
+            Type argType = arg.attributes() != null ? arg.attributes().type() : null;
+            Type strippedArgType = argType != null ? TypeSystem.stripConst(argType) : null;
+            
+            if (strippedArgType instanceof StructType structType) {
+                // Struct argument: copy struct onto stack word-by-word
+                // Extract array sizes if needed (for structs with array fields)
+                // Also extract array sizes for nested structs that contain arrays
+                Map<String, Integer> arraySizes = null;
+                Map<String, Map<String, Integer>> nestedStructArraySizes = null;
+                
+                if (addressGenerator != null) {
+                    var arraySizeExtractor = addressGenerator.getArraySizeExtractor();
+                    if (arraySizeExtractor != null) {
+                        String structTag = structType.tag();
+                        arraySizes = arraySizeExtractor.extractArraySizes(structTag);
+                        
+                        // Extract array sizes for nested struct fields (recursively)
+                        // CRITICAL: Must recursively extract for ALL nested structs at ALL levels
+                        // This ensures we get array sizes for Inner when processing Outer
+                        nestedStructArraySizes = new java.util.HashMap<>();
+                        extractNestedStructArraySizes(structType, arraySizeExtractor, nestedStructArraySizes);
                     }
                 }
+                
+                int structSize = StructLayoutCalculator.calculateStructSize(structType, arraySizes, nestedStructArraySizes);
+                generateStructArgument(arg, structType, arraySizes, nestedStructArraySizes);
+                totalSizeBytes += structSize;
+            } else if (strippedArgType instanceof ArrayType) {
+                // Array argument: pass address (array decay to pointer)
+                // Check if this is a simple array variable that should be passed as address
+                String arrayVarName = extractVariableName(arg);
+                if (arrayVarName != null && isArrayVariable(arrayVarName)) {
+                    // Generate address of array variable instead of value
+                    String baseAddress = getVariableAddress(arrayVarName);
+                    if (baseAddress.startsWith("(G_")) {
+                        // Global array: extract label and use as address
+                        String label = baseAddress.substring(1, baseAddress.length() - 1);
+                        context.emitter().emitInstruction("MOVE", label, "R0", "load array address " + arrayVarName);
+                    } else {
+                        // Local array: compute address from frame pointer
+                        String offsetStr = extractOffsetFromAddress(baseAddress);
+                        if (offsetStr != null) {
+                            context.emitter().emitInstruction("MOVE", "R5", "R0", "load frame pointer");
+                            // Use hex offset directly (address offsets are always hex in FRISC)
+                            String formattedOffset = offsetStr; // Keep hex format (e.g., "-0C" or "+08")
+                            context.emitter().emitInstruction("ADD", "R0", formattedOffset, "R0", "compute array address");
+                        } else {
+                            // Fallback: generate expression normally (should generate address)
+                            expressionGenerator.generateExpression(arg);
+                        }
+                    }
+                    context.emitter().emitInstruction("PUSH", "R0", null, "push argument " + (i + 1));
+                } else {
+                    // Complex array expression - generate normally (should generate address)
+                    expressionGenerator.generateExpression(arg);
+                    context.emitter().emitInstruction("PUSH", "R0", null, "push argument " + (i + 1));
+                }
+                totalSizeBytes += 4; // Pointer: 4 bytes
             } else {
-                // Normal expression - generate normally
+                // Scalar argument (int, char, float, pointer): generate r-value and push
+                // CRITICAL: For field access like p.x (where p is a parameter), this MUST
+                // generate the VALUE (r-value), not the address (l-value).
+                // 
+                // expressionGenerator.generateExpression() routes to FieldAccessGenerator
+                // which correctly generates: compute address -> LOAD value -> result in R0
+                // This works for:
+                // - Local structs: p.x where p is local -> R5-offset + field_offset -> LOAD
+                // - Parameter structs: p.x where p is parameter -> R5+offset + field_offset -> LOAD
+                // - Global structs: p.x where p is global -> G_P + field_offset -> LOAD
+                // - Nested access: o.inner.arr[i] -> recursively computes address -> LOAD
                 expressionGenerator.generateExpression(arg);
+                // R0 now contains the VALUE (not address) of the scalar expression
+                context.emitter().emitInstruction("PUSH", "R0", null, "push argument " + (i + 1) + " (value)");
+                totalSizeBytes += 4; // Scalar: 4 bytes
             }
-            
-            context.emitter().emitInstruction("PUSH", "R0", null, "push argument " + (i + 1));
         }
         
-        return argumentExpressions.size();
+        return totalSizeBytes;
+    }
+    
+    /**
+     * Generates code to pass a struct argument by copying it onto the stack.
+     * 
+     * <p>Struct arguments are passed by value, so we need to copy the entire struct
+     * onto the stack word-by-word. We push words individually starting from offset 0
+     * and moving forward through the struct.
+     * 
+     * <p>The callee expects the struct with field 0 at the lowest address (R5+8 for
+     * the first parameter). When we push from offset 0 forward:
+     * - First word (offset 0) is pushed first → ends up at lowest address (R5+8) ✓
+     * - Last word (offset N) is pushed last → ends up at highest address ✓
+     * 
+     * @param argExpr the argument expression (must evaluate to a struct)
+     * @param structType the struct type
+     * @param arraySizes optional map from field name to array length (for array fields in this struct)
+     * @param nestedStructArraySizes optional map from struct tag to array sizes map (for nested structs with arrays)
+     */
+    private void generateStructArgument(NonTerminalNode argExpr, StructType structType, 
+                                       Map<String, Integer> arraySizes, 
+                                       Map<String, Map<String, Integer>> nestedStructArraySizes) {
+        // Calculate struct size using provided array sizes
+        int structSize = StructLayoutCalculator.calculateStructSize(structType, arraySizes, nestedStructArraySizes);
+        
+        context.emitter().emitComment("Struct argument: push " + structSize + " bytes onto stack");
+        
+        // Compute source address (struct argument address)
+        addressGenerator.generateAddress(argExpr, "R0");
+        context.emitter().emitInstruction("MOVE", "R0", "R2", "source addr (struct arg)");
+        
+        // Push struct word-by-word from beginning (offset 0) forward
+        String loopLabel = context.labelGenerator().generateLabel();
+        String endLabel = context.labelGenerator().generateLabel();
+        
+        // Initialize: R4 = remaining bytes
+        context.emitter().emitInstruction("MOVE", "%D " + structSize, "R4", "remaining bytes");
+        
+        context.emitter().emitLabel(loopLabel, "struct arg push loop");
+        
+        // Check if counter is zero
+        context.emitter().emitInstruction("CMP", "R4", "%D 0", null);
+        context.emitter().emitInstruction("JP_EQ", endLabel, "done if counter == 0");
+        
+        // Load word from source: R0 = *R2 (starting from offset 0)
+        context.emitter().emitInstruction("LOAD", "R0", "(R2)", "load word from source");
+        
+        // Push word onto stack
+        context.emitter().emitInstruction("PUSH", "R0", null, "push struct word");
+        
+        // Increment source pointer: R2 += 4 (move forward through struct)
+        context.emitter().emitInstruction("ADD", "R2", "%D 4", "R2", "increment source pointer");
+        
+        // Decrement counter: R4 -= 4
+        context.emitter().emitInstruction("SUB", "R4", "%D 4", "R4", "decrement remaining bytes");
+        
+        // Loop back
+        context.emitter().emitInstruction("JP", loopLabel, "continue push loop");
+        
+        context.emitter().emitLabel(endLabel, "end struct arg push");
+    }
+    
+    /**
+     * Recursively extracts array sizes for all nested structs in a struct type.
+     * 
+     * <p>This method traverses all fields of the struct and extracts array sizes
+     * for any nested struct fields, recursively handling deeply nested structs.
+     * 
+     * @param structType the struct type to extract nested array sizes for
+     * @param arraySizeExtractor the extractor to use for extracting array sizes
+     * @param nestedStructArraySizes the map to populate with nested struct array sizes
+     */
+    private void extractNestedStructArraySizes(StructType structType, 
+                                               StructArraySizeExtractor arraySizeExtractor,
+                                               Map<String, Map<String, Integer>> nestedStructArraySizes) {
+        if (structType == null || arraySizeExtractor == null) {
+            return;
+        }
+        
+        // Extract array sizes for all fields that are struct types (recursively)
+        for (Map.Entry<String, Type> field : structType.fields().entrySet()) {
+            Type fieldType = TypeSystem.stripConst(field.getValue());
+            
+            if (fieldType instanceof StructType nestedStructType) {
+                String nestedTag = nestedStructType.tag();
+                
+                // Skip if tag is null (anonymous structs - can't extract by tag)
+                if (nestedTag == null) {
+                    // For anonymous structs, still try to recursively extract (they might have nested structs)
+                    extractNestedStructArraySizes(nestedStructType, arraySizeExtractor, nestedStructArraySizes);
+                    continue;
+                }
+                
+                // Skip if we've already extracted array sizes for this struct
+                if (nestedStructArraySizes.containsKey(nestedTag)) {
+                    continue;
+                }
+                
+                // Extract array sizes for this nested struct
+                // CRITICAL: Always extract, even if empty, so we know we've tried
+                // If the struct has array fields, this will populate the map with array sizes
+                Map<String, Integer> nestedArraySizes = arraySizeExtractor.extractArraySizes(nestedTag);
+                // Always put in map, even if empty (needed for calculateStructSize to know we've tried)
+                nestedStructArraySizes.put(nestedTag, nestedArraySizes);
+                
+                // CRITICAL: Recursively extract array sizes for even deeper nested structs
+                // This ensures we get array sizes for Inner when processing Outer
+                // This must be done AFTER extracting array sizes for the current nested struct,
+                // so that deeper nested structs can also be found
+                extractNestedStructArraySizes(nestedStructType, arraySizeExtractor, nestedStructArraySizes);
+            }
+        }
     }
     
     /**

@@ -100,24 +100,52 @@ public final class ParameterExtractor {
     /**
      * Extracts parameter name from a parameter declaration.
      * 
+     * <p>Structure: <deklaracija_parametra> ::= <ime_tipa> IDN | <ime_tipa> <deklarator>
+     * 
+     * <p>For simple parameters (<ime_tipa> IDN), the IDN is child 1.
+     * For complex parameters (<ime_tipa> <deklarator>), we need to search the declarator,
+     * not the type specification, to avoid finding the struct tag name instead of the parameter name.
+     * 
      * @param declaration the parameter declaration node ({@code <deklaracija_parametra>})
      * @param names the list to add parameter name to
      */
     private void extractParameterFromDeclaration(NonTerminalNode declaration, List<String> names) {
-        String paramName = findIdentifierInDeclaration(declaration);
+        // First, try to get identifier from semantic attributes (set by semantic analysis)
+        if (declaration.attributes() != null && declaration.attributes().identifier() != null) {
+            names.add(declaration.attributes().identifier());
+            return;
+        }
+        
+        // Fallback: extract from parse tree structure
+        // Structure: <deklaracija_parametra> has children: <ime_tipa> [IDN | <deklarator>]
+        List<ParseNode> children = declaration.children();
+        if (children.size() >= 2) {
+            ParseNode secondChild = children.get(1);
+            
+            // Case 1: Simple parameter: <ime_tipa> IDN
+            if (secondChild instanceof hr.fer.ppj.semantics.tree.TerminalNode terminal && 
+                "IDN".equals(terminal.symbol())) {
+                names.add(terminal.lexeme());
+                return;
+            }
+            
+            // Case 2: Complex parameter: <ime_tipa> <deklarator>
+            // Search only in the declarator (child 1), not in the type specification (child 0)
+            // This avoids finding the struct tag name (e.g., "Outer") instead of the parameter name (e.g., "o")
+            if (secondChild instanceof NonTerminalNode declarator) {
+                String paramName = hr.fer.ppj.codegen.utils.IdentifierExtractor.findIdentifier(declarator);
+                if (paramName != null) {
+                    names.add(paramName);
+                    return;
+                }
+            }
+        }
+        
+        // Last resort: search entire node (might find wrong identifier for struct parameters)
+        String paramName = hr.fer.ppj.codegen.utils.IdentifierExtractor.findIdentifier(declaration);
         if (paramName != null) {
             names.add(paramName);
         }
-    }
-    
-    /**
-     * Finds the identifier in a declaration node (recursively searches for IDN terminal).
-     * 
-     * @param node the declaration node
-     * @return the identifier name (IDN lexeme), or null if not found
-     */
-    private String findIdentifierInDeclaration(NonTerminalNode node) {
-        return hr.fer.ppj.codegen.utils.IdentifierExtractor.findIdentifier(node);
     }
 }
 
