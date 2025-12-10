@@ -108,10 +108,18 @@ import java.util.Objects;
  *   <li><b>R0:</b> Dividend a (initially), then integer_part (quotient), then result</li>
  *   <li><b>R1:</b> Divisor b (initially), then b_abs (constant during division)</li>
  *   <li><b>R2:</b> Remainder (during integer division and fractional loop)</li>
- *   <li><b>R3:</b> Fractional accumulator (frac) during fractional loop</li>
- *   <li><b>R4:</b> Sign flag (+1, -1, or 0)</li>
- *   <li><b>R5:</b> Loop counter (i) for fractional loop</li>
- *   <li><b>R6:</b> Return value (Q16.16 result)</li>
+ *   <li><b>R3:</b> Loop counter (i) for integer division, then fractional accumulator (frac)</li>
+ *   <li><b>R4:</b> Sign flag (+1, -1, or 0), then dividend copy during integer division</li>
+ *   <li><b>R5:</b> <b>FRAME POINTER - NEVER USED AS GENERAL-PURPOSE REGISTER</b></li>
+ *   <li><b>R6:</b> Temporary during loops (bit extraction, loop counter), then return value</li>
+ * </ul>
+ * 
+ * <p><b>CRITICAL CONSTRAINTS:</b>
+ * <ul>
+ *   <li><b>R5 is reserved as frame pointer:</b> Must never be used as a general-purpose register.
+ *       All temporaries use R0-R4, R6-R7. R5 is only modified in prologue/epilogue.</li>
+ *   <li><b>All conditional jumps use JP_*:</b> For consistency with compiler-generated code,
+ *       all conditional jumps use JP_EQ, JP_SLT, JP_SGE, etc. (not JR_*).</li>
  * </ul>
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
@@ -141,10 +149,15 @@ public final class FloatDivGenerator {
         emitter.emitComment("F_FDIV: Q16.16 fixed-point division using 32-bit arithmetic");
         emitter.emitComment("Input:  a at (R5+08), b at (R5+0C)");
         emitter.emitComment("Output: R6 = a / b (Q16.16 format)");
+        emitter.emitComment("");
+        emitter.emitComment("CRITICAL: R5 is reserved as frame pointer and must NEVER be used");
+        emitter.emitComment("as a general-purpose register. All temporaries use R0-R4, R6-R7.");
+        emitter.emitComment("All conditional jumps use JP_* mnemonics (not JR_*) for consistency");
+        emitter.emitComment("with compiler-generated code.");
         
         // Function prologue
         emitter.emitInstruction("PUSH", "R5", null, "save old frame pointer");
-        emitter.emitInstruction("MOVE", "R7", "R5", "R5 = current SP");
+        emitter.emitInstruction("MOVE", "R7", "R5", "R5 = current SP -> base of frame");
         
         // Load arguments from stack
         emitter.emitInstruction("LOAD", "R0", "(R5+08)", "a (dividend, Q16.16)");
@@ -153,7 +166,7 @@ public final class FloatDivGenerator {
         // Handle division by zero: if b == 0, return 0
         String ffdDivByZeroLabel = context.labelGenerator().generateLabel();
         emitter.emitInstruction("CMP", "R1", "%D 0", null);
-        emitter.emitInstruction("JR_EQ", ffdDivByZeroLabel, "if b == 0, return 0");
+        emitter.emitInstruction("JP_EQ", ffdDivByZeroLabel, "if b == 0, return 0");
         
         // Initialize sign = +1 (use R4 for sign)
         emitter.emitInstruction("MOVE", "%D 1", "R4", "sign = +1");
@@ -164,8 +177,8 @@ public final class FloatDivGenerator {
         String ffdANegLabel = context.labelGenerator().generateLabel();
         String ffdAZeroLabel = context.labelGenerator().generateLabel();
         emitter.emitInstruction("CMP", "R0", "%D 0", null);
-        emitter.emitInstruction("JR_EQ", ffdAZeroLabel, "a == 0 → sign = 0");
-        emitter.emitInstruction("JR_SLT", ffdANegLabel, "a < 0 → negate");
+        emitter.emitInstruction("JP_EQ", ffdAZeroLabel, "a == 0 → sign = 0");
+        emitter.emitInstruction("JP_SLT", ffdANegLabel, "a < 0 → negate");
         emitter.emitInstruction("JP", ffdADoneLabel, "a > 0 → nothing");
         
         emitter.emitLabel(ffdAZeroLabel, "a is zero");
@@ -184,7 +197,7 @@ public final class FloatDivGenerator {
         String ffdBDoneLabel = context.labelGenerator().generateLabel();
         String ffdBNegLabel = context.labelGenerator().generateLabel();
         emitter.emitInstruction("CMP", "R1", "%D 0", null);
-        emitter.emitInstruction("JR_SGE", ffdBDoneLabel, "b >= 0 → nothing");
+        emitter.emitInstruction("JP_SGE", ffdBDoneLabel, "b >= 0 → nothing");
         
         emitter.emitLabel(ffdBNegLabel, "negate b");
         emitter.emitInstruction("MOVE", "%D 0", "R2", null);
@@ -197,7 +210,7 @@ public final class FloatDivGenerator {
         // Now R0 = a_abs, R1 = b_abs, R4 = sign (+1, -1, or 0)
         // If sign == 0 (a was zero), return 0 immediately
         emitter.emitInstruction("CMP", "R4", "%D 0", null);
-        emitter.emitInstruction("JR_EQ", ffdDivByZeroLabel, "if sign == 0, result is 0");
+        emitter.emitInstruction("JP_EQ", ffdDivByZeroLabel, "if sign == 0, result is 0");
         
         // Save sign on stack (we'll need R4 temporarily during division)
         emitter.emitInstruction("PUSH", "R4", null, "save sign on stack");
@@ -221,41 +234,44 @@ public final class FloatDivGenerator {
         emitter.emitInstruction("MOVE", "%D 31", "R3", "i = 31 (loop counter)");
         
         // Binary division loop: for (int i = 31; i >= 0; --i)
+        // NOTE: We use R6 as temporary register (before final result) since R5 is frame pointer
         String ffdIntLoopLabel = context.labelGenerator().generateLabel();
         String ffdIntLoopEndLabel = context.labelGenerator().generateLabel();
         emitter.emitLabel(ffdIntLoopLabel, "32-bit integer division loop");
         
         // Check if i < 0 (done)
         emitter.emitInstruction("CMP", "R3", "%D 0", null);
-        emitter.emitInstruction("JR_SLT", ffdIntLoopEndLabel, "if i < 0, done");
+        emitter.emitInstruction("JP_SLT", ffdIntLoopEndLabel, "if i < 0, done");
         
         // Shift remainder left by 1: remainder <<= 1
         emitter.emitInstruction("SHL", "R2", "%D 1", "R2", "remainder <<= 1");
         
         // Bring down the i-th bit of dividend into remainder
-        emitter.emitInstruction("MOVE", "R4", "R5", "temp = dividend");
-        emitter.emitInstruction("SHR", "R5", "R3", "R5", "temp = dividend >> i");
-        emitter.emitInstruction("AND", "R5", "%D 1", "R5", "temp = (dividend >> i) & 1");
-        emitter.emitInstruction("OR", "R2", "R5", "R2", "remainder |= (dividend >> i) & 1");
+        // Use R6 as temporary (we'll restore it before returning)
+        emitter.emitInstruction("MOVE", "R4", "R6", "temp = dividend (use R6 temporarily)");
+        emitter.emitInstruction("SHR", "R6", "R3", "R6", "temp = dividend >> i");
+        emitter.emitInstruction("AND", "R6", "%D 1", "R6", "temp = (dividend >> i) & 1");
+        emitter.emitInstruction("OR", "R2", "R6", "R2", "remainder |= (dividend >> i) & 1");
         
         // Check if remainder >= divisor: if (remainder >= b_abs) { remainder -= b_abs; integer_part |= (1 << i); }
         String ffdIntSkipSub = context.labelGenerator().generateLabel();
         emitter.emitInstruction("CMP", "R2", "R1", null);
-        emitter.emitInstruction("JR_SLT", ffdIntSkipSub, "if remainder < b_abs, skip subtraction");
+        emitter.emitInstruction("JP_SLT", ffdIntSkipSub, "if remainder < b_abs, skip subtraction");
         
         // Subtract divisor from remainder: remainder -= b_abs
         emitter.emitInstruction("SUB", "R2", "R1", "R2", "remainder -= b_abs");
         
         // Set the i-th bit in quotient: integer_part |= (1 << i)
-        emitter.emitInstruction("MOVE", "%D 1", "R5", null);
-        emitter.emitInstruction("SHL", "R5", "R3", "R5", "R5 = 1 << i");
-        emitter.emitInstruction("OR", "R0", "R5", "R0", "integer_part |= (1 << i)");
+        // Use R6 as temporary for bit manipulation
+        emitter.emitInstruction("MOVE", "%D 1", "R6", null);
+        emitter.emitInstruction("SHL", "R6", "R3", "R6", "R6 = 1 << i");
+        emitter.emitInstruction("OR", "R0", "R6", "R0", "integer_part |= (1 << i)");
         
         emitter.emitLabel(ffdIntSkipSub, "skip subtraction");
         
         // Decrement loop counter: i--
         emitter.emitInstruction("SUB", "R3", "%D 1", "R3", "i--");
-        emitter.emitInstruction("JR", ffdIntLoopLabel, "continue loop");
+        emitter.emitInstruction("JP", ffdIntLoopLabel, "continue loop");
         
         emitter.emitLabel(ffdIntLoopEndLabel, "integer division done");
         // After loop: R0 = integer_part, R2 = remainder
@@ -271,7 +287,8 @@ public final class FloatDivGenerator {
         emitter.emitInstruction("MOVE", "%D 0", "R3", "frac = 0 (fractional accumulator)");
         
         // Initialize loop counter: i = 0
-        emitter.emitInstruction("MOVE", "%D 0", "R5", "i = 0 (loop counter)");
+        // Use R6 as loop counter temporarily (we'll restore it before returning)
+        emitter.emitInstruction("MOVE", "%D 0", "R6", "i = 0 (loop counter, use R6 temporarily)");
         
         // Fractional loop: for (int i = 0; i < 16; ++i)
         String ffdFracLoopLabel = context.labelGenerator().generateLabel();
@@ -279,8 +296,8 @@ public final class FloatDivGenerator {
         emitter.emitLabel(ffdFracLoopLabel, "fractional refinement loop");
         
         // Check if i >= 16 (done)
-        emitter.emitInstruction("CMP", "R5", "%D 16", null);
-        emitter.emitInstruction("JR_SGE", ffdFracLoopEndLabel, "if i >= 16, done");
+        emitter.emitInstruction("CMP", "R6", "%D 16", null);
+        emitter.emitInstruction("JP_SGE", ffdFracLoopEndLabel, "if i >= 16, done");
         
         // Shift remainder left by 1: remainder <<= 1
         emitter.emitInstruction("SHL", "R2", "%D 1", "R2", "remainder <<= 1");
@@ -291,7 +308,7 @@ public final class FloatDivGenerator {
         // Check if remainder >= divisor: if (remainder >= b_abs) { remainder -= b_abs; frac |= 1; }
         String ffdFracSkipSub = context.labelGenerator().generateLabel();
         emitter.emitInstruction("CMP", "R2", "R1", null);
-        emitter.emitInstruction("JR_SLT", ffdFracSkipSub, "if remainder < b_abs, skip subtraction");
+        emitter.emitInstruction("JP_SLT", ffdFracSkipSub, "if remainder < b_abs, skip subtraction");
         
         // Subtract divisor from remainder: remainder -= b_abs
         emitter.emitInstruction("SUB", "R2", "R1", "R2", "remainder -= b_abs");
@@ -302,8 +319,8 @@ public final class FloatDivGenerator {
         emitter.emitLabel(ffdFracSkipSub, "skip subtraction");
         
         // Increment loop counter: i++
-        emitter.emitInstruction("ADD", "R5", "%D 1", "R5", "i++");
-        emitter.emitInstruction("JR", ffdFracLoopLabel, "continue loop");
+        emitter.emitInstruction("ADD", "R6", "%D 1", "R6", "i++");
+        emitter.emitInstruction("JP", ffdFracLoopLabel, "continue loop");
         
         emitter.emitLabel(ffdFracLoopEndLabel, "fractional loop done");
         // After loop: R0 = integer_part, R3 = frac (lower 16 bits)
@@ -338,8 +355,8 @@ public final class FloatDivGenerator {
         String ffdSignNegLabel = context.labelGenerator().generateLabel();
         String ffdSignDoneLabel = context.labelGenerator().generateLabel();
         emitter.emitInstruction("CMP", "R4", "%D 0", null);
-        emitter.emitInstruction("JR_EQ", ffdSignZeroLabel, "sign == 0 → result 0");
-        emitter.emitInstruction("JR_SLT", ffdSignNegLabel, "sign < 0 → negate");
+        emitter.emitInstruction("JP_EQ", ffdSignZeroLabel, "sign == 0 → result 0");
+        emitter.emitInstruction("JP_SLT", ffdSignNegLabel, "sign < 0 → negate");
         emitter.emitInstruction("JP", ffdSignDoneLabel, "sign > 0 → no change");
         
         emitter.emitLabel(ffdSignZeroLabel, "sign zero");

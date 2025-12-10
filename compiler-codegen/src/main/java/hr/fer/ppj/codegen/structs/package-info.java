@@ -38,9 +38,11 @@
  * 
  * <p><b>Key Classes:</b>
  * <ul>
- *   <li>{@link hr.fer.ppj.codegen.structs.StructLayout} - Struct size and offset calculation</li>
+ *   <li>{@link hr.fer.ppj.codegen.structs.StructSizeCalculator} - Struct size calculation</li>
+ *   <li>{@link hr.fer.ppj.codegen.structs.StructFieldOffsetCalculator} - Field offset calculation</li>
  *   <li>{@link hr.fer.ppj.codegen.structs.StructArraySizeExtractor} - Array size extraction from parse tree</li>
- *   <li>{@link hr.fer.ppj.codegen.structs.StructFieldAccess} - Field access code generation</li>
+ *   <li>{@link hr.fer.ppj.codegen.structs.StructFieldAddressGenerator} - Field address code generation</li>
+ *   <li>{@link hr.fer.ppj.codegen.structs.NestedStructArraySizeExtractor} - Nested struct array size extraction</li>
  * </ul>
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>

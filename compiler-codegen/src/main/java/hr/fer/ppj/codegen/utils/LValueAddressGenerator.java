@@ -5,18 +5,14 @@ import hr.fer.ppj.codegen.env.VariableAddressResolver;
 import hr.fer.ppj.codegen.expr.ExpressionCodeGenerator;
 import hr.fer.ppj.codegen.structs.StructArraySizeExtractor;
 import hr.fer.ppj.codegen.structs.StructFieldAddressGenerator;
-import hr.fer.ppj.codegen.structs.StructFieldOffsetCalculator;
-import hr.fer.ppj.codegen.structs.StructSizeCalculator;
-import hr.fer.ppj.codegen.types.TypeSizeCalculator;
+import hr.fer.ppj.codegen.utils.ArrayElementAddressGenerator;
+import hr.fer.ppj.codegen.utils.address.ExpressionUnwrapper;
+import hr.fer.ppj.codegen.utils.address.LValuePatternMatcher;
+import hr.fer.ppj.codegen.utils.address.VariableAddressLoader;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.TerminalNode;
-import hr.fer.ppj.semantics.types.ArrayType;
-import hr.fer.ppj.semantics.types.StructType;
-import hr.fer.ppj.semantics.types.Type;
-import hr.fer.ppj.semantics.types.TypeSystem;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -48,6 +44,7 @@ public final class LValueAddressGenerator {
     private final CodeGenContext context;
     private final VariableAddressResolver addressResolver;
     private final ExpressionCodeGenerator expressionGenerator;
+    private final VariableAddressLoader addressLoader;
     private StructArraySizeExtractor arraySizeExtractor;
     
     /**
@@ -60,6 +57,7 @@ public final class LValueAddressGenerator {
         this.context = Objects.requireNonNull(context, "context must not be null");
         this.addressResolver = new VariableAddressResolver(context);
         this.expressionGenerator = Objects.requireNonNull(expressionGenerator, "expressionGenerator must not be null");
+        this.addressLoader = new VariableAddressLoader(context);
         // Parse tree will be set later if needed (lazy initialization)
         this.arraySizeExtractor = null;
     }
@@ -132,14 +130,14 @@ public final class LValueAddressGenerator {
         
         // Unwrap all expression layers to get to the underlying l-value
         // This handles cases where the node is wrapped in <izraz_pridruzivanja>, <log_ili_izraz>, etc.
-        // Note: unwrapExpressionLayers() preserves <postfiks_izraz> structure, so nested
+        // Note: ExpressionUnwrapper.unwrap() preserves <postfiks_izraz> structure, so nested
         // field/array accesses are preserved correctly
-        NonTerminalNode unwrapped = unwrapExpressionLayers(node);
+        NonTerminalNode unwrapped = ExpressionUnwrapper.unwrap(node);
         
         // Check for field access FIRST (before array indexing) because field access
         // can be the base of array indexing: o.arr[i] is array indexing with field access base
         // Pattern: <postfiks_izraz> TOCKA IDN
-        if (isFieldAccess(unwrapped)) {
+        if (LValuePatternMatcher.isFieldAccess(unwrapped)) {
             // Use specialized field address generator (handles null arraySizeExtractor gracefully)
             StructFieldAddressGenerator fieldGen = new StructFieldAddressGenerator(context, expressionGenerator, this, arraySizeExtractor);
             fieldGen.generateFieldAddress(unwrapped, targetRegister);
@@ -149,7 +147,7 @@ public final class LValueAddressGenerator {
         // Check for array indexing SECOND
         // Pattern: <postfiks_izraz> L_UGL_ZAGRADA <izraz> D_UGL_ZAGRADA
         // The base can be a field access (o.arr[i]) or nested field access (o.middle.inner.arr[i])
-        if (isArrayIndexing(unwrapped)) {
+        if (LValuePatternMatcher.isArrayIndexing(unwrapped)) {
             // Use specialized array element address generator (handles null arraySizeExtractor gracefully)
             ArrayElementAddressGenerator arrayGen = new ArrayElementAddressGenerator(context, expressionGenerator, this, arraySizeExtractor);
             arrayGen.generateArrayElementAddress(unwrapped, targetRegister);
@@ -160,7 +158,16 @@ public final class LValueAddressGenerator {
         // This is the base case of recursion - when we've unwound all field/array accesses
         String variableName = extractVariableName(unwrapped);
         if (variableName != null) {
-            generateVariableAddress(variableName, targetRegister);
+            // Try to extract type from the original node first (before unwrapping),
+            // as unwrapping might lose type information in some cases.
+            // If not available, fall back to the unwrapped node.
+            NonTerminalNode typeSourceNode = node;
+            if (node.attributes() == null || node.attributes().type() == null) {
+                typeSourceNode = unwrapped; // Fall back to unwrapped node if original has no type
+            }
+            // Pass the node with type information so we can extract type from semantic attributes
+            // This is especially important for distinguishing struct-by-value parameters from array/pointer parameters
+            generateVariableAddress(variableName, targetRegister, typeSourceNode);
             return;
         }
         
@@ -196,196 +203,20 @@ public final class LValueAddressGenerator {
      * <p><b>Key:</b> This computes the ADDRESS of the variable, not its value.
      * For struct variables, this is the address of the struct object itself.
      * 
+     * <p><b>Array Parameters:</b> In C, array parameters decay to pointers. When accessing
+     * an array parameter (e.g., {@code a[3]} where {@code a} is a parameter), we need to:
+     * <ol>
+     *   <li>Compute the address of the parameter slot (e.g., R5+8)</li>
+     *   <li>LOAD the pointer value from that slot (the actual array base address)</li>
+     * </ol>
+     * 
      * @param variableName the variable name
      * @param targetRegister the register to store the address in
+     * @param expressionNode optional expression node for type extraction
      */
-    private void generateVariableAddress(String variableName, String targetRegister) {
+    private void generateVariableAddress(String variableName, String targetRegister, NonTerminalNode expressionNode) {
         String address = addressResolver.getVariableAddress(variableName);
-        loadVariableAddress(address, targetRegister);
-    }
-    
-    
-    /**
-     * Loads a variable address into a register.
-     * 
-     * <p>For local variables: computes R5 + offset
-     * For global variables: loads global label
-     * 
-     * <p><b>Key:</b> This computes the ADDRESS, not the value.
-     * Never uses LOAD to get the address of a struct variable.
-     * 
-     * @param address the address expression (e.g., "(R5-08)" or "(G_X)")
-     * @param targetRegister the register to load the address into
-     */
-    private void loadVariableAddress(String address, String targetRegister) {
-        if (address.startsWith("(G_")) {
-            // Global variable: extract label from "(G_LABEL)" format
-            String label = address.substring(1, address.length() - 1); // Remove parentheses
-            context.emitter().emitInstruction("MOVE", label, targetRegister, "load global variable address");
-        } else if (address.startsWith("(R5")) {
-            // Local variable: compute address from frame pointer
-            context.emitter().emitInstruction("MOVE", "R5", targetRegister, "load frame pointer");
-            String offsetStr = extractOffsetFromAddress(address);
-            if (offsetStr != null) {
-                // offsetStr is like "-08" (hex) or "+08" (hex)
-                try {
-                    int offsetValue;
-                    if (offsetStr.startsWith("-")) {
-                        // Negative offset: parse hex value and negate
-                        String hexValue = offsetStr.substring(1); // Remove minus sign
-                        offsetValue = -Integer.parseInt(hexValue, 16);
-                        context.emitter().emitInstruction("SUB", targetRegister, "%D " + Math.abs(offsetValue), targetRegister,
-                            "add variable offset");
-                    } else if (offsetStr.startsWith("+")) {
-                        // Positive offset: parse hex value
-                        String hexValue = offsetStr.substring(1); // Remove plus sign
-                        offsetValue = Integer.parseInt(hexValue, 16);
-                        context.emitter().emitInstruction("ADD", targetRegister, "%D " + offsetValue, targetRegister,
-                            "add variable offset");
-                    } else {
-                        // No sign: assume positive hex
-                        offsetValue = Integer.parseInt(offsetStr, 16);
-                        context.emitter().emitInstruction("ADD", targetRegister, "%D " + offsetValue, targetRegister,
-                            "add variable offset");
-                    }
-                } catch (NumberFormatException e) {
-                    // If parsing fails, try as decimal
-                    if (offsetStr.startsWith("-")) {
-                        context.emitter().emitInstruction("SUB", targetRegister, "%D " + offsetStr.substring(1), targetRegister,
-                            "add variable offset");
-                    } else if (offsetStr.startsWith("+")) {
-                        context.emitter().emitInstruction("ADD", targetRegister, "%D " + offsetStr.substring(1), targetRegister,
-                            "add variable offset");
-                    } else {
-                        context.emitter().emitInstruction("ADD", targetRegister, "%D " + offsetStr, targetRegister,
-                            "add variable offset");
-                    }
-                }
-            }
-        } else {
-            // Fallback: assume it's a label
-            context.emitter().emitInstruction("MOVE", address, targetRegister, "load variable address");
-        }
-    }
-    
-    /**
-     * Extracts the offset part from an address expression.
-     * 
-     * @param address the address expression (e.g., "(R5-04)" or "(R5+08)")
-     * @return the offset string (e.g., "-04" or "+08"), or null if not found
-     */
-    private String extractOffsetFromAddress(String address) {
-        int r5Index = address.indexOf("R5");
-        if (r5Index == -1) {
-            return null;
-        }
-        
-        int offsetStart = r5Index + 2; // After "R5"
-        if (offsetStart >= address.length()) {
-            return null;
-        }
-        
-        char firstChar = address.charAt(offsetStart);
-        if (firstChar != '+' && firstChar != '-') {
-            return null;
-        }
-        
-        int offsetEnd = address.indexOf(')', offsetStart);
-        if (offsetEnd == -1) {
-            return null;
-        }
-        
-        return address.substring(offsetStart, offsetEnd);
-    }
-    
-    /**
-     * Checks if a node represents a field access expression.
-     * 
-     * @param node the node to check
-     * @return true if the node is a field access
-     */
-    private boolean isFieldAccess(NonTerminalNode node) {
-        if (!"<postfiks_izraz>".equals(node.symbol())) {
-            return false;
-        }
-        List<ParseNode> children = node.children();
-        if (children.size() != 3) {
-            return false;
-        }
-        ParseNode second = children.get(1);
-        return second instanceof TerminalNode terminal && "TOCKA".equals(terminal.symbol());
-    }
-    
-    /**
-     * Checks if a node represents an array indexing expression.
-     * 
-     * <p>Pattern: <postfiks_izraz> L_UGL_ZAGRADA <izraz> D_UGL_ZAGRADA
-     * 
-     * <p>This method ONLY checks for the [...] pattern. It does NOT require
-     * that the base is a simple variable - it can be a field access (a.arr[i]),
-     * nested struct access (o.inner.arr[i]), etc.
-     * 
-     * @param node the node to check
-     * @return true if the node is array indexing
-     */
-    private boolean isArrayIndexing(NonTerminalNode node) {
-        if (!"<postfiks_izraz>".equals(node.symbol())) {
-            return false;
-        }
-        List<ParseNode> children = node.children();
-        if (children.size() != 4) {
-            return false;
-        }
-        ParseNode second = children.get(1);
-        ParseNode fourth = children.get(3);
-        return second instanceof TerminalNode terminal1 && "L_UGL_ZAGRADA".equals(terminal1.symbol()) &&
-               fourth instanceof TerminalNode terminal2 && "D_UGL_ZAGRADA".equals(terminal2.symbol());
-    }
-    
-    /**
-     * Unwraps all expression layers to get to the underlying l-value.
-     * 
-     * <p>This recursively unwraps expression nonterminals that don't change the l-value nature:
-     * <ul>
-     *   <li><izraz_pridruzivanja> -> unwraps to child</li>
-     *   <li><log_ili_izraz>, <log_i_izraz>, <bin_ili_izraz>, etc. -> unwraps to child</li>
-     *   <li><jednakosni_izraz>, <odnosni_izraz>, <aditivni_izraz>, etc. -> unwraps to child</li>
-     *   <li><multiplikativni_izraz>, <cast_izraz> -> unwraps to child</li>
-     *   <li><unarni_izraz> -> unwraps to child</li>
-     * </ul>
-     * 
-     * <p>Stops when it reaches <postfiks_izraz> or <primarni_izraz>, which are the actual l-values.
-     * 
-     * @param node the node to unwrap
-     * @return the unwrapped node (should be <postfiks_izraz> or <primarni_izraz>)
-     */
-    private NonTerminalNode unwrapExpressionLayers(NonTerminalNode node) {
-        String symbol = node.symbol();
-        List<ParseNode> children = node.children();
-        
-        // Expression layers that can be unwrapped (single-child nonterminals)
-        if (children.size() == 1 && children.get(0) instanceof NonTerminalNode child) {
-            // These are expression layers that don't change the l-value nature
-            if ("<izraz_pridruzivanja>".equals(symbol) ||
-                "<log_ili_izraz>".equals(symbol) ||
-                "<log_i_izraz>".equals(symbol) ||
-                "<bin_ili_izraz>".equals(symbol) ||
-                "<bin_xili_izraz>".equals(symbol) ||
-                "<bin_i_izraz>".equals(symbol) ||
-                "<jednakosni_izraz>".equals(symbol) ||
-                "<odnosni_izraz>".equals(symbol) ||
-                "<aditivni_izraz>".equals(symbol) ||
-                "<multiplikativni_izraz>".equals(symbol) ||
-                "<cast_izraz>".equals(symbol) ||
-                "<unarni_izraz>".equals(symbol)) {
-                // Recursively unwrap
-                return unwrapExpressionLayers(child);
-            }
-        }
-        
-        // If it's already a postfiks_izraz or primarni_izraz, return as-is
-        // (these are the actual l-values)
-        return node;
+        addressLoader.loadAddress(address, targetRegister, variableName, expressionNode);
     }
     
     
@@ -400,10 +231,10 @@ public final class LValueAddressGenerator {
      */
     private String extractVariableName(NonTerminalNode node) {
         // First unwrap all expression layers to get to the underlying l-value
-        NonTerminalNode unwrapped = unwrapExpressionLayers(node);
+        NonTerminalNode unwrapped = ExpressionUnwrapper.unwrap(node);
         
         // Check if this is a field access or array indexing - if so, return null
-        if (isFieldAccess(unwrapped) || isArrayIndexing(unwrapped)) {
+        if (LValuePatternMatcher.isFieldAccess(unwrapped) || LValuePatternMatcher.isArrayIndexing(unwrapped)) {
             return null;
         }
         

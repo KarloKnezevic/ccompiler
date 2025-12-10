@@ -1,9 +1,12 @@
 package hr.fer.ppj.codegen.func;
 
-import hr.fer.ppj.codegen.structs.NestedStructArraySizeExtractor;
+import hr.fer.ppj.codegen.func.DeclaratorTraverser;
 import hr.fer.ppj.codegen.structs.StructArraySizeExtractor;
-import hr.fer.ppj.codegen.structs.StructSizeCalculator;
-import hr.fer.ppj.codegen.types.TypeSizeCalculator;
+import hr.fer.ppj.semantics.types.ArrayType;
+import hr.fer.ppj.semantics.types.StructType;
+import hr.fer.ppj.semantics.types.Type;
+import hr.fer.ppj.semantics.types.TypeSystem;
+import java.util.Map;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.TerminalNode;
@@ -37,6 +40,7 @@ public final class LocalVariableExtractor {
     public record VariableInfo(String name, int sizeInBytes) {}
     
     private final StructArraySizeExtractor arraySizeExtractor;
+    private final VariableSizeCalculator sizeCalculator;
     
     /**
      * Creates a new local variable extractor.
@@ -45,6 +49,7 @@ public final class LocalVariableExtractor {
      */
     public LocalVariableExtractor(NonTerminalNode parseTree) {
         this.arraySizeExtractor = new StructArraySizeExtractor(parseTree);
+        this.sizeCalculator = new VariableSizeCalculator(arraySizeExtractor);
     }
     
     /**
@@ -242,41 +247,11 @@ public final class LocalVariableExtractor {
      * @param variableType the type of the variable (from semantic attributes, may be null)
      */
     private void extractVariableInfoFromDirectDeclarator(NonTerminalNode directDeclarator, List<VariableInfo> variables, int elementSize, Type variableType) {
-        String varName = null;
-        int arraySize = 0;
-        boolean isArray = false;
-        
-        List<ParseNode> children = directDeclarator.children();
-        
-        // Handle nested <izravni_deklarator> structure
-        NonTerminalNode nestedDeclarator = null;
-        for (ParseNode child : children) {
-            if (child instanceof NonTerminalNode nonTerminal && 
-                "<izravni_deklarator>".equals(nonTerminal.symbol())) {
-                nestedDeclarator = nonTerminal;
-                break;
-            }
-        }
-        
-        // Find IDN (variable name)
-        for (ParseNode child : children) {
-            if (child instanceof TerminalNode terminal && "IDN".equals(terminal.symbol())) {
-                varName = terminal.lexeme();
-                break;
-            }
-        }
-        
-        // Handle nested declarator case
+        // Check for nested declarator first
+        NonTerminalNode nestedDeclarator = DeclaratorTraverser.findNestedDeclarator(directDeclarator);
         if (nestedDeclarator != null) {
-            List<ParseNode> nestedChildren = nestedDeclarator.children();
-            for (ParseNode nestedChild : nestedChildren) {
-                if (nestedChild instanceof TerminalNode terminal && "IDN".equals(terminal.symbol())) {
-                    varName = terminal.lexeme();
-                    break;
-                }
-            }
-            
-            // Check for array brackets after nested declarator
+            // Handle nested declarator with array brackets after it
+            List<ParseNode> children = directDeclarator.children();
             int nestedIndex = -1;
             for (int i = 0; i < children.size(); i++) {
                 if (children.get(i) == nestedDeclarator) {
@@ -284,6 +259,8 @@ public final class LocalVariableExtractor {
                     break;
                 }
             }
+            
+            // Check for array brackets after nested declarator: <izravni_deklarator> L_UGL_ZAGRADA <izraz> D_UGL_ZAGRADA
             if (nestedIndex >= 0 && nestedIndex + 3 < children.size()) {
                 ParseNode node1 = children.get(nestedIndex + 1);
                 ParseNode node2 = children.get(nestedIndex + 2);
@@ -291,197 +268,58 @@ public final class LocalVariableExtractor {
                 if (node1 instanceof TerminalNode t1 && "L_UGL_ZAGRADA".equals(t1.symbol()) &&
                     node2 instanceof NonTerminalNode exprNode &&
                     node3 instanceof TerminalNode t3 && "D_UGL_ZAGRADA".equals(t3.symbol())) {
-                    String numberValue = extractNumberFromExpression(exprNode);
+                    String numberValue = DeclaratorTraverser.extractNumberFromExpression(exprNode);
                     if (numberValue != null) {
-                        isArray = true;
                         try {
-                            arraySize = Integer.parseInt(numberValue);
+                            int arraySize = Integer.parseInt(numberValue);
+                            String varName = DeclaratorTraverser.extractVariableName(nestedDeclarator);
+                            if (varName != null) {
+                                int size = sizeCalculator.calculateSize(variableType, arraySize, elementSize);
+                                variables.add(new VariableInfo(varName, size));
+                                return;
+                            }
                         } catch (NumberFormatException e) {
-                            arraySize = 0;
+                            // Ignore, continue processing
                         }
                     }
                 }
             }
             
-            if (varName != null && isArray && arraySize > 0) {
-                // Calculate array size based on type if available
-                int size = calculateVariableSize(variableType, arraySize, elementSize);
-                variables.add(new VariableInfo(varName, size));
+            // Try to extract from nested declarator recursively
+            String varName = DeclaratorTraverser.extractVariableName(nestedDeclarator);
+            if (varName != null) {
+                int arraySize = DeclaratorTraverser.extractArraySize(nestedDeclarator);
+                if (arraySize > 0) {
+                    int size = sizeCalculator.calculateSize(variableType, arraySize, elementSize);
+                    variables.add(new VariableInfo(varName, size));
+                } else {
+                    int size = sizeCalculator.calculateSize(variableType, 0, elementSize);
+                    variables.add(new VariableInfo(varName, size));
+                }
                 return;
             }
             
-            if (varName != null && !isArray) {
-                // Calculate variable size based on type
-                int size = calculateVariableSize(variableType, 0, elementSize);
-                variables.add(new VariableInfo(varName, size));
-                return;
-            }
-            
+            // Recurse into nested declarator
             extractVariableInfoFromDirectDeclarator(nestedDeclarator, variables, elementSize, variableType);
             return;
         }
         
+        // No nested declarator - extract from this declarator directly
+        String varName = DeclaratorTraverser.extractVariableName(directDeclarator);
         if (varName == null) {
             return;
         }
         
-        // Check if it's an array
-        if (!isArray) {
-            for (int i = 0; i <= children.size() - 3; i++) {
-                if (i + 2 < children.size()) {
-                    ParseNode node1 = children.get(i);
-                    ParseNode node2 = children.get(i + 1);
-                    ParseNode node3 = children.get(i + 2);
-                    
-                    if (node1 instanceof TerminalNode t1 && "L_UGL_ZAGRADA".equals(t1.symbol()) &&
-                        node2 instanceof TerminalNode t2 && "BROJ".equals(t2.symbol()) &&
-                        node3 instanceof TerminalNode t3 && "D_UGL_ZAGRADA".equals(t3.symbol())) {
-                        isArray = true;
-                        try {
-                            arraySize = Integer.parseInt(t2.lexeme());
-                        } catch (NumberFormatException e) {
-                            arraySize = 0;
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-        
-        if (isArray) {
-            // Calculate array size based on type if available
-            int size = calculateVariableSize(variableType, arraySize, elementSize);
+        int arraySize = DeclaratorTraverser.extractArraySize(directDeclarator);
+        if (arraySize > 0) {
+            // Array variable
+            int size = sizeCalculator.calculateSize(variableType, arraySize, elementSize);
             variables.add(new VariableInfo(varName, size));
         } else {
-            // Calculate variable size based on type
-            int size = calculateVariableSize(variableType, 0, elementSize);
+            // Simple variable
+            int size = sizeCalculator.calculateSize(variableType, 0, elementSize);
             variables.add(new VariableInfo(varName, size));
         }
-    }
-    
-    /**
-     * Calculates the size in bytes of a variable based on its type.
-     * 
-     * <p>This method handles:
-     * <ul>
-     *   <li>Primitive types: char (1), int (4), float (4)</li>
-     *   <li>Array types: element_size × array_length</li>
-     *   <li>Struct types: calculated using StructLayoutCalculator</li>
-     *   <li>Pointer types: 4 bytes</li>
-     * </ul>
-     * 
-     * <p>If type is null, falls back to default sizes:
-     * <ul>
-     *   <li>Arrays: arraySize × elementSize</li>
-     *   <li>Non-arrays: 4 bytes</li>
-     * </ul>
-     * 
-     * @param variableType the variable type (from semantic attributes, may be null)
-     * @param arraySize the array size (if array, 0 otherwise)
-     * @param elementSize the element size in bytes (fallback, always 4 for this project)
-     * @return the size in bytes
-     */
-    private int calculateVariableSize(Type variableType, int arraySize, int elementSize) {
-        if (variableType == null) {
-            // Fallback: use default sizes
-            if (arraySize > 0) {
-                return arraySize * elementSize;
-            }
-            return 4; // Default for simple variables
-        }
-        
-        Type strippedType = TypeSystem.stripConst(variableType);
-        
-        if (strippedType instanceof StructType structType) {
-            // Struct type: calculate struct size
-            // For structs with array fields, extract array sizes from struct definition
-            // Also extract array sizes for nested structs that contain arrays (recursively)
-            String structTag = structType.tag();
-            Map<String, Integer> arraySizes = arraySizeExtractor.extractArraySizes(structTag);
-            
-            // CRITICAL: Recursively extract array sizes for ALL nested structs at ALL levels
-            // This must be done BEFORE calling calculateStructSize, because calculateStructSize
-            // will recursively call calculateTypeSize for nested struct fields, and those
-            // nested structs may also have array fields that need array sizes.
-            Map<String, Map<String, Integer>> nestedStructArraySizes = new java.util.HashMap<>();
-            if (arraySizeExtractor != null) {
-                NestedStructArraySizeExtractor.extractNestedStructArraySizes(structType, arraySizeExtractor, nestedStructArraySizes);
-            }
-            
-            // Also extract array sizes for the current struct itself if it's nested in another struct
-            // (needed when this struct is a field of another struct)
-            if (structTag != null && !nestedStructArraySizes.containsKey(structTag)) {
-                Map<String, Integer> currentArraySizes = arraySizeExtractor.extractArraySizes(structTag);
-                if (!currentArraySizes.isEmpty()) {
-                    nestedStructArraySizes.put(structTag, currentArraySizes);
-                }
-            }
-            
-            // Use the overload that accepts array sizes for both current and nested structs
-            return StructSizeCalculator.calculateStructSize(structType, arraySizes, nestedStructArraySizes);
-        } else if (strippedType instanceof ArrayType arrayType) {
-            // Array type: calculate array size
-            // ArrayType doesn't store size - use provided arraySize parameter
-            if (arraySize > 0) {
-                // Calculate element size - may need nested struct array sizes if element is struct
-                Type elementType = arrayType.elementType();
-                Type strippedElementType = TypeSystem.stripConst(elementType);
-                
-                int elemSize;
-                if (strippedElementType instanceof StructType elementStructType) {
-                    // Element is a struct - need to extract array sizes for it and nested structs
-                    String elementStructTag = elementStructType.tag();
-                    Map<String, Integer> elementArraySizes = arraySizeExtractor.extractArraySizes(elementStructTag);
-                    
-                    // Extract array sizes for nested structs in element type
-                    Map<String, Map<String, Integer>> elementNestedStructArraySizes = new java.util.HashMap<>();
-                    if (arraySizeExtractor != null) {
-                        NestedStructArraySizeExtractor.extractNestedStructArraySizes(elementStructType, arraySizeExtractor, elementNestedStructArraySizes);
-                    }
-                    
-                    elemSize = StructSizeCalculator.calculateStructSize(elementStructType, elementArraySizes, elementNestedStructArraySizes);
-                } else {
-                    // Element is primitive or pointer - use simple type size calculator
-                    elemSize = TypeSizeCalculator.calculateTypeSize(strippedElementType);
-                }
-                return elemSize * arraySize;
-            }
-            // Fallback: can't determine size without semantic attributes
-            return elementSize; // Default to single element size
-        } else {
-            // Primitive or pointer type: use type size calculator
-            // Note: strippedType should not be StructType here (handled above), but if it is,
-            // we'd need array sizes - but this shouldn't happen for primitive/pointer types
-            return TypeSizeCalculator.calculateTypeSize(strippedType);
-        }
-    }
-    
-    
-    /**
-     * Extracts a number value from an expression node.
-     * 
-     * <p>Recursively searches for a BROJ terminal and returns its lexeme.
-     * 
-     * @param exprNode the expression node
-     * @return the number value as string, or null if not found
-     */
-    private String extractNumberFromExpression(NonTerminalNode exprNode) {
-        if (exprNode == null) {
-            return null;
-        }
-        
-        for (ParseNode child : exprNode.children()) {
-            if (child instanceof TerminalNode terminal && "BROJ".equals(terminal.symbol())) {
-                return terminal.lexeme();
-            } else if (child instanceof NonTerminalNode nonTerminal) {
-                String result = extractNumberFromExpression(nonTerminal);
-                if (result != null) {
-                    return result;
-                }
-            }
-        }
-        
-        return null;
     }
 }
 

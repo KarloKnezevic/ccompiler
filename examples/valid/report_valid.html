@@ -1038,8 +1038,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_Y      DW %D 65               ; global INT y = 65
 G_X      DW %D 27               ; global INT x = 27
+G_Y      DW %D 65               ; global INT y = 65
 
 </code></pre>
       </details>
@@ -1516,8 +1516,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_Y      DW %D 65               ; global INT y = 65
 G_X      DW %D 27               ; global INT x = 27
+G_Y      DW %D 65               ; global INT y = 65
 
 </code></pre>
       </details>
@@ -1997,8 +1997,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_Y      DW %D 65               ; global INT y = 65
 G_X      DW %D 27               ; global INT x = 27
+G_Y      DW %D 65               ; global INT y = 65
 
 </code></pre>
       </details>
@@ -8950,8 +8950,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_Y      DW %D 12345            ; global INT y = 12345
 G_X      DW %D 1234             ; global INT x = 1234
+G_Y      DW %D 12345            ; global INT y = 12345
 
 </code></pre>
       </details>
@@ -9690,8 +9690,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_Y      DW %D 125              ; global INT y = 125
 G_X      DW %D 1234             ; global INT x = 1234
+G_Y      DW %D 125              ; global INT y = 125
 
 </code></pre>
       </details>
@@ -12079,7 +12079,7 @@ G_A      `DS %D 4               ; global ArrayType[elementType=INT] a
     <section id="program29" class="program-card">
       <h2>program29.c</h2>
       <div class="result-badge">
-        <span class="badge badge-fail">❌ FAIL</span>
+        <span class="badge badge-pass">✅ PASS</span>
       </div>
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
@@ -12808,6 +12808,7 @@ F_F                             ; Function f
         PUSH R0                 ; save array index
         MOVE R5, R0             ; load frame pointer
         ADD R0, %D 8, R0        ; add variable offset
+        LOAD R0, (R0)           ; load array/pointer from parameter
         POP R1                  ; restore array index
         SHL R1, %D 2, R1        ; index * 4 (element size)
         ADD R0, R1, R0          ; element address = base + (index * 4)
@@ -12865,9 +12866,9 @@ L2                              ; function exit
               </tr>
               <tr>
                 <td><code>123</code></td>
-                <td><code>0</code></td>
-                <td><code>0.0</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>123</code></td>
+                <td><code>0.001876831</code></td>
+                <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
             <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
@@ -21936,7 +21937,7 @@ L2                              ; function exit
     <section id="program39" class="program-card">
       <h2>program39.c</h2>
       <div class="result-badge">
-        <span class="badge badge-fail">❌ FAIL</span>
+        <span class="badge badge-pass">✅ PASS</span>
       </div>
       <div class="status-row">
         <span class="badge badge-ok">Lexer: OK</span>
@@ -24020,6 +24021,7 @@ F_F                             ; Function f
         PUSH R0                 ; save array index
         MOVE R5, R0             ; load frame pointer
         ADD R0, %D 36, R0       ; add variable offset
+        LOAD R0, (R0)           ; load array/pointer from parameter
         POP R1                  ; restore array index
         SHL R1, %D 2, R1        ; index * 4 (element size)
         ADD R0, R1, R0          ; element address = base + (index * 4)
@@ -24039,6 +24041,7 @@ F_F                             ; Function f
         PUSH R0                 ; save array index
         MOVE R5, R0             ; load frame pointer
         ADD R0, %D 36, R0       ; add variable offset
+        LOAD R0, (R0)           ; load array/pointer from parameter
         POP R1                  ; restore array index
         SHL R1, %D 2, R1        ; index * 4 (element size)
         ADD R0, R1, R0          ; element address = base + (index * 4)
@@ -24073,8 +24076,12 @@ F_MAIN                          ; Function main
 ; Compound statement
 ; Local variable declarations
 ; Local variable x at (R5-0C) with initializer
-        MOVE %D 0, R0           ; default initializer
-        STORE R0, (R5-0C)       ; initialize x
+        MOVE %D 51, R0          ; initialize x[0]
+        STORE R0, (R5-0C)       ; store x[0]
+        MOVE %D 52, R0          ; initialize x[1]
+        STORE R0, (R5-08)       ; store x[1]
+        MOVE %D 53, R0          ; initialize x[2]
+        STORE R0, (R5-04)       ; store x[2]
 ; Function call: f
         MOVE R5, R0             ; load frame pointer
         ADD R0, -0C, R0         ; compute array address
@@ -24122,9 +24129,9 @@ L2                              ; function exit
               </tr>
               <tr>
                 <td><code>112</code></td>
-                <td><code>8</code></td>
-                <td><code>1.2207031E-4</code></td>
-                <td class="status-fail">❌ FAIL</td>
+                <td><code>112</code></td>
+                <td><code>0.0017089844</code></td>
+                <td class="status-pass">✅ PASS</td>
               </tr>
             </table>
             <p><small>Note: Float values are compared using Q16.16 fixed-point representation. Q16.16 Float column shows the converted float value for comparison.</small></p>
@@ -29522,8 +29529,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_Y      DW %D 16               ; global INT y = 16
 G_X      DW %D 15               ; global INT x = 15
+G_Y      DW %D 16               ; global INT y = 16
 
 </code></pre>
       </details>
@@ -30005,8 +30012,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_Y      DW %D -12              ; global INT y = -12
 G_X      DW %D 15               ; global INT x = 15
+G_Y      DW %D -12              ; global INT y = -12
 
 </code></pre>
       </details>
@@ -30474,8 +30481,8 @@ L1                              ; function exit
         RET                     ; return to caller
 
 ; Global variables
-G_Y      DW %D 12               ; global INT y = 12
 G_X      DW %D 15               ; global INT x = 15
+G_Y      DW %D 12               ; global INT y = 12
 
 </code></pre>
       </details>

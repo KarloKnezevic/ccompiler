@@ -54,7 +54,7 @@ import java.util.Objects;
  * 
  * <p><b>Field Offset Calculation:</b>
  * 
- * <p>Field offsets are calculated using {@link StructLayoutCalculator}:
+ * <p>Field offsets are calculated using {@link hr.fer.ppj.codegen.structs.StructFieldOffsetCalculator}:
  * <ul>
  *   <li>Fields are laid out in declaration order</li>
  *   <li>No padding between fields (tightly packed)</li>
