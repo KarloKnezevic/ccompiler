@@ -150,7 +150,7 @@ The compiler implements a complete type system with several categories of types:
 
 **Pointer Types**: Pointers store memory addresses. Basic pointer operations are supported, including declaration (`int *ptr`), dereferencing (`*ptr`), and address-of (`&var`). Advanced pointer arithmetic and complex pointer operations are not fully implemented.
 
-**Structure Types**: Structures allow grouping related data together. Structure types can be named (using a tag) or anonymous. Structure members are accessed using the dot operator (`.`). Structure support is currently limited.
+**Structure Types**: Structures allow grouping related data together. Structure types can be named (using a tag) or anonymous. Structure members are accessed using the dot operator (`.`). The compiler provides comprehensive support for struct types, including nested structures, arrays within structs, arrays of structs, struct assignments, and struct-returning functions. For detailed documentation, see [Struct Grammar and Parsing](../04-syntax-analysis/struct-grammar-and-parsing.md), [Struct Type System and Semantic Checking](../05-semantic-analysis/struct-type-system-and-checking.md), and [Struct Code Generation](../07-code-generation/struct-code-generation.md).
 
 **Function Types**: Functions have types determined by their parameter types and return type. Function types are used for type checking function calls and ensuring compatibility between function declarations and definitions.
 

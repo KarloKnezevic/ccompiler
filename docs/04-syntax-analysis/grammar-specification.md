@@ -267,3 +267,6 @@ The parser includes comprehensive tests:
 For detailed technical documentation on the LR parser implementation, see:
 - [LR_PARSER_TECHNICAL.md](LR_PARSER_TECHNICAL.md) - Detailed technical documentation on algorithms and implementation
 
+For comprehensive documentation on struct types, including grammar rules, parsing, and AST representation, see:
+- [Struct Grammar and Parsing](struct-grammar-and-parsing.md) - Complete grammar rules, parsing algorithms, and AST representation for struct types
+

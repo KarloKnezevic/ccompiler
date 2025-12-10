@@ -204,6 +204,9 @@ public record StructType(String tag, Map<String, Type> fields) implements Type {
     public boolean isScalar() { return false; }
     // Structs are not scalar - cannot be used in arithmetic
 }
+```
+
+**See Also**: For comprehensive documentation on struct type checking, semantic rules, and symbol table integration, see [Struct Type System and Semantic Checking](struct-type-system-and-checking.md).
 
 public record FunctionType(
     Type returnType,
