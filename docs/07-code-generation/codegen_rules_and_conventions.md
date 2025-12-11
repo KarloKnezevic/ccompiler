@@ -546,3 +546,8 @@ Following these rules guarantees that the generated FRISC assembly code:
 - Follows standard calling conventions
 - Produces correct results for all valid C programs
 
+## Additional Documentation
+
+For comprehensive documentation on struct code generation, including memory layout, field offset calculation, member access, and struct assignments, see:
+- [Struct Code Generation](struct-code-generation.md) - Complete algorithms, memory layout conventions, and code generation patterns for struct types
+

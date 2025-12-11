@@ -1536,16 +1536,21 @@ F_FDIV                          ; Helper function: float div(float a, float b)
 ; F_FDIV: Q16.16 fixed-point division using 32-bit arithmetic
 ; Input:  a at (R5+08), b at (R5+0C)
 ; Output: R6 = a / b (Q16.16 format)
+; 
+; CRITICAL: R5 is reserved as frame pointer and must NEVER be used
+; as a general-purpose register. All temporaries use R0-R4, R6-R7.
+; All conditional jumps use JP_* mnemonics (not JR_*) for consistency
+; with compiler-generated code.
         PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP
+        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
         LOAD R0, (R5+08)        ; a (dividend, Q16.16)
         LOAD R1, (R5+0C)        ; b (divisor, Q16.16)
         CMP R1, %D 0
-        JR_EQ L2                ; if b == 0, return 0
+        JP_EQ L2                ; if b == 0, return 0
         MOVE %D 1, R4           ; sign = +1
         CMP R0, %D 0
-        JR_EQ L5                ; a == 0 → sign = 0
-        JR_SLT L4               ; a &lt; 0 → negate
+        JP_EQ L5                ; a == 0 → sign = 0
+        JP_SLT L4               ; a &lt; 0 → negate
         JP L3                   ; a &gt; 0 → nothing
 L5                              ; a is zero
         MOVE %D 0, R4           ; sign = 0 (result will be 0)
@@ -1557,7 +1562,7 @@ L4                              ; negate a
         SUB R2, R4, R4          ; sign = -sign
 L3                              ; a sign handled
         CMP R1, %D 0
-        JR_SGE L6               ; b &gt;= 0 → nothing
+        JP_SGE L6               ; b &gt;= 0 → nothing
 L7                              ; negate b
         MOVE %D 0, R2
         SUB R2, R1, R1          ; R1 = -R1 (b_abs)
@@ -1565,7 +1570,7 @@ L7                              ; negate b
         SUB R2, R4, R4          ; sign = -sign
 L6                              ; b sign handled
         CMP R4, %D 0
-        JR_EQ L2                ; if sign == 0, result is 0
+        JP_EQ L2                ; if sign == 0, result is 0
         PUSH R4                 ; save sign on stack
 ; 32-bit unsigned division: integer_part = a_abs / b_abs
         MOVE R0, R4             ; save dividend a_abs in R4
@@ -1574,37 +1579,37 @@ L6                              ; b sign handled
         MOVE %D 31, R3          ; i = 31 (loop counter)
 L8                              ; 32-bit integer division loop
         CMP R3, %D 0
-        JR_SLT L9               ; if i &lt; 0, done
+        JP_SLT L9               ; if i &lt; 0, done
         SHL R2, %D 1, R2        ; remainder &lt;&lt;= 1
-        MOVE R4, R5             ; temp = dividend
-        SHR R5, R3, R5          ; temp = dividend &gt;&gt; i
-        AND R5, %D 1, R5        ; temp = (dividend &gt;&gt; i) &amp; 1
-        OR R2, R5, R2           ; remainder |= (dividend &gt;&gt; i) &amp; 1
+        MOVE R4, R6             ; temp = dividend (use R6 temporarily)
+        SHR R6, R3, R6          ; temp = dividend &gt;&gt; i
+        AND R6, %D 1, R6        ; temp = (dividend &gt;&gt; i) &amp; 1
+        OR R2, R6, R2           ; remainder |= (dividend &gt;&gt; i) &amp; 1
         CMP R2, R1
-        JR_SLT L10              ; if remainder &lt; b_abs, skip subtraction
+        JP_SLT L10              ; if remainder &lt; b_abs, skip subtraction
         SUB R2, R1, R2          ; remainder -= b_abs
-        MOVE %D 1, R5
-        SHL R5, R3, R5          ; R5 = 1 &lt;&lt; i
-        OR R0, R5, R0           ; integer_part |= (1 &lt;&lt; i)
+        MOVE %D 1, R6
+        SHL R6, R3, R6          ; R6 = 1 &lt;&lt; i
+        OR R0, R6, R0           ; integer_part |= (1 &lt;&lt; i)
 L10                             ; skip subtraction
         SUB R3, %D 1, R3        ; i--
-        JR L8                   ; continue loop
+        JP L8                   ; continue loop
 L9                              ; integer division done
 ; 16-step fractional refinement loop
         MOVE %D 0, R3           ; frac = 0 (fractional accumulator)
-        MOVE %D 0, R5           ; i = 0 (loop counter)
+        MOVE %D 0, R6           ; i = 0 (loop counter, use R6 temporarily)
 L11                             ; fractional refinement loop
-        CMP R5, %D 16
-        JR_SGE L12              ; if i &gt;= 16, done
+        CMP R6, %D 16
+        JP_SGE L12              ; if i &gt;= 16, done
         SHL R2, %D 1, R2        ; remainder &lt;&lt;= 1
         SHL R3, %D 1, R3        ; frac &lt;&lt;= 1
         CMP R2, R1
-        JR_SLT L13              ; if remainder &lt; b_abs, skip subtraction
+        JP_SLT L13              ; if remainder &lt; b_abs, skip subtraction
         SUB R2, R1, R2          ; remainder -= b_abs
         OR R3, %D 1, R3         ; frac |= 1
 L13                             ; skip subtraction
-        ADD R5, %D 1, R5        ; i++
-        JR L11                  ; continue loop
+        ADD R6, %D 1, R6        ; i++
+        JP L11                  ; continue loop
 L12                             ; fractional loop done
 ; Combine integer_part and frac into Q16.16 result
         SHL R0, %D 16, R0       ; integer_part &lt;&lt;= 16
@@ -1612,8 +1617,8 @@ L12                             ; fractional loop done
 ; Apply sign to result
         POP R4                  ; restore sign from stack
         CMP R4, %D 0
-        JR_EQ L14               ; sign == 0 → result 0
-        JR_SLT L15              ; sign &lt; 0 → negate
+        JP_EQ L14               ; sign == 0 → result 0
+        JP_SLT L15              ; sign &lt; 0 → negate
         JP L16                  ; sign &gt; 0 → no change
 L14                             ; sign zero
         MOVE %D 0, R0
@@ -7123,7 +7128,12 @@ F_MAIN                          ; Function main
 ; Local variable declarations
 ; Local variable x at (R5-04) (no initializer)
         MOVE %D 163840, R0      ; load float constant 2.5 (Q16.16)
-        STORE R0, (R5-04)       ; assign to x
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         LOAD R0, (R5-04)        ; load variable x
         MOVE R0, R6             ; return value
         JP L1                   ; jump to function exit
@@ -8086,8 +8096,8 @@ Global Scope:
 
 ; Function definitions
 F_ADD                           ; Function add
-; Parameter x at (R5+08)
-; Parameter y at (R5+0C)
+; Parameter x (4 bytes) at (R5+08)
+; Parameter y (4 bytes) at (R5+0C)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
@@ -8113,11 +8123,11 @@ F_MAIN                          ; Function main
 ; Compound statement
 ; Function call: add
         MOVE %D 163840, R0      ; load float constant 2.5 (Q16.16)
-        PUSH R0                 ; push argument 2
+        PUSH R0                 ; push argument 2 (value)
         MOVE %D 98304, R0       ; load float constant 1.5 (Q16.16)
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_ADD              ; call add
-        ADD R7, %D 8, R7        ; cleanup 2 arguments
+        ADD R7, %D 8, R7        ; cleanup 8 bytes of arguments
         MOVE R6, R0             ; function result
         MOVE R0, R6             ; return value
         JP L2                   ; jump to function exit
@@ -9065,16 +9075,21 @@ F_FDIV                          ; Helper function: float div(float a, float b)
 ; F_FDIV: Q16.16 fixed-point division using 32-bit arithmetic
 ; Input:  a at (R5+08), b at (R5+0C)
 ; Output: R6 = a / b (Q16.16 format)
+; 
+; CRITICAL: R5 is reserved as frame pointer and must NEVER be used
+; as a general-purpose register. All temporaries use R0-R4, R6-R7.
+; All conditional jumps use JP_* mnemonics (not JR_*) for consistency
+; with compiler-generated code.
         PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP
+        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
         LOAD R0, (R5+08)        ; a (dividend, Q16.16)
         LOAD R1, (R5+0C)        ; b (divisor, Q16.16)
         CMP R1, %D 0
-        JR_EQ L14               ; if b == 0, return 0
+        JP_EQ L14               ; if b == 0, return 0
         MOVE %D 1, R4           ; sign = +1
         CMP R0, %D 0
-        JR_EQ L17               ; a == 0 → sign = 0
-        JR_SLT L16              ; a &lt; 0 → negate
+        JP_EQ L17               ; a == 0 → sign = 0
+        JP_SLT L16              ; a &lt; 0 → negate
         JP L15                  ; a &gt; 0 → nothing
 L17                             ; a is zero
         MOVE %D 0, R4           ; sign = 0 (result will be 0)
@@ -9086,7 +9101,7 @@ L16                             ; negate a
         SUB R2, R4, R4          ; sign = -sign
 L15                             ; a sign handled
         CMP R1, %D 0
-        JR_SGE L18              ; b &gt;= 0 → nothing
+        JP_SGE L18              ; b &gt;= 0 → nothing
 L19                             ; negate b
         MOVE %D 0, R2
         SUB R2, R1, R1          ; R1 = -R1 (b_abs)
@@ -9094,7 +9109,7 @@ L19                             ; negate b
         SUB R2, R4, R4          ; sign = -sign
 L18                             ; b sign handled
         CMP R4, %D 0
-        JR_EQ L14               ; if sign == 0, result is 0
+        JP_EQ L14               ; if sign == 0, result is 0
         PUSH R4                 ; save sign on stack
 ; 32-bit unsigned division: integer_part = a_abs / b_abs
         MOVE R0, R4             ; save dividend a_abs in R4
@@ -9103,37 +9118,37 @@ L18                             ; b sign handled
         MOVE %D 31, R3          ; i = 31 (loop counter)
 L20                             ; 32-bit integer division loop
         CMP R3, %D 0
-        JR_SLT L21              ; if i &lt; 0, done
+        JP_SLT L21              ; if i &lt; 0, done
         SHL R2, %D 1, R2        ; remainder &lt;&lt;= 1
-        MOVE R4, R5             ; temp = dividend
-        SHR R5, R3, R5          ; temp = dividend &gt;&gt; i
-        AND R5, %D 1, R5        ; temp = (dividend &gt;&gt; i) &amp; 1
-        OR R2, R5, R2           ; remainder |= (dividend &gt;&gt; i) &amp; 1
+        MOVE R4, R6             ; temp = dividend (use R6 temporarily)
+        SHR R6, R3, R6          ; temp = dividend &gt;&gt; i
+        AND R6, %D 1, R6        ; temp = (dividend &gt;&gt; i) &amp; 1
+        OR R2, R6, R2           ; remainder |= (dividend &gt;&gt; i) &amp; 1
         CMP R2, R1
-        JR_SLT L22              ; if remainder &lt; b_abs, skip subtraction
+        JP_SLT L22              ; if remainder &lt; b_abs, skip subtraction
         SUB R2, R1, R2          ; remainder -= b_abs
-        MOVE %D 1, R5
-        SHL R5, R3, R5          ; R5 = 1 &lt;&lt; i
-        OR R0, R5, R0           ; integer_part |= (1 &lt;&lt; i)
+        MOVE %D 1, R6
+        SHL R6, R3, R6          ; R6 = 1 &lt;&lt; i
+        OR R0, R6, R0           ; integer_part |= (1 &lt;&lt; i)
 L22                             ; skip subtraction
         SUB R3, %D 1, R3        ; i--
-        JR L20                  ; continue loop
+        JP L20                  ; continue loop
 L21                             ; integer division done
 ; 16-step fractional refinement loop
         MOVE %D 0, R3           ; frac = 0 (fractional accumulator)
-        MOVE %D 0, R5           ; i = 0 (loop counter)
+        MOVE %D 0, R6           ; i = 0 (loop counter, use R6 temporarily)
 L23                             ; fractional refinement loop
-        CMP R5, %D 16
-        JR_SGE L24              ; if i &gt;= 16, done
+        CMP R6, %D 16
+        JP_SGE L24              ; if i &gt;= 16, done
         SHL R2, %D 1, R2        ; remainder &lt;&lt;= 1
         SHL R3, %D 1, R3        ; frac &lt;&lt;= 1
         CMP R2, R1
-        JR_SLT L25              ; if remainder &lt; b_abs, skip subtraction
+        JP_SLT L25              ; if remainder &lt; b_abs, skip subtraction
         SUB R2, R1, R2          ; remainder -= b_abs
         OR R3, %D 1, R3         ; frac |= 1
 L25                             ; skip subtraction
-        ADD R5, %D 1, R5        ; i++
-        JR L23                  ; continue loop
+        ADD R6, %D 1, R6        ; i++
+        JP L23                  ; continue loop
 L24                             ; fractional loop done
 ; Combine integer_part and frac into Q16.16 result
         SHL R0, %D 16, R0       ; integer_part &lt;&lt;= 16
@@ -9141,8 +9156,8 @@ L24                             ; fractional loop done
 ; Apply sign to result
         POP R4                  ; restore sign from stack
         CMP R4, %D 0
-        JR_EQ L26               ; sign == 0 → result 0
-        JR_SLT L27              ; sign &lt; 0 → negate
+        JP_EQ L26               ; sign == 0 → result 0
+        JP_SLT L27              ; sign &lt; 0 → negate
         JP L28                  ; sign &gt; 0 → no change
 L26                             ; sign zero
         MOVE %D 0, R0
@@ -9444,16 +9459,21 @@ F_FDIV                          ; Helper function: float div(float a, float b)
 ; F_FDIV: Q16.16 fixed-point division using 32-bit arithmetic
 ; Input:  a at (R5+08), b at (R5+0C)
 ; Output: R6 = a / b (Q16.16 format)
+; 
+; CRITICAL: R5 is reserved as frame pointer and must NEVER be used
+; as a general-purpose register. All temporaries use R0-R4, R6-R7.
+; All conditional jumps use JP_* mnemonics (not JR_*) for consistency
+; with compiler-generated code.
         PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP
+        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
         LOAD R0, (R5+08)        ; a (dividend, Q16.16)
         LOAD R1, (R5+0C)        ; b (divisor, Q16.16)
         CMP R1, %D 0
-        JR_EQ L2                ; if b == 0, return 0
+        JP_EQ L2                ; if b == 0, return 0
         MOVE %D 1, R4           ; sign = +1
         CMP R0, %D 0
-        JR_EQ L5                ; a == 0 → sign = 0
-        JR_SLT L4               ; a &lt; 0 → negate
+        JP_EQ L5                ; a == 0 → sign = 0
+        JP_SLT L4               ; a &lt; 0 → negate
         JP L3                   ; a &gt; 0 → nothing
 L5                              ; a is zero
         MOVE %D 0, R4           ; sign = 0 (result will be 0)
@@ -9465,7 +9485,7 @@ L4                              ; negate a
         SUB R2, R4, R4          ; sign = -sign
 L3                              ; a sign handled
         CMP R1, %D 0
-        JR_SGE L6               ; b &gt;= 0 → nothing
+        JP_SGE L6               ; b &gt;= 0 → nothing
 L7                              ; negate b
         MOVE %D 0, R2
         SUB R2, R1, R1          ; R1 = -R1 (b_abs)
@@ -9473,7 +9493,7 @@ L7                              ; negate b
         SUB R2, R4, R4          ; sign = -sign
 L6                              ; b sign handled
         CMP R4, %D 0
-        JR_EQ L2                ; if sign == 0, result is 0
+        JP_EQ L2                ; if sign == 0, result is 0
         PUSH R4                 ; save sign on stack
 ; 32-bit unsigned division: integer_part = a_abs / b_abs
         MOVE R0, R4             ; save dividend a_abs in R4
@@ -9482,37 +9502,37 @@ L6                              ; b sign handled
         MOVE %D 31, R3          ; i = 31 (loop counter)
 L8                              ; 32-bit integer division loop
         CMP R3, %D 0
-        JR_SLT L9               ; if i &lt; 0, done
+        JP_SLT L9               ; if i &lt; 0, done
         SHL R2, %D 1, R2        ; remainder &lt;&lt;= 1
-        MOVE R4, R5             ; temp = dividend
-        SHR R5, R3, R5          ; temp = dividend &gt;&gt; i
-        AND R5, %D 1, R5        ; temp = (dividend &gt;&gt; i) &amp; 1
-        OR R2, R5, R2           ; remainder |= (dividend &gt;&gt; i) &amp; 1
+        MOVE R4, R6             ; temp = dividend (use R6 temporarily)
+        SHR R6, R3, R6          ; temp = dividend &gt;&gt; i
+        AND R6, %D 1, R6        ; temp = (dividend &gt;&gt; i) &amp; 1
+        OR R2, R6, R2           ; remainder |= (dividend &gt;&gt; i) &amp; 1
         CMP R2, R1
-        JR_SLT L10              ; if remainder &lt; b_abs, skip subtraction
+        JP_SLT L10              ; if remainder &lt; b_abs, skip subtraction
         SUB R2, R1, R2          ; remainder -= b_abs
-        MOVE %D 1, R5
-        SHL R5, R3, R5          ; R5 = 1 &lt;&lt; i
-        OR R0, R5, R0           ; integer_part |= (1 &lt;&lt; i)
+        MOVE %D 1, R6
+        SHL R6, R3, R6          ; R6 = 1 &lt;&lt; i
+        OR R0, R6, R0           ; integer_part |= (1 &lt;&lt; i)
 L10                             ; skip subtraction
         SUB R3, %D 1, R3        ; i--
-        JR L8                   ; continue loop
+        JP L8                   ; continue loop
 L9                              ; integer division done
 ; 16-step fractional refinement loop
         MOVE %D 0, R3           ; frac = 0 (fractional accumulator)
-        MOVE %D 0, R5           ; i = 0 (loop counter)
+        MOVE %D 0, R6           ; i = 0 (loop counter, use R6 temporarily)
 L11                             ; fractional refinement loop
-        CMP R5, %D 16
-        JR_SGE L12              ; if i &gt;= 16, done
+        CMP R6, %D 16
+        JP_SGE L12              ; if i &gt;= 16, done
         SHL R2, %D 1, R2        ; remainder &lt;&lt;= 1
         SHL R3, %D 1, R3        ; frac &lt;&lt;= 1
         CMP R2, R1
-        JR_SLT L13              ; if remainder &lt; b_abs, skip subtraction
+        JP_SLT L13              ; if remainder &lt; b_abs, skip subtraction
         SUB R2, R1, R2          ; remainder -= b_abs
         OR R3, %D 1, R3         ; frac |= 1
 L13                             ; skip subtraction
-        ADD R5, %D 1, R5        ; i++
-        JR L11                  ; continue loop
+        ADD R6, %D 1, R6        ; i++
+        JP L11                  ; continue loop
 L12                             ; fractional loop done
 ; Combine integer_part and frac into Q16.16 result
         SHL R0, %D 16, R0       ; integer_part &lt;&lt;= 16
@@ -9520,8 +9540,8 @@ L12                             ; fractional loop done
 ; Apply sign to result
         POP R4                  ; restore sign from stack
         CMP R4, %D 0
-        JR_EQ L14               ; sign == 0 → result 0
-        JR_SLT L15              ; sign &lt; 0 → negate
+        JP_EQ L14               ; sign == 0 → result 0
+        JP_SLT L15              ; sign &lt; 0 → negate
         JP L16                  ; sign &gt; 0 → no change
 L14                             ; sign zero
         MOVE %D 0, R0
@@ -9839,16 +9859,21 @@ F_FDIV                          ; Helper function: float div(float a, float b)
 ; F_FDIV: Q16.16 fixed-point division using 32-bit arithmetic
 ; Input:  a at (R5+08), b at (R5+0C)
 ; Output: R6 = a / b (Q16.16 format)
+; 
+; CRITICAL: R5 is reserved as frame pointer and must NEVER be used
+; as a general-purpose register. All temporaries use R0-R4, R6-R7.
+; All conditional jumps use JP_* mnemonics (not JR_*) for consistency
+; with compiler-generated code.
         PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP
+        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
         LOAD R0, (R5+08)        ; a (dividend, Q16.16)
         LOAD R1, (R5+0C)        ; b (divisor, Q16.16)
         CMP R1, %D 0
-        JR_EQ L2                ; if b == 0, return 0
+        JP_EQ L2                ; if b == 0, return 0
         MOVE %D 1, R4           ; sign = +1
         CMP R0, %D 0
-        JR_EQ L5                ; a == 0 → sign = 0
-        JR_SLT L4               ; a &lt; 0 → negate
+        JP_EQ L5                ; a == 0 → sign = 0
+        JP_SLT L4               ; a &lt; 0 → negate
         JP L3                   ; a &gt; 0 → nothing
 L5                              ; a is zero
         MOVE %D 0, R4           ; sign = 0 (result will be 0)
@@ -9860,7 +9885,7 @@ L4                              ; negate a
         SUB R2, R4, R4          ; sign = -sign
 L3                              ; a sign handled
         CMP R1, %D 0
-        JR_SGE L6               ; b &gt;= 0 → nothing
+        JP_SGE L6               ; b &gt;= 0 → nothing
 L7                              ; negate b
         MOVE %D 0, R2
         SUB R2, R1, R1          ; R1 = -R1 (b_abs)
@@ -9868,7 +9893,7 @@ L7                              ; negate b
         SUB R2, R4, R4          ; sign = -sign
 L6                              ; b sign handled
         CMP R4, %D 0
-        JR_EQ L2                ; if sign == 0, result is 0
+        JP_EQ L2                ; if sign == 0, result is 0
         PUSH R4                 ; save sign on stack
 ; 32-bit unsigned division: integer_part = a_abs / b_abs
         MOVE R0, R4             ; save dividend a_abs in R4
@@ -9877,37 +9902,37 @@ L6                              ; b sign handled
         MOVE %D 31, R3          ; i = 31 (loop counter)
 L8                              ; 32-bit integer division loop
         CMP R3, %D 0
-        JR_SLT L9               ; if i &lt; 0, done
+        JP_SLT L9               ; if i &lt; 0, done
         SHL R2, %D 1, R2        ; remainder &lt;&lt;= 1
-        MOVE R4, R5             ; temp = dividend
-        SHR R5, R3, R5          ; temp = dividend &gt;&gt; i
-        AND R5, %D 1, R5        ; temp = (dividend &gt;&gt; i) &amp; 1
-        OR R2, R5, R2           ; remainder |= (dividend &gt;&gt; i) &amp; 1
+        MOVE R4, R6             ; temp = dividend (use R6 temporarily)
+        SHR R6, R3, R6          ; temp = dividend &gt;&gt; i
+        AND R6, %D 1, R6        ; temp = (dividend &gt;&gt; i) &amp; 1
+        OR R2, R6, R2           ; remainder |= (dividend &gt;&gt; i) &amp; 1
         CMP R2, R1
-        JR_SLT L10              ; if remainder &lt; b_abs, skip subtraction
+        JP_SLT L10              ; if remainder &lt; b_abs, skip subtraction
         SUB R2, R1, R2          ; remainder -= b_abs
-        MOVE %D 1, R5
-        SHL R5, R3, R5          ; R5 = 1 &lt;&lt; i
-        OR R0, R5, R0           ; integer_part |= (1 &lt;&lt; i)
+        MOVE %D 1, R6
+        SHL R6, R3, R6          ; R6 = 1 &lt;&lt; i
+        OR R0, R6, R0           ; integer_part |= (1 &lt;&lt; i)
 L10                             ; skip subtraction
         SUB R3, %D 1, R3        ; i--
-        JR L8                   ; continue loop
+        JP L8                   ; continue loop
 L9                              ; integer division done
 ; 16-step fractional refinement loop
         MOVE %D 0, R3           ; frac = 0 (fractional accumulator)
-        MOVE %D 0, R5           ; i = 0 (loop counter)
+        MOVE %D 0, R6           ; i = 0 (loop counter, use R6 temporarily)
 L11                             ; fractional refinement loop
-        CMP R5, %D 16
-        JR_SGE L12              ; if i &gt;= 16, done
+        CMP R6, %D 16
+        JP_SGE L12              ; if i &gt;= 16, done
         SHL R2, %D 1, R2        ; remainder &lt;&lt;= 1
         SHL R3, %D 1, R3        ; frac &lt;&lt;= 1
         CMP R2, R1
-        JR_SLT L13              ; if remainder &lt; b_abs, skip subtraction
+        JP_SLT L13              ; if remainder &lt; b_abs, skip subtraction
         SUB R2, R1, R2          ; remainder -= b_abs
         OR R3, %D 1, R3         ; frac |= 1
 L13                             ; skip subtraction
-        ADD R5, %D 1, R5        ; i++
-        JR L11                  ; continue loop
+        ADD R6, %D 1, R6        ; i++
+        JP L11                  ; continue loop
 L12                             ; fractional loop done
 ; Combine integer_part and frac into Q16.16 result
         SHL R0, %D 16, R0       ; integer_part &lt;&lt;= 16
@@ -9915,8 +9940,8 @@ L12                             ; fractional loop done
 ; Apply sign to result
         POP R4                  ; restore sign from stack
         CMP R4, %D 0
-        JR_EQ L14               ; sign == 0 → result 0
-        JR_SLT L15              ; sign &lt; 0 → negate
+        JP_EQ L14               ; sign == 0 → result 0
+        JP_SLT L15              ; sign &lt; 0 → negate
         JP L16                  ; sign &gt; 0 → no change
 L14                             ; sign zero
         MOVE %D 0, R0
@@ -10480,16 +10505,21 @@ F_FDIV                          ; Helper function: float div(float a, float b)
 ; F_FDIV: Q16.16 fixed-point division using 32-bit arithmetic
 ; Input:  a at (R5+08), b at (R5+0C)
 ; Output: R6 = a / b (Q16.16 format)
+; 
+; CRITICAL: R5 is reserved as frame pointer and must NEVER be used
+; as a general-purpose register. All temporaries use R0-R4, R6-R7.
+; All conditional jumps use JP_* mnemonics (not JR_*) for consistency
+; with compiler-generated code.
         PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP
+        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
         LOAD R0, (R5+08)        ; a (dividend, Q16.16)
         LOAD R1, (R5+0C)        ; b (divisor, Q16.16)
         CMP R1, %D 0
-        JR_EQ L2                ; if b == 0, return 0
+        JP_EQ L2                ; if b == 0, return 0
         MOVE %D 1, R4           ; sign = +1
         CMP R0, %D 0
-        JR_EQ L5                ; a == 0 → sign = 0
-        JR_SLT L4               ; a &lt; 0 → negate
+        JP_EQ L5                ; a == 0 → sign = 0
+        JP_SLT L4               ; a &lt; 0 → negate
         JP L3                   ; a &gt; 0 → nothing
 L5                              ; a is zero
         MOVE %D 0, R4           ; sign = 0 (result will be 0)
@@ -10501,7 +10531,7 @@ L4                              ; negate a
         SUB R2, R4, R4          ; sign = -sign
 L3                              ; a sign handled
         CMP R1, %D 0
-        JR_SGE L6               ; b &gt;= 0 → nothing
+        JP_SGE L6               ; b &gt;= 0 → nothing
 L7                              ; negate b
         MOVE %D 0, R2
         SUB R2, R1, R1          ; R1 = -R1 (b_abs)
@@ -10509,7 +10539,7 @@ L7                              ; negate b
         SUB R2, R4, R4          ; sign = -sign
 L6                              ; b sign handled
         CMP R4, %D 0
-        JR_EQ L2                ; if sign == 0, result is 0
+        JP_EQ L2                ; if sign == 0, result is 0
         PUSH R4                 ; save sign on stack
 ; 32-bit unsigned division: integer_part = a_abs / b_abs
         MOVE R0, R4             ; save dividend a_abs in R4
@@ -10518,37 +10548,37 @@ L6                              ; b sign handled
         MOVE %D 31, R3          ; i = 31 (loop counter)
 L8                              ; 32-bit integer division loop
         CMP R3, %D 0
-        JR_SLT L9               ; if i &lt; 0, done
+        JP_SLT L9               ; if i &lt; 0, done
         SHL R2, %D 1, R2        ; remainder &lt;&lt;= 1
-        MOVE R4, R5             ; temp = dividend
-        SHR R5, R3, R5          ; temp = dividend &gt;&gt; i
-        AND R5, %D 1, R5        ; temp = (dividend &gt;&gt; i) &amp; 1
-        OR R2, R5, R2           ; remainder |= (dividend &gt;&gt; i) &amp; 1
+        MOVE R4, R6             ; temp = dividend (use R6 temporarily)
+        SHR R6, R3, R6          ; temp = dividend &gt;&gt; i
+        AND R6, %D 1, R6        ; temp = (dividend &gt;&gt; i) &amp; 1
+        OR R2, R6, R2           ; remainder |= (dividend &gt;&gt; i) &amp; 1
         CMP R2, R1
-        JR_SLT L10              ; if remainder &lt; b_abs, skip subtraction
+        JP_SLT L10              ; if remainder &lt; b_abs, skip subtraction
         SUB R2, R1, R2          ; remainder -= b_abs
-        MOVE %D 1, R5
-        SHL R5, R3, R5          ; R5 = 1 &lt;&lt; i
-        OR R0, R5, R0           ; integer_part |= (1 &lt;&lt; i)
+        MOVE %D 1, R6
+        SHL R6, R3, R6          ; R6 = 1 &lt;&lt; i
+        OR R0, R6, R0           ; integer_part |= (1 &lt;&lt; i)
 L10                             ; skip subtraction
         SUB R3, %D 1, R3        ; i--
-        JR L8                   ; continue loop
+        JP L8                   ; continue loop
 L9                              ; integer division done
 ; 16-step fractional refinement loop
         MOVE %D 0, R3           ; frac = 0 (fractional accumulator)
-        MOVE %D 0, R5           ; i = 0 (loop counter)
+        MOVE %D 0, R6           ; i = 0 (loop counter, use R6 temporarily)
 L11                             ; fractional refinement loop
-        CMP R5, %D 16
-        JR_SGE L12              ; if i &gt;= 16, done
+        CMP R6, %D 16
+        JP_SGE L12              ; if i &gt;= 16, done
         SHL R2, %D 1, R2        ; remainder &lt;&lt;= 1
         SHL R3, %D 1, R3        ; frac &lt;&lt;= 1
         CMP R2, R1
-        JR_SLT L13              ; if remainder &lt; b_abs, skip subtraction
+        JP_SLT L13              ; if remainder &lt; b_abs, skip subtraction
         SUB R2, R1, R2          ; remainder -= b_abs
         OR R3, %D 1, R3         ; frac |= 1
 L13                             ; skip subtraction
-        ADD R5, %D 1, R5        ; i++
-        JR L11                  ; continue loop
+        ADD R6, %D 1, R6        ; i++
+        JP L11                  ; continue loop
 L12                             ; fractional loop done
 ; Combine integer_part and frac into Q16.16 result
         SHL R0, %D 16, R0       ; integer_part &lt;&lt;= 16
@@ -10556,8 +10586,8 @@ L12                             ; fractional loop done
 ; Apply sign to result
         POP R4                  ; restore sign from stack
         CMP R4, %D 0
-        JR_EQ L14               ; sign == 0 → result 0
-        JR_SLT L15              ; sign &lt; 0 → negate
+        JP_EQ L14               ; sign == 0 → result 0
+        JP_SLT L15              ; sign &lt; 0 → negate
         JP L16                  ; sign &gt; 0 → no change
 L14                             ; sign zero
         MOVE %D 0, R0
@@ -11136,16 +11166,21 @@ F_FDIV                          ; Helper function: float div(float a, float b)
 ; F_FDIV: Q16.16 fixed-point division using 32-bit arithmetic
 ; Input:  a at (R5+08), b at (R5+0C)
 ; Output: R6 = a / b (Q16.16 format)
+; 
+; CRITICAL: R5 is reserved as frame pointer and must NEVER be used
+; as a general-purpose register. All temporaries use R0-R4, R6-R7.
+; All conditional jumps use JP_* mnemonics (not JR_*) for consistency
+; with compiler-generated code.
         PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP
+        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
         LOAD R0, (R5+08)        ; a (dividend, Q16.16)
         LOAD R1, (R5+0C)        ; b (divisor, Q16.16)
         CMP R1, %D 0
-        JR_EQ L2                ; if b == 0, return 0
+        JP_EQ L2                ; if b == 0, return 0
         MOVE %D 1, R4           ; sign = +1
         CMP R0, %D 0
-        JR_EQ L5                ; a == 0 → sign = 0
-        JR_SLT L4               ; a &lt; 0 → negate
+        JP_EQ L5                ; a == 0 → sign = 0
+        JP_SLT L4               ; a &lt; 0 → negate
         JP L3                   ; a &gt; 0 → nothing
 L5                              ; a is zero
         MOVE %D 0, R4           ; sign = 0 (result will be 0)
@@ -11157,7 +11192,7 @@ L4                              ; negate a
         SUB R2, R4, R4          ; sign = -sign
 L3                              ; a sign handled
         CMP R1, %D 0
-        JR_SGE L6               ; b &gt;= 0 → nothing
+        JP_SGE L6               ; b &gt;= 0 → nothing
 L7                              ; negate b
         MOVE %D 0, R2
         SUB R2, R1, R1          ; R1 = -R1 (b_abs)
@@ -11165,7 +11200,7 @@ L7                              ; negate b
         SUB R2, R4, R4          ; sign = -sign
 L6                              ; b sign handled
         CMP R4, %D 0
-        JR_EQ L2                ; if sign == 0, result is 0
+        JP_EQ L2                ; if sign == 0, result is 0
         PUSH R4                 ; save sign on stack
 ; 32-bit unsigned division: integer_part = a_abs / b_abs
         MOVE R0, R4             ; save dividend a_abs in R4
@@ -11174,37 +11209,37 @@ L6                              ; b sign handled
         MOVE %D 31, R3          ; i = 31 (loop counter)
 L8                              ; 32-bit integer division loop
         CMP R3, %D 0
-        JR_SLT L9               ; if i &lt; 0, done
+        JP_SLT L9               ; if i &lt; 0, done
         SHL R2, %D 1, R2        ; remainder &lt;&lt;= 1
-        MOVE R4, R5             ; temp = dividend
-        SHR R5, R3, R5          ; temp = dividend &gt;&gt; i
-        AND R5, %D 1, R5        ; temp = (dividend &gt;&gt; i) &amp; 1
-        OR R2, R5, R2           ; remainder |= (dividend &gt;&gt; i) &amp; 1
+        MOVE R4, R6             ; temp = dividend (use R6 temporarily)
+        SHR R6, R3, R6          ; temp = dividend &gt;&gt; i
+        AND R6, %D 1, R6        ; temp = (dividend &gt;&gt; i) &amp; 1
+        OR R2, R6, R2           ; remainder |= (dividend &gt;&gt; i) &amp; 1
         CMP R2, R1
-        JR_SLT L10              ; if remainder &lt; b_abs, skip subtraction
+        JP_SLT L10              ; if remainder &lt; b_abs, skip subtraction
         SUB R2, R1, R2          ; remainder -= b_abs
-        MOVE %D 1, R5
-        SHL R5, R3, R5          ; R5 = 1 &lt;&lt; i
-        OR R0, R5, R0           ; integer_part |= (1 &lt;&lt; i)
+        MOVE %D 1, R6
+        SHL R6, R3, R6          ; R6 = 1 &lt;&lt; i
+        OR R0, R6, R0           ; integer_part |= (1 &lt;&lt; i)
 L10                             ; skip subtraction
         SUB R3, %D 1, R3        ; i--
-        JR L8                   ; continue loop
+        JP L8                   ; continue loop
 L9                              ; integer division done
 ; 16-step fractional refinement loop
         MOVE %D 0, R3           ; frac = 0 (fractional accumulator)
-        MOVE %D 0, R5           ; i = 0 (loop counter)
+        MOVE %D 0, R6           ; i = 0 (loop counter, use R6 temporarily)
 L11                             ; fractional refinement loop
-        CMP R5, %D 16
-        JR_SGE L12              ; if i &gt;= 16, done
+        CMP R6, %D 16
+        JP_SGE L12              ; if i &gt;= 16, done
         SHL R2, %D 1, R2        ; remainder &lt;&lt;= 1
         SHL R3, %D 1, R3        ; frac &lt;&lt;= 1
         CMP R2, R1
-        JR_SLT L13              ; if remainder &lt; b_abs, skip subtraction
+        JP_SLT L13              ; if remainder &lt; b_abs, skip subtraction
         SUB R2, R1, R2          ; remainder -= b_abs
         OR R3, %D 1, R3         ; frac |= 1
 L13                             ; skip subtraction
-        ADD R5, %D 1, R5        ; i++
-        JR L11                  ; continue loop
+        ADD R6, %D 1, R6        ; i++
+        JP L11                  ; continue loop
 L12                             ; fractional loop done
 ; Combine integer_part and frac into Q16.16 result
         SHL R0, %D 16, R0       ; integer_part &lt;&lt;= 16
@@ -11212,8 +11247,8 @@ L12                             ; fractional loop done
 ; Apply sign to result
         POP R4                  ; restore sign from stack
         CMP R4, %D 0
-        JR_EQ L14               ; sign == 0 → result 0
-        JR_SLT L15              ; sign &lt; 0 → negate
+        JP_EQ L14               ; sign == 0 → result 0
+        JP_SLT L15              ; sign &lt; 0 → negate
         JP L16                  ; sign &gt; 0 → no change
 L14                             ; sign zero
         MOVE %D 0, R0
@@ -11761,16 +11796,21 @@ F_FDIV                          ; Helper function: float div(float a, float b)
 ; F_FDIV: Q16.16 fixed-point division using 32-bit arithmetic
 ; Input:  a at (R5+08), b at (R5+0C)
 ; Output: R6 = a / b (Q16.16 format)
+; 
+; CRITICAL: R5 is reserved as frame pointer and must NEVER be used
+; as a general-purpose register. All temporaries use R0-R4, R6-R7.
+; All conditional jumps use JP_* mnemonics (not JR_*) for consistency
+; with compiler-generated code.
         PUSH R5                 ; save old frame pointer
-        MOVE R7, R5             ; R5 = current SP
+        MOVE R7, R5             ; R5 = current SP -&gt; base of frame
         LOAD R0, (R5+08)        ; a (dividend, Q16.16)
         LOAD R1, (R5+0C)        ; b (divisor, Q16.16)
         CMP R1, %D 0
-        JR_EQ L2                ; if b == 0, return 0
+        JP_EQ L2                ; if b == 0, return 0
         MOVE %D 1, R4           ; sign = +1
         CMP R0, %D 0
-        JR_EQ L5                ; a == 0 → sign = 0
-        JR_SLT L4               ; a &lt; 0 → negate
+        JP_EQ L5                ; a == 0 → sign = 0
+        JP_SLT L4               ; a &lt; 0 → negate
         JP L3                   ; a &gt; 0 → nothing
 L5                              ; a is zero
         MOVE %D 0, R4           ; sign = 0 (result will be 0)
@@ -11782,7 +11822,7 @@ L4                              ; negate a
         SUB R2, R4, R4          ; sign = -sign
 L3                              ; a sign handled
         CMP R1, %D 0
-        JR_SGE L6               ; b &gt;= 0 → nothing
+        JP_SGE L6               ; b &gt;= 0 → nothing
 L7                              ; negate b
         MOVE %D 0, R2
         SUB R2, R1, R1          ; R1 = -R1 (b_abs)
@@ -11790,7 +11830,7 @@ L7                              ; negate b
         SUB R2, R4, R4          ; sign = -sign
 L6                              ; b sign handled
         CMP R4, %D 0
-        JR_EQ L2                ; if sign == 0, result is 0
+        JP_EQ L2                ; if sign == 0, result is 0
         PUSH R4                 ; save sign on stack
 ; 32-bit unsigned division: integer_part = a_abs / b_abs
         MOVE R0, R4             ; save dividend a_abs in R4
@@ -11799,37 +11839,37 @@ L6                              ; b sign handled
         MOVE %D 31, R3          ; i = 31 (loop counter)
 L8                              ; 32-bit integer division loop
         CMP R3, %D 0
-        JR_SLT L9               ; if i &lt; 0, done
+        JP_SLT L9               ; if i &lt; 0, done
         SHL R2, %D 1, R2        ; remainder &lt;&lt;= 1
-        MOVE R4, R5             ; temp = dividend
-        SHR R5, R3, R5          ; temp = dividend &gt;&gt; i
-        AND R5, %D 1, R5        ; temp = (dividend &gt;&gt; i) &amp; 1
-        OR R2, R5, R2           ; remainder |= (dividend &gt;&gt; i) &amp; 1
+        MOVE R4, R6             ; temp = dividend (use R6 temporarily)
+        SHR R6, R3, R6          ; temp = dividend &gt;&gt; i
+        AND R6, %D 1, R6        ; temp = (dividend &gt;&gt; i) &amp; 1
+        OR R2, R6, R2           ; remainder |= (dividend &gt;&gt; i) &amp; 1
         CMP R2, R1
-        JR_SLT L10              ; if remainder &lt; b_abs, skip subtraction
+        JP_SLT L10              ; if remainder &lt; b_abs, skip subtraction
         SUB R2, R1, R2          ; remainder -= b_abs
-        MOVE %D 1, R5
-        SHL R5, R3, R5          ; R5 = 1 &lt;&lt; i
-        OR R0, R5, R0           ; integer_part |= (1 &lt;&lt; i)
+        MOVE %D 1, R6
+        SHL R6, R3, R6          ; R6 = 1 &lt;&lt; i
+        OR R0, R6, R0           ; integer_part |= (1 &lt;&lt; i)
 L10                             ; skip subtraction
         SUB R3, %D 1, R3        ; i--
-        JR L8                   ; continue loop
+        JP L8                   ; continue loop
 L9                              ; integer division done
 ; 16-step fractional refinement loop
         MOVE %D 0, R3           ; frac = 0 (fractional accumulator)
-        MOVE %D 0, R5           ; i = 0 (loop counter)
+        MOVE %D 0, R6           ; i = 0 (loop counter, use R6 temporarily)
 L11                             ; fractional refinement loop
-        CMP R5, %D 16
-        JR_SGE L12              ; if i &gt;= 16, done
+        CMP R6, %D 16
+        JP_SGE L12              ; if i &gt;= 16, done
         SHL R2, %D 1, R2        ; remainder &lt;&lt;= 1
         SHL R3, %D 1, R3        ; frac &lt;&lt;= 1
         CMP R2, R1
-        JR_SLT L13              ; if remainder &lt; b_abs, skip subtraction
+        JP_SLT L13              ; if remainder &lt; b_abs, skip subtraction
         SUB R2, R1, R2          ; remainder -= b_abs
         OR R3, %D 1, R3         ; frac |= 1
 L13                             ; skip subtraction
-        ADD R5, %D 1, R5        ; i++
-        JR L11                  ; continue loop
+        ADD R6, %D 1, R6        ; i++
+        JP L11                  ; continue loop
 L12                             ; fractional loop done
 ; Combine integer_part and frac into Q16.16 result
         SHL R0, %D 16, R0       ; integer_part &lt;&lt;= 16
@@ -11837,8 +11877,8 @@ L12                             ; fractional loop done
 ; Apply sign to result
         POP R4                  ; restore sign from stack
         CMP R4, %D 0
-        JR_EQ L14               ; sign == 0 → result 0
-        JR_SLT L15              ; sign &lt; 0 → negate
+        JP_EQ L14               ; sign == 0 → result 0
+        JP_SLT L15              ; sign &lt; 0 → negate
         JP L16                  ; sign &gt; 0 → no change
 L14                             ; sign zero
         MOVE %D 0, R0

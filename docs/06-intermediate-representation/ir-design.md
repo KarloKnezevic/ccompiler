@@ -413,6 +413,7 @@ Reuse computed expressions:
 - **[AST Structure and Walkers](ast-structure-and-walkers.md)**: Detailed AST node specifications
 - **[Syntax Analysis](../04-syntax-analysis/grammar-specification.md)**: Parse tree to AST conversion
 - **[Code Generation](../07-code-generation/instruction-selection.md)**: AST to assembly translation
+- **[Struct Representation in IR](struct-representation-in-ir.md)**: How struct types and member access expressions are represented in the intermediate representation
 
 ---
 

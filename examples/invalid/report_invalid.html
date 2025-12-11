@@ -1476,7 +1476,12 @@ F_MAIN                          ; Function main
 ; Local variable declarations
 ; Local variable x at (R5-04) (no initializer)
         MOVE %D 5, R0           ; load constant 5
-        STORE R0, (R5-04)       ; assign to x
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
 ; If-else statement
         LOAD R0, (R5-04)        ; load variable x
         PUSH R0                 ; save left operand
@@ -4680,9 +4685,19 @@ F_MAIN                          ; Function main
 ; Local variable declarations
 ; Local variable x at (R5-04) (no initializer)
         MOVE %D 5, R0           ; load constant 5
-        STORE R0, (R5-04)       ; assign to x
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         MOVE %D 10, R0          ; load constant 10
-        STORE R0, (R5-04)       ; assign to x
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         LOAD R0, (R5-04)        ; load variable x
         MOVE R0, R6             ; return value
         JP L1                   ; jump to function exit
@@ -8395,7 +8410,12 @@ F_MAIN                          ; Function main
 ; Local variable declarations
 ; Local variable x at (R5-04) (no initializer)
         MOVE %D 5, R0           ; load constant 5
-        STORE R0, (R5-04)       ; assign to x
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
 ; If-else statement
         LOAD R0, (R5-04)        ; load variable x
         PUSH R0                 ; save left operand
@@ -9818,13 +9838,17 @@ F_MAIN                          ; Function main
 ; Local variable declarations
 ; Local variable arr at (R5-28) (no initializer)
         MOVE %D 5, R0           ; load constant 5
-        MOVE R0, R2             ; save value to assign
+        PUSH R0                 ; save RHS value
         MOVE %D 10, R0          ; load constant 10
-        SHL R0, %D 2, R0        ; index * 4 (element size)
-        MOVE R5, R1             ; load frame pointer
-        ADD R1, -28, R1         ; add base offset
-        ADD R1, R0, R1          ; compute element address
-        STORE R2, (R1)          ; store array element
+        PUSH R0                 ; save array index
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 40, R0       ; add variable offset
+        POP R1                  ; restore array index
+        SHL R1, %D 2, R1        ; index * 4 (element size)
+        ADD R0, R1, R0          ; element address = base + (index * 4)
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         MOVE %D 0, R6           ; return constant 0
         JP L1                   ; jump to function exit
 L1                              ; function exit
@@ -13537,7 +13561,12 @@ L_CONTINUE1                     ; for loop increment
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
-        STORE R0, (R5-04)       ; assign to i
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         JP L_LOOP1              ; repeat for loop
 L_BREAK1                        ; for loop end
         LOAD R0, (R5-04)        ; load variable i
@@ -14189,7 +14218,12 @@ F_MAIN                          ; Function main
 ; Local variable i at (R5-04) (no initializer)
 ; For loop with increment
         MOVE %D 0, R0           ; load constant 0
-        STORE R0, (R5-04)       ; assign to i
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
 L_LOOP1                         ; for loop start
 ; Compound statement
 ; If statement
@@ -14217,7 +14251,12 @@ L_CONTINUE1                     ; for loop increment
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
-        STORE R0, (R5-04)       ; assign to i
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         JP L_LOOP1              ; repeat for loop
 L_BREAK1                        ; for loop end
         LOAD R0, (R5-04)        ; load variable i
@@ -14822,7 +14861,12 @@ F_MAIN                          ; Function main
 ; Local variable declarations
 ; Local variable i at (R5-04) (no initializer)
         MOVE %D 0, R0           ; load constant 0
-        STORE R0, (R5-04)       ; assign to i
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
 L_LOOP1                         ; for loop
         LOAD R0, (R5-04)        ; load variable i
         PUSH R0                 ; save left operand
@@ -14845,7 +14889,12 @@ L_SC_END1
         MOVE R0, R1             ; right operand to R1
         POP R0                  ; restore left operand
         ADD R0, R1, R0          ; addition
-        STORE R0, (R5-04)       ; assign to i
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         JP L_LOOP1              ; repeat for loop
 L_BREAK1                        ; for loop end
         LOAD R0, (R5-04)        ; load variable i
@@ -16452,9 +16501,19 @@ F_MAIN                          ; Function main
 ; Local variable value at (R5-04) (no initializer)
 ; Local variable pointer at (R5-08) (no initializer)
         MOVE %D 5, R0           ; load constant 5
-        STORE R0, (R5-04)       ; assign to value
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         LOAD R0, (R5-04)        ; load variable value
-        STORE R0, (R5-08)       ; assign to pointer
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 8, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
 ; Unknown unary operator: ASTERISK
         LOAD R0, (R5-08)        ; load variable pointer
         MOVE R0, R6             ; return value
@@ -19680,10 +19739,20 @@ F_MAIN                          ; Function main
 ; Local variable value at (R5-04) (no initializer)
 ; Local variable pointer at (R5-08) (no initializer)
         MOVE %D 3, R0           ; load constant 3
-        STORE R0, (R5-04)       ; assign to value
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
 ; Unknown unary operator: AMPERSAND
         LOAD R0, (R5-04)        ; load variable value
-        STORE R0, (R5-08)       ; assign to pointer
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 8, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
         LOAD R0, (R5-08)        ; load variable pointer
         PUSH R0                 ; save left operand
         MOVE %D 2, R0           ; load constant 2
@@ -19694,7 +19763,12 @@ F_MAIN                          ; Function main
         CALL F_MUL              ; call multiplication helper
         ADD R7, %D 8, R7        ; clean up arguments
         MOVE R6, R0             ; move result to R0
-        STORE R0, (R5-08)       ; assign to pointer
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 8, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
 ; Unknown unary operator: ASTERISK
         LOAD R0, (R5-08)        ; load variable pointer
         MOVE R0, R6             ; return value
@@ -20346,7 +20420,7 @@ Global Scope:
 
 ; Function definitions
 F_READ_VALUE                    ; Function read_value
-; Parameter ptr at (R5+08)
+; Parameter ptr (4 bytes) at (R5+08)
         PUSH R5                 ; save old frame pointer
         MOVE R7, R5             ; R5 = current SP -&gt; base of frame
 ; Compound statement
@@ -20367,12 +20441,17 @@ F_MAIN                          ; Function main
 ; Local variable declarations
 ; Local variable number at (R5-04) (no initializer)
         MOVE %D 6, R0           ; load constant 6
-        STORE R0, (R5-04)       ; assign to number
+        PUSH R0                 ; save RHS value
+        MOVE R5, R0             ; load frame pointer
+        SUB R0, %D 4, R0        ; add variable offset
+        POP R1                  ; restore RHS value
+        STORE R1, (R0)          ; assign value
+        MOVE R1, R0             ; assignment result
 ; Function call: read_value
         LOAD R0, (R5-04)        ; load variable number
-        PUSH R0                 ; push argument 1
+        PUSH R0                 ; push argument 1 (value)
         CALL F_READ_VALUE       ; call read_value
-        ADD R7, %D 4, R7        ; cleanup 1 arguments
+        ADD R7, %D 4, R7        ; cleanup 4 bytes of arguments
         MOVE R6, R0             ; function result
         MOVE R0, R6             ; return value
         JP L2                   ; jump to function exit

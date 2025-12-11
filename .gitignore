@@ -3,6 +3,7 @@ data/
 
 # Build artifacts
 compiler-bin/
+book/
 
 # Maven
 target/
@@ -33,6 +34,13 @@ Thumbs.db
 
 # Compiled classes
 *.class
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
 
 # Test/debug files
 test_*.java

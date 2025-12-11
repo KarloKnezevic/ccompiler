@@ -67,7 +67,7 @@ Global Scope
 - **Variable Symbols**: Store type information, const-qualification, and declaration location
 - **Function Symbols**: Store function signatures, definition status, and parameter metadata
 
-**Struct Tag Table**: A separate global table tracks struct type definitions by tag name, enabling forward declarations and self-referential structures.
+**Struct Tag Table**: A separate global table tracks struct type definitions by tag name, enabling forward declarations and self-referential structures. For comprehensive documentation on struct type checking and symbol table integration, see [Struct Type System and Semantic Checking](struct-type-system-and-checking.md).
 
 **Scope Resolution**: Identifier lookup follows lexical scoping rules, searching from innermost to outermost scope until a matching declaration is found.
 

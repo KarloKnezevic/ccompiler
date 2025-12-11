@@ -10,49 +10,52 @@ import java.util.Objects;
 
 /**
  * Emits FRISC assembly code with proper formatting and structure.
- * 
- * <p>This class is responsible for generating well-formatted FRISC assembly instructions,
- * managing the output buffer, and writing the final assembly code to files. It implements
- * the <b>code emission</b> phase of the code generation pipeline, serving as the central
- * point for all FRISC instruction output.
- * 
+ *
+ * <p>This class is responsible for generating well-formatted FRISC assembly instructions, managing
+ * the output buffer, and writing the final assembly code to files. It implements the <b>code
+ * emission</b> phase of the code generation pipeline, serving as the central point for all FRISC
+ * instruction output.
+ *
  * <p><b>Design Pattern: Buffered Emission</b>
- * 
+ *
  * <p>This class uses a <b>buffered emission strategy</b>:
+ *
  * <ul>
- *   <li><b>In-Memory Buffering:</b> All generated code is buffered in memory as a list of
- *       formatted strings until {@link #writeToFile(Path)} is called</li>
- *   <li><b>Atomic Write:</b> The entire assembly file is written atomically, ensuring
- *       consistency even if code generation is interrupted</li>
+ *   <li><b>In-Memory Buffering:</b> All generated code is buffered in memory as a list of formatted
+ *       strings until {@link #writeToFile(Path)} is called
+ *   <li><b>Atomic Write:</b> The entire assembly file is written atomically, ensuring consistency
+ *       even if code generation is interrupted
  *   <li><b>Order Independence:</b> Code can be emitted in any order (e.g., functions before
- *       helpers, or vice versa) because everything is buffered before writing</li>
- *   <li><b>Formatting Separation:</b> Formatting logic is delegated to {@link InstructionFormatter},
- *       keeping emission logic separate from presentation concerns</li>
+ *       helpers, or vice versa) because everything is buffered before writing
+ *   <li><b>Formatting Separation:</b> Formatting logic is delegated to {@link
+ *       InstructionFormatter}, keeping emission logic separate from presentation concerns
  * </ul>
- * 
+ *
  * <p><b>Responsibilities:</b>
- * 
+ *
  * <ol>
- *   <li><b>Instruction Emission:</b> Emits FRISC instructions with proper formatting
- *       (mnemonic, operands, comments, alignment)</li>
- *   <li><b>Label Management:</b> Emits labels for functions, control flow, and data</li>
- *   <li><b>Comment Generation:</b> Emits comments for code documentation</li>
- *   <li><b>Data Declaration:</b> Emits data directives (DW, DH, DB, `DS) for global variables</li>
- *   <li><b>Constant Loading:</b> Generates code sequences to load large integer constants
- *       into registers (delegates to {@link ConstantLoader})</li>
- *   <li><b>Helper Function Tracking:</b> Tracks which helper functions are needed by the
- *       generated code (delegates to {@link HelperFunctionFlags})</li>
- *   <li><b>File Output:</b> Writes the complete assembly code to a file</li>
+ *   <li><b>Instruction Emission:</b> Emits FRISC instructions with proper formatting (mnemonic,
+ *       operands, comments, alignment)
+ *   <li><b>Label Management:</b> Emits labels for functions, control flow, and data
+ *   <li><b>Comment Generation:</b> Emits comments for code documentation
+ *   <li><b>Data Declaration:</b> Emits data directives (DW, DH, DB, `DS) for global variables
+ *   <li><b>Constant Loading:</b> Generates code sequences to load large integer constants into
+ *       registers (delegates to {@link ConstantLoader})
+ *   <li><b>Helper Function Tracking:</b> Tracks which helper functions are needed by the generated
+ *       code (delegates to {@link HelperFunctionFlags})
+ *   <li><b>File Output:</b> Writes the complete assembly code to a file
  * </ol>
- * 
+ *
  * <p><b>FRISC Instruction Format:</b>
- * 
+ *
  * <p>FRISC instructions follow this format:
+ *
  * <pre>
  * [LABEL:]  MNEMONIC  OPERAND1, OPERAND2  ; comment
  * </pre>
- * 
+ *
  * <p>Examples:
+ *
  * <pre>
  * F_MAIN:                    ; Function label
  *     MOVE 40000, R7         ; Two-operand instruction
@@ -60,269 +63,303 @@ import java.util.Objects;
  *     CALL F_FOO             ; One-operand instruction
  *     HALT                   ; Zero-operand instruction
  * </pre>
- * 
+ *
  * <p><b>Helper Function Tracking Algorithm:</b>
- * 
+ *
  * <p>This class tracks which helper functions are needed using a <b>lazy marking strategy</b>:
+ *
  * <ol>
- *   <li><b>Marking Phase:</b> During code generation, expression generators call methods
- *       like {@code markMulNeeded()} when they encounter operations that require helpers
- *       (e.g., integer multiplication requires F_MUL)</li>
- *   <li><b>Query Phase:</b> After processing the translation unit, the main code generator
- *       queries which helpers are needed using methods like {@code needsMulHelper()}</li>
- *   <li><b>Generation Phase:</b> Helper functions are generated only if marked as needed,
- *       avoiding unnecessary code bloat</li>
+ *   <li><b>Marking Phase:</b> During code generation, expression generators call methods like
+ *       {@code markMulNeeded()} when they encounter operations that require helpers (e.g., integer
+ *       multiplication requires F_MUL)
+ *   <li><b>Query Phase:</b> After processing the translation unit, the main code generator queries
+ *       which helpers are needed using methods like {@code needsMulHelper()}
+ *   <li><b>Generation Phase:</b> Helper functions are generated only if marked as needed, avoiding
+ *       unnecessary code bloat
  * </ol>
- * 
+ *
  * <p><b>Key Invariants:</b>
+ *
  * <ul>
- *   <li><b>Formatting Consistency:</b> All instructions are formatted consistently using
- *       {@link InstructionFormatter}, ensuring uniform spacing and alignment</li>
- *   <li><b>Label Uniqueness:</b> Labels are generated by {@link hr.fer.ppj.codegen.util.LabelGenerator}
- *       to ensure uniqueness</li>
- *   <li><b>Comment Preservation:</b> Comments are preserved and formatted consistently</li>
+ *   <li><b>Formatting Consistency:</b> All instructions are formatted consistently using {@link
+ *       InstructionFormatter}, ensuring uniform spacing and alignment
+ *   <li><b>Label Uniqueness:</b> Labels are generated by {@link
+ *       hr.fer.ppj.codegen.util.LabelGenerator} to ensure uniqueness
+ *   <li><b>Comment Preservation:</b> Comments are preserved and formatted consistently
  *   <li><b>Buffer Integrity:</b> The internal buffer is only modified through public methods,
- *       ensuring thread-safety if used in a single-threaded context</li>
+ *       ensuring thread-safety if used in a single-threaded context
  * </ul>
- * 
+ *
  * <p><b>Complexity:</b>
+ *
  * <ul>
  *   <li><b>Time Complexity:</b> O(1) for each emission operation, O(n) for {@code writeToFile()}
- *       where n is the number of generated lines</li>
- *   <li><b>Space Complexity:</b> O(n) where n is the number of generated lines (buffered in memory)</li>
+ *       where n is the number of generated lines
+ *   <li><b>Space Complexity:</b> O(n) where n is the number of generated lines (buffered in memory)
  * </ul>
- * 
+ *
  * <p><b>Usage Example:</b>
+ *
  * <pre>
  * FriscEmitter emitter = new FriscEmitter();
- * 
+ *
  * // Emit instructions
  * emitter.emitLabel("F_MAIN");
  * emitter.emitInstruction("MOVE", "40000", "R7", "init stack pointer");
  * emitter.emitInstruction("CALL", "F_FOO", null, "call function");
- * 
+ *
  * // Track helper needs
  * emitter.markMulNeeded();  // Integer multiplication needed
- * 
+ *
  * // Write to file
  * emitter.writeToFile(Paths.get("a.frisc"));
  * </pre>
- * 
- * <p>All generated code is buffered in memory until {@link #writeToFile(Path)} is called,
- * allowing the code generator to emit instructions in any order and then write them
- * atomically to the output file.
- * 
+ *
+ * <p>All generated code is buffered in memory until {@link #writeToFile(Path)} is called, allowing
+ * the code generator to emit instructions in any order and then write them atomically to the output
+ * file.
+ *
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */
 public final class FriscEmitter {
-    
-    /**
-     * Buffer for storing generated assembly lines.
-     */
-    private final List<String> lines = new ArrayList<>();
-    
-    /**
-     * Tracks which helper functions are needed.
-     */
-    private final HelperFunctionFlags flags = new HelperFunctionFlags();
-    
-    /**
-     * Formats instructions, labels, and comments.
-     */
-    private final InstructionFormatter formatter = new InstructionFormatter();
-    
-    /**
-     * Generates code to load integer constants.
-     */
-    private final ConstantLoader constantLoader = new ConstantLoader();
-    
-    // Delegate flag tracking methods to flags object
-    public void markMulNeeded() { flags.markMulNeeded(); }
-    public void markDivNeeded() { flags.markDivNeeded(); }
-    public boolean needsMulHelper() { return flags.needsMulHelper(); }
-    public boolean needsDivHelper() { return flags.needsDivHelper(); }
-    public void markFloatAddNeeded() { flags.markFloatAddNeeded(); }
-    public void markFloatSubNeeded() { flags.markFloatSubNeeded(); }
-    public void markFloatMulNeeded() { flags.markFloatMulNeeded(); }
-    public void markFloatDivNeeded() { flags.markFloatDivNeeded(); }
-    public void markFloatCmpNeeded() { flags.markFloatCmpNeeded(); }
-    public void markIntToFloatNeeded() { flags.markIntToFloatNeeded(); }
-    public void markFloatToIntNeeded() { flags.markFloatToIntNeeded(); }
-    public boolean needsAnyFloatHelper() { return flags.needsAnyFloatHelper(); }
-    public boolean needsFloatMulHelper() { return flags.needsFloatMulHelper(); }
-    public boolean[] getFloatHelperFlags() { return flags.getFloatHelperFlags(); }
-    
-    /**
-     * Emits a FRISC instruction with optional operands and comment.
-     * 
-     * @param mnemonic the instruction mnemonic (e.g., "MOVE", "ADD", "CALL")
-     * @param operand1 first operand (may be null)
-     * @param operand2 second operand (may be null)
-     * @param comment optional comment (may be null)
-     */
-    public void emitInstruction(String mnemonic, String operand1, String operand2, String comment) {
-        lines.add(formatter.formatInstruction(mnemonic, operand1, operand2, comment));
-    }
-    
-    /**
-     * Emits a three-operand FRISC instruction.
-     * 
-     * @param mnemonic the instruction mnemonic
-     * @param operand1 first operand
-     * @param operand2 second operand  
-     * @param operand3 third operand
-     * @param comment optional comment
-     */
-    public void emitInstruction(String mnemonic, String operand1, String operand2, String operand3, String comment) {
-        lines.add(formatter.formatInstruction(mnemonic, operand1, operand2, operand3, comment));
-    }
-    
-    /**
-     * Emits a label at the beginning of a line.
-     * 
-     * @param label the label name (without colon)
-     */
-    public void emitLabel(String label) {
-        Objects.requireNonNull(label, "label must not be null");
-        lines.add(label);
-    }
-    
-    /**
-     * Emits a label with an optional comment on the same line.
-     * 
-     * @param label the label name
-     * @param comment optional comment describing the label
-     */
-    public void emitLabel(String label, String comment) {
-        lines.add(formatter.formatLabel(label, comment));
-    }
-    
-    /**
-     * Emits a comment line.
-     * 
-     * @param comment the comment text (semicolon will be added automatically)
-     */
-    public void emitComment(String comment) {
-        lines.add(formatter.formatComment(comment));
-    }
-    
-    /**
-     * Emits a data declaration (DW, DH, DB, `DS).
-     * 
-     * @param label optional label for the data
-     * @param directive the data directive ("DW", "DH", "DB", "`DS")
-     * @param value the data value
-     * @param comment optional comment
-     */
-    public void emitData(String label, String directive, String value, String comment) {
-        lines.add(formatter.formatData(label, directive, value, comment));
-    }
-    
-    /**
-     * Emits an empty line for better readability.
-     */
-    public void emitNewline() {
-        lines.add("");
-    }
-    
-    /**
-     * Emits code to load a 32-bit integer constant into a register.
-     * 
-     * <p>If the value fits into a 20-bit signed immediate (-524288 to 524287),
-     * emits a single MOVE instruction. Otherwise, constructs the value from
-     * high and low 16-bit parts using SHL and ADD.
-     * 
-     * @param value the 32-bit integer value to load
-     * @param targetRegister the target register (e.g., "R0", "R6")
-     * @param comment optional comment (may be null)
-     */
-    public void emitLoadIntConstant(int value, String targetRegister, String comment) {
-        constantLoader.emitLoadIntConstant(this, value, targetRegister, comment);
-    }
-    
-    /**
-     * Checks if a value fits in a 20-bit signed immediate.
-     * 
-     * @param value the value to check
-     * @return true if the value fits in [-524288, 524287]
-     */
-    public static boolean fitsInImmediate(int value) {
-        return ConstantLoader.fitsInImmediate(value);
-    }
-    
-    /**
-     * Emits a section header comment for better code organization.
-     * 
-     * @param title the section title
-     */
-    public void emitSectionHeader(String title) {
-        Objects.requireNonNull(title, "title must not be null");
-        emitComment(title);
-    }
-    
-    /**
-     * Convenience method for emitting simple instructions without operands.
-     * 
-     * @param mnemonic the instruction mnemonic
-     * @param comment optional comment
-     */
-    public void emitInstruction(String mnemonic, String comment) {
-        emitInstruction(mnemonic, null, null, comment);
-    }
-    
-    /**
-     * Convenience method for emitting instructions with one operand.
-     * 
-     * @param mnemonic the instruction mnemonic
-     * @param operand the single operand
-     * @param comment optional comment
-     */
-    public void emitInstruction(String mnemonic, String operand, String comment) {
-        emitInstruction(mnemonic, operand, null, comment);
-    }
-    
-    /**
-     * Writes the generated assembly code to a file.
-     * 
-     * @param outputPath the path where to write the assembly code
-     * @throws IOException if writing fails
-     */
-    public void writeToFile(Path outputPath) throws IOException {
-        Objects.requireNonNull(outputPath, "outputPath must not be null");
-        
-        try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(outputPath))) {
-            for (String line : lines) {
-                writer.println(line);
-            }
-        }
-    }
-    
-    /**
-     * Returns the generated assembly code as a string.
-     * 
-     * @return the complete assembly code
-     */
-    public String getGeneratedCode() {
-        return String.join("\n", lines);
-    }
-    
-    /**
-     * Formats a number as hexadecimal for FRISC assembly.
-     * 
-     * @param value the numeric value
-     * @return formatted hex string (e.g., "04", "0C")
-     */
-    public static String formatHex(int value) {
-        return InstructionFormatter.formatHex(value);
-    }
-    
-    /**
-     * Returns the number of generated lines.
-     * 
-     * @return the line count
-     */
-    public int getLineCount() {
-        return lines.size();
-    }
-}
 
+  /** Buffer for storing generated assembly lines. */
+  private final List<String> lines = new ArrayList<>();
+
+  /** Tracks which helper functions are needed. */
+  private final HelperFunctionFlags flags = new HelperFunctionFlags();
+
+  /** Formats instructions, labels, and comments. */
+  private final InstructionFormatter formatter = new InstructionFormatter();
+
+  /** Generates code to load integer constants. */
+  private final ConstantLoader constantLoader = new ConstantLoader();
+
+  // Delegate flag tracking methods to flags object
+  public void markMulNeeded() {
+    flags.markMulNeeded();
+  }
+
+  public void markDivNeeded() {
+    flags.markDivNeeded();
+  }
+
+  public boolean needsMulHelper() {
+    return flags.needsMulHelper();
+  }
+
+  public boolean needsDivHelper() {
+    return flags.needsDivHelper();
+  }
+
+  public void markFloatAddNeeded() {
+    flags.markFloatAddNeeded();
+  }
+
+  public void markFloatSubNeeded() {
+    flags.markFloatSubNeeded();
+  }
+
+  public void markFloatMulNeeded() {
+    flags.markFloatMulNeeded();
+  }
+
+  public void markFloatDivNeeded() {
+    flags.markFloatDivNeeded();
+  }
+
+  public void markFloatCmpNeeded() {
+    flags.markFloatCmpNeeded();
+  }
+
+  public void markIntToFloatNeeded() {
+    flags.markIntToFloatNeeded();
+  }
+
+  public void markFloatToIntNeeded() {
+    flags.markFloatToIntNeeded();
+  }
+
+  public boolean needsAnyFloatHelper() {
+    return flags.needsAnyFloatHelper();
+  }
+
+  public boolean needsFloatMulHelper() {
+    return flags.needsFloatMulHelper();
+  }
+
+  public boolean[] getFloatHelperFlags() {
+    return flags.getFloatHelperFlags();
+  }
+
+  /**
+   * Emits a FRISC instruction with optional operands and comment.
+   *
+   * @param mnemonic the instruction mnemonic (e.g., "MOVE", "ADD", "CALL")
+   * @param operand1 first operand (may be null)
+   * @param operand2 second operand (may be null)
+   * @param comment optional comment (may be null)
+   */
+  public void emitInstruction(String mnemonic, String operand1, String operand2, String comment) {
+    lines.add(formatter.formatInstruction(mnemonic, operand1, operand2, comment));
+  }
+
+  /**
+   * Emits a three-operand FRISC instruction.
+   *
+   * @param mnemonic the instruction mnemonic
+   * @param operand1 first operand
+   * @param operand2 second operand
+   * @param operand3 third operand
+   * @param comment optional comment
+   */
+  public void emitInstruction(
+      String mnemonic, String operand1, String operand2, String operand3, String comment) {
+    lines.add(formatter.formatInstruction(mnemonic, operand1, operand2, operand3, comment));
+  }
+
+  /**
+   * Emits a label at the beginning of a line.
+   *
+   * @param label the label name (without colon)
+   */
+  public void emitLabel(String label) {
+    Objects.requireNonNull(label, "label must not be null");
+    lines.add(label);
+  }
+
+  /**
+   * Emits a label with an optional comment on the same line.
+   *
+   * @param label the label name
+   * @param comment optional comment describing the label
+   */
+  public void emitLabel(String label, String comment) {
+    lines.add(formatter.formatLabel(label, comment));
+  }
+
+  /**
+   * Emits a comment line.
+   *
+   * @param comment the comment text (semicolon will be added automatically)
+   */
+  public void emitComment(String comment) {
+    lines.add(formatter.formatComment(comment));
+  }
+
+  /**
+   * Emits a data declaration (DW, DH, DB, `DS).
+   *
+   * @param label optional label for the data
+   * @param directive the data directive ("DW", "DH", "DB", "`DS")
+   * @param value the data value
+   * @param comment optional comment
+   */
+  public void emitData(String label, String directive, String value, String comment) {
+    lines.add(formatter.formatData(label, directive, value, comment));
+  }
+
+  /** Emits an empty line for better readability. */
+  public void emitNewline() {
+    lines.add("");
+  }
+
+  /**
+   * Emits code to load a 32-bit integer constant into a register.
+   *
+   * <p>If the value fits into a 20-bit signed immediate (-524288 to 524287), emits a single MOVE
+   * instruction. Otherwise, constructs the value from high and low 16-bit parts using SHL and ADD.
+   *
+   * @param value the 32-bit integer value to load
+   * @param targetRegister the target register (e.g., "R0", "R6")
+   * @param comment optional comment (may be null)
+   */
+  public void emitLoadIntConstant(int value, String targetRegister, String comment) {
+    constantLoader.emitLoadIntConstant(this, value, targetRegister, comment);
+  }
+
+  /**
+   * Checks if a value fits in a 20-bit signed immediate.
+   *
+   * @param value the value to check
+   * @return true if the value fits in [-524288, 524287]
+   */
+  public static boolean fitsInImmediate(int value) {
+    return ConstantLoader.fitsInImmediate(value);
+  }
+
+  /**
+   * Emits a section header comment for better code organization.
+   *
+   * @param title the section title
+   */
+  public void emitSectionHeader(String title) {
+    Objects.requireNonNull(title, "title must not be null");
+    emitComment(title);
+  }
+
+  /**
+   * Convenience method for emitting simple instructions without operands.
+   *
+   * @param mnemonic the instruction mnemonic
+   * @param comment optional comment
+   */
+  public void emitInstruction(String mnemonic, String comment) {
+    emitInstruction(mnemonic, null, null, comment);
+  }
+
+  /**
+   * Convenience method for emitting instructions with one operand.
+   *
+   * @param mnemonic the instruction mnemonic
+   * @param operand the single operand
+   * @param comment optional comment
+   */
+  public void emitInstruction(String mnemonic, String operand, String comment) {
+    emitInstruction(mnemonic, operand, null, comment);
+  }
+
+  /**
+   * Writes the generated assembly code to a file.
+   *
+   * @param outputPath the path where to write the assembly code
+   * @throws IOException if writing fails
+   */
+  public void writeToFile(Path outputPath) throws IOException {
+    Objects.requireNonNull(outputPath, "outputPath must not be null");
+
+    try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(outputPath))) {
+      for (String line : lines) {
+        writer.println(line);
+      }
+    }
+  }
+
+  /**
+   * Returns the generated assembly code as a string.
+   *
+   * @return the complete assembly code
+   */
+  public String getGeneratedCode() {
+    return String.join("\n", lines);
+  }
+
+  /**
+   * Formats a number as hexadecimal for FRISC assembly.
+   *
+   * @param value the numeric value
+   * @return formatted hex string (e.g., "04", "0C")
+   */
+  public static String formatHex(int value) {
+    return InstructionFormatter.formatHex(value);
+  }
+
+  /**
+   * Returns the number of generated lines.
+   *
+   * @return the line count
+   */
+  public int getLineCount() {
+    return lines.size();
+  }
+}
