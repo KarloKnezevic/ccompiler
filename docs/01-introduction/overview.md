@@ -236,7 +236,7 @@ These limitations are documented and understood. The compiler is designed to be 
 
 ## Target Architecture: FRISC
 
-The compiler targets the **FRISC (Faculty RISC)** processor architecture, a simplified RISC (Reduced Instruction Set Computer) architecture designed specifically for educational purposes. Understanding the target architecture is essential for understanding how the compiler generates code.
+The compiler targets the **FRISC (FER RISC)** processor architecture, a simplified RISC (Reduced Instruction Set Computer) architecture designed specifically for educational purposes. Understanding the target architecture is essential for understanding how the compiler generates code.
 
 ### FRISC Architecture Overview
 
