@@ -1,0 +1,51 @@
+.program
+
+.type struct TrieNode {
+  is_end:int32@0
+  children:array<ptr<struct TrieNode>,26>@4
+}
+
+.func main():int32
+  .frame locals=112 bytes align=4
+  .slots
+    local root@0:struct TrieNode
+    local i@108:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:root
+    t1 = addr_field t0, TrieNode.is_end
+    store t1, #0:int32 : int32
+    t2 = addr_of_symbol local:i
+    store t2, #0:int32 : int32
+    jmp L1
+
+  L1:
+    t3 = addr_of_symbol local:i
+    t4 = load t3 : int32
+    t5 = cmp_lt t4, #26:int32 : bool
+    br t5, L2, L4
+
+  L2:
+    t6 = addr_of_symbol local:root
+    t7 = addr_field t6, TrieNode.children
+    t8 = load t7 : array<ptr<struct TrieNode>,26>
+    t9 = addr_of_symbol local:i
+    t10 = load t9 : int32
+    t11 = addr_index t8, t10, 4
+    store t11, #0:int32 : ptr<struct TrieNode>
+    jmp L3
+
+  L3:
+    t12 = addr_of_symbol local:i
+    t13 = addr_of_symbol local:i
+    t14 = load t13 : int32
+    t15 = add t14, #1:int32 : int32
+    store t12, t15 : int32
+    jmp L1
+
+  L4:
+    ret #0:int32
+
+.endfunc
+
+.endprogram

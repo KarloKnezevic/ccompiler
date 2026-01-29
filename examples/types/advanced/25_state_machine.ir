@@ -1,0 +1,120 @@
+.program
+
+.type struct State {
+  id:int32@0
+  value:int32@4
+  next:ptr<struct State>@8
+}
+
+.type struct StateMachine {
+  current:ptr<struct State>@0
+  step_count:int32@4
+  total_value:int32@8
+}
+
+.func calculate_total(sm:ptr<struct StateMachine>):int32
+  .frame locals=8 bytes align=4
+  .slots
+    param sm@0:ptr<struct StateMachine>
+    local curr@0:ptr<struct State>
+    local total@4:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:total
+    store t0, #0:int32 : int32
+    t1 = addr_of_symbol local:curr
+    t2 = addr_of_symbol param:sm
+    t3 = load t2 : ptr<struct StateMachine>
+    t4 = addr_field t3, StateMachine.current
+    t5 = load t4 : ptr<struct State>
+    store t1, t5 : ptr<struct State>
+    t6 = addr_of_symbol local:total
+    t7 = addr_of_symbol local:total
+    t8 = load t7 : int32
+    t9 = addr_of_symbol local:curr
+    t10 = load t9 : ptr<struct State>
+    t11 = addr_field t10, State.value
+    t12 = load t11 : int32
+    t13 = add t8, t12 : int32
+    store t6, t13 : int32
+    t14 = addr_of_symbol local:curr
+    t15 = addr_of_symbol local:curr
+    t16 = load t15 : ptr<struct State>
+    t17 = addr_field t16, State.next
+    t18 = load t17 : ptr<struct State>
+    store t14, t18 : ptr<struct State>
+    t19 = addr_of_symbol local:curr
+    t20 = load t19 : ptr<struct State>
+    t21 = cmp_ne t20, #0:int32 : bool
+    br t21, L1, L2
+
+  L1:
+    t22 = addr_of_symbol local:total
+    t23 = addr_of_symbol local:total
+    t24 = load t23 : int32
+    t25 = addr_of_symbol local:curr
+    t26 = load t25 : ptr<struct State>
+    t27 = addr_field t26, State.value
+    t28 = load t27 : int32
+    t29 = add t24, t28 : int32
+    store t22, t29 : int32
+    jmp L2
+
+  L2:
+    t30 = addr_of_symbol local:total
+    t31 = load t30 : int32
+    ret t31
+
+.endfunc
+.func main():int32
+  .frame locals=40 bytes align=4
+  .slots
+    local sm@0:struct StateMachine
+    local s1@12:struct State
+    local s2@24:struct State
+    local result@36:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:sm
+    t1 = addr_field t0, StateMachine.current
+    store t1, #0:int32 : ptr<struct State>
+    t2 = addr_of_symbol local:sm
+    t3 = addr_field t2, StateMachine.step_count
+    store t3, #0:int32 : int32
+    t4 = addr_of_symbol local:sm
+    t5 = addr_field t4, StateMachine.total_value
+    store t5, #0:int32 : int32
+    t6 = addr_of_symbol local:s1
+    t7 = addr_field t6, State.id
+    store t7, #1:int32 : int32
+    t8 = addr_of_symbol local:s1
+    t9 = addr_field t8, State.value
+    store t9, #5:int32 : int32
+    t10 = addr_of_symbol local:s2
+    t11 = addr_field t10, State.id
+    store t11, #2:int32 : int32
+    t12 = addr_of_symbol local:s2
+    t13 = addr_field t12, State.value
+    store t13, #10:int32 : int32
+    t14 = addr_of_symbol local:s1
+    t15 = addr_field t14, State.next
+    t16 = addr_of_symbol local:s2
+    store t15, t16 : ptr<struct State>
+    t17 = addr_of_symbol local:s2
+    t18 = addr_field t17, State.next
+    store t18, #0:int32 : ptr<struct State>
+    t19 = addr_of_symbol local:sm
+    t20 = addr_field t19, StateMachine.current
+    t21 = addr_of_symbol local:s1
+    store t20, t21 : ptr<struct State>
+    t22 = addr_of_symbol local:result
+    t23 = addr_of_symbol local:sm
+    t24 = call func:calculate_total(t23):int32
+    store t22, t24 : int32
+    t25 = addr_of_symbol local:result
+    t26 = load t25 : int32
+    ret t26
+
+.endfunc
+
+.endprogram

@@ -1,0 +1,97 @@
+.program
+
+.type struct Inner {
+  arr:array<int32,2>@0
+  value:int32@8
+}
+
+.type struct Middle {
+  inner:struct Inner@0
+  arr:array<int32,3>@12
+}
+
+.type struct Outer {
+  middle:struct Middle@0
+  base:int32@24
+}
+
+.func main():int32
+  .frame locals=28 bytes align=4
+  .slots
+    local o@0:struct Outer
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:o
+    t1 = addr_field t0, Outer.middle
+    t2 = addr_field t1, Middle.inner
+    t3 = addr_field t2, Inner.arr
+    t4 = addr_index t3, #0:int32, 4
+    store t4, #1:int32 : int32
+
+    t5 = addr_of_symbol local:o
+    t6 = addr_field t5, Outer.middle
+    t7 = addr_field t6, Middle.inner
+    t8 = addr_field t7, Inner.arr
+    t9 = addr_index t8, #1:int32, 4
+    store t9, #2:int32 : int32
+
+    t10 = addr_of_symbol local:o
+    t11 = addr_field t10, Outer.middle
+    t12 = addr_field t11, Middle.inner
+    t13 = addr_field t12, Inner.value
+    store t13, #3:int32 : int32
+
+    t14 = addr_of_symbol local:o
+    t15 = addr_field t14, Outer.middle
+    t16 = addr_field t15, Middle.arr
+    t17 = addr_index t16, #0:int32, 4
+    store t17, #4:int32 : int32
+
+    t18 = addr_of_symbol local:o
+    t19 = addr_field t18, Outer.middle
+    t20 = addr_field t19, Middle.arr
+    t21 = addr_index t20, #1:int32, 4
+    store t21, #5:int32 : int32
+
+    t22 = addr_of_symbol local:o
+    t23 = addr_field t22, Outer.middle
+    t24 = addr_field t23, Middle.arr
+    t25 = addr_index t24, #2:int32, 4
+    store t25, #6:int32 : int32
+
+    t26 = addr_of_symbol local:o
+    t27 = addr_field t26, Outer.base
+    store t27, #7:int32 : int32
+
+    t28 = addr_of_symbol local:o
+    t29 = addr_field t28, Outer.middle
+    t30 = addr_field t29, Middle.inner
+    t31 = addr_field t30, Inner.arr
+    t32 = addr_index t31, #0:int32, 4
+    t33 = load t32 : int32
+
+    t34 = addr_of_symbol local:o
+    t35 = addr_field t34, Outer.middle
+    t36 = addr_field t35, Middle.inner
+    t37 = addr_field t36, Inner.value
+    t38 = load t37 : int32
+
+    t39 = add t33, t38 : int32
+
+    t40 = addr_of_symbol local:o
+    t41 = addr_field t40, Outer.middle
+    t42 = addr_field t41, Middle.arr
+    t43 = addr_index t42, #2:int32, 4
+    t44 = load t43 : int32
+
+    t45 = add t39, t44 : int32
+
+    t46 = addr_of_symbol local:o
+    t47 = addr_field t46, Outer.base
+    t48 = load t47 : int32
+
+    t49 = add t45, t48 : int32
+    ret t49
+.endfunc
+
+.endprogram

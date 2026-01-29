@@ -10,6 +10,7 @@ import hr.fer.ppj.semantics.types.FunctionType;
 import hr.fer.ppj.semantics.types.Type;
 import hr.fer.ppj.semantics.types.TypeSystem;
 import hr.fer.ppj.semantics.util.NodeUtils;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -89,9 +90,12 @@ final class DeclaratorRules {
         if (baseType == null) {
           checker.fail(node);
         }
-        // Unsized array: size is determined by initializer
+        // Unsized array: size is determined by initializer (empty dimensions)
         node.attributes().identifier(inner.attributes().identifier());
-        node.attributes().type(new ArrayType(baseType));
+        Type elementType = baseType instanceof ArrayType arr ? arr.elementType() : baseType;
+        List<Integer> dimensions = baseType instanceof ArrayType arr ? new ArrayList<>(arr.dimensions()) : new ArrayList<>();
+        dimensions.add(0, 0); // 0 means unsized
+        node.attributes().type(new ArrayType(elementType, dimensions));
         node.attributes().lValue(false);
         return;
       }
@@ -105,7 +109,15 @@ final class DeclaratorRules {
         String literal = extractArrayLengthLiteral(children.get(2), node);
         int length = checker.parseArrayLength(literal, node);
         node.attributes().identifier(inner.attributes().identifier());
-        node.attributes().type(new ArrayType(baseType));
+        
+        // Build dimensions list: if baseType is already an ArrayType, prepend new dimension
+        List<Integer> dimensions = new ArrayList<>();
+        if (baseType instanceof ArrayType nestedArray) {
+          dimensions.addAll(nestedArray.dimensions());
+        }
+        dimensions.add(0, length); // Add outermost dimension first
+        
+        node.attributes().type(new ArrayType(baseType instanceof ArrayType arr ? arr.elementType() : baseType, dimensions));
         node.attributes().elementCount(length);
         node.attributes().lValue(false);
         return;
@@ -155,7 +167,9 @@ final class DeclaratorRules {
     String literal = extractArrayLengthLiteral(children.get(2), node);
     int length = checker.parseArrayLength(literal, node);
     node.attributes().identifier(idToken.lexeme());
-    node.attributes().type(new ArrayType(inherited));
+    
+    // For single-dimensional arrays, create with dimension
+    node.attributes().type(new ArrayType(inherited, length));
     node.attributes().elementCount(length);
     node.attributes().lValue(false);
   }

@@ -37,7 +37,7 @@
         <module>compiler-lexer</module>
         <module>compiler-parser</module>
         <module>compiler-semantics</module>
-        <module>compiler-codegen</module>
+        <module>compiler-ir</module>
         <module>cli</module>
     </modules>
 

@@ -1,0 +1,28 @@
+.program
+
+.func main():float
+  .frame locals=12 bytes align=4
+  .slots
+    local x@0:float
+    local y@4:float
+    local z@8:float
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:x
+    store t0, #1.5:float : float
+    t1 = addr_of_symbol local:y
+    store t1, #2.5:float : float
+    t2 = addr_of_symbol local:z
+    store t2, #3.5:float : float
+    t3 = addr_of_symbol local:x
+    t4 = load t3 : float
+    t5 = addr_of_symbol local:y
+    t6 = load t5 : float
+    t7 = mul t4, t6 : float
+    t8 = addr_of_symbol local:z
+    t9 = load t8 : float
+    t10 = mul t7, t9 : float
+    ret t10
+.endfunc
+
+.endprogram

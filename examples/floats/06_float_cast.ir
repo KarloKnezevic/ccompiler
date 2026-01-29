@@ -1,0 +1,12 @@
+.program
+
+.func main():float
+  .frame locals=0 bytes align=4
+  .slots
+  .blocks
+  L0:
+    t0 = itof #5:int32 : float
+    ret t0
+.endfunc
+
+.endprogram

@@ -1,0 +1,18 @@
+.program
+.func f():int32
+  .frame locals=0 bytes align=4
+  .slots
+  .blocks
+  L0:
+    ret #123:int32
+.endfunc
+
+.func main():int32
+  .frame locals=0 bytes align=4
+  .slots
+  .blocks
+  L0:
+    t0 = call func:f() : int32
+    ret t0
+.endfunc
+.endprogram

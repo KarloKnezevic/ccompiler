@@ -35,7 +35,7 @@
         </dependency>
         <dependency>
             <groupId>hr.fer.ppj</groupId>
-            <artifactId>compiler-codegen</artifactId>
+            <artifactId>compiler-ir</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

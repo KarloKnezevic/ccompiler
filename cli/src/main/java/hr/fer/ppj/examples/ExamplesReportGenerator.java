@@ -1,8 +1,8 @@
 package hr.fer.ppj.examples;
 
 import hr.fer.ppj.cli.FriscRunner;
-import hr.fer.ppj.codegen.CodeGenerator;
-import hr.fer.ppj.codegen.util.FloatCodegenHelper;
+// import hr.fer.ppj.codegen.CodeGenerator; // Codegen removed - IR focus only
+// import hr.fer.ppj.codegen.util.FloatCodegenHelper; // Codegen removed - IR focus only
 import hr.fer.ppj.lexer.gen.LexerGenerator;
 import hr.fer.ppj.lexer.gen.LexerGeneratorResult;
 import hr.fer.ppj.lexer.io.Lexer;
@@ -420,14 +420,15 @@ public final class ExamplesReportGenerator {
           SemanticAnalyzer.SemanticAnalysisResult semanticResults = 
               analyzer.analyzeWithResults(parseTree, new PrintStream(new ByteArrayOutputStream()), null);
           
-          CodeGenerator codeGen = new CodeGenerator();
-          Path friscOutputPath = tempDir.resolve("a.frisc");
-          codeGen.generate(semanticResults.globalScope(), semanticResults.parseTree(), friscOutputPath);
-          
-          if (Files.exists(friscOutputPath)) {
-            friscCode = Files.readString(friscOutputPath);
-            friscSuccess = true;
-          }
+          // Codegen removed - IR focus only
+          // CodeGenerator codeGen = new CodeGenerator();
+          // Path friscOutputPath = tempDir.resolve("a.frisc");
+          // codeGen.generate(semanticResults.globalScope(), semanticResults.parseTree(), friscOutputPath);
+          // 
+          // if (Files.exists(friscOutputPath)) {
+          //   friscCode = Files.readString(friscOutputPath);
+          //   friscSuccess = true;
+          // }
           
         } catch (Exception e) {
           friscErrors = "Code generation failed: " + e.getMessage();
@@ -454,7 +455,9 @@ public final class ExamplesReportGenerator {
             // Always convert Q16.16 to float for display (using FloatCodegenHelper)
             try {
               int q16_16 = Integer.parseInt(r6IntValue);
-              float floatValue = FloatCodegenHelper.q16_16ToFloat(q16_16);
+              // TODO: Re-enable when codegen is added back
+              // float floatValue = FloatCodegenHelper.q16_16ToFloat(q16_16);
+              float floatValue = (float) q16_16 / 65536.0f; // Simple Q16.16 conversion
               // Format float value nicely
               if (floatValue == (int) floatValue) {
                 actualFloatValue = String.format("%.1f", floatValue);
@@ -471,13 +474,17 @@ public final class ExamplesReportGenerator {
               
               // If integer match fails, check if expected output is a float literal
               // Float literals contain '.' or 'e'/'E' (exponent notation)
-              boolean expectedIsFloat = FloatCodegenHelper.isFloatLiteral(expectedOutput);
+              // TODO: Re-enable when codegen is added back
+              // boolean expectedIsFloat = FloatCodegenHelper.isFloatLiteral(expectedOutput);
+              boolean expectedIsFloat = expectedOutput.contains(".") || expectedOutput.toLowerCase().contains("e");
               
               if (!intMatch && expectedIsFloat) {
                 // Try comparing as float (Q16.16 conversion)
                 try {
                   float expectedFloat = Float.parseFloat(expectedOutput);
-                  float actualFloat = FloatCodegenHelper.q16_16ToFloat(Integer.parseInt(r6IntValue));
+                  // TODO: Re-enable when codegen is added back
+                  // float actualFloat = FloatCodegenHelper.q16_16ToFloat(Integer.parseInt(r6IntValue));
+                  float actualFloat = (float) Integer.parseInt(r6IntValue) / 65536.0f; // Simple Q16.16 conversion
                   
                   // Compare floats with small epsilon for floating-point precision
                   float epsilon = 0.0001f;

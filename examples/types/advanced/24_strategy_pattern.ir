@@ -1,0 +1,66 @@
+.program
+
+.type struct Context {
+  mode:int32@0
+  data:int32@4
+}
+
+.func calculate(ctx:ptr<struct Context>, x:int32, y:int32):int32
+  .frame locals=0 bytes align=4
+  .slots
+    param ctx@0:ptr<struct Context>
+    param x@4:int32
+    param y@8:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:ctx
+    t1 = load t0 : ptr<struct Context>
+    t2 = addr_field t1, Context.mode
+    t3 = load t2 : int32
+    t4 = cmp_eq t3, #0:int32 : bool
+    br t4, L1, L2
+
+  L1:
+    t5 = addr_of_symbol param:x
+    t6 = load t5 : int32
+    t7 = addr_of_symbol param:y
+    t8 = load t7 : int32
+    t9 = add t6, t8 : int32
+    ret t9
+
+  L2:
+    t10 = addr_of_symbol param:x
+    t11 = load t10 : int32
+    t12 = addr_of_symbol param:y
+    t13 = load t12 : int32
+    t14 = mul t11, t13 : int32
+    ret t14
+
+  L3:
+    ret #0:int32
+
+.endfunc
+.func main():int32
+  .frame locals=12 bytes align=4
+  .slots
+    local ctx@0:struct Context
+    local result@8:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:ctx
+    t1 = addr_field t0, Context.mode
+    store t1, #0:int32 : int32
+    t2 = addr_of_symbol local:ctx
+    t3 = addr_field t2, Context.data
+    store t3, #0:int32 : int32
+    t4 = addr_of_symbol local:result
+    t5 = addr_of_symbol local:ctx
+    t6 = call func:calculate(t5, #5:int32, #3:int32):int32
+    store t4, t6 : int32
+    t7 = addr_of_symbol local:result
+    t8 = load t7 : int32
+    ret t8
+
+.endfunc
+
+.endprogram

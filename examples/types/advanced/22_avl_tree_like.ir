@@ -1,0 +1,90 @@
+.program
+
+.type struct AVLNode {
+  key:int32@0
+  height:int32@4
+  left:ptr<struct AVLNode>@8
+  right:ptr<struct AVLNode>@12
+}
+
+.func get_height(node:ptr<struct AVLNode>):int32
+  .frame locals=0 bytes align=4
+  .slots
+    param node@0:ptr<struct AVLNode>
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:node
+    t1 = load t0 : ptr<struct AVLNode>
+    t2 = cmp_ne t1, null:ptr<struct AVLNode> : bool
+    br t2, L2, L1
+
+  L1:
+    ret #0:int32
+
+  L2:
+    t3 = addr_of_symbol param:node
+    t4 = load t3 : ptr<struct AVLNode>
+    t5 = addr_field t4, AVLNode.height
+    t6 = load t5 : int32
+    ret t6
+
+.endfunc
+.func get_balance(node:ptr<struct AVLNode>):int32
+  .frame locals=0 bytes align=4
+  .slots
+    param node@0:ptr<struct AVLNode>
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:node
+    t1 = load t0 : ptr<struct AVLNode>
+    t2 = cmp_ne t1, null:ptr<struct AVLNode> : bool
+    br t2, L2, L1
+
+  L1:
+    ret #0:int32
+
+  L2:
+    t3 = addr_of_symbol param:node
+    t4 = load t3 : ptr<struct AVLNode>
+    t5 = addr_field t4, AVLNode.left
+    t6 = load t5 : ptr<struct AVLNode>
+    t7 = call func:get_height(t6):int32
+    t8 = addr_of_symbol param:node
+    t9 = load t8 : ptr<struct AVLNode>
+    t10 = addr_field t9, AVLNode.right
+    t11 = load t10 : ptr<struct AVLNode>
+    t12 = call func:get_height(t11):int32
+    t13 = sub t7, t12 : int32
+    ret t13
+
+.endfunc
+.func main():int32
+  .frame locals=20 bytes align=4
+  .slots
+    local node@0:struct AVLNode
+    local balance@16:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:node
+    t1 = addr_field t0, AVLNode.key
+    store t1, #10:int32 : int32
+    t2 = addr_of_symbol local:node
+    t3 = addr_field t2, AVLNode.height
+    store t3, #1:int32 : int32
+    t4 = addr_of_symbol local:node
+    t5 = addr_field t4, AVLNode.left
+    store t5, #0:int32 : ptr<struct AVLNode>
+    t6 = addr_of_symbol local:node
+    t7 = addr_field t6, AVLNode.right
+    store t7, #0:int32 : ptr<struct AVLNode>
+    t8 = addr_of_symbol local:balance
+    t9 = addr_of_symbol local:node
+    t10 = call func:get_balance(t9):int32
+    store t8, t10 : int32
+    t11 = addr_of_symbol local:balance
+    t12 = load t11 : int32
+    ret t12
+
+.endfunc
+
+.endprogram

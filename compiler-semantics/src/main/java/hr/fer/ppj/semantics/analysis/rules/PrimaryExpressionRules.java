@@ -157,7 +157,7 @@ final class PrimaryExpressionRules {
   
   private void handleStringLiteral(NonTerminalNode node, TerminalNode literal) {
     int length = checker.computeStringLiteralLength(literal.lexeme(), node);
-    node.attributes().type(new ArrayType(new ConstType(PrimitiveType.CHAR)));
+    node.attributes().type(new ArrayType(new ConstType(PrimitiveType.CHAR), length));
     node.attributes().lValue(false);
     node.attributes().stringLiteral(true);
     node.attributes().stringLiteralLength(length);

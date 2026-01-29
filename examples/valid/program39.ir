@@ -1,0 +1,78 @@
+.program
+
+.func f(x:int32, y:char, z:int32, a:char, b:int32, c:int32, d:int32, arr:ptr<int32>):int32
+  .frame locals=8 bytes align=4
+  .slots
+    local ret@0:int32
+    param x@0:int32
+    local xx@4:int32
+    param y@4:char
+    param z@8:int32
+    param a@12:char
+    param b@16:int32
+    param c@20:int32
+    param d@24:int32
+    param arr@28:ptr<int32>
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:x
+    t1 = load t0 : int32
+    t2 = addr_of_symbol param:y
+    t3 = load t2 : char
+    t4 = sext t3 : int32
+    t5 = add t1, t4 : int32
+
+    t6 = addr_of_symbol local:ret
+    store t6, t5 : int32
+    t7 = addr_of_symbol local:xx
+    store t7, #12:int32 : int32
+
+    t8 = load t6 : int32
+    t9 = load t7 : int32
+    t10 = add t8, t9 : int32
+    store t6, t10 : int32
+
+    t11 = addr_of_symbol param:arr
+    t12 = load t11 : ptr<int32>
+    t13 = load t0 : int32
+    t14 = addr_index t12, t13, 4
+    t15 = load t14 : int32
+    t16 = load t6 : int32
+    t17 = add t16, t15 : int32
+    store t6, t17 : int32
+
+    t18 = load t11 : ptr<int32>
+    t19 = load t0 : int32
+    t20 = addr_index t18, t19, 4
+    t21 = load t20 : int32
+    t22 = load t6 : int32
+    t23 = add t22, t21 : int32
+    store t6, t23 : int32
+
+    t24 = load t6 : int32
+    t25 = addr_of_symbol param:d
+    t26 = load t25 : int32
+    t27 = sub t24, t26 : int32
+    ret t27
+.endfunc
+
+.func main():int32
+  .frame locals=12 bytes align=4
+  .slots
+    local x@0:array<int32,3>
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:x
+    t1 = addr_index t0, #0:int32, 4
+    store t1, #51:int32 : int32
+    t2 = addr_index t0, #1:int32, 4
+    store t2, #52:int32 : int32
+    t3 = addr_index t0, #2:int32, 4
+    store t3, #53:int32 : int32
+    t4 = trunc #2:int32 : char
+    t5 = trunc #4:int32 : char
+    t6 = call func:f(#1:int32, t4, #3:int32, t5, #5:int32, #6:int32, #7:int32, t0) : int32
+    ret t6
+.endfunc
+
+.endprogram

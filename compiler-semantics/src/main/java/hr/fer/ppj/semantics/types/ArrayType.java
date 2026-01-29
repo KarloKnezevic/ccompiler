@@ -1,5 +1,8 @@
 package hr.fer.ppj.semantics.types;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -10,6 +13,13 @@ import java.util.Objects;
  *   <li>Declaration: {@code int arr[10];} - array of 10 integers</li>
  *   <li>Element type: Can be any non-void type (primitives, structs, pointers, other arrays)</li>
  *   <li>Size: Must be a compile-time constant (integer literal)</li>
+ * </ul>
+ *
+ * <p>Multi-dimensional arrays:
+ * <ul>
+ *   <li>{@code int arr[3][2];} - 2D array with dimensions [3, 2]</li>
+ *   <li>Dimensions are stored outermost-first: {@code arr[i][j]} means dimensions[0]=3, dimensions[1]=2</li>
+ *   <li>For unsized arrays (function parameters), dimensions list is empty</li>
  * </ul>
  *
  * <p>Array semantics:
@@ -39,6 +49,7 @@ import java.util.Objects;
  * </ul>
  *
  * @param elementType the type of each array element. Must not be {@code void}.
+ * @param dimensions immutable list of array dimensions (outermost first). Empty for unsized arrays.
  *
  * @see Type for the base type interface
  * @see TypeSystem#decayToArrayPointer for array-to-pointer decay
@@ -46,20 +57,77 @@ import java.util.Objects;
  *
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */
-public record ArrayType(Type elementType) implements Type {
+public record ArrayType(Type elementType, List<Integer> dimensions) implements Type {
 
   /**
-   * Constructs an array type.
+   * Constructs an array type with dimensions.
+   *
+   * @param elementType the type of each array element (must not be null or void)
+   * @param dimensions list of array dimensions (outermost first). Empty for unsized arrays.
+   * @throws NullPointerException if elementType or dimensions is null
+   * @throws IllegalArgumentException if elementType is void
+   */
+  public ArrayType {
+    Objects.requireNonNull(elementType, "elementType must not be null");
+    Objects.requireNonNull(dimensions, "dimensions must not be null");
+    if (elementType.isVoid()) {
+      throw new IllegalArgumentException("Array element type cannot be void");
+    }
+    // Create defensive copy to ensure immutability
+    dimensions = Collections.unmodifiableList(new ArrayList<>(dimensions));
+  }
+
+  /**
+   * Constructs an array type without dimensions (for unsized arrays or backward compatibility).
    *
    * @param elementType the type of each array element (must not be null or void)
    * @throws NullPointerException if elementType is null
    * @throws IllegalArgumentException if elementType is void
    */
-  public ArrayType {
-    Objects.requireNonNull(elementType, "elementType must not be null");
-    if (elementType.isVoid()) {
-      throw new IllegalArgumentException("Array element type cannot be void");
+  public ArrayType(Type elementType) {
+    this(elementType, List.of());
+  }
+
+  /**
+   * Constructs a single-dimensional array type.
+   *
+   * @param elementType the type of each array element (must not be null or void)
+   * @param length the array length (must be positive)
+   * @throws NullPointerException if elementType is null
+   * @throws IllegalArgumentException if elementType is void or length is non-positive
+   */
+  public ArrayType(Type elementType, int length) {
+    this(elementType, List.of(length));
+  }
+
+  /**
+   * Gets the total number of elements in this array.
+   *
+   * <p>For multi-dimensional arrays, this is the product of all dimensions.
+   * For unsized arrays (empty dimensions), returns 0.
+   *
+   * @return the total number of elements, or 0 if unsized
+   */
+  public int totalElements() {
+    if (dimensions.isEmpty()) {
+      return 0;
     }
+    return dimensions.stream().reduce(1, (a, b) -> a * b);
+  }
+
+  /**
+   * Gets the size of a single element at the given dimension level.
+   *
+   * <p>For {@code int arr[3][2]}, dimension 0 has element size = 2 * sizeof(int) = 8,
+   * and dimension 1 has element size = sizeof(int) = 4.
+   *
+   * @param dimension the dimension level (0 = outermost)
+   * @return the size in bytes of one element at this dimension level
+   */
+  public int getElementSizeAtDimension(int dimension) {
+    // This requires type size information, which should be provided by TypeSystem
+    // For now, return 0 as a placeholder - actual implementation needs type size calculation
+    return 0;
   }
 
   /**

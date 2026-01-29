@@ -1,0 +1,47 @@
+.program
+
+.type struct Triple {
+  a:int32@0
+  b:int32@4
+  c:int32@8
+}
+
+.func main():int32
+  .frame locals=12 bytes align=4
+  .slots
+    local t@0:struct Triple
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:t
+    t1 = addr_field t0, Triple.a
+    store t1, #1:int32 : int32
+
+    t2 = addr_of_symbol local:t
+    t3 = addr_field t2, Triple.b
+    store t3, #2:int32 : int32
+
+    t4 = addr_of_symbol local:t
+    t5 = addr_field t4, Triple.c
+    store t5, #3:int32 : int32
+
+    t6 = addr_of_symbol local:t
+    t7 = addr_field t6, Triple.a
+    t8 = load t7 : int32
+    t9 = mul t8, #100:int32 : int32
+
+    t10 = addr_of_symbol local:t
+    t11 = addr_field t10, Triple.b
+    t12 = load t11 : int32
+    t13 = mul t12, #10:int32 : int32
+
+    t14 = add t9, t13 : int32
+
+    t15 = addr_of_symbol local:t
+    t16 = addr_field t15, Triple.c
+    t17 = load t16 : int32
+
+    t18 = add t14, t17 : int32
+    ret t18
+.endfunc
+
+.endprogram

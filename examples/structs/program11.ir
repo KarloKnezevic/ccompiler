@@ -1,0 +1,24 @@
+.program
+
+.type struct Node {
+  value:int32@0
+  next:ptr<int32>@4
+}
+
+.func main():int32
+  .frame locals=8 bytes align=4
+  .slots
+    local n@0:struct Node
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:n
+    t1 = addr_field t0, Node.value
+    store t1, #42:int32 : int32
+
+    t2 = addr_of_symbol local:n
+    t3 = addr_field t2, Node.value
+    t4 = load t3 : int32
+    ret t4
+.endfunc
+
+.endprogram

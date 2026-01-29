@@ -1,0 +1,12 @@
+.program
+
+.func main():int32
+  .frame locals=0 bytes align=4
+  .slots
+  .blocks
+  L0:
+    t0 = ftoi #3.7:float : int32
+    ret t0
+.endfunc
+
+.endprogram

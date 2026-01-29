@@ -1,0 +1,53 @@
+.program
+
+.type struct Mixed {
+  c:char@0
+  x:int32@4
+  arr:array<int32,2>@8
+}
+
+.func main():int32
+  .frame locals=16 bytes align=4
+  .slots
+    local m@0:struct Mixed
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:m
+    t1 = addr_field t0, Mixed.c
+    store t1, #'X':char : char
+
+    t2 = addr_of_symbol local:m
+    t3 = addr_field t2, Mixed.x
+    store t3, #100:int32 : int32
+
+    t4 = addr_of_symbol local:m
+    t5 = addr_field t4, Mixed.arr
+    t6 = addr_index t5, #0:int32, 4
+    store t6, #1:int32 : int32
+
+    t7 = addr_of_symbol local:m
+    t8 = addr_field t7, Mixed.arr
+    t9 = addr_index t8, #1:int32, 4
+    store t9, #2:int32 : int32
+
+    t10 = addr_of_symbol local:m
+    t11 = addr_field t10, Mixed.x
+    t12 = load t11 : int32
+
+    t13 = addr_of_symbol local:m
+    t14 = addr_field t13, Mixed.arr
+    t15 = addr_index t14, #0:int32, 4
+    t16 = load t15 : int32
+
+    t17 = add t12, t16 : int32
+
+    t18 = addr_of_symbol local:m
+    t19 = addr_field t18, Mixed.arr
+    t20 = addr_index t19, #1:int32, 4
+    t21 = load t20 : int32
+
+    t22 = add t17, t21 : int32
+    ret t22
+.endfunc
+
+.endprogram

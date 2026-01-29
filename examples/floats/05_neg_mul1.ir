@@ -1,0 +1,13 @@
+.program
+
+.func main():float
+  .frame locals=0 bytes align=4
+  .slots
+  .blocks
+  L0:
+    t0 = neg #3.0:float : float
+    t1 = mul #2.0:float, t0 : float
+    ret t1
+.endfunc
+
+.endprogram

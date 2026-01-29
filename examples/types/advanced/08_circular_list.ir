@@ -1,0 +1,41 @@
+.program
+
+.type struct CNode {
+  id:int32@0
+  next:ptr<struct CNode>@4
+}
+
+.func main():int32
+  .frame locals=24 bytes align=4
+  .slots
+    local n1@0:struct CNode
+    local n2@8:struct CNode
+    local n3@16:struct CNode
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:n1
+    t1 = addr_field t0, CNode.id
+    store t1, #1:int32 : int32
+    t2 = addr_of_symbol local:n2
+    t3 = addr_field t2, CNode.id
+    store t3, #2:int32 : int32
+    t4 = addr_of_symbol local:n3
+    t5 = addr_field t4, CNode.id
+    store t5, #3:int32 : int32
+    t6 = addr_of_symbol local:n1
+    t7 = addr_field t6, CNode.next
+    t8 = addr_of_symbol local:n2
+    store t7, t8 : ptr<struct CNode>
+    t9 = addr_of_symbol local:n2
+    t10 = addr_field t9, CNode.next
+    t11 = addr_of_symbol local:n3
+    store t10, t11 : ptr<struct CNode>
+    t12 = addr_of_symbol local:n3
+    t13 = addr_field t12, CNode.next
+    t14 = addr_of_symbol local:n1
+    store t13, t14 : ptr<struct CNode>
+    ret #0:int32
+
+.endfunc
+
+.endprogram

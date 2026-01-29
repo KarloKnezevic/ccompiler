@@ -34,6 +34,8 @@ public final class SemanticAttributes {
   private boolean stringLiteral;
   private int stringLiteralLength;
   private Map<String, Type> structFields;
+  private Type castSourceType;
+  private CastCategory castCategory;
 
   public Type type() {
     return type;
@@ -196,6 +198,52 @@ public final class SemanticAttributes {
       this.structFields = new LinkedHashMap<>(fields);
     }
     return this;
+  }
+
+  public Type castSourceType() {
+    return castSourceType;
+  }
+
+  public SemanticAttributes castSourceType(Type castSourceType) {
+    this.castSourceType = castSourceType;
+    return this;
+  }
+
+  public CastCategory castCategory() {
+    return castCategory;
+  }
+
+  public SemanticAttributes castCategory(CastCategory castCategory) {
+    this.castCategory = castCategory;
+    return this;
+  }
+
+  /**
+   * Enumeration of cast categories for IR generation.
+   *
+   * <p>These categories determine which IR cast operation to use:
+   * <ul>
+   *   <li>{@code TRUNC}: Truncate (int32 → char, int32 → bool)</li>
+   *   <li>{@code SEXT}: Sign extend (char → int32, since char is signed)</li>
+   *   <li>{@code ZEXT}: Zero extend (not used in this subset, char is signed)</li>
+   *   <li>{@code PTRCAST}: Pointer cast (ptr<T> → ptr<U>)</li>
+   *   <li>{@code ITOF}: Integer to float (int32 → float, char → float)</li>
+   *   <li>{@code FTOI}: Float to integer (float → int32, float → char)</li>
+   * </ul>
+   */
+  public enum CastCategory {
+    /** Truncate: int32 → char, int32 → bool */
+    TRUNC,
+    /** Sign extend: char → int32 */
+    SEXT,
+    /** Zero extend: not used (char is signed) */
+    ZEXT,
+    /** Pointer cast: ptr<T> → ptr<U> */
+    PTRCAST,
+    /** Integer to float: int32 → float, char → float */
+    ITOF,
+    /** Float to integer: float → int32, float → char */
+    FTOI
   }
 }
 

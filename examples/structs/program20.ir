@@ -1,0 +1,57 @@
+.program
+
+.type struct Point {
+  x:int32@0
+  y:int32@4
+}
+
+.globals
+global global:struct Point
+
+.func main():int32
+  .frame locals=8 bytes align=4
+  .slots
+    local local@0:struct Point
+  .blocks
+  L0:
+    t0 = addr_of_symbol global:global
+    t1 = addr_field t0, Point.x
+    store t1, #10:int32 : int32
+
+    t2 = addr_of_symbol global:global
+    t3 = addr_field t2, Point.y
+    store t3, #20:int32 : int32
+
+    t4 = addr_of_symbol local:local
+    t5 = addr_field t4, Point.x
+    store t5, #30:int32 : int32
+
+    t6 = addr_of_symbol local:local
+    t7 = addr_field t6, Point.y
+    store t7, #40:int32 : int32
+
+    t8 = addr_of_symbol global:global
+    t9 = addr_field t8, Point.x
+    t10 = load t9 : int32
+
+    t11 = addr_of_symbol global:global
+    t12 = addr_field t11, Point.y
+    t13 = load t12 : int32
+
+    t14 = add t10, t13 : int32
+
+    t15 = addr_of_symbol local:local
+    t16 = addr_field t15, Point.x
+    t17 = load t16 : int32
+
+    t18 = add t14, t17 : int32
+
+    t19 = addr_of_symbol local:local
+    t20 = addr_field t19, Point.y
+    t21 = load t20 : int32
+
+    t22 = add t18, t21 : int32
+    ret t22
+.endfunc
+
+.endprogram

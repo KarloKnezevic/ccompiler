@@ -1,0 +1,21 @@
+.program
+
+.globals
+  global x:int32 = #12:int32
+
+.func main():int32
+  .frame locals=8 bytes align=4
+  .slots
+    local x@0:int32
+    local x_1@4:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:x
+    store t0, #123:int32 : int32
+    t1 = addr_of_symbol local:x_1
+    store t1, #32:int32 : int32
+    t2 = load t1 : int32
+    ret t2
+.endfunc
+
+.endprogram

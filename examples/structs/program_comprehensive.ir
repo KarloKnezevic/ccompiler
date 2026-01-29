@@ -1,0 +1,79 @@
+.program
+
+.type struct Inner {
+  arr:array<int32,2>@0
+  value:int32@8
+}
+.type struct Outer {
+  inner:struct Inner@0
+  base:int32@12
+}
+
+.globals
+  global inner:struct Inner
+  global o1:struct Outer
+  global o2:struct Outer
+
+.func compute(o:struct Outer):int32
+  .frame locals=0 bytes align=4
+  .slots
+    param o@0:struct Outer
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:o
+    t1 = addr_field t0, Outer.inner
+    t2 = addr_field t1, Inner.arr
+    t3 = addr_index t2, #0:int32, 4
+    t4 = load t3 : int32
+    t5 = addr_of_symbol param:o
+    t6 = addr_field t5, Outer.inner
+    t7 = addr_field t6, Inner.arr
+    t8 = addr_index t7, #1:int32, 4
+    t9 = load t8 : int32
+    t10 = add t4, t9 : int32
+    t11 = addr_of_symbol param:o
+    t12 = addr_field t11, Outer.inner
+    t13 = addr_field t12, Inner.value
+    t14 = load t13 : int32
+    t15 = add t10, t14 : int32
+    t16 = addr_of_symbol param:o
+    t17 = addr_field t16, Outer.base
+    t18 = load t17 : int32
+    t19 = add t15, t18 : int32
+    ret t19
+.endfunc
+.func main():int32
+  .frame locals=32 bytes align=4
+  .slots
+    local o1@0:struct Outer
+    local o2@16:struct Outer
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:o1
+    t1 = addr_field t0, Outer.inner
+    t2 = addr_field t1, Inner.arr
+    t3 = addr_index t2, #0:int32, 4
+    store t3, #1:int32 : int32
+    t4 = addr_of_symbol local:o1
+    t5 = addr_field t4, Outer.inner
+    t6 = addr_field t5, Inner.arr
+    t7 = addr_index t6, #1:int32, 4
+    store t7, #2:int32 : int32
+    t8 = addr_of_symbol local:o1
+    t9 = addr_field t8, Outer.inner
+    t10 = addr_field t9, Inner.value
+    store t10, #3:int32 : int32
+    t11 = addr_of_symbol local:o1
+    t12 = addr_field t11, Outer.base
+    store t12, #4:int32 : int32
+    t13 = addr_of_symbol local:o2
+    t14 = addr_of_symbol local:o1
+    t15 = load t14 : struct Outer
+    store t13, t15 : struct Outer
+    t16 = addr_of_symbol local:o2
+    t17 = load t16 : struct Outer
+    t18 = call func:compute(t17) : int32
+    ret t18
+.endfunc
+
+.endprogram

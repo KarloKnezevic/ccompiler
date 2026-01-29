@@ -288,7 +288,7 @@ final class StructRules {
       String literal = extractArrayLengthLiteral(children.get(2), node);
       int length = checker.parseArrayLength(literal, node);
       node.attributes().identifier(idToken.lexeme());
-      node.attributes().type(new ArrayType(baseType));
+      node.attributes().type(new ArrayType(baseType, length));
       node.attributes().elementCount(length);
       return;
     }
@@ -319,7 +319,7 @@ final class StructRules {
         int length = checker.parseArrayLength(literal, node);
         if (children.get(1) instanceof TerminalNode idToken) {
           node.attributes().identifier(idToken.lexeme());
-          node.attributes().type(new ArrayType(ptr.baseType()));
+          node.attributes().type(new ArrayType(ptr.baseType(), length));
           node.attributes().elementCount(length);
           return;
         }

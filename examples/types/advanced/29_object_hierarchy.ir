@@ -1,0 +1,91 @@
+.program
+
+.type struct Animal {
+  age:int32@0
+  weight:int32@4
+}
+
+.type struct Dog {
+  base:struct Animal@0
+  loyalty:int32@8
+}
+
+.type struct Cat {
+  base:struct Animal@0
+  independence:int32@8
+}
+
+.func calculate_score(a:ptr<struct Animal>):int32
+  .frame locals=0 bytes align=4
+  .slots
+    param a@0:ptr<struct Animal>
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:a
+    t1 = load t0 : ptr<struct Animal>
+    t2 = addr_field t1, Animal.age
+    t3 = load t2 : int32
+    t4 = addr_of_symbol param:a
+    t5 = load t4 : ptr<struct Animal>
+    t6 = addr_field t5, Animal.weight
+    t7 = load t6 : int32
+    t8 = mul t3, t7 : int32
+    ret t8
+
+.endfunc
+.func main():int32
+  .frame locals=36 bytes align=4
+  .slots
+    local dog@0:struct Dog
+    local cat@12:struct Cat
+    local dog_score@24:int32
+    local cat_score@28:int32
+    local result@32:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:dog
+    t1 = addr_field t0, Dog.base
+    t2 = addr_field t1, Animal.age
+    store t2, #3:int32 : int32
+    t3 = addr_of_symbol local:dog
+    t4 = addr_field t3, Dog.base
+    t5 = addr_field t4, Animal.weight
+    store t5, #10:int32 : int32
+    t6 = addr_of_symbol local:dog
+    t7 = addr_field t6, Dog.loyalty
+    store t7, #10:int32 : int32
+    t8 = addr_of_symbol local:cat
+    t9 = addr_field t8, Cat.base
+    t10 = addr_field t9, Animal.age
+    store t10, #2:int32 : int32
+    t11 = addr_of_symbol local:cat
+    t12 = addr_field t11, Cat.base
+    t13 = addr_field t12, Animal.weight
+    store t13, #5:int32 : int32
+    t14 = addr_of_symbol local:cat
+    t15 = addr_field t14, Cat.independence
+    store t15, #8:int32 : int32
+    t16 = addr_of_symbol local:dog_score
+    t17 = addr_of_symbol local:dog
+    t18 = addr_field t17, Dog.base
+    t19 = call func:calculate_score(t18):int32
+    store t16, t19 : int32
+    t20 = addr_of_symbol local:cat_score
+    t21 = addr_of_symbol local:cat
+    t22 = addr_field t21, Cat.base
+    t23 = call func:calculate_score(t22):int32
+    store t20, t23 : int32
+    t24 = addr_of_symbol local:result
+    t25 = addr_of_symbol local:dog_score
+    t26 = load t25 : int32
+    t27 = addr_of_symbol local:cat_score
+    t28 = load t27 : int32
+    t29 = add t26, t28 : int32
+    store t24, t29 : int32
+    t30 = addr_of_symbol local:result
+    t31 = load t30 : int32
+    ret t31
+
+.endfunc
+
+.endprogram

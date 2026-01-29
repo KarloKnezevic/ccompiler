@@ -1,0 +1,65 @@
+.program
+
+.type struct Point {
+  x:int32@0
+  y:int32@4
+}
+
+.func main():int32
+  .frame locals=24 bytes align=4
+  .slots
+    local arr@0:array<struct Point,3>
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:arr
+    t1 = addr_index t0, #0:int32, 8
+    t2 = addr_field t1, Point.x
+    store t2, #1:int32 : int32
+
+    t3 = addr_of_symbol local:arr
+    t4 = addr_index t3, #0:int32, 8
+    t5 = addr_field t4, Point.y
+    store t5, #2:int32 : int32
+
+    t6 = addr_of_symbol local:arr
+    t7 = addr_index t6, #1:int32, 8
+    t8 = addr_field t7, Point.x
+    store t8, #3:int32 : int32
+
+    t9 = addr_of_symbol local:arr
+    t10 = addr_index t9, #1:int32, 8
+    t11 = addr_field t10, Point.y
+    store t11, #4:int32 : int32
+
+    t12 = addr_of_symbol local:arr
+    t13 = addr_index t12, #2:int32, 8
+    t14 = addr_field t13, Point.x
+    store t14, #5:int32 : int32
+
+    t15 = addr_of_symbol local:arr
+    t16 = addr_index t15, #2:int32, 8
+    t17 = addr_field t16, Point.y
+    store t17, #6:int32 : int32
+
+    t18 = addr_of_symbol local:arr
+    t19 = addr_index t18, #0:int32, 8
+    t20 = addr_field t19, Point.x
+    t21 = load t20 : int32
+
+    t22 = addr_of_symbol local:arr
+    t23 = addr_index t22, #1:int32, 8
+    t24 = addr_field t23, Point.y
+    t25 = load t24 : int32
+
+    t26 = add t21, t25 : int32
+
+    t27 = addr_of_symbol local:arr
+    t28 = addr_index t27, #2:int32, 8
+    t29 = addr_field t28, Point.x
+    t30 = load t29 : int32
+
+    t31 = add t26, t30 : int32
+    ret t31
+.endfunc
+
+.endprogram

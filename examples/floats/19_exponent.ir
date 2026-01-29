@@ -1,0 +1,11 @@
+.program
+
+.func main():float
+  .frame locals=0 bytes align=4
+  .slots
+  .blocks
+  L0:
+    ret #150.0:float
+.endfunc
+
+.endprogram

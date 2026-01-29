@@ -7,6 +7,7 @@ import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.TerminalNode;
 import hr.fer.ppj.semantics.types.ArrayType;
 import hr.fer.ppj.semantics.types.FunctionType;
+import hr.fer.ppj.semantics.types.PointerType;
 import hr.fer.ppj.semantics.types.StructType;
 import hr.fer.ppj.semantics.types.Type;
 import hr.fer.ppj.semantics.types.TypeSystem;
@@ -90,16 +91,23 @@ final class PostfixExpressionRules {
     // Index must be an integer type (int, char, or convertible to int)
     checker.ensureIntConvertible(index.attributes().type(), node);
     
-    // Base must be an array type (arrays decay to pointers in most contexts, but indexing
-    // is one context where we need the array type itself)
+    // Base must be an array type or pointer type
+    // Arrays decay to pointers in function parameters, so we need to handle both
     Type stripped = TypeSystem.stripConst(baseType);
-    if (!(stripped instanceof ArrayType arrayType)) {
+    Type elementType = null;
+    
+    if (stripped instanceof ArrayType arrayType) {
+      // True array type
+      elementType = arrayType.elementType();
+    } else if (stripped instanceof PointerType pointerType) {
+      // Pointer type (from array parameter decay or explicit pointer)
+      elementType = pointerType.baseType();
+    } else {
       checker.fail(node);
       return;
     }
     
     // Result type is the element type
-    Type elementType = arrayType.elementType();
     node.attributes().type(elementType);
     // Result is an l-value if element type is not const (can be assigned to)
     node.attributes().lValue(!TypeSystem.isConst(elementType));

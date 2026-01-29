@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>hr.fer.ppj</groupId>
+        <artifactId>ppj-compiler</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <groupId>hr.fer.ppj</groupId>
+    <artifactId>compiler-ir</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>Compiler IR</name>
+    <description>Intermediate Representation generation, verification, and pretty printing</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>hr.fer.ppj</groupId>
+            <artifactId>compiler-semantics</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>hr.fer.ppj</groupId>
+            <artifactId>compiler-parser</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Test dependencies for golden tests -->
+        <dependency>
+            <groupId>hr.fer.ppj</groupId>
+            <artifactId>compiler-lexer</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
+

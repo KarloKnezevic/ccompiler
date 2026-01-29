@@ -1,0 +1,55 @@
+.program
+
+.type struct Point {
+  x:int32@0
+  y:int32@4
+}
+
+.func makePoint(x:int32, y:int32):struct Point
+  .frame locals=8 bytes align=4
+  .slots
+    param x@0:int32
+    param y@4:int32
+    local p@8:struct Point
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:p
+    t1 = addr_field t0, Point.x
+    t2 = addr_of_symbol param:x
+    t3 = load t2 : int32
+    store t1, t3 : int32
+
+    t4 = addr_of_symbol local:p
+    t5 = addr_field t4, Point.y
+    t6 = addr_of_symbol param:y
+    t7 = load t6 : int32
+    store t5, t7 : int32
+
+    t8 = addr_of_symbol local:p
+    t9 = load t8 : struct Point
+    ret t9
+.endfunc
+
+.func main():int32
+  .frame locals=8 bytes align=4
+  .slots
+    local p@0:struct Point
+  .blocks
+  L0:
+    t0 = call func:makePoint(#7:int32, #8:int32) : struct Point
+    t1 = addr_of_symbol local:p
+    store t1, t0 : struct Point
+
+    t2 = addr_of_symbol local:p
+    t3 = addr_field t2, Point.x
+    t4 = load t3 : int32
+
+    t5 = addr_of_symbol local:p
+    t6 = addr_field t5, Point.y
+    t7 = load t6 : int32
+
+    t8 = add t4, t7 : int32
+    ret t8
+.endfunc
+
+.endprogram

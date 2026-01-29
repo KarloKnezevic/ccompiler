@@ -1,0 +1,114 @@
+.program
+
+.type struct BSTNode {
+  key:int32@0
+  left:ptr<struct BSTNode>@4
+  right:ptr<struct BSTNode>@8
+}
+
+.func search(root:ptr<struct BSTNode>, key:int32):ptr<struct BSTNode>
+  .frame locals=0 bytes align=4
+  .slots
+    param root@0:ptr<struct BSTNode>
+    param key@4:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:root
+    t1 = load t0 : ptr<struct BSTNode>
+    t2 = cmp_ne t1, null:ptr<struct BSTNode> : bool
+    br t2, L3, L1
+
+  L3:
+    t3 = addr_of_symbol param:root
+    t4 = load t3 : ptr<struct BSTNode>
+    t5 = addr_field t4, BSTNode.key
+    t6 = load t5 : int32
+    t7 = addr_of_symbol param:key
+    t8 = load t7 : int32
+    t9 = cmp_eq t6, t8 : bool
+    br t9, L1, L2
+
+  L1:
+    t10 = addr_of_symbol param:root
+    t11 = load t10 : ptr<struct BSTNode>
+    ret t11
+
+  L2:
+    t12 = addr_of_symbol param:key
+    t13 = load t12 : int32
+    t14 = addr_of_symbol param:root
+    t15 = load t14 : ptr<struct BSTNode>
+    t16 = addr_field t15, BSTNode.key
+    t17 = load t16 : int32
+    t18 = cmp_lt t13, t17 : bool
+    br t18, L4, L5
+
+  L4:
+    t19 = addr_of_symbol param:root
+    t20 = load t19 : ptr<struct BSTNode>
+    t21 = addr_field t20, BSTNode.left
+    t22 = load t21 : ptr<struct BSTNode>
+    t23 = addr_of_symbol param:key
+    t24 = load t23 : int32
+    t25 = call func:search(t22, t24):ptr<struct BSTNode>
+    ret t25
+
+  L5:
+    t26 = addr_of_symbol param:root
+    t27 = load t26 : ptr<struct BSTNode>
+    t28 = addr_field t27, BSTNode.right
+    t29 = load t28 : ptr<struct BSTNode>
+    t30 = addr_of_symbol param:key
+    t31 = load t30 : int32
+    t32 = call func:search(t29, t31):ptr<struct BSTNode>
+    ret t32
+
+.endfunc
+.func main():int32
+  .frame locals=20 bytes align=4
+  .slots
+    local root@0:struct BSTNode
+    local found@12:ptr<struct BSTNode>
+    local result@16:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:root
+    t1 = addr_field t0, BSTNode.key
+    store t1, #10:int32 : int32
+    t2 = addr_of_symbol local:root
+    t3 = addr_field t2, BSTNode.left
+    store t3, #0:int32 : ptr<struct BSTNode>
+    t4 = addr_of_symbol local:root
+    t5 = addr_field t4, BSTNode.right
+    store t5, #0:int32 : ptr<struct BSTNode>
+    t6 = addr_of_symbol local:found
+    t7 = addr_of_symbol local:root
+    t8 = call func:search(t7, #10:int32):ptr<struct BSTNode>
+    store t6, t8 : ptr<struct BSTNode>
+    t9 = addr_of_symbol local:found
+    t10 = load t9 : ptr<struct BSTNode>
+    t11 = cmp_ne t10, null:ptr<struct BSTNode> : bool
+    br t11, L1, L2
+
+  L1:
+    t12 = addr_of_symbol local:result
+    t13 = addr_of_symbol local:found
+    t14 = load t13 : ptr<struct BSTNode>
+    t15 = addr_field t14, BSTNode.key
+    t16 = load t15 : int32
+    store t12, t16 : int32
+    jmp L3
+
+  L2:
+    t17 = addr_of_symbol local:result
+    store t17, #0:int32 : int32
+    jmp L3
+
+  L3:
+    t18 = addr_of_symbol local:result
+    t19 = load t18 : int32
+    ret t19
+
+.endfunc
+
+.endprogram

@@ -1,0 +1,20 @@
+.program
+
+.func main():int32
+  .frame locals=12 bytes align=4
+  .slots
+    local x@0:int32
+    local x_1@4:int32
+    local x_2@8:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:x
+    store t0, #1:int32 : int32
+    t1 = addr_of_symbol local:x_1
+    store t1, #2:int32 : int32
+    t2 = addr_of_symbol local:x_2
+    store t2, #3:int32 : int32
+    ret #0:int32
+.endfunc
+
+.endprogram

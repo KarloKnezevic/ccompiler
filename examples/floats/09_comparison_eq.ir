@@ -1,0 +1,18 @@
+.program
+
+.func main():int32
+  .frame locals=0 bytes align=4
+  .slots
+  .blocks
+  L0:
+    t0 = cmp_eq #2.0:float, #2.0:float : bool
+    br t0, L1, L2
+
+  L1:
+    ret #1:int32
+
+  L2:
+    ret #0:int32
+.endfunc
+
+.endprogram

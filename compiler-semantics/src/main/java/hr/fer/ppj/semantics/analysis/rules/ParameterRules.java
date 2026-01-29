@@ -4,6 +4,7 @@ import hr.fer.ppj.semantics.analysis.SemanticChecker;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.types.ArrayType;
+import hr.fer.ppj.semantics.types.PointerType;
 import hr.fer.ppj.semantics.types.PrimitiveType;
 import hr.fer.ppj.semantics.types.Type;
 import hr.fer.ppj.semantics.types.TypeSystem;
@@ -130,9 +131,10 @@ final class ParameterRules {
       // Handle array parameter: <ime_tipa> IDN L_UGL_ZAGRADA D_UGL_ZAGRADA
       if (node.children().size() == 4) {
         // Arrays decay to pointers in function parameters
+        // int arr[] becomes int* arr (pointer to element type)
         node.attributes().identifier(idToken.lexeme());
-        node.attributes().type(new ArrayType(baseType));
-        node.attributes().lValue(false);
+        node.attributes().type(new PointerType(baseType, false));
+        node.attributes().lValue(true); // Parameters are l-values (can be reassigned)
         return;
       }
       checker.fail(node);
@@ -148,7 +150,20 @@ final class ParameterRules {
       if (identifier == null || effectiveType == null) {
         checker.fail(node);
       }
-      // Copy all attributes from declarator
+      
+      // Array parameters decay to pointers in function parameters
+      // This handles cases like: int arr[] where arr is parsed as a complex declarator
+      Type strippedType = TypeSystem.stripConst(effectiveType);
+      if (strippedType instanceof ArrayType arrayType) {
+        // Convert array parameter to pointer: int arr[] becomes int* arr
+        effectiveType = new PointerType(arrayType.elementType(), false);
+        node.attributes().identifier(identifier);
+        node.attributes().type(effectiveType);
+        node.attributes().lValue(true); // Parameters are l-values (can be reassigned)
+        return;
+      }
+      
+      // Copy all attributes from declarator for non-array types
       node.attributes().identifier(identifier);
       node.attributes().type(effectiveType);
       node.attributes().elementCount(declarator.attributes().elementCount());

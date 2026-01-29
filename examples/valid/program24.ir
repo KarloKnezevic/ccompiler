@@ -1,0 +1,23 @@
+.program
+
+.globals
+  global x:int32 = #1234:int32
+  global y:int32 = #12345:int32
+
+.func main():int32
+  .frame locals=0 bytes align=4
+  .slots
+  .blocks
+  L0:
+    t0 = addr_of_symbol global:x
+    t1 = load t0 : int32
+    t2 = addr_of_symbol global:y
+    t3 = load t2 : int32
+    t4 = cmp_lt t1, t3 : bool
+    br t4, L1, L2
+  L1:
+    ret #12:int32
+  L2:
+    ret #21:int32
+.endfunc
+.endprogram

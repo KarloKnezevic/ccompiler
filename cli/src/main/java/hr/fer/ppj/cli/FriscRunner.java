@@ -1,6 +1,6 @@
 package hr.fer.ppj.cli;
 
-import hr.fer.ppj.codegen.util.FloatCodegenHelper;
+// import hr.fer.ppj.codegen.util.FloatCodegenHelper; // Codegen removed - IR focus only
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -151,7 +151,9 @@ public final class FriscRunner {
     public float r6ValueAsFloat() {
       try {
         int q16_16 = Integer.parseInt(r6Value);
-        return FloatCodegenHelper.q16_16ToFloat(q16_16);
+        // TODO: Re-enable when codegen is added back
+        // return FloatCodegenHelper.q16_16ToFloat(q16_16);
+        return (float) q16_16 / 65536.0f; // Simple Q16.16 conversion
       } catch (NumberFormatException e) {
         return 0.0f;
       }

@@ -1,0 +1,29 @@
+.program
+
+.func f(a:ptr<int32>):void
+  .frame locals=0 bytes align=4
+  .slots
+    param a@0:ptr<int32>
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:a
+    t1 = load t0 : ptr<int32>
+    t2 = addr_index t1, #3:int32, 4
+    store t2, #123:int32 : int32
+    ret
+.endfunc
+
+.func main():int32
+  .frame locals=20 bytes align=4
+  .slots
+    local a@0:array<int32,5>
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:a
+    call func:f(t0) : void
+    t1 = addr_index t0, #3:int32, 4
+    t2 = load t1 : int32
+    ret t2
+.endfunc
+
+.endprogram

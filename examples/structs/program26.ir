@@ -1,0 +1,44 @@
+.program
+
+.type struct Buffer {
+  data:array<char,4>@0
+  size:int32@4
+}
+
+.func main():int32
+  .frame locals=8 bytes align=4
+  .slots
+    local buf@0:struct Buffer
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:buf
+    t1 = addr_field t0, Buffer.data
+    t2 = addr_index t1, #0:int32, 1
+    store t2, #'A':char : char
+
+    t3 = addr_of_symbol local:buf
+    t4 = addr_field t3, Buffer.data
+    t5 = addr_index t4, #1:int32, 1
+    store t5, #'B':char : char
+
+    t6 = addr_of_symbol local:buf
+    t7 = addr_field t6, Buffer.data
+    t8 = addr_index t7, #2:int32, 1
+    store t8, #'C':char : char
+
+    t9 = addr_of_symbol local:buf
+    t10 = addr_field t9, Buffer.data
+    t11 = addr_index t10, #3:int32, 1
+    store t11, #'D':char : char
+
+    t12 = addr_of_symbol local:buf
+    t13 = addr_field t12, Buffer.size
+    store t13, #4:int32 : int32
+
+    t14 = addr_of_symbol local:buf
+    t15 = addr_field t14, Buffer.size
+    t16 = load t15 : int32
+    ret t16
+.endfunc
+
+.endprogram

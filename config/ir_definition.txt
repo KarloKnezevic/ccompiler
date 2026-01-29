@@ -1,0 +1,333 @@
+; ============================================================
+; IR Grammar (BNF) — single-file, copy/paste ready
+; Notes:
+; - This grammar is intentionally strict and fully typed.
+; - Newlines (NL) are significant at statement boundaries.
+; - Comments here are part of this listing (for readability).
+; ============================================================
+
+Program
+  ::= ".program" NL
+      { TopLevel }
+      ".endprogram" NL? ;
+
+; ----------------------------
+; Top-level declarations
+; ----------------------------
+
+TopLevel
+  ::= GlobalDecl
+   |  TypeDef
+   |  FuncDef ;
+
+; Globals section contains zero or more global variables.
+GlobalDecl
+  ::= ".globals" NL
+      { GlobalVar } ;
+
+; A global variable may optionally have an initializer constant.
+GlobalVar
+  ::= "global" Ident ":" Type [ "=" Const ] NL ;
+
+; Named struct type definitions.
+TypeDef
+  ::= ".type" "struct" Ident "{" NL
+      { StructField }
+      "}" NL ;
+
+; Each field has a name, a type, and an explicit byte offset.
+StructField
+  ::= Ident ":" Type "@" Int NL ;
+
+; ----------------------------
+; Functions
+; ----------------------------
+
+; Function definition with explicit return type.
+; Return type may be "void" (then "ret" has no value).
+FuncDef
+  ::= ".func" Ident "(" [ ParamList ] ")" ":" Type NL
+      FrameDecl
+      SlotsDecl
+      BlocksDecl
+      ".endfunc" NL ;
+
+; Comma-separated parameter list.
+ParamList
+  ::= Param { "," Param } ;
+
+Param
+  ::= Ident ":" Type ;
+
+; Stack frame metadata.
+FrameDecl
+  ::= ".frame" "locals" "=" Int "bytes" "align" "=" Int NL ;
+
+; Slot table (params/locals/spills) with explicit byte offsets.
+SlotsDecl
+  ::= ".slots" NL
+      { SlotEntry } ;
+
+SlotEntry
+  ::= SlotKind Ident "@" Int ":" Type NL ;
+
+SlotKind
+  ::= "param" | "local" | "spill" ;
+
+; ----------------------------
+; Control-flow graph (basic blocks)
+; ----------------------------
+
+BlocksDecl
+  ::= ".blocks" NL
+      { Block } ;
+
+; A basic block: label + instructions + exactly one terminator.
+Block
+  ::= Label ":" NL
+      { Instr NL }
+      Terminator NL ;
+
+Label
+  ::= Ident ;        ; e.g., L0, L1, loop_body, etc.
+
+; ----------------------------
+; Instructions
+; ----------------------------
+
+; Non-terminating instructions.
+Instr
+  ::= AssignInstr
+   |  StoreInstr
+   |  VoidCallInstr ;
+
+; Temp assignment: tN = <rhs>
+AssignInstr
+  ::= Temp "=" Rhs ;
+
+; Typed store to memory.
+; Interpretation: store <addr>, <value> : <valueType>
+StoreInstr
+  ::= "store" Value "," Value ":" Type ;
+
+; Call returning no value.
+VoidCallInstr
+  ::= "call" "func:" Ident "(" [ ArgList ] ")" ":" "void" ;
+
+; ----------------------------
+; Terminators
+; ----------------------------
+
+Terminator
+  ::= BrTerm
+   |  JmpTerm
+   |  RetTerm ;
+
+; Conditional branch:
+;   br <cond>, <trueLabel>, <falseLabel>
+BrTerm
+  ::= "br" Value "," Label "," Label ;
+
+; Unconditional jump:
+;   jmp <label>
+JmpTerm
+  ::= "jmp" Label ;
+
+; Return:
+;   ret
+;   ret <value>
+RetTerm
+  ::= "ret" [ Value ] ;
+
+; ----------------------------
+; Calls and arguments
+; ----------------------------
+
+ArgList
+  ::= Value { "," Value } ;
+
+; ----------------------------
+; RHS (right-hand side) expressions
+; ----------------------------
+
+; Any expression that yields a value (temp or constant).
+Rhs
+  ::= AddrOfSymbol
+   |  AddrIndex
+   |  AddrField
+   |  Load
+   |  BinOp
+   |  CmpOp
+   |  Call
+   |  UnaryOp
+   |  IncDecOp
+   |  CastOp
+   |  Const ;
+
+; Address of a named symbol (local/param/global).
+AddrOfSymbol
+  ::= "addr_of_symbol" SymbolRef ;
+
+SymbolRef
+  ::= ("local:" | "param:" | "global:") Ident ;
+
+; Address of array element:
+;   addr_index <baseAddr>, <indexValue>, <elemSizeBytes>
+AddrIndex
+  ::= "addr_index" Value "," Value "," Int ;
+
+; Address of a struct field:
+;   addr_field <baseAddr>, <structType>.<fieldName>
+AddrField
+  ::= "addr_field" Value "," Ident "." Ident ;
+
+; Typed load from memory:
+;   load <addr> : <type>
+Load
+  ::= "load" Value ":" Type ;
+
+; ----------------------------
+; Arithmetic / bitwise operations
+; ----------------------------
+
+; Binary operations are typed and return the given type.
+BinOp
+  ::= BinOpName Value "," Value ":" Type ;
+
+BinOpName
+  ::= "add" | "sub" | "mul" | "div" | "mod"
+   |  "and" | "or"  | "xor"
+   |  "shl" | "shr" ;
+
+; ----------------------------
+; Comparisons
+; ----------------------------
+
+; Comparisons return bool.
+CmpOp
+  ::= CmpOpName Value "," Value ":" "bool" ;
+
+CmpOpName
+  ::= "cmp_eq" | "cmp_ne"
+   |  "cmp_lt" | "cmp_le"
+   |  "cmp_gt" | "cmp_ge" ;
+
+; ----------------------------
+; Unary operations
+; ----------------------------
+
+UnaryOp
+  ::= UnaryOpName Value ":" Type ;
+
+UnaryOpName
+  ::= "neg" | "not" ;
+
+; ----------------------------
+; Increment / decrement forms
+; ----------------------------
+
+; These are value-producing forms (typically used on lvalues lowered to loads/stores).
+IncDecOp
+  ::= IncDecName Value ":" Type ;
+
+IncDecName
+  ::= "preinc" | "postinc" | "predec" | "postdec" ;
+
+; ----------------------------
+; Function call producing a value
+; ----------------------------
+
+Call
+  ::= "call" "func:" Ident "(" [ ArgList ] ")" ":" Type ;
+
+; ----------------------------
+; Casts / conversions
+; ----------------------------
+
+CastOp
+  ::= CastName Value ":" Type ;
+
+CastName
+  ::= "trunc" | "sext" | "zext"
+   |  "ptrcast"
+   |  "itof" | "ftoi" ;
+
+; ----------------------------
+; Values and temporaries
+; ----------------------------
+
+Temp
+  ::= "t" Int ;
+
+Value
+  ::= Temp | Const ;
+
+; ----------------------------
+; Constants
+; ----------------------------
+
+; Const can be scalar (numbers, chars, null) or aggregate (arrays).
+Const
+  ::= ScalarConst | AggregateConst ;
+
+ScalarConst
+  ::= "#" Int ":" Type              ; integer literal with explicit type
+   |  "#" CharLit ":" "char"        ; character literal (1 byte)
+   |  "#" FloatLit ":" "float"      ; float literal
+   |  "null" ":" Type ;             ; typed null (typically ptr<...>)
+
+; Aggregate constants currently model array initializers.
+AggregateConst
+  ::= ArrayConst ;
+
+; Array constant:
+;   { <c0>, <c1>, ... } : array<T,N>
+; Element count should match N (or be validated by the compiler if you allow padding).
+ArrayConst
+  ::= "{" [ Const { "," Const } ] "}" ":" ArrayType ;
+
+ArrayType
+  ::= "array" "<" Type "," Int ">" ;
+
+; ----------------------------
+; Types
+; ----------------------------
+
+; Fully explicit types, including void and parametric types.
+Type
+  ::= "void"
+   |  "int32" | "char" | "uchar" | "float" | "bool"
+   |  "ptr" "<" Type ">"
+   |  "array" "<" Type "," Int ">"
+   |  "struct" Ident ;
+
+; ----------------------------
+; Lexical rules (simplified)
+; ----------------------------
+
+Ident
+  ::= Letter { Letter | Digit | "_" } ;
+
+Int
+  ::= ["-"] Digit { Digit } ;
+
+FloatLit
+  ::= Digit { Digit } "." Digit { Digit } ;
+
+CharLit
+  ::= "'" ( Escape | AnyCharExceptQuote ) "'" ;
+
+Escape
+  ::= "\n" | "\t" | "\\'" | "\\\\" ;
+
+NL
+  ::= "\n" ;
+
+Letter
+  ::= "A" | ... | "Z" | "a" | ... | "z" ;
+
+Digit
+  ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+
+AnyCharExceptQuote
+  ::= ? any character except ' ? ;

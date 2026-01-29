@@ -1,0 +1,49 @@
+.program
+
+.type struct Point {
+  x:int32@0
+  y:int32@4
+}
+
+.func main():int32
+  .frame locals=8 bytes align=4
+  .slots
+    local p@0:struct Point
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:p
+    t1 = addr_field t0, Point.x
+    store t1, #5:int32 : int32
+
+    t2 = addr_of_symbol local:p
+    t3 = addr_field t2, Point.y
+    store t3, #10:int32 : int32
+
+    t4 = addr_of_symbol local:p
+    t5 = addr_field t4, Point.x
+    t6 = load t5 : int32
+
+    t7 = addr_of_symbol local:p
+    t8 = addr_field t7, Point.y
+    t9 = load t8 : int32
+
+    t10 = cmp_lt t6, t9 : bool
+    br t10, L1, L2
+
+  L1:
+    t11 = addr_of_symbol local:p
+    t12 = addr_field t11, Point.y
+    t13 = load t12 : int32
+
+    t14 = addr_of_symbol local:p
+    t15 = addr_field t14, Point.x
+    t16 = load t15 : int32
+
+    t17 = sub t13, t16 : int32
+    ret t17
+
+  L2:
+    ret #0:int32
+.endfunc
+
+.endprogram

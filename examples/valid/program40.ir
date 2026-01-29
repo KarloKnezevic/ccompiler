@@ -1,0 +1,68 @@
+.program
+
+.func a(y:int32):int32
+  .frame locals=0 bytes align=4
+  .slots
+    param y@0:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:y
+    t1 = load t0 : int32
+    t2 = load t0 : int32
+    t3 = add t2, #1:int32 : int32
+    t4 = call func:b(t3) : int32
+    t5 = add t1, t4 : int32
+    ret t5
+.endfunc
+
+.func b(z:int32):int32
+  .frame locals=0 bytes align=4
+  .slots
+    param z@0:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:z
+    t1 = load t0 : int32
+    t2 = load t0 : int32
+    t3 = add t2, #1:int32 : int32
+    t4 = call func:c(t3) : int32
+    t5 = add t1, t4 : int32
+    ret t5
+.endfunc
+
+.func c(w:int32):int32
+  .frame locals=0 bytes align=4
+  .slots
+    param w@0:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:w
+    t1 = load t0 : int32
+    ret t1
+.endfunc
+
+.func f(x:int32):int32
+  .frame locals=0 bytes align=4
+  .slots
+    param x@0:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:x
+    t1 = load t0 : int32
+    t2 = load t0 : int32
+    t3 = add t2, #1:int32 : int32
+    t4 = call func:a(t3) : int32
+    t5 = add t4, t1 : int32
+    ret t5
+.endfunc
+
+.func main():int32
+  .frame locals=0 bytes align=4
+  .slots
+  .blocks
+  L0:
+    t0 = call func:f(#1:int32) : int32
+    ret t0
+.endfunc
+
+.endprogram

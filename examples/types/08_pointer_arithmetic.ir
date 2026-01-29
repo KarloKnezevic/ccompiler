@@ -1,0 +1,33 @@
+.program
+
+.func main():int32
+  .frame locals=48 bytes align=4
+  .slots
+    local arr@0:array<int32,10>
+    local p@40:ptr<int32>
+    local q@44:ptr<int32>
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:arr
+    t1 = addr_of_symbol local:p
+    store t1, t0 : ptr<int32>
+
+    t2 = addr_of_symbol local:p
+    t3 = load t2 : ptr<int32>
+    t4 = ptrcast t3 : int32
+    t5 = add t4, #12:int32 : int32
+    t6 = ptrcast t5 : ptr<int32>
+    store t2, t6 : ptr<int32>
+
+    t7 = addr_of_symbol local:p
+    t8 = load t7 : ptr<int32>
+    t9 = ptrcast t8 : int32
+    t10 = sub t9, #4:int32 : int32
+    t11 = ptrcast t10 : ptr<int32>
+    t12 = addr_of_symbol local:q
+    store t12, t11 : ptr<int32>
+
+    ret #0:int32
+.endfunc
+
+.endprogram

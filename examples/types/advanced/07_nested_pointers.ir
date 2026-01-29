@@ -1,0 +1,78 @@
+.program
+
+.type struct Inner {
+  data:int32@0
+  value:float@4
+}
+
+.type struct Outer {
+  inner:ptr<struct Inner>@0
+  values:ptr<float>@4
+}
+
+.func calculate_sum(o:ptr<struct Outer>):int32
+  .frame locals=4 bytes align=4
+  .slots
+    param o@0:ptr<struct Outer>
+    local result@0:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:result
+    t1 = addr_of_symbol param:o
+    t2 = load t1 : ptr<struct Outer>
+    t3 = addr_field t2, Outer.inner
+    t4 = load t3 : ptr<struct Inner>
+    t5 = addr_field t4, Inner.data
+    t6 = load t5 : int32
+    t7 = addr_of_symbol param:o
+    t8 = load t7 : ptr<struct Outer>
+    t9 = addr_field t8, Outer.values
+    t10 = load t9 : ptr<float>
+    t11 = load t10 : float
+    t12 = ftoi t11 : int32
+    t13 = add t6, t12 : int32
+    store t0, t13 : int32
+    t14 = addr_of_symbol local:result
+    t15 = load t14 : int32
+    ret t15
+
+.endfunc
+.func main():int32
+  .frame locals=28 bytes align=4
+  .slots
+    local x@0:int32
+    local f@4:float
+    local i@8:struct Inner
+    local o@16:struct Outer
+    local result@24:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:x
+    store t0, #42:int32 : int32
+    t1 = addr_of_symbol local:f
+    store t1, #3.14:float : float
+    t2 = addr_of_symbol local:i
+    t3 = addr_field t2, Inner.data
+    store t3, #10:int32 : int32
+    t4 = addr_of_symbol local:i
+    t5 = addr_field t4, Inner.value
+    store t5, #2.5:float : float
+    t6 = addr_of_symbol local:o
+    t7 = addr_field t6, Outer.inner
+    t8 = addr_of_symbol local:i
+    store t7, t8 : ptr<struct Inner>
+    t9 = addr_of_symbol local:o
+    t10 = addr_field t9, Outer.values
+    t11 = addr_of_symbol local:f
+    store t10, t11 : ptr<float>
+    t12 = addr_of_symbol local:result
+    t13 = addr_of_symbol local:o
+    t14 = call func:calculate_sum(t13):int32
+    store t12, t14 : int32
+    t15 = addr_of_symbol local:result
+    t16 = load t15 : int32
+    ret t16
+
+.endfunc
+
+.endprogram

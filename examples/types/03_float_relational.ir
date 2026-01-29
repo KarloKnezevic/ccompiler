@@ -1,0 +1,78 @@
+.program
+
+.func main():int32
+  .frame locals=32 bytes align=4
+  .slots
+    local x@0:float
+    local y@4:float
+    local result1@8:int32
+    local result2@12:int32
+    local result3@16:int32
+    local result4@20:int32
+    local result5@24:int32
+    local result6@28:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:x
+    store t0, #3.14:float : float
+    t1 = addr_of_symbol local:y
+    store t1, #2.5:float : float
+
+    t2 = addr_of_symbol local:x
+    t3 = load t2 : float
+    t4 = addr_of_symbol local:y
+    t5 = load t4 : float
+    t6 = cmp_gt t3, t5 : bool
+    t7 = zext t6 : int32
+    t8 = addr_of_symbol local:result1
+    store t8, t7 : int32
+
+    t9 = addr_of_symbol local:x
+    t10 = load t9 : float
+    t11 = addr_of_symbol local:y
+    t12 = load t11 : float
+    t13 = cmp_lt t10, t12 : bool
+    t14 = zext t13 : int32
+    t15 = addr_of_symbol local:result2
+    store t15, t14 : int32
+
+    t16 = addr_of_symbol local:x
+    t17 = load t16 : float
+    t18 = addr_of_symbol local:y
+    t19 = load t18 : float
+    t20 = cmp_ge t17, t19 : bool
+    t21 = zext t20 : int32
+    t22 = addr_of_symbol local:result3
+    store t22, t21 : int32
+
+    t23 = addr_of_symbol local:x
+    t24 = load t23 : float
+    t25 = addr_of_symbol local:y
+    t26 = load t25 : float
+    t27 = cmp_le t24, t26 : bool
+    t28 = zext t27 : int32
+    t29 = addr_of_symbol local:result4
+    store t29, t28 : int32
+
+    t30 = addr_of_symbol local:x
+    t31 = load t30 : float
+    t32 = addr_of_symbol local:y
+    t33 = load t32 : float
+    t34 = cmp_eq t31, t33 : bool
+    t35 = zext t34 : int32
+    t36 = addr_of_symbol local:result5
+    store t36, t35 : int32
+
+    t37 = addr_of_symbol local:x
+    t38 = load t37 : float
+    t39 = addr_of_symbol local:y
+    t40 = load t39 : float
+    t41 = cmp_ne t38, t40 : bool
+    t42 = zext t41 : int32
+    t43 = addr_of_symbol local:result6
+    store t43, t42 : int32
+
+    ret #0:int32
+.endfunc
+
+.endprogram

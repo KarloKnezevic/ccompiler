@@ -5,6 +5,7 @@ import hr.fer.ppj.semantics.analysis.SemanticChecker;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.TerminalNode;
+import hr.fer.ppj.semantics.types.CastCategoryUtil;
 import hr.fer.ppj.semantics.types.FunctionType;
 import hr.fer.ppj.semantics.types.PointerType;
 import hr.fer.ppj.semantics.types.PrimitiveType;
@@ -247,15 +248,23 @@ final class UnaryExpressionRules {
       checker.copyExpressionAttributes(node, child);
       return;
     }
+    // Explicit cast: L_ZAGRADA <ime_tipa> D_ZAGRADA <cast_izraz>
     NonTerminalNode type = NodeUtils.asNonTerminal(children.get(1));
     NonTerminalNode expr = NodeUtils.asNonTerminal(children.get(3));
     checker.visitNonTerminal(type);
     checker.visitNonTerminal(expr);
+    Type source = expr.attributes().type();
     Type target = type.attributes().type();
-    if (target == null || !TypeSystem.canCast(expr.attributes().type(), target)) {
+    if (target == null || source == null || !TypeSystem.canCast(source, target)) {
       checker.fail(node);
+      return;
     }
+    
+    // Store cast information for IR generation
     node.attributes().type(target);
+    node.attributes().castSourceType(source);
+    node.attributes().castCategory(
+        CastCategoryUtil.determineCastCategory(source, target));
     node.attributes().lValue(false);
     node.attributes().stringLiteral(false);
     node.attributes().stringLiteralLength(0);

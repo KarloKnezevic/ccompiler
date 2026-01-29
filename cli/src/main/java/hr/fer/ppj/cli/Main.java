@@ -1,6 +1,6 @@
 package hr.fer.ppj.cli;
 
-import hr.fer.ppj.codegen.CodeGenerator;
+import hr.fer.ppj.ir.IrPipeline;
 import hr.fer.ppj.lexer.gen.LexerGenerator;
 import hr.fer.ppj.lexer.gen.LexerGeneratorResult;
 import hr.fer.ppj.lexer.io.Lexer;
@@ -48,7 +48,7 @@ import java.util.List;
  *   <li>{@code sintaksno_stablo.txt} - Syntax tree</li>
  *   <li>{@code tablica_simbola.txt} - Symbol table (semantic mode only)</li>
  *   <li>{@code semanticko_stablo.txt} - Semantic tree (semantic mode only)</li>
- *   <li>{@code a.frisc} - Generated FRISC assembly code (semantic mode only)</li>
+   *   <li>{@code medukod.ir} - Generated IR code (semantic mode only)</li>
  * </ul>
  *
  * <p><strong>Error Handling:</strong>
@@ -244,7 +244,7 @@ public final class Main {
    *   <li>Syntax analysis output files</li>
    *   <li>{@code tablica_simbola.txt} - Symbol table</li>
    *   <li>{@code semanticko_stablo.txt} - Semantic tree</li>
-   *   <li>{@code a.frisc} - Generated FRISC assembly code</li>
+   *   <li>{@code medukod.ir} - Generated IR code</li>
    * </ul>
    *
    * <p>The output directory is created automatically if it doesn't exist.
@@ -266,11 +266,13 @@ public final class Main {
           artifacts.parseTree(), System.out, semanticReport);
       System.err.println("Semantic analysis completed.");
 
-      // Perform code generation
-      CodeGenerator codeGen = new CodeGenerator();
-      Path friscOutputPath = binDir.resolve("a.frisc");
-      codeGen.generate(semanticResults.globalScope(), semanticResults.parseTree(), friscOutputPath);
-      System.err.println("Code generation completed. Generated " + friscOutputPath);
+      // Generate IR
+      hr.fer.ppj.ir.model.IrProgram irProgram = IrPipeline.generate(
+          semanticResults.globalScope(), semanticResults.parseTree());
+      String irString = IrPipeline.print(irProgram);
+      Path irOutputPath = binDir.resolve("medukod.ir");
+      Files.writeString(irOutputPath, irString);
+      System.err.println("IR generation completed. Generated " + irOutputPath);
 
     } catch (hr.fer.ppj.semantics.errors.SemanticException e) {
       // Production already printed by SemanticChecker.fail()

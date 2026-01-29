@@ -1,0 +1,59 @@
+.program
+
+.type struct Level1 {
+  a:int32@0
+}
+
+.type struct Level2 {
+  l1:struct Level1@0
+  b:int32@4
+}
+
+.type struct Level3 {
+  l2:struct Level2@0
+  c:int32@8
+}
+
+.func main():int32
+  .frame locals=12 bytes align=4
+  .slots
+    local l3@0:struct Level3
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:l3
+    t1 = addr_field t0, Level3.l2
+    t2 = addr_field t1, Level2.l1
+    t3 = addr_field t2, Level1.a
+    store t3, #1:int32 : int32
+
+    t4 = addr_of_symbol local:l3
+    t5 = addr_field t4, Level3.l2
+    t6 = addr_field t5, Level2.b
+    store t6, #2:int32 : int32
+
+    t7 = addr_of_symbol local:l3
+    t8 = addr_field t7, Level3.c
+    store t8, #3:int32 : int32
+
+    t9 = addr_of_symbol local:l3
+    t10 = addr_field t9, Level3.l2
+    t11 = addr_field t10, Level2.l1
+    t12 = addr_field t11, Level1.a
+    t13 = load t12 : int32
+
+    t14 = addr_of_symbol local:l3
+    t15 = addr_field t14, Level3.l2
+    t16 = addr_field t15, Level2.b
+    t17 = load t16 : int32
+
+    t18 = add t13, t17 : int32
+
+    t19 = addr_of_symbol local:l3
+    t20 = addr_field t19, Level3.c
+    t21 = load t20 : int32
+
+    t22 = add t18, t21 : int32
+    ret t22
+.endfunc
+
+.endprogram

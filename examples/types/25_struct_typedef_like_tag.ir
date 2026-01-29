@@ -1,0 +1,26 @@
+.program
+
+.type struct S {
+  x:int32@0
+}
+
+.func main():int32
+  .frame locals=8 bytes align=4
+  .slots
+    local S@0:int32
+    local s@4:struct S
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:S
+    store t0, #5:int32 : int32
+
+    t1 = addr_of_symbol local:s
+    t2 = addr_field t1, S.x
+    t3 = addr_of_symbol local:S
+    t4 = load t3 : int32
+    store t2, t4 : int32
+
+    ret #0:int32
+.endfunc
+
+.endprogram

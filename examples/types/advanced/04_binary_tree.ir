@@ -1,0 +1,91 @@
+.program
+
+.type struct TreeNode {
+  value:int32@0
+  left:ptr<struct TreeNode>@4
+  right:ptr<struct TreeNode>@8
+}
+
+.func tree_sum(root:ptr<struct TreeNode>):int32
+  .frame locals=0 bytes align=4
+  .slots
+    param root@0:ptr<struct TreeNode>
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:root
+    t1 = load t0 : ptr<struct TreeNode>
+    t2 = cmp_ne t1, null:ptr<struct TreeNode> : bool
+    br t2, L2, L1
+
+  L1:
+    ret #0:int32
+
+  L2:
+    t3 = addr_of_symbol param:root
+    t4 = load t3 : ptr<struct TreeNode>
+    t5 = addr_field t4, TreeNode.value
+    t6 = load t5 : int32
+    t7 = addr_of_symbol param:root
+    t8 = load t7 : ptr<struct TreeNode>
+    t9 = addr_field t8, TreeNode.left
+    t10 = load t9 : ptr<struct TreeNode>
+    t11 = call func:tree_sum(t10):int32
+    t12 = add t6, t11 : int32
+    t13 = addr_of_symbol param:root
+    t14 = load t13 : ptr<struct TreeNode>
+    t15 = addr_field t14, TreeNode.right
+    t16 = load t15 : ptr<struct TreeNode>
+    t17 = call func:tree_sum(t16):int32
+    t18 = add t12, t17 : int32
+    ret t18
+
+.endfunc
+.func main():int32
+  .frame locals=40 bytes align=4
+  .slots
+    local root@0:struct TreeNode
+    local left@12:struct TreeNode
+    local right@24:struct TreeNode
+    local sum@36:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:root
+    t1 = addr_field t0, TreeNode.value
+    store t1, #10:int32 : int32
+    t2 = addr_of_symbol local:left
+    t3 = addr_field t2, TreeNode.value
+    store t3, #5:int32 : int32
+    t4 = addr_of_symbol local:right
+    t5 = addr_field t4, TreeNode.value
+    store t5, #15:int32 : int32
+    t6 = addr_of_symbol local:root
+    t7 = addr_field t6, TreeNode.left
+    t8 = addr_of_symbol local:left
+    store t7, t8 : ptr<struct TreeNode>
+    t9 = addr_of_symbol local:root
+    t10 = addr_field t9, TreeNode.right
+    t11 = addr_of_symbol local:right
+    store t10, t11 : ptr<struct TreeNode>
+    t12 = addr_of_symbol local:left
+    t13 = addr_field t12, TreeNode.left
+    store t13, #0:int32 : ptr<struct TreeNode>
+    t14 = addr_of_symbol local:left
+    t15 = addr_field t14, TreeNode.right
+    store t15, #0:int32 : ptr<struct TreeNode>
+    t16 = addr_of_symbol local:right
+    t17 = addr_field t16, TreeNode.left
+    store t17, #0:int32 : ptr<struct TreeNode>
+    t18 = addr_of_symbol local:right
+    t19 = addr_field t18, TreeNode.right
+    store t19, #0:int32 : ptr<struct TreeNode>
+    t20 = addr_of_symbol local:sum
+    t21 = addr_of_symbol local:root
+    t22 = call func:tree_sum(t21):int32
+    store t20, t22 : int32
+    t23 = addr_of_symbol local:sum
+    t24 = load t23 : int32
+    ret t24
+
+.endfunc
+
+.endprogram

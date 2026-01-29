@@ -1,0 +1,28 @@
+.program
+
+.type struct CharStruct {
+  c:char@0
+  x:int32@4
+}
+
+.func main():int32
+  .frame locals=8 bytes align=4
+  .slots
+    local s@0:struct CharStruct
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:s
+    t1 = addr_field t0, CharStruct.c
+    store t1, #'A':char : char
+
+    t2 = addr_of_symbol local:s
+    t3 = addr_field t2, CharStruct.x
+    store t3, #65:int32 : int32
+
+    t4 = addr_of_symbol local:s
+    t5 = addr_field t4, CharStruct.x
+    t6 = load t5 : int32
+    ret t6
+.endfunc
+
+.endprogram

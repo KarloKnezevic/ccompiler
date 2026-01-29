@@ -1,0 +1,82 @@
+.program
+
+.func f(x:int32):int32
+  .frame locals=0 bytes align=4
+  .slots
+    param x@0:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:x
+    t1 = load t0 : int32
+    t2 = sub t1, #15:int32 : int32
+    ret t2
+.endfunc
+
+.func main():int32
+  .frame locals=28 bytes align=4
+  .slots
+    local x@0:int32
+    local y@4:int32
+    local z@8:int32
+    local w@12:int32
+    local a@16:int32
+    local b@20:int32
+    local c@24:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:x
+    store t0, #1:int32 : int32
+    t1 = addr_of_symbol local:y
+    store t1, #2:int32 : int32
+    t2 = addr_of_symbol local:z
+    store t2, #4:int32 : int32
+    t3 = addr_of_symbol local:w
+    store t3, #8:int32 : int32
+    t4 = addr_of_symbol local:a
+    store t4, #16:int32 : int32
+    t5 = addr_of_symbol local:b
+    store t5, #32:int32 : int32
+    t6 = addr_of_symbol local:c
+    store t6, #64:int32 : int32
+
+    t7 = load t4 : int32
+    t8 = load t5 : int32
+    t9 = add t7, t8 : int32
+
+    t10 = load t0 : int32
+    t11 = load t1 : int32
+    t12 = add t10, t11 : int32
+    t13 = add t9, t12 : int32
+
+    t14 = load t2 : int32
+    t15 = add t13, t14 : int32
+
+    t16 = load t3 : int32
+    t17 = add t15, t16 : int32
+
+    t18 = load t6 : int32
+    t19 = add t17, t18 : int32
+
+    t20 = load t4 : int32
+    t21 = load t2 : int32
+    t22 = sub t20, t21 : int32
+
+    t23 = load t3 : int32
+    t24 = sub t22, t23 : int32
+
+    t25 = load t4 : int32
+    t26 = sub t24, t25 : int32
+
+    t27 = load t5 : int32
+    t28 = sub t26, t27 : int32
+    t29 = add t19, t28 : int32
+    t30 = call func:f(#1:int32) : int32
+    t31 = add t29, t30 : int32
+    t32 = call func:f(#5:int32) : int32
+    t33 = add t31, t32 : int32
+    t34 = call func:f(#15:int32) : int32
+    t35 = add t33, t34 : int32
+    ret t35
+.endfunc
+
+.endprogram
