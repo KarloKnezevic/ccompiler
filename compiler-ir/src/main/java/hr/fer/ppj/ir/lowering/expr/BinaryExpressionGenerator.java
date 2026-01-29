@@ -1,116 +1,134 @@
 package hr.fer.ppj.ir.lowering.expr;
 
 import hr.fer.ppj.ir.build.IrFunctionBuilder;
+import hr.fer.ppj.ir.build.TypeMapper;
+import hr.fer.ppj.ir.lowering.FunctionContext;
 import hr.fer.ppj.ir.model.IrInstruction;
 import hr.fer.ppj.ir.model.IrRhs;
 import hr.fer.ppj.ir.model.IrTemp;
 import hr.fer.ppj.ir.model.IrValue;
 import hr.fer.ppj.ir.types.IrType;
-import hr.fer.ppj.ir.build.TypeMapper;
 import hr.fer.ppj.ir.util.OperatorMapper;
 import hr.fer.ppj.ir.util.TypePromoter;
-import hr.fer.ppj.semantics.types.TypeSystem;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.TerminalNode;
 import hr.fer.ppj.semantics.types.Type;
+import hr.fer.ppj.semantics.types.TypeSystem;
 import java.util.List;
 import java.util.Objects;
 
 /**
- * Generates IR for binary expressions.
+ * Generates IR for binary expressions (multiplicative and additive).
  *
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */
 public final class BinaryExpressionGenerator {
 
   private final ExpressionEmitter emitter;
+  private final PostfixIncrementHandler postfixHandler;
 
   public BinaryExpressionGenerator(ExpressionEmitter emitter) {
     this.emitter = Objects.requireNonNull(emitter, "emitter must not be null");
+    LValueEmitter lValueEmitter = (emitter instanceof LValueEmitter lv) ? lv : null;
+    this.postfixHandler = new PostfixIncrementHandler(emitter, lValueEmitter);
   }
 
   /**
    * Emits r-value for a multiplicative expression (*, /, %).
    */
-  public IrValue emitMultiplicative(
-      NonTerminalNode node, hr.fer.ppj.ir.lowering.FunctionContext functionContext) {
-    return emitBinary(
-        node,
-        functionContext,
+  public IrValue emitMultiplicative(NonTerminalNode node, FunctionContext ctx) {
+    return emitBinary(node, ctx,
         new String[] {"OP_PUTA", "OP_DIJELI", "OP_MOD"},
         new IrRhs.BinOp.BinOpName[] {
-          IrRhs.BinOp.BinOpName.MUL, IrRhs.BinOp.BinOpName.DIV, IrRhs.BinOp.BinOpName.MOD
+            IrRhs.BinOp.BinOpName.MUL, IrRhs.BinOp.BinOpName.DIV, IrRhs.BinOp.BinOpName.MOD
         });
   }
 
   /**
    * Emits r-value for an additive expression (+, -).
    */
-  public IrValue emitAdditive(
-      NonTerminalNode node, hr.fer.ppj.ir.lowering.FunctionContext functionContext) {
-    return emitBinary(
-        node,
-        functionContext,
+  public IrValue emitAdditive(NonTerminalNode node, FunctionContext ctx) {
+    return emitBinary(node, ctx,
         new String[] {"PLUS", "MINUS"},
         new IrRhs.BinOp.BinOpName[] {IrRhs.BinOp.BinOpName.ADD, IrRhs.BinOp.BinOpName.SUB});
   }
 
-
-  private IrValue emitBinary(
-      NonTerminalNode node,
-      hr.fer.ppj.ir.lowering.FunctionContext functionContext,
-      String[] opSymbols,
-      IrRhs.BinOp.BinOpName[] opNames) {
+  private IrValue emitBinary(NonTerminalNode node, FunctionContext ctx,
+      String[] opSymbols, IrRhs.BinOp.BinOpName[] opNames) {
     List<ParseNode> children = node.children();
 
-    // Single operand case (base case for recursive grammar)
     if (children.size() == 1) {
       if (children.get(0) instanceof NonTerminalNode nt) {
-        return emitter.emitRValue(nt, functionContext);
+        return emitter.emitRValue(nt, ctx);
       }
-      throw new IllegalArgumentException(
-          "Invalid binary expression: single child is not a non-terminal");
+      throw new IllegalArgumentException("Invalid binary expression: single child is not a non-terminal");
     }
 
-    // Binary operator case: must have exactly 3 children: <left> <operator> <right>
     if (children.size() != 3) {
-      throw new IllegalStateException(
-          "Binary expression must have 1 or 3 children, but has "
-              + children.size()
-              + ": "
-              + node.symbol());
+      throw new IllegalStateException("Binary expression must have 1 or 3 children, but has "
+          + children.size() + ": " + node.symbol());
     }
 
-    // Extract operator from position 1
-    ParseNode opNode = children.get(1);
-    if (!(opNode instanceof TerminalNode)) {
-      throw new IllegalStateException(
-          "Binary expression operator at position 1 must be a terminal node, but got: "
-              + opNode.getClass().getSimpleName()
-              + " in "
-              + node.symbol());
-    }
-
-    TerminalNode opTerm = (TerminalNode) opNode;
+    TerminalNode opTerm = extractOperator(children.get(1), node.symbol());
     String opSymbol = opTerm.symbol();
 
-    // Get left and right operands
-    ParseNode leftParseNode = children.get(0);
-    ParseNode rightParseNode = children.get(2);
+    NonTerminalNode leftNode = extractOperand(children.get(0), "left");
+    NonTerminalNode rightNode = extractOperand(children.get(2), "right");
 
-    if (!(leftParseNode instanceof NonTerminalNode leftNode)) {
-      throw new IllegalArgumentException(
-          "Left operand must be a non-terminal, but got: "
-              + leftParseNode.getClass().getSimpleName());
-    }
-    if (!(rightParseNode instanceof NonTerminalNode rightNode)) {
-      throw new IllegalArgumentException(
-          "Right operand must be a non-terminal, but got: "
-              + rightParseNode.getClass().getSimpleName());
+    IrType irResultType = determineResultType(leftNode, rightNode);
+    IrType leftIrType = TypeMapper.toIrType(leftNode.attributes().type());
+    IrType rightIrType = TypeMapper.toIrType(rightNode.attributes().type());
+
+    IrFunctionBuilder builder = ctx.functionBuilder();
+    IrValue left, right;
+
+    if (shouldEvaluateRightFirst(leftNode, rightNode)) {
+      right = evaluateOperand(rightNode, rightIrType, irResultType, ctx, builder);
+      ctx.addressReuseContext().clearAllLastLoadedValues();
+      left = evaluateOperand(leftNode, leftIrType, irResultType, ctx, builder);
+    } else if (shouldEvaluateRightFirstForArrayIndex(leftNode, rightNode)) {
+      right = evaluateOperand(rightNode, rightIrType, irResultType, ctx, builder);
+      left = evaluateOperand(leftNode, leftIrType, irResultType, ctx, builder);
+    } else {
+      left = evaluateOperand(leftNode, leftIrType, irResultType, ctx, builder);
+      if (opSymbol.equals("PLUS") || opSymbol.equals("MINUS")) {
+        ctx.addressReuseContext().clearAllLastLoadedValues();
+      }
+      right = evaluateRightOperand(rightNode, rightIrType, irResultType, ctx, builder);
     }
 
-    // Determine result type using arithmetic promotion rules
+    IrRhs.BinOp.BinOpName binOpName = mapOperator(opSymbol, opSymbols, opNames, node.symbol());
+    IrRhs.BinOp binOp = new IrRhs.BinOp(binOpName, left, right, irResultType);
+    IrTemp result = builder.tempFactory().newTemp(irResultType);
+    builder.addInstruction(new IrInstruction.IrAssignInstr(result, binOp));
+
+    if (ExpressionAnalyzer.containsPostfixIncrement(rightNode)) {
+      postfixHandler.performPostfixIncrement(rightNode, ctx);
+    }
+
+    if (binOpName == IrRhs.BinOp.BinOpName.ADD || binOpName == IrRhs.BinOp.BinOpName.SUB) {
+      ctx.addressReuseContext().clearAllLastLoadedValues();
+    }
+
+    return result;
+  }
+
+  private TerminalNode extractOperator(ParseNode opNode, String nodeSymbol) {
+    if (!(opNode instanceof TerminalNode term)) {
+      throw new IllegalStateException("Binary expression operator must be a terminal node in " + nodeSymbol);
+    }
+    return term;
+  }
+
+  private NonTerminalNode extractOperand(ParseNode node, String side) {
+    if (!(node instanceof NonTerminalNode nt)) {
+      throw new IllegalArgumentException(side + " operand must be a non-terminal");
+    }
+    return nt;
+  }
+
+  private IrType determineResultType(NonTerminalNode leftNode, NonTerminalNode rightNode) {
     Type leftType = leftNode.attributes().type();
     Type rightType = rightNode.attributes().type();
     Type resultType;
@@ -119,426 +137,59 @@ public final class BinaryExpressionGenerator {
     } else {
       resultType = leftType != null ? leftType : rightType;
     }
-    IrType irResultType = TypeMapper.toIrType(resultType);
-
-    // Promote operands to result type if needed
-    IrType leftIrType = TypeMapper.toIrType(leftType);
-    IrType rightIrType = TypeMapper.toIrType(rightType);
-
-    IrFunctionBuilder builder = functionContext.functionBuilder();
-
-    // Determine evaluation order based on operand complexity
-    // Rules:
-    // 1. If left has call and right is simple variable -> evaluate right first
-    // 2. If left is simple variable and right has array indexing -> evaluate right first
-    // 3. Otherwise -> standard left-to-right evaluation
-    boolean leftContainsCall = containsFunctionCall(leftNode);
-    boolean rightContainsCall = containsFunctionCall(rightNode);
-    boolean leftIsSimpleVar = isSimpleVariable(leftNode);
-    boolean rightIsSimpleVar = isSimpleVariable(rightNode);
-    boolean rightHasArrayIndex = containsArrayIndexing(rightNode);
-    
-    IrValue left, right;
-    
-    if (leftContainsCall && !rightContainsCall && rightIsSimpleVar) {
-      // Special case: left has call, right is simple variable - evaluate right first
-      // This matches expected IR for expressions like a(x+1) + x
-      right = emitter.emitRValue(rightNode, functionContext);
-      if (!rightIrType.equals(irResultType)) {
-        right = TypePromoter.promoteValue(right, rightIrType, irResultType, builder);
-      }
-      
-      // Clear the rvalue cache before evaluating left operand to ensure fresh loads
-      // This prevents reusing the right operand's value in the left operand's subexpressions
-      functionContext.addressReuseContext().clearAllLastLoadedValues();
-      
-      left = emitter.emitRValue(leftNode, functionContext);
-      if (!leftIrType.equals(irResultType)) {
-        left = TypePromoter.promoteValue(left, leftIrType, irResultType, builder);
-      }
-    } else if (leftIsSimpleVar && !leftContainsCall && rightHasArrayIndex && !rightContainsCall) {
-      // Special case: left is simple variable, right has array indexing - evaluate right first
-      // This matches expected IR for expressions like ret + arr[x]
-      right = emitter.emitRValue(rightNode, functionContext);
-      if (!rightIrType.equals(irResultType)) {
-        right = TypePromoter.promoteValue(right, rightIrType, irResultType, builder);
-      }
-      
-      left = emitter.emitRValue(leftNode, functionContext);
-      if (!leftIrType.equals(irResultType)) {
-        left = TypePromoter.promoteValue(left, leftIrType, irResultType, builder);
-      }
-    } else {
-      // Standard left-to-right evaluation order
-      left = emitter.emitRValue(leftNode, functionContext);
-      if (!leftIrType.equals(irResultType)) {
-        left = TypePromoter.promoteValue(left, leftIrType, irResultType, builder);
-      }
-      
-      // Clear the rvalue cache before evaluating right operand of additive operations
-      // This ensures fresh loads for each operand (e.g., program40: y + b(y+1))
-      // The cache will be populated during right operand evaluation (for nested reuse like program35)
-      if (opSymbol.equals("PLUS") || opSymbol.equals("MINUS")) {
-        functionContext.addressReuseContext().clearAllLastLoadedValues();
-      }
-      
-      // Check if right operand has postfix increment/decrement
-      // For expressions like x + y++, we need to load y, perform addition, then increment
-      boolean rightHasPostfixInc = containsPostfixIncrement(rightNode);
-      if (rightHasPostfixInc) {
-        // Load the value without incrementing, perform addition, then increment
-        right = loadValueForPostfixIncrement(rightNode, functionContext);
-        if (!rightIrType.equals(irResultType)) {
-          right = TypePromoter.promoteValue(right, rightIrType, irResultType, builder);
-        }
-      } else {
-        right = emitter.emitRValue(rightNode, functionContext);
-        if (!rightIrType.equals(irResultType)) {
-          right = TypePromoter.promoteValue(right, rightIrType, irResultType, builder);
-        }
-      }
-    }
-
-    // Map operator symbol to IR operation name
-    IrRhs.BinOp.BinOpName binOpName = null;
-    for (int i = 0; i < opSymbols.length && i < opNames.length; i++) {
-      if (opSymbol.equals(opSymbols[i])) {
-        binOpName = opNames[i];
-        break;
-      }
-    }
-
-    // If not found in provided list, try fallback mapping
-    if (binOpName == null) {
-      try {
-        binOpName = OperatorMapper.mapBinaryOperator(opSymbol);
-      } catch (IllegalArgumentException e) {
-        throw new IllegalStateException(
-            "Cannot map operator '"
-                + opSymbol
-                + "' to IR binary operation in "
-                + node.symbol(),
-            e);
-      }
-    }
-
-    IrRhs.BinOp binOp = new IrRhs.BinOp(binOpName, left, right, irResultType);
-    IrTemp result = builder.tempFactory().newTemp(irResultType);
-    builder.addInstruction(new IrInstruction.IrAssignInstr(result, binOp));
-    
-    // If right operand had postfix increment, perform the increment now (after addition)
-    if (containsPostfixIncrement(rightNode)) {
-      performPostfixIncrement(rightNode, functionContext);
-    }
-    
-    // Clear the rvalue cache after completing additive operations (add/sub)
-    // This ensures values are not reused across separate subexpressions in addition chains (e.g., program37)
-    // but allows reuse within function call argument collection with mod (e.g., program35)
-    if (binOpName == IrRhs.BinOp.BinOpName.ADD || binOpName == IrRhs.BinOp.BinOpName.SUB) {
-      functionContext.addressReuseContext().clearAllLastLoadedValues();
-    }
-    
-    return result;
+    return TypeMapper.toIrType(resultType);
   }
 
-  /**
-   * Loads the value for a postfix increment/decrement expression without performing the increment.
-   * Used in binary expressions where the addition should happen before the increment.
-   */
-  private IrValue loadValueForPostfixIncrement(
-      NonTerminalNode node, hr.fer.ppj.ir.lowering.FunctionContext functionContext) {
-    // Recursively unwrap to find the postfix increment
-    NonTerminalNode postfixNode = findPostfixIncrementNode(node);
-    if (postfixNode == null) {
-      // Not a postfix increment - fall back to normal evaluation
-      return emitter.emitRValue(node, functionContext);
+  private boolean shouldEvaluateRightFirst(NonTerminalNode leftNode, NonTerminalNode rightNode) {
+    boolean leftContainsCall = ExpressionAnalyzer.containsFunctionCall(leftNode);
+    boolean rightContainsCall = ExpressionAnalyzer.containsFunctionCall(rightNode);
+    boolean rightIsSimpleVar = ExpressionAnalyzer.isSimpleVariable(rightNode);
+    return leftContainsCall && !rightContainsCall && rightIsSimpleVar;
+  }
+
+  private boolean shouldEvaluateRightFirstForArrayIndex(NonTerminalNode leftNode, NonTerminalNode rightNode) {
+    boolean leftContainsCall = ExpressionAnalyzer.containsFunctionCall(leftNode);
+    boolean rightContainsCall = ExpressionAnalyzer.containsFunctionCall(rightNode);
+    boolean leftIsSimpleVar = ExpressionAnalyzer.isSimpleVariable(leftNode);
+    boolean rightHasArrayIndex = ExpressionAnalyzer.containsArrayIndexing(rightNode);
+    return leftIsSimpleVar && !leftContainsCall && rightHasArrayIndex && !rightContainsCall;
+  }
+
+  private IrValue evaluateOperand(NonTerminalNode node, IrType nodeType, IrType resultType,
+      FunctionContext ctx, IrFunctionBuilder builder) {
+    IrValue value = emitter.emitRValue(node, ctx);
+    if (!nodeType.equals(resultType)) {
+      return TypePromoter.promoteValue(value, nodeType, resultType, builder);
     }
-    
-    List<ParseNode> children = postfixNode.children();
-    if (children.size() != 2) {
-      return emitter.emitRValue(node, functionContext);
-    }
-    
-    ParseNode second = children.get(1);
-    if (!(second instanceof TerminalNode term)
-        || (!term.symbol().equals("OP_INC") && !term.symbol().equals("OP_DEC"))) {
-      return emitter.emitRValue(node, functionContext);
-    }
-    
-    // Extract base node and load its value
-    NonTerminalNode baseNode =
-        hr.fer.ppj.semantics.util.NodeUtils.asNonTerminal(children.get(0), "<postfiks_izraz>");
-    
-    // Get the LValueEmitter from the emitter (which is ExpressionGenerator)
-    LValueEmitter lValueEmitter = null;
-    if (emitter instanceof hr.fer.ppj.ir.lowering.ExpressionGenerator exprGen) {
-      lValueEmitter = exprGen;
-    } else {
-      return emitter.emitRValue(node, functionContext);
-    }
-    
-    IrFunctionBuilder builder = functionContext.functionBuilder();
-    hr.fer.ppj.semantics.types.Type exprType = baseNode.attributes().type();
-    hr.fer.ppj.ir.types.IrType irType = hr.fer.ppj.ir.build.TypeMapper.toIrType(exprType);
-    
-    // Load the value (without incrementing)
-    hr.fer.ppj.ir.model.IrTemp addr = lValueEmitter.emitLValue(baseNode, functionContext);
-    hr.fer.ppj.ir.model.IrRhs.Load load = new hr.fer.ppj.ir.model.IrRhs.Load(addr, irType);
-    hr.fer.ppj.ir.model.IrTemp value = builder.tempFactory().newTemp(irType);
-    builder.addInstruction(new hr.fer.ppj.ir.model.IrInstruction.IrAssignInstr(value, load));
-    
-    // Store the value, address, and variable name for the increment to reuse
-    String varName = hr.fer.ppj.ir.util.ExpressionNameExtractor.extractVariableName(baseNode);
-    if (varName != null) {
-      functionContext.setDeferredPostfixIncrementValue(varName, value, addr);
-    }
-    
     return value;
   }
 
-  /**
-   * Recursively finds the postfix increment node by unwrapping expression wrappers.
-   */
-  private NonTerminalNode findPostfixIncrementNode(NonTerminalNode node) {
-    String symbol = node.symbol();
-    
-    // Check if this is a postfix expression with increment/decrement
-    if (symbol.equals("<postfiks_izraz>")) {
-      List<ParseNode> children = node.children();
-      if (children.size() == 2) {
-        ParseNode second = children.get(1);
-        if (second instanceof TerminalNode term
-            && (term.symbol().equals("OP_INC") || term.symbol().equals("OP_DEC"))) {
-          return node;
-        }
-      }
-    }
-    
-    // Recursively check children (unwrap expression wrappers)
-    for (ParseNode child : node.children()) {
-      if (child instanceof NonTerminalNode nt) {
-        NonTerminalNode found = findPostfixIncrementNode(nt);
-        if (found != null) {
-          return found;
-        }
-      }
-    }
-    
-    return null;
-  }
-
-  /**
-   * Performs the increment/decrement for a postfix expression.
-   * Used after the addition in binary expressions like x + y++.
-   */
-  private void performPostfixIncrement(
-      NonTerminalNode node, hr.fer.ppj.ir.lowering.FunctionContext functionContext) {
-    // Recursively find the postfix increment node
-    NonTerminalNode postfixNode = findPostfixIncrementNode(node);
-    if (postfixNode == null) {
-      return;
-    }
-    
-    List<ParseNode> children = postfixNode.children();
-    if (children.size() != 2) {
-      return;
-    }
-    
-    ParseNode second = children.get(1);
-    if (!(second instanceof TerminalNode term)
-        || (!term.symbol().equals("OP_INC") && !term.symbol().equals("OP_DEC"))) {
-      return;
-    }
-    
-    // Extract base node
-    NonTerminalNode baseNode =
-        hr.fer.ppj.semantics.util.NodeUtils.asNonTerminal(children.get(0), "<postfiks_izraz>");
-    
-    // Get the LValueEmitter from the emitter
-    LValueEmitter lValueEmitter = null;
-    if (emitter instanceof hr.fer.ppj.ir.lowering.ExpressionGenerator exprGen) {
-      lValueEmitter = exprGen;
+  private IrValue evaluateRightOperand(NonTerminalNode node, IrType nodeType, IrType resultType,
+      FunctionContext ctx, IrFunctionBuilder builder) {
+    boolean hasPostfixInc = ExpressionAnalyzer.containsPostfixIncrement(node);
+    IrValue value;
+    if (hasPostfixInc) {
+      value = postfixHandler.loadValueForPostfixIncrement(node, ctx);
     } else {
-      return;
+      value = emitter.emitRValue(node, ctx);
     }
-    
-    IrFunctionBuilder builder = functionContext.functionBuilder();
-    hr.fer.ppj.semantics.types.Type exprType = baseNode.attributes().type();
-    hr.fer.ppj.ir.types.IrType irType = hr.fer.ppj.ir.build.TypeMapper.toIrType(exprType);
-    
-    // Try to reuse the value and address that were already loaded
-    String varName = hr.fer.ppj.ir.util.ExpressionNameExtractor.extractVariableName(baseNode);
-    hr.fer.ppj.ir.model.IrTemp currentValue = null;
-    hr.fer.ppj.ir.model.IrTemp addr = null;
-    if (varName != null) {
-      currentValue = functionContext.getDeferredPostfixIncrementValue(varName);
-      addr = functionContext.getDeferredPostfixIncrementAddr(varName);
+    if (!nodeType.equals(resultType)) {
+      return TypePromoter.promoteValue(value, nodeType, resultType, builder);
     }
-    
-    // If no deferred value/address, load them now
-    if (currentValue == null || addr == null) {
-      if (addr == null) {
-        addr = lValueEmitter.emitLValue(baseNode, functionContext);
-      }
-      if (currentValue == null) {
-        hr.fer.ppj.ir.model.IrRhs.Load load = new hr.fer.ppj.ir.model.IrRhs.Load(addr, irType);
-        currentValue = builder.tempFactory().newTemp(irType);
-        builder.addInstruction(new hr.fer.ppj.ir.model.IrInstruction.IrAssignInstr(currentValue, load));
-      }
-    }
-    
-    // Clear the deferred value/address
-    if (varName != null) {
-      functionContext.clearDeferredPostfixIncrementValue();
-    }
-    
-    // Add/subtract 1
-    hr.fer.ppj.ir.model.IrConst oneConst = term.symbol().equals("OP_INC")
-        ? new hr.fer.ppj.ir.model.IrConst.IntConst(1, irType)
-        : new hr.fer.ppj.ir.model.IrConst.IntConst(-1, irType);
-    hr.fer.ppj.ir.model.IrRhs.BinOp addOp = new hr.fer.ppj.ir.model.IrRhs.BinOp(
-        hr.fer.ppj.ir.model.IrRhs.BinOp.BinOpName.ADD, currentValue, oneConst, irType);
-    hr.fer.ppj.ir.model.IrTemp newValue = builder.tempFactory().newTemp(irType);
-    builder.addInstruction(new hr.fer.ppj.ir.model.IrInstruction.IrAssignInstr(newValue, addOp));
-    
-    // Store new value
-    builder.addInstruction(new hr.fer.ppj.ir.model.IrInstruction.IrStoreInstr(addr, newValue, irType));
-    
-    // Invalidate last loaded value for this variable since it has changed
-    // This ensures statement-local value reuse doesn't use stale values
-    // varName was already extracted above, reuse it
-    if (varName != null) {
-      functionContext.addressReuseContext().clearLastLoadedValue(varName);
-    }
-    
-    // Invalidate last loaded value for this variable (varName was already extracted above)
-    if (varName != null) {
-      functionContext.addressReuseContext().clearLastLoadedValue(varName);
-    }
+    return value;
   }
 
-  /**
-   * Checks if an expression node contains a function call.
-   */
-  private boolean containsFunctionCall(NonTerminalNode node) {
-    String symbol = node.symbol();
-    
-    // Check if this is a postfix expression with a function call
-    if (symbol.equals("<postfiks_izraz>")) {
-      List<ParseNode> children = node.children();
-      if (children.size() >= 3) {
-        ParseNode first = children.get(0);
-        ParseNode second = children.get(1);
-        if (first instanceof NonTerminalNode && second instanceof TerminalNode term
-            && term.symbol().equals("L_ZAGRADA")) {
-          // This is a function call
-          return true;
-        }
+  private IrRhs.BinOp.BinOpName mapOperator(String opSymbol, String[] opSymbols,
+      IrRhs.BinOp.BinOpName[] opNames, String nodeSymbol) {
+    for (int i = 0; i < opSymbols.length && i < opNames.length; i++) {
+      if (opSymbol.equals(opSymbols[i])) {
+        return opNames[i];
       }
     }
-    
-    // Recursively check children
-    for (ParseNode child : node.children()) {
-      if (child instanceof NonTerminalNode nt) {
-        if (containsFunctionCall(nt)) {
-          return true;
-        }
-      }
+    try {
+      return OperatorMapper.mapBinaryOperator(opSymbol);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalStateException("Cannot map operator '" + opSymbol + "' in " + nodeSymbol, e);
     }
-    
-    return false;
-  }
-
-  /**
-   * Checks if an expression node is a simple variable (just an identifier).
-   */
-  private boolean isSimpleVariable(NonTerminalNode node) {
-    String symbol = node.symbol();
-    
-    // Primary expression with identifier
-    if (symbol.equals("<primarni_izraz>")) {
-      List<ParseNode> children = node.children();
-      if (children.size() == 1 && children.get(0) instanceof TerminalNode term
-          && term.symbol().equals("IDN")) {
-        return true;
-      }
-    }
-    
-    // Check if it's a pass-through to primary expression
-    // Also check <izraz> which can wrap other expressions
-    if (symbol.equals("<unarni_izraz>") || symbol.equals("<cast_izraz>")
-        || symbol.equals("<postfiks_izraz>") || symbol.equals("<izraz>")
-        || symbol.equals("<izraz_pridruzivanja>") || symbol.equals("<log_ili_izraz>")
-        || symbol.equals("<log_i_izraz>") || symbol.equals("<bin_ili_izraz>")
-        || symbol.equals("<bin_xili_izraz>") || symbol.equals("<bin_i_izraz>")
-        || symbol.equals("<jednakosni_izraz>") || symbol.equals("<odnosni_izraz>")
-        || symbol.equals("<aditivni_izraz>") || symbol.equals("<multiplikativni_izraz>")) {
-      List<ParseNode> children = node.children();
-      if (children.size() == 1 && children.get(0) instanceof NonTerminalNode child) {
-        return isSimpleVariable(child);
-      }
-    }
-    
-    return false;
-  }
-
-  /**
-   * Checks if an expression node contains array indexing.
-   */
-  private boolean containsArrayIndexing(NonTerminalNode node) {
-    String symbol = node.symbol();
-    
-    // Check if this is a postfix expression with array indexing
-    if (symbol.equals("<postfiks_izraz>")) {
-      List<ParseNode> children = node.children();
-      if (children.size() >= 3) {
-        ParseNode second = children.get(1);
-        if (second instanceof TerminalNode term && term.symbol().equals("L_UGL_ZAGRADA")) {
-          return true;
-        }
-      }
-    }
-    
-    // Recursively check children
-    for (ParseNode child : node.children()) {
-      if (child instanceof NonTerminalNode nt) {
-        if (containsArrayIndexing(nt)) {
-          return true;
-        }
-      }
-    }
-    
-    return false;
-  }
-
-  /**
-   * Checks if an expression node contains a postfix increment or decrement.
-   */
-  private boolean containsPostfixIncrement(NonTerminalNode node) {
-    String symbol = node.symbol();
-    
-    // Check if this is a postfix expression with increment/decrement
-    if (symbol.equals("<postfiks_izraz>")) {
-      List<ParseNode> children = node.children();
-      if (children.size() == 2) {
-        ParseNode second = children.get(1);
-        if (second instanceof TerminalNode term) {
-          if (term.symbol().equals("OP_INC") || term.symbol().equals("OP_DEC")) {
-            return true;
-          }
-        }
-      }
-    }
-    
-    // Recursively check children
-    for (ParseNode child : node.children()) {
-      if (child instanceof NonTerminalNode nt) {
-        if (containsPostfixIncrement(nt)) {
-          return true;
-        }
-      }
-    }
-    
-    return false;
   }
 }
