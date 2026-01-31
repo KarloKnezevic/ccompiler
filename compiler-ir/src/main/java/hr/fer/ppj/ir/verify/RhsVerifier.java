@@ -1,26 +1,59 @@
 package hr.fer.ppj.ir.verify;
 
 import hr.fer.ppj.ir.model.IrRhs;
+import hr.fer.ppj.ir.model.IrValue;
 import hr.fer.ppj.ir.types.IrPointerType;
+import java.util.Objects;
 import java.util.Set;
 
 /**
- * Verifies IR RHS expressions.
+ * Verifies IR right-hand-side expressions according to the grammar.
+ *
+ * <p>Validates RHS expressions as defined in {@code config/ir_definition.txt}:
+ *
+ * <pre>
+ * Rhs
+ *   ::= AddrOfSymbol | AddrIndex | AddrField | Load
+ *    |  BinOp | CmpOp | Call | UnaryOp | IncDecOp | CastOp | Const ;
+ * </pre>
+ *
+ * <h3>Validation Rules</h3>
+ * <ul>
+ *   <li>All operand values must be defined before use</li>
+ *   <li>{@code addr_index} base must be a pointer type</li>
+ *   <li>{@code load} address must be a pointer type</li>
+ *   <li>{@code inc/dec} address must be a pointer type</li>
+ *   <li>Binary operation operands should have compatible types</li>
+ * </ul>
  *
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
+ * @see hr.fer.ppj.ir.model.IrRhs
  */
 public final class RhsVerifier {
 
   private final VerificationContext context;
   private final ValueVerifier valueVerifier;
 
+  /**
+   * Creates a new RHS verifier.
+   *
+   * @param context the verification context for error reporting
+   * @param valueVerifier the value verifier for checking operands
+   * @throws NullPointerException if any argument is null
+   */
   public RhsVerifier(VerificationContext context, ValueVerifier valueVerifier) {
-    this.context = context;
-    this.valueVerifier = valueVerifier;
+    this.context = Objects.requireNonNull(context, "context must not be null");
+    this.valueVerifier = Objects.requireNonNull(valueVerifier, "valueVerifier must not be null");
   }
 
   /**
    * Verifies an RHS expression.
+   *
+   * @param functionName the function name for error reporting
+   * @param blockLabel the block label for error reporting
+   * @param instrIndex the instruction index for error reporting
+   * @param rhs the RHS expression to verify
+   * @param definedTemps the set of temp indices defined so far
    */
   public void verifyRhs(
       String functionName,
@@ -28,57 +61,71 @@ public final class RhsVerifier {
       int instrIndex,
       IrRhs rhs,
       Set<Integer> definedTemps) {
+
     switch (rhs) {
       case IrRhs.AddrOfSymbol ignored -> {
-        // Symbol references don't need verification
+        // Symbol references are validated by symbol resolution
       }
+
       case IrRhs.AddrIndex addr -> {
-        valueVerifier.verifyValue(functionName, blockLabel, instrIndex, addr.base(), definedTemps);
-        valueVerifier.verifyValue(functionName, blockLabel, instrIndex, addr.idx(), definedTemps);
+        verifyValue(functionName, blockLabel, instrIndex, addr.base(), definedTemps);
+        verifyValue(functionName, blockLabel, instrIndex, addr.idx(), definedTemps);
         if (!(addr.base().type() instanceof IrPointerType)) {
-          context.addError(
-              functionName, blockLabel, "Instruction " + instrIndex + ": addr_index base must be pointer type");
+          context.addInstructionError(functionName, blockLabel, instrIndex,
+              "addr_index base must be pointer type, got " + addr.base().type().toIrString());
         }
       }
-      case IrRhs.AddrField field -> {
-        valueVerifier.verifyValue(functionName, blockLabel, instrIndex, field.base(), definedTemps);
-      }
+
+      case IrRhs.AddrField field ->
+        verifyValue(functionName, blockLabel, instrIndex, field.base(), definedTemps);
+
       case IrRhs.Load load -> {
-        valueVerifier.verifyValue(functionName, blockLabel, instrIndex, load.addr(), definedTemps);
+        verifyValue(functionName, blockLabel, instrIndex, load.addr(), definedTemps);
         if (!(load.addr().type() instanceof IrPointerType)) {
-          context.addError(
-              functionName, blockLabel, "Instruction " + instrIndex + ": load address must be pointer type");
+          context.addInstructionError(functionName, blockLabel, instrIndex,
+              "load address must be pointer type, got " + load.addr().type().toIrString());
         }
       }
+
       case IrRhs.BinOp bin -> {
-        valueVerifier.verifyValue(functionName, blockLabel, instrIndex, bin.left(), definedTemps);
-        valueVerifier.verifyValue(functionName, blockLabel, instrIndex, bin.right(), definedTemps);
+        verifyValue(functionName, blockLabel, instrIndex, bin.left(), definedTemps);
+        verifyValue(functionName, blockLabel, instrIndex, bin.right(), definedTemps);
       }
+
       case IrRhs.CmpOp cmp -> {
-        valueVerifier.verifyValue(functionName, blockLabel, instrIndex, cmp.left(), definedTemps);
-        valueVerifier.verifyValue(functionName, blockLabel, instrIndex, cmp.right(), definedTemps);
+        verifyValue(functionName, blockLabel, instrIndex, cmp.left(), definedTemps);
+        verifyValue(functionName, blockLabel, instrIndex, cmp.right(), definedTemps);
       }
+
       case IrRhs.Call call -> {
-        for (hr.fer.ppj.ir.model.IrValue arg : call.args()) {
-          valueVerifier.verifyValue(functionName, blockLabel, instrIndex, arg, definedTemps);
+        for (IrValue arg : call.args()) {
+          verifyValue(functionName, blockLabel, instrIndex, arg, definedTemps);
         }
       }
-      case IrRhs.UnaryOp unary -> {
-        valueVerifier.verifyValue(functionName, blockLabel, instrIndex, unary.operand(), definedTemps);
-      }
+
+      case IrRhs.UnaryOp unary ->
+        verifyValue(functionName, blockLabel, instrIndex, unary.operand(), definedTemps);
+
       case IrRhs.IncDecOp incdec -> {
-        valueVerifier.verifyValue(functionName, blockLabel, instrIndex, incdec.addr(), definedTemps);
+        verifyValue(functionName, blockLabel, instrIndex, incdec.addr(), definedTemps);
         if (!(incdec.addr().type() instanceof IrPointerType)) {
-          context.addError(
-              functionName, blockLabel, "Instruction " + instrIndex + ": inc/dec address must be pointer type");
+          context.addInstructionError(functionName, blockLabel, instrIndex,
+              "inc/dec address must be pointer type, got " + incdec.addr().type().toIrString());
         }
       }
-      case IrRhs.CastOp cast -> {
-        valueVerifier.verifyValue(functionName, blockLabel, instrIndex, cast.operand(), definedTemps);
-      }
+
+      case IrRhs.CastOp cast ->
+        verifyValue(functionName, blockLabel, instrIndex, cast.operand(), definedTemps);
+
       case IrRhs.ConstRhs ignored -> {
-        // Constants don't need verification
+        // Constants are always valid
       }
     }
+  }
+
+  private void verifyValue(
+      String functionName, String blockLabel, int instrIndex,
+      IrValue value, Set<Integer> definedTemps) {
+    valueVerifier.verifyValue(functionName, blockLabel, instrIndex, value, definedTemps);
   }
 }
