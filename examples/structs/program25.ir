@@ -15,43 +15,20 @@
     t0 = addr_of_symbol local:m
     t1 = addr_field t0, Math.a
     store t1, #2:int32 : int32
-
-    t2 = addr_of_symbol local:m
-    t3 = addr_field t2, Math.b
-    store t3, #3:int32 : int32
-
-    t4 = addr_of_symbol local:m
-    t5 = addr_field t4, Math.c
-    store t5, #4:int32 : int32
-
-    t6 = addr_of_symbol local:m
-    t7 = addr_field t6, Math.a
-    t8 = load t7 : int32
-
-    t9 = addr_of_symbol local:m
-    t10 = addr_field t9, Math.b
-    t11 = load t10 : int32
-
-    t12 = mul t8, t11 : int32
-
-    t13 = addr_of_symbol local:m
-    t14 = addr_field t13, Math.c
-    t15 = load t14 : int32
-
-    t16 = addr_of_symbol local:m
-    t17 = addr_field t16, Math.a
-    t18 = load t17 : int32
-
-    t19 = mul t15, t18 : int32
-
-    t20 = add t12, t19 : int32
-
-    t21 = addr_of_symbol local:m
-    t22 = addr_field t21, Math.b
-    t23 = load t22 : int32
-
-    t24 = sub t20, t23 : int32
-    ret t24
+    t2 = addr_field t0, Math.b
+    store t2, #3:int32 : int32
+    t3 = addr_field t0, Math.c
+    store t3, #4:int32 : int32
+    t4 = load t1 : int32
+    t5 = load t2 : int32
+    t6 = mul t4, t5 : int32
+    t7 = load t3 : int32
+    t8 = load t1 : int32
+    t9 = mul t7, t8 : int32
+    t10 = add t6, t9 : int32
+    t11 = load t2 : int32
+    t12 = sub t10, t11 : int32
+    ret t12
 .endfunc
 
 .endprogram

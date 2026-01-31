@@ -1,10 +1,5 @@
 .program
 
-.type struct QueueNode {
-  data:int32@0
-  next:ptr<struct QueueNode>@4
-}
-
 .type struct Queue {
   front:ptr<struct QueueNode>@0
   rear:ptr<struct QueueNode>@4
@@ -13,9 +8,9 @@
 .func enqueue(q:ptr<struct Queue>, value:int32):void
   .frame locals=4 bytes align=4
   .slots
+    local node@0:ptr<struct QueueNode>
     param q@0:ptr<struct Queue>
     param value@4:int32
-    local node@0:ptr<struct QueueNode>
   .blocks
   L0:
     t0 = addr_of_symbol local:node
@@ -24,53 +19,49 @@
     t3 = addr_of_symbol param:value
     t4 = load t3 : int32
     store t2, t4 : int32
-    t5 = addr_of_symbol local:node
-    t6 = load t5 : ptr<struct QueueNode>
-    t7 = addr_field t6, QueueNode.next
-    store t7, #0:int32 : ptr<struct QueueNode>
-    t8 = addr_of_symbol param:q
-    t9 = load t8 : ptr<struct Queue>
-    t10 = addr_field t9, Queue.rear
-    t11 = load t10 : ptr<struct QueueNode>
-    t12 = cmp_ne t11, null:ptr<struct QueueNode> : bool
-    br t12, L2, L1
 
+    t5 = load t0 : ptr<struct QueueNode>
+    t6 = addr_field t5, QueueNode.next
+    store t6, null:ptr<struct QueueNode> : ptr<struct QueueNode>
+
+    t7 = addr_of_symbol param:q
+    t8 = load t7 : ptr<struct Queue>
+    t9 = addr_field t8, Queue.rear
+    t10 = load t9 : ptr<struct QueueNode>
+    t11 = not t10 : bool
+    br t11, L1, L2
   L1:
-    t13 = addr_of_symbol param:q
-    t14 = load t13 : ptr<struct Queue>
-    t15 = addr_field t14, Queue.front
-    t16 = addr_of_symbol local:node
-    t17 = load t16 : ptr<struct QueueNode>
-    store t15, t17 : ptr<struct QueueNode>
-    t18 = addr_of_symbol param:q
-    t19 = load t18 : ptr<struct Queue>
-    t20 = addr_field t19, Queue.rear
-    t21 = addr_of_symbol local:node
-    t22 = load t21 : ptr<struct QueueNode>
-    store t20, t22 : ptr<struct QueueNode>
-    jmp L3
+    t12 = addr_of_symbol param:q
+    t13 = load t12 : ptr<struct Queue>
+    t14 = addr_field t13, Queue.front
+    t15 = addr_of_symbol local:node
+    t16 = load t15 : ptr<struct QueueNode>
+    store t14, t16 : ptr<struct QueueNode>
 
+    t17 = load t12 : ptr<struct Queue>
+    t18 = addr_field t17, Queue.rear
+    t19 = load t15 : ptr<struct QueueNode>
+    store t18, t19 : ptr<struct QueueNode>
+    jmp L3
   L2:
-    t23 = addr_of_symbol param:q
-    t24 = load t23 : ptr<struct Queue>
-    t25 = addr_field t24, Queue.rear
+    t20 = addr_of_symbol param:q
+    t21 = load t20 : ptr<struct Queue>
+    t22 = addr_field t21, Queue.rear
+    t23 = load t22 : ptr<struct QueueNode>
+    t24 = addr_field t23, QueueNode.next
+    t25 = addr_of_symbol local:node
     t26 = load t25 : ptr<struct QueueNode>
-    t27 = addr_field t26, QueueNode.next
-    t28 = addr_of_symbol local:node
-    t29 = load t28 : ptr<struct QueueNode>
-    store t27, t29 : ptr<struct QueueNode>
-    t30 = addr_of_symbol param:q
-    t31 = load t30 : ptr<struct Queue>
-    t32 = addr_field t31, Queue.rear
-    t33 = addr_of_symbol local:node
-    t34 = load t33 : ptr<struct QueueNode>
-    store t32, t34 : ptr<struct QueueNode>
-    jmp L3
+    store t24, t26 : ptr<struct QueueNode>
 
+    t27 = load t20 : ptr<struct Queue>
+    t28 = addr_field t27, Queue.rear
+    t29 = load t25 : ptr<struct QueueNode>
+    store t28, t29 : ptr<struct QueueNode>
+    jmp L3
   L3:
     ret
-
 .endfunc
+
 .func main():int32
   .frame locals=8 bytes align=4
   .slots
@@ -79,14 +70,11 @@
   L0:
     t0 = addr_of_symbol local:q
     t1 = addr_field t0, Queue.front
-    store t1, #0:int32 : ptr<struct QueueNode>
-    t2 = addr_of_symbol local:q
-    t3 = addr_field t2, Queue.rear
-    store t3, #0:int32 : ptr<struct QueueNode>
-    t4 = addr_of_symbol local:q
-    call func:enqueue(t4, #5:int32):void
+    store t1, null:ptr<struct QueueNode> : ptr<struct QueueNode>
+    t2 = addr_field t0, Queue.rear
+    store t2, null:ptr<struct QueueNode> : ptr<struct QueueNode>
+    call func:enqueue(t0, #5:int32) : void
     ret #0:int32
-
 .endfunc
 
 .endprogram

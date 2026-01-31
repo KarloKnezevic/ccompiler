@@ -15,29 +15,18 @@
   L0:
     t0 = addr_of_symbol local:x
     store t0, #5:int32 : int32
-
     t1 = addr_of_symbol local:d
     t2 = addr_field t1, Data.arr
     t3 = addr_index t2, #0:int32, 4
     store t3, #1:int32 : int32
-
-    t4 = addr_of_symbol local:d
-    t5 = addr_field t4, Data.arr
-    t6 = addr_index t5, #1:int32, 4
-    store t6, #2:int32 : int32
-
-    t7 = addr_of_symbol local:d
-    t8 = addr_field t7, Data.ptr
-    t9 = addr_of_symbol local:x
-    store t8, t9 : ptr<int32>
-
-    t10 = addr_of_symbol local:d
-    t11 = addr_field t10, Data.ptr
-    t12 = load t11 : ptr<int32>
-    t13 = load t12 : int32
-    t14 = addr_of_symbol local:y
-    store t14, t13 : int32
-
+    t4 = addr_index t2, #1:int32, 4
+    store t4, #2:int32 : int32
+    t5 = addr_field t1, Data.ptr
+    store t5, t0 : ptr<int32>
+    t6 = load t5 : ptr<int32>
+    t7 = load t6 : int32
+    t8 = addr_of_symbol local:y
+    store t8, t7 : int32
     ret #0:int32
 .endfunc
 

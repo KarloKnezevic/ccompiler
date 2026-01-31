@@ -17,26 +17,25 @@
     local result@0:int32
   .blocks
   L0:
-    t0 = addr_of_symbol local:result
-    t1 = addr_of_symbol param:o
-    t2 = load t1 : ptr<struct Outer>
-    t3 = addr_field t2, Outer.inner
-    t4 = load t3 : ptr<struct Inner>
-    t5 = addr_field t4, Inner.data
-    t6 = load t5 : int32
-    t7 = addr_of_symbol param:o
-    t8 = load t7 : ptr<struct Outer>
-    t9 = addr_field t8, Outer.values
-    t10 = load t9 : ptr<float>
-    t11 = load t10 : float
-    t12 = ftoi t11 : int32
-    t13 = add t6, t12 : int32
-    store t0, t13 : int32
-    t14 = addr_of_symbol local:result
-    t15 = load t14 : int32
-    ret t15
+    t0 = addr_of_symbol param:o
+    t1 = load t0 : ptr<struct Outer>
+    t2 = addr_field t1, Outer.inner
+    t3 = load t2 : ptr<struct Inner>
+    t4 = addr_field t3, Inner.data
+    t5 = load t4 : int32
+    t6 = load t0 : ptr<struct Outer>
+    t7 = addr_field t6, Outer.values
+    t8 = load t7 : ptr<float>
+    t9 = load t8 : float
+    t10 = ftoi t9 : int32
+    t11 = add t5, t10 : int32
 
+    t12 = addr_of_symbol local:result
+    store t12, t11 : int32
+    t13 = load t12 : int32
+    ret t13
 .endfunc
+
 .func main():int32
   .frame locals=28 bytes align=4
   .slots
@@ -51,28 +50,23 @@
     store t0, #42:int32 : int32
     t1 = addr_of_symbol local:f
     store t1, #3.14:float : float
+
     t2 = addr_of_symbol local:i
     t3 = addr_field t2, Inner.data
     store t3, #10:int32 : int32
-    t4 = addr_of_symbol local:i
-    t5 = addr_field t4, Inner.value
-    store t5, #2.5:float : float
-    t6 = addr_of_symbol local:o
-    t7 = addr_field t6, Outer.inner
-    t8 = addr_of_symbol local:i
-    store t7, t8 : ptr<struct Inner>
-    t9 = addr_of_symbol local:o
-    t10 = addr_field t9, Outer.values
-    t11 = addr_of_symbol local:f
-    store t10, t11 : ptr<float>
-    t12 = addr_of_symbol local:result
-    t13 = addr_of_symbol local:o
-    t14 = call func:calculate_sum(t13):int32
-    store t12, t14 : int32
-    t15 = addr_of_symbol local:result
-    t16 = load t15 : int32
-    ret t16
+    t4 = addr_field t2, Inner.value
+    store t4, #2.5:float : float
 
+    t5 = addr_of_symbol local:o
+    t6 = addr_field t5, Outer.inner
+    store t6, t2 : ptr<struct Inner>
+    t7 = addr_field t5, Outer.values
+    store t7, t1 : ptr<float>
+    t8 = call func:calculate_sum(t5) : int32
+    t9 = addr_of_symbol local:result
+    store t9, t8 : int32
+    t10 = load t9 : int32
+    ret t10
 .endfunc
 
 .endprogram

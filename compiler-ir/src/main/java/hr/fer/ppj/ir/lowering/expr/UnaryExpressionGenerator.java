@@ -45,12 +45,14 @@ public final class UnaryExpressionGenerator {
    * <p><unarni_izraz> can be:
    * <ul>
    *   <li><cast_izraz> (no unary operator, just pass through)</li>
-   *   <li>OP_PUTA <cast_izraz> (dereference)</li>
+   *   <li>ASTERISK <cast_izraz> (dereference)</li>
    *   <li>OP_INC <cast_izraz> (pre-increment)</li>
    *   <li>OP_DEC <cast_izraz> (pre-decrement)</li>
+   *   <li>PLUS <cast_izraz> (positive - identity)</li>
    *   <li>MINUS <cast_izraz> (negation)</li>
-   *   <li>OP_NOT <cast_izraz> (logical not)</li>
-   *   <li>OP_ADRESA <cast_izraz> (address-of)</li>
+   *   <li>OP_TILDA <cast_izraz> (bitwise not)</li>
+   *   <li>OP_NEG <cast_izraz> (logical not)</li>
+   *   <li>AMPERSAND <cast_izraz> (address-of)</li>
    * </ul>
    */
   public IrValue emitRValue(
@@ -141,13 +143,18 @@ public final class UnaryExpressionGenerator {
 
         // Return new value (pre-increment/decrement returns the new value)
         return newValue;
+      } else if (op.equals("PLUS")) {
+        // Unary plus - just return the operand value
+        return emitter.emitRValue(operandNode, functionContext);
       } else if (op.equals("MINUS")) {
         return handleNegation(operandNode, functionContext, builder);
-      } else if (op.equals("OP_NOT")) {
+      } else if (op.equals("OP_TILDA")) {
+        return handleBitwiseNot(operandNode, functionContext, builder);
+      } else if (op.equals("OP_NEG")) {
         return handleLogicalNot(operandNode, functionContext, builder);
-      } else if (op.equals("OP_PUTA")) {
+      } else if (op.equals("ASTERISK")) {
         return handleDereference(operandNode, functionContext, builder);
-      } else if (op.equals("OP_ADRESA")) {
+      } else if (op.equals("AMPERSAND")) {
         return lValueEmitter.emitLValue(operandNode, functionContext);
       }
     }
@@ -164,31 +171,75 @@ public final class UnaryExpressionGenerator {
       NonTerminalNode operandNode,
       hr.fer.ppj.ir.lowering.FunctionContext functionContext,
       IrFunctionBuilder builder) {
-    // Check if operand is a constant - if so, create negative constant directly
-    try {
-      Type opType = operandNode.attributes().type();
-      if (opType != null) {
-        IrConst negConst = ConstantEvaluator.extractConstantFromExpression(operandNode, opType);
-        if (negConst != null) {
-          if (negConst instanceof IrConst.IntConst intConst) {
-            return new IrConst.IntConst(-intConst.value(), intConst.type());
-          } else if (negConst instanceof IrConst.FloatConst floatConst) {
-            return new IrConst.FloatConst(-floatConst.value());
-          }
-        }
-      }
-    } catch (UnsupportedOperationException | IllegalArgumentException e) {
-      // Not a constant - fall through to use neg instruction
-    }
-
-    // Not a constant - use neg instruction
-    IrValue operand = emitter.emitRValue(operandNode, functionContext);
     Type opType = operandNode.attributes().type();
     IrType irType = TypeMapper.toIrType(opType);
+    
+    // For floats, always emit neg instruction (golden tests expect: neg #1.5:float)
+    // For integers, fold constant negation ONLY for direct literals (not compound expressions)
+    if (irType == IrPrimitiveType.FLOAT) {
+      IrValue operand = emitter.emitRValue(operandNode, functionContext);
+      IrRhs.UnaryOp neg = new IrRhs.UnaryOp(IrRhs.UnaryOp.UnaryOpName.NEG, operand, irType);
+      IrTemp result = builder.tempFactory().newTemp(irType);
+      builder.addInstruction(new IrInstruction.IrAssignInstr(result, neg));
+      return result;
+    }
+    
+    // For non-float types, try to fold constant negation ONLY for direct literals
+    if (opType != null && isDirectNumericLiteral(operandNode)) {
+      try {
+        IrConst negConst = ConstantEvaluator.extractConstantFromExpression(operandNode, opType);
+        if (negConst != null && negConst instanceof IrConst.IntConst intConst) {
+          return new IrConst.IntConst(-intConst.value(), intConst.type());
+        }
+      } catch (UnsupportedOperationException | IllegalArgumentException e) {
+        // Not a constant - fall through to use neg instruction
+      }
+    }
+
+    // Not a simple constant - use neg instruction
+    IrValue operand = emitter.emitRValue(operandNode, functionContext);
     IrRhs.UnaryOp neg = new IrRhs.UnaryOp(IrRhs.UnaryOp.UnaryOpName.NEG, operand, irType);
     IrTemp result = builder.tempFactory().newTemp(irType);
     builder.addInstruction(new IrInstruction.IrAssignInstr(result, neg));
     return result;
+  }
+
+  /**
+   * Checks if the expression is a direct path to a numeric literal (BROJ).
+   * This excludes compound expressions like (3 * 4).
+   */
+  private boolean isDirectNumericLiteral(NonTerminalNode node) {
+    List<ParseNode> children = node.children();
+    
+    // Follow single-child non-terminal chains
+    while (children.size() == 1) {
+      ParseNode child = children.get(0);
+      if (child instanceof TerminalNode term) {
+        // We've reached a terminal - check if it's a numeric literal
+        return term.symbol().equals("BROJ");
+      } else if (child instanceof NonTerminalNode nt) {
+        // Continue following the chain
+        children = nt.children();
+      } else {
+        return false;
+      }
+    }
+    
+    // Multiple children means a compound expression (e.g., binary op, parentheses with op inside)
+    // Exception: parenthesized expression with just a literal inside
+    if (children.size() == 3) {
+      ParseNode first = children.get(0);
+      ParseNode middle = children.get(1);
+      ParseNode last = children.get(2);
+      if (first instanceof TerminalNode t1 && t1.symbol().equals("L_ZAGRADA")
+          && last instanceof TerminalNode t2 && t2.symbol().equals("D_ZAGRADA")
+          && middle instanceof NonTerminalNode nt) {
+        // Parenthesized expression - check if the inner expression is a direct literal
+        return isDirectNumericLiteral(nt);
+      }
+    }
+    
+    return false;
   }
 
   private IrValue handleLogicalNot(
@@ -200,6 +251,20 @@ public final class UnaryExpressionGenerator {
         new IrRhs.UnaryOp(IrRhs.UnaryOp.UnaryOpName.NOT, operand, IrPrimitiveType.BOOL);
     IrTemp result = builder.tempFactory().newTemp(IrPrimitiveType.BOOL);
     builder.addInstruction(new IrInstruction.IrAssignInstr(result, not));
+    return result;
+  }
+
+  private IrValue handleBitwiseNot(
+      NonTerminalNode operandNode,
+      hr.fer.ppj.ir.lowering.FunctionContext functionContext,
+      IrFunctionBuilder builder) {
+    IrValue operand = emitter.emitRValue(operandNode, functionContext);
+    Type opType = operandNode.attributes().type();
+    IrType irType = TypeMapper.toIrType(opType);
+    IrRhs.UnaryOp bitnot =
+        new IrRhs.UnaryOp(IrRhs.UnaryOp.UnaryOpName.BITNOT, operand, irType);
+    IrTemp result = builder.tempFactory().newTemp(irType);
+    builder.addInstruction(new IrInstruction.IrAssignInstr(result, bitnot));
     return result;
   }
 

@@ -14,57 +14,24 @@
     t1 = addr_field t0, A.arr
     t2 = addr_index t1, #0:int32, 4
     store t2, #1:int32 : int32
-
-    t3 = addr_of_symbol local:a
-    t4 = addr_field t3, A.arr
-    t5 = addr_index t4, #1:int32, 4
-    store t5, #2:int32 : int32
-
-    t6 = addr_of_symbol local:a
-    t7 = addr_field t6, A.arr
-    t8 = addr_index t7, #2:int32, 4
-    store t8, #3:int32 : int32
-
-    t9 = addr_of_symbol local:a
-    t10 = addr_field t9, A.arr
-    t11 = addr_index t10, #3:int32, 4
-    store t11, #4:int32 : int32
-
-    t12 = addr_of_symbol local:a
-    t13 = addr_field t12, A.arr
-    t14 = addr_index t13, #4:int32, 4
-    store t14, #5:int32 : int32
-
-    t15 = addr_of_symbol local:a
-    t16 = addr_field t15, A.arr
-    t17 = addr_index t16, #0:int32, 4
-    t18 = load t17 : int32
-
-    t19 = addr_of_symbol local:a
-    t20 = addr_field t19, A.arr
-    t21 = addr_index t20, #1:int32, 4
-    t22 = load t21 : int32
-    t23 = add t18, t22 : int32
-
-    t24 = addr_of_symbol local:a
-    t25 = addr_field t24, A.arr
-    t26 = addr_index t25, #2:int32, 4
-    t27 = load t26 : int32
-    t28 = add t23, t27 : int32
-
-    t29 = addr_of_symbol local:a
-    t30 = addr_field t29, A.arr
-    t31 = addr_index t30, #3:int32, 4
-    t32 = load t31 : int32
-    t33 = add t28, t32 : int32
-
-    t34 = addr_of_symbol local:a
-    t35 = addr_field t34, A.arr
-    t36 = addr_index t35, #4:int32, 4
-    t37 = load t36 : int32
-    t38 = add t33, t37 : int32
-
-    ret t38
+    t3 = addr_index t1, #1:int32, 4
+    store t3, #2:int32 : int32
+    t4 = addr_index t1, #2:int32, 4
+    store t4, #3:int32 : int32
+    t5 = addr_index t1, #3:int32, 4
+    store t5, #4:int32 : int32
+    t6 = addr_index t1, #4:int32, 4
+    store t6, #5:int32 : int32
+    t7 = load t2 : int32
+    t8 = load t3 : int32
+    t9 = add t7, t8 : int32
+    t10 = load t4 : int32
+    t11 = add t9, t10 : int32
+    t12 = load t5 : int32
+    t13 = add t11, t12 : int32
+    t14 = load t6 : int32
+    t15 = add t13, t14 : int32
+    ret t15
 .endfunc
 
 .endprogram

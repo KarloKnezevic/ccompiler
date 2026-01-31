@@ -36,11 +36,23 @@ public final class AddressabilityChecker {
     
     String symbol = node.symbol();
 
-    // Primary expression: identifier
+    // Primary expression: identifier or parenthesized addressable expression
     if (symbol.equals("<primarni_izraz>")) {
       var children = node.children();
-      if (!children.isEmpty() && children.get(0) instanceof TerminalNode term) {
-        return term.symbol().equals("IDN");
+      if (!children.isEmpty()) {
+        ParseNode first = children.get(0);
+        if (first instanceof TerminalNode term) {
+          if (term.symbol().equals("IDN")) {
+            return true;
+          }
+          // Parenthesized expression: check if inner expression is addressable
+          if (term.symbol().equals("L_ZAGRADA") && children.size() >= 3) {
+            ParseNode middle = children.get(1);
+            if (middle instanceof NonTerminalNode inner) {
+              return isAddressableExpressionForm(inner);
+            }
+          }
+        }
       }
     }
 
@@ -91,11 +103,45 @@ public final class AddressabilityChecker {
       var children = node.children();
       if (children.size() >= 2) {
         ParseNode first = children.get(0);
-        if (first instanceof TerminalNode term && term.symbol().equals("OP_PUTA")) {
+        // Check for dereference: *expr (terminal ASTERISK)
+        if (first instanceof TerminalNode term && term.symbol().equals("ASTERISK")) {
           return true; // Dereference: *expr
+        }
+        // Also check for <unarni_operator> containing ASTERISK
+        if (first instanceof NonTerminalNode nt && nt.symbol().equals("<unarni_operator>")) {
+          var opChildren = nt.children();
+          if (!opChildren.isEmpty() && opChildren.get(0) instanceof TerminalNode opTerm) {
+            if (opTerm.symbol().equals("ASTERISK")) {
+              return true; // Dereference: *expr
+            }
+          }
         }
       }
       // If no unary operator, check if the child contains an addressable expression
+      if (children.size() == 1 && children.get(0) instanceof NonTerminalNode child) {
+        return isAddressableExpressionForm(child);
+      }
+    }
+
+    // Cast expression: pass-through to unary expression if not an explicit cast
+    if (symbol.equals("<cast_izraz>")) {
+      var children = node.children();
+      // If it's just a pass-through to <unarni_izraz>, check the child
+      if (children.size() == 1 && children.get(0) instanceof NonTerminalNode child) {
+        return isAddressableExpressionForm(child);
+      }
+      // Explicit cast (type)expr is NOT addressable
+    }
+
+    // Expression types that pass through to child expressions
+    if (symbol.equals("<izraz>") || symbol.equals("<izraz_pridruzivanja>")
+        || symbol.equals("<log_ili_izraz>") || symbol.equals("<log_i_izraz>")
+        || symbol.equals("<bin_ili_izraz>") || symbol.equals("<bin_xili_izraz>")
+        || symbol.equals("<bin_i_izraz>") || symbol.equals("<jednakosni_izraz>")
+        || symbol.equals("<odnosni_izraz>") || symbol.equals("<aditivni_izraz>")
+        || symbol.equals("<multiplikativni_izraz>")) {
+      var children = node.children();
+      // If it's a pass-through (single child), check the child
       if (children.size() == 1 && children.get(0) instanceof NonTerminalNode child) {
         return isAddressableExpressionForm(child);
       }

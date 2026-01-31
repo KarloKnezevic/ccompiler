@@ -1,5 +1,7 @@
 package hr.fer.ppj.ir.lowering;
 
+import hr.fer.ppj.ir.build.StructLayoutRegistry;
+import hr.fer.ppj.ir.build.StructNameRegistry;
 import hr.fer.ppj.ir.model.IrProgram;
 import hr.fer.ppj.semantics.symbols.SymbolTable;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
@@ -23,7 +25,8 @@ public final class ProgramGenerator {
 
   private final SymbolTable globalScope;
   private final IrProgram.Builder programBuilder;
-  private final hr.fer.ppj.ir.build.StructNameRegistry structNameRegistry;
+  private final StructNameRegistry structNameRegistry;
+  private final StructLayoutRegistry structLayoutRegistry;
   private final GlobalGenerator globalGenerator;
   private final StructGenerator structGenerator;
   private final FunctionGenerator functionGenerator;
@@ -31,18 +34,24 @@ public final class ProgramGenerator {
   public ProgramGenerator(SymbolTable globalScope) {
     this.globalScope = Objects.requireNonNull(globalScope, "globalScope must not be null");
     this.programBuilder = IrProgram.builder();
-    this.structNameRegistry = new hr.fer.ppj.ir.build.StructNameRegistry();
-    this.globalGenerator = new GlobalGenerator(globalScope, programBuilder);
-    this.structGenerator = new StructGenerator(programBuilder, structNameRegistry);
-    
+    this.structNameRegistry = new StructNameRegistry();
+    this.structLayoutRegistry = new StructLayoutRegistry(structNameRegistry);
+    this.structLayoutRegistry.setProgramBuilder(programBuilder);
+    this.globalGenerator = new GlobalGenerator(globalScope, programBuilder, structLayoutRegistry);
+    this.structGenerator = new StructGenerator(
+        programBuilder, structNameRegistry, structLayoutRegistry);
+
     // Create expression generator first (used by statement generator)
-    ExpressionGenerator expressionGenerator = new ExpressionGenerator(globalScope, structNameRegistry);
-    
+    ExpressionGenerator expressionGenerator = new ExpressionGenerator(
+        globalScope, structNameRegistry, structLayoutRegistry);
+
     // Create statement generator (used by function generator)
-    StatementGenerator statementGenerator = new StatementGenerator(expressionGenerator, globalScope, structNameRegistry);
-    
+    StatementGenerator statementGenerator = new StatementGenerator(
+        expressionGenerator, globalScope, structNameRegistry);
+
     // Create function generator with statement generator
-    this.functionGenerator = new FunctionGenerator(globalScope, programBuilder, statementGenerator);
+    this.functionGenerator = new FunctionGenerator(
+        globalScope, programBuilder, statementGenerator, structLayoutRegistry);
   }
 
   /**

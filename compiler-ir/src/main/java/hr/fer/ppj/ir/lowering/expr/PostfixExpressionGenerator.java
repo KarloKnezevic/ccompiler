@@ -16,6 +16,7 @@ import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.TerminalNode;
 import hr.fer.ppj.semantics.types.ArrayType;
+import hr.fer.ppj.semantics.types.StructType;
 import hr.fer.ppj.semantics.types.Type;
 import hr.fer.ppj.semantics.types.TypeSystem;
 import hr.fer.ppj.semantics.util.NodeUtils;
@@ -144,6 +145,13 @@ public final class PostfixExpressionGenerator {
     if (AddressabilityChecker.isAddressableExpressionForm(node)) {
       String varName = ExpressionNameExtractor.extractVariableName(node);
       Type exprType = node.attributes().type();
+      
+      // Arrays decay to pointers when used as r-values - just return their address
+      Type strippedType = TypeSystem.stripConst(exprType);
+      if (strippedType instanceof ArrayType) {
+        return lValueEmitter.emitLValue(node, functionContext);
+      }
+      
       IrType irType = TypeMapper.toIrType(exprType);
       
       // If this is a simple variable, use the unified load API with cache reuse
@@ -240,8 +248,8 @@ public final class PostfixExpressionGenerator {
     Type exprType = expr.attributes().type();
     Type strippedType = TypeSystem.stripConst(exprType);
 
-    if (strippedType instanceof ArrayType) {
-      // Arrays decay to pointers - emit address
+    // Arrays and structs are passed by reference - emit address
+    if (strippedType instanceof ArrayType || strippedType instanceof StructType) {
       if (AddressabilityChecker.isAddressableExpressionForm(expr)) {
         return lValueEmitter.emitLValue(expr, functionContext);
       } else {
@@ -251,27 +259,11 @@ public final class PostfixExpressionGenerator {
           return lValueEmitter.emitLValue(addressableExpr, functionContext);
         }
         throw new IllegalArgumentException(
-            "Array argument must be an addressable expression (variable, not assignment)");
+            "Array/struct argument must be an addressable expression (variable, not assignment)");
       }
     }
 
-    // For non-array types, ALWAYS emit rvalue (never address)
-    // This ensures expressions like x+1 are computed as temps, not addresses
-    IrValue result = emitter.emitRValue(expr, functionContext);
-    
-    // Assertion: result should never be an address temp created by addr_of_symbol
-    // for non-array types (this would indicate a bug)
-    if (result instanceof hr.fer.ppj.ir.model.IrTemp temp) {
-      // Check if this temp was created by addr_of_symbol (it would have pointer type)
-      // and the expression type is not an array
-      hr.fer.ppj.ir.types.IrType tempType = temp.type();
-      if (tempType instanceof hr.fer.ppj.ir.types.IrPointerType) {
-        // This is suspicious - a pointer temp for a non-array argument
-        // However, we can't easily check if it came from addr_of_symbol without
-        // more context, so we'll just ensure the result is used correctly
-      }
-    }
-    
-    return result;
+    // For non-array, non-struct types, emit rvalue
+    return emitter.emitRValue(expr, functionContext);
   }
 }

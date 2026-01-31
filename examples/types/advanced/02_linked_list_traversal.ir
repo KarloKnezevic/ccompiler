@@ -15,42 +15,38 @@
   L0:
     t0 = addr_of_symbol local:total
     store t0, #0:int32 : int32
-    t1 = addr_of_symbol local:current
-    t2 = addr_of_symbol param:head
-    t3 = load t2 : ptr<struct Node>
-    store t1, t3 : ptr<struct Node>
-    jmp L1
 
+    t1 = addr_of_symbol param:head
+    t2 = load t1 : ptr<struct Node>
+    t3 = addr_of_symbol local:current
+    store t3, t2 : ptr<struct Node>
+    jmp L1
   L1:
     t4 = addr_of_symbol local:current
     t5 = load t4 : ptr<struct Node>
     t6 = cmp_ne t5, null:ptr<struct Node> : bool
     br t6, L2, L3
-
   L2:
     t7 = addr_of_symbol local:total
-    t8 = addr_of_symbol local:total
-    t9 = load t8 : int32
-    t10 = addr_of_symbol local:current
-    t11 = load t10 : ptr<struct Node>
-    t12 = addr_field t11, Node.value
-    t13 = load t12 : int32
-    t14 = add t9, t13 : int32
-    store t7, t14 : int32
-    t15 = addr_of_symbol local:current
-    t16 = addr_of_symbol local:current
-    t17 = load t16 : ptr<struct Node>
-    t18 = addr_field t17, Node.next
-    t19 = load t18 : ptr<struct Node>
-    store t15, t19 : ptr<struct Node>
+    t8 = load t7 : int32
+    t9 = addr_of_symbol local:current
+    t10 = load t9 : ptr<struct Node>
+    t11 = addr_field t10, Node.value
+    t12 = load t11 : int32
+    t13 = add t8, t12 : int32
+    store t7, t13 : int32
+
+    t14 = load t9 : ptr<struct Node>
+    t15 = addr_field t14, Node.next
+    t16 = load t15 : ptr<struct Node>
+    store t9, t16 : ptr<struct Node>
     jmp L1
-
   L3:
-    t20 = addr_of_symbol local:total
-    t21 = load t20 : int32
-    ret t21
-
+    t17 = addr_of_symbol local:total
+    t18 = load t17 : int32
+    ret t18
 .endfunc
+
 .func main():int32
   .frame locals=20 bytes align=4
   .slots
@@ -62,22 +58,18 @@
     t0 = addr_of_symbol local:n1
     t1 = addr_field t0, Node.value
     store t1, #5:int32 : int32
+
     t2 = addr_of_symbol local:n2
     t3 = addr_field t2, Node.value
     store t3, #10:int32 : int32
-    t4 = addr_of_symbol local:n1
-    t5 = addr_field t4, Node.next
-    t6 = addr_of_symbol local:n2
-    store t5, t6 : ptr<struct Node>
-    t7 = addr_of_symbol local:n2
-    t8 = addr_field t7, Node.next
-    store t8, #0:int32 : ptr<struct Node>
-    t9 = addr_of_symbol local:result
-    t10 = addr_of_symbol local:n1
-    t11 = call func:sum_list(t10):int32
-    store t9, t11 : int32
+    t4 = addr_field t0, Node.next
+    store t4, t2 : ptr<struct Node>
+    t5 = addr_field t2, Node.next
+    store t5, null:ptr<struct Node> : ptr<struct Node>
+    t6 = call func:sum_list(t0) : int32
+    t7 = addr_of_symbol local:result
+    store t7, t6 : int32
     ret #0:int32
-
 .endfunc
 
 .endprogram

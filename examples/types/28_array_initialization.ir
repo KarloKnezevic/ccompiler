@@ -24,9 +24,6 @@
     store t7, #1:int32 : int32
     t8 = addr_index t6, #1:int32, 4
     store t8, #2:int32 : int32
-    t9 = addr_index t6, #2:int32, 4
-    store t9, #0:int32 : int32
-
     ret #0:int32
 .endfunc
 

@@ -1,5 +1,6 @@
 package hr.fer.ppj.ir.lowering;
 
+import hr.fer.ppj.ir.build.StructLayoutRegistry;
 import hr.fer.ppj.ir.build.TypeMapper;
 import hr.fer.ppj.ir.lowering.global.GlobalInitializerExtractor;
 import hr.fer.ppj.ir.model.IrConst;
@@ -9,7 +10,10 @@ import hr.fer.ppj.ir.types.IrType;
 import hr.fer.ppj.semantics.symbols.SymbolTable;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
+import hr.fer.ppj.semantics.types.ArrayType;
+import hr.fer.ppj.semantics.types.StructType;
 import hr.fer.ppj.semantics.types.Type;
+import hr.fer.ppj.semantics.types.TypeSystem;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,11 +33,24 @@ public final class GlobalGenerator {
   private final SymbolTable globalScope;
   private final IrProgram.Builder programBuilder;
   private final GlobalInitializerExtractor initializerExtractor;
+  private final StructLayoutRegistry structLayoutRegistry;
 
-  public GlobalGenerator(SymbolTable globalScope, IrProgram.Builder programBuilder) {
+  public GlobalGenerator(
+      SymbolTable globalScope,
+      IrProgram.Builder programBuilder,
+      StructLayoutRegistry structLayoutRegistry) {
     this.globalScope = Objects.requireNonNull(globalScope, "globalScope must not be null");
     this.programBuilder = Objects.requireNonNull(programBuilder, "programBuilder must not be null");
+    this.structLayoutRegistry = structLayoutRegistry; // Can be null
     this.initializerExtractor = new GlobalInitializerExtractor();
+  }
+
+  /**
+   * @deprecated Use the constructor with StructLayoutRegistry
+   */
+  @Deprecated
+  public GlobalGenerator(SymbolTable globalScope, IrProgram.Builder programBuilder) {
+    this(globalScope, programBuilder, null);
   }
 
   /**
@@ -169,6 +186,11 @@ public final class GlobalGenerator {
       return;
     }
 
+    // Ensure struct types are registered and their definitions emitted
+    if (structLayoutRegistry != null) {
+      ensureStructTypeReady(varType, structLayoutRegistry);
+    }
+
     // Global variable - add to program globals
     IrType irType = TypeMapper.toIrType(varType);
     IrConst initializer = null;
@@ -181,5 +203,17 @@ public final class GlobalGenerator {
     }
 
     programBuilder.addGlobal(new IrGlobalVar(varName, irType, initializer));
+  }
+
+  /**
+   * Ensures that any struct type within a type (including array element types) is registered.
+   */
+  private void ensureStructTypeReady(Type type, StructLayoutRegistry registry) {
+    Type stripped = TypeSystem.stripConst(type);
+    if (stripped instanceof StructType structType) {
+      registry.ensureStructReady(structType);
+    } else if (stripped instanceof ArrayType arrayType) {
+      ensureStructTypeReady(arrayType.elementType(), registry);
+    }
   }
 }

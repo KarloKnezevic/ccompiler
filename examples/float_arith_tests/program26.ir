@@ -1,0 +1,44 @@
+.program
+
+.func main():float
+  .frame locals=20 bytes align=4
+  .slots
+    local arr@0:array<float,3>
+    local idx@12:int32
+    local result@16:float
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:arr
+    t1 = addr_index t0, #0:int32, 4
+    store t1, #9.0:float : float
+    t2 = addr_index t0, #1:int32, 4
+    store t2, #3.0:float : float
+    t3 = addr_index t0, #2:int32, 4
+    store t3, #2.0:float : float
+    t4 = addr_of_symbol local:idx
+    store t4, #0:int32 : int32
+
+    t5 = load t4 : int32
+    t6 = addr_index t0, t5, 4
+    t7 = load t6 : float
+    t8 = load t4 : int32
+    t9 = add t8, #1:int32 : int32
+    store t4, t9 : int32
+    t10 = addr_index t0, t9, 4
+    t11 = load t10 : float
+    t12 = div t7, t11 : float
+
+    t13 = load t4 : int32
+    t14 = add t13, #1:int32 : int32
+    store t4, t14 : int32
+    t15 = addr_index t0, t14, 4
+    t16 = load t15 : float
+    t17 = mul t12, t16 : float
+
+    t18 = addr_of_symbol local:result
+    store t18, t17 : float
+    t19 = load t18 : float
+    ret t19
+.endfunc
+
+.endprogram

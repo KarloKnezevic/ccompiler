@@ -1,10 +1,5 @@
 .program
 
-.type struct StackNode {
-  value:int32@0
-  next:ptr<struct StackNode>@4
-}
-
 .type struct Stack {
   top:ptr<struct StackNode>@0
   size:int32@4
@@ -13,9 +8,9 @@
 .func push(s:ptr<struct Stack>, value:int32):void
   .frame locals=4 bytes align=4
   .slots
+    local node@0:ptr<struct StackNode>
     param s@0:ptr<struct Stack>
     param value@4:int32
-    local node@0:ptr<struct StackNode>
   .blocks
   L0:
     t0 = addr_of_symbol local:node
@@ -24,32 +19,28 @@
     t3 = addr_of_symbol param:value
     t4 = load t3 : int32
     store t2, t4 : int32
-    t5 = addr_of_symbol local:node
-    t6 = load t5 : ptr<struct StackNode>
-    t7 = addr_field t6, StackNode.next
-    t8 = addr_of_symbol param:s
-    t9 = load t8 : ptr<struct Stack>
-    t10 = addr_field t9, Stack.top
-    t11 = load t10 : ptr<struct StackNode>
-    store t7, t11 : ptr<struct StackNode>
-    t12 = addr_of_symbol param:s
-    t13 = load t12 : ptr<struct Stack>
-    t14 = addr_field t13, Stack.top
-    t15 = addr_of_symbol local:node
-    t16 = load t15 : ptr<struct StackNode>
-    store t14, t16 : ptr<struct StackNode>
-    t17 = addr_of_symbol param:s
-    t18 = load t17 : ptr<struct Stack>
-    t19 = addr_field t18, Stack.size
-    t20 = addr_of_symbol param:s
-    t21 = load t20 : ptr<struct Stack>
-    t22 = addr_field t21, Stack.size
-    t23 = load t22 : int32
-    t24 = add t23, #1:int32 : int32
-    store t19, t24 : int32
-    ret
 
+    t5 = load t0 : ptr<struct StackNode>
+    t6 = addr_field t5, StackNode.next
+    t7 = addr_of_symbol param:s
+    t8 = load t7 : ptr<struct Stack>
+    t9 = addr_field t8, Stack.top
+    t10 = load t9 : ptr<struct StackNode>
+    store t6, t10 : ptr<struct StackNode>
+
+    t11 = load t7 : ptr<struct Stack>
+    t12 = addr_field t11, Stack.top
+    t13 = load t0 : ptr<struct StackNode>
+    store t12, t13 : ptr<struct StackNode>
+
+    t14 = load t7 : ptr<struct Stack>
+    t15 = addr_field t14, Stack.size
+    t16 = load t15 : int32
+    t17 = add t16, #1:int32 : int32
+    store t15, t17 : int32
+    ret
 .endfunc
+
 .func main():int32
   .frame locals=8 bytes align=4
   .slots
@@ -58,14 +49,11 @@
   L0:
     t0 = addr_of_symbol local:stack
     t1 = addr_field t0, Stack.top
-    store t1, #0:int32 : ptr<struct StackNode>
-    t2 = addr_of_symbol local:stack
-    t3 = addr_field t2, Stack.size
-    store t3, #0:int32 : int32
-    t4 = addr_of_symbol local:stack
-    call func:push(t4, #10:int32):void
+    store t1, null:ptr<struct StackNode> : ptr<struct StackNode>
+    t2 = addr_field t0, Stack.size
+    store t2, #0:int32 : int32
+    call func:push(t0, #10:int32) : void
     ret #0:int32
-
 .endfunc
 
 .endprogram

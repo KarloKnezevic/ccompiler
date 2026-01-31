@@ -13,8 +13,10 @@ import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.SemanticAttributes;
 import hr.fer.ppj.semantics.tree.TerminalNode;
+import hr.fer.ppj.semantics.types.ArrayType;
 import hr.fer.ppj.semantics.types.PrimitiveType;
 import hr.fer.ppj.semantics.types.Type;
+import hr.fer.ppj.semantics.types.TypeSystem;
 import java.util.List;
 import java.util.Objects;
 
@@ -75,6 +77,14 @@ public final class PrimaryExpressionGenerator {
     if (firstChild instanceof TerminalNode term && term.symbol().equals("IDN")) {
       String varName = term.lexeme();
       Type varType = attrs.type();
+      
+      // Arrays decay to pointers when used as r-values - just return their address
+      Type strippedType = TypeSystem.stripConst(varType);
+      if (strippedType instanceof ArrayType) {
+        // Get the address of the array - this IS the pointer value
+        return lValueEmitter.emitLValue(node, functionContext);
+      }
+      
       IrType irType = TypeMapper.toIrType(varType);
 
       hr.fer.ppj.ir.util.AddressReuseContext addressReuseContext =

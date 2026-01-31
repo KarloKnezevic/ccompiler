@@ -16,14 +16,14 @@
   L0:
     t0 = addr_of_symbol local:sum
     store t0, #0:int32 : int32
-    t1 = addr_of_symbol local:ptr
-    t2 = addr_of_symbol param:it
-    t3 = load t2 : ptr<struct Iterator>
-    t4 = addr_field t3, Iterator.current
-    t5 = load t4 : ptr<int32>
-    store t1, t5 : ptr<int32>
-    jmp L1
 
+    t1 = addr_of_symbol param:it
+    t2 = load t1 : ptr<struct Iterator>
+    t3 = addr_field t2, Iterator.current
+    t4 = load t3 : ptr<int32>
+    t5 = addr_of_symbol local:ptr
+    store t5, t4 : ptr<int32>
+    jmp L1
   L1:
     t6 = addr_of_symbol local:ptr
     t7 = load t6 : ptr<int32>
@@ -33,33 +33,32 @@
     t11 = load t10 : ptr<int32>
     t12 = cmp_ne t7, t11 : bool
     br t12, L2, L3
-
   L2:
     t13 = addr_of_symbol local:sum
-    t14 = addr_of_symbol local:sum
-    t15 = load t14 : int32
-    t16 = addr_of_symbol local:ptr
-    t17 = load t16 : ptr<int32>
-    t18 = load t17 : int32
-    t19 = add t15, t18 : int32
-    store t13, t19 : int32
-    t20 = addr_of_symbol local:ptr
-    t21 = addr_of_symbol local:ptr
-    t22 = load t21 : ptr<int32>
-    t23 = addr_of_symbol param:it
-    t24 = load t23 : ptr<struct Iterator>
-    t25 = addr_field t24, Iterator.step
-    t26 = load t25 : int32
-    t27 = add t22, t26 : int32
-    store t20, t27 : ptr<int32>
-    jmp L1
+    t14 = load t13 : int32
+    t15 = addr_of_symbol local:ptr
+    t16 = load t15 : ptr<int32>
+    t17 = load t16 : int32
+    t18 = add t14, t17 : int32
+    store t13, t18 : int32
 
+    t19 = load t15 : ptr<int32>
+    t20 = ptrcast t19 : int32
+    t21 = addr_of_symbol param:it
+    t22 = load t21 : ptr<struct Iterator>
+    t23 = addr_field t22, Iterator.step
+    t24 = load t23 : int32
+    t25 = mul t24, #4:int32 : int32
+    t26 = add t20, t25 : int32
+    t27 = ptrcast t26 : ptr<int32>
+    store t15, t27 : ptr<int32>
+    jmp L1
   L3:
     t28 = addr_of_symbol local:sum
     t29 = load t28 : int32
     ret t29
-
 .endfunc
+
 .func main():int32
   .frame locals=40 bytes align=4
   .slots
@@ -72,54 +71,39 @@
     t0 = addr_of_symbol local:i
     store t0, #0:int32 : int32
     jmp L1
-
   L1:
     t1 = addr_of_symbol local:i
     t2 = load t1 : int32
     t3 = cmp_lt t2, #5:int32 : bool
-    br t3, L2, L4
-
+    br t3, L2, L3
   L2:
     t4 = addr_of_symbol local:arr
     t5 = addr_of_symbol local:i
     t6 = load t5 : int32
     t7 = addr_index t4, t6, 4
-    t8 = addr_of_symbol local:i
-    t9 = load t8 : int32
+    t8 = add t6, #1:int32 : int32
+    store t7, t8 : int32
+
+    t9 = load t5 : int32
     t10 = add t9, #1:int32 : int32
-    store t7, t10 : int32
-    jmp L3
-
-  L3:
-    t11 = addr_of_symbol local:i
-    t12 = addr_of_symbol local:i
-    t13 = load t12 : int32
-    t14 = add t13, #1:int32 : int32
-    store t11, t14 : int32
+    store t5, t10 : int32
     jmp L1
-
-  L4:
-    t15 = addr_of_symbol local:iter
-    t16 = addr_field t15, Iterator.current
-    t17 = addr_of_symbol local:arr
-    t18 = addr_index t17, #0:int32, 4
-    store t16, t18 : ptr<int32>
-    t19 = addr_of_symbol local:iter
-    t20 = addr_field t19, Iterator.end
-    t21 = addr_of_symbol local:arr
-    t22 = addr_index t21, #5:int32, 4
-    store t20, t22 : ptr<int32>
-    t23 = addr_of_symbol local:iter
-    t24 = addr_field t23, Iterator.step
-    store t24, #1:int32 : int32
-    t25 = addr_of_symbol local:result
-    t26 = addr_of_symbol local:iter
-    t27 = call func:sum_range(t26):int32
-    store t25, t27 : int32
-    t28 = addr_of_symbol local:result
-    t29 = load t28 : int32
-    ret t29
-
+  L3:
+    t11 = addr_of_symbol local:iter
+    t12 = addr_field t11, Iterator.current
+    t13 = addr_of_symbol local:arr
+    t14 = addr_index t13, #0:int32, 4
+    store t12, t14 : ptr<int32>
+    t15 = addr_field t11, Iterator.end
+    t16 = addr_index t13, #5:int32, 4
+    store t15, t16 : ptr<int32>
+    t17 = addr_field t11, Iterator.step
+    store t17, #1:int32 : int32
+    t18 = call func:sum_range(t11) : int32
+    t19 = addr_of_symbol local:result
+    store t19, t18 : int32
+    t20 = load t19 : int32
+    ret t20
 .endfunc
 
 .endprogram

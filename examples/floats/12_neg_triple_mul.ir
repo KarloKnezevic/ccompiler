@@ -6,9 +6,9 @@
   .blocks
   L0:
     t0 = neg #1.5:float : float
-    t1 = neg #3.0:float : float
-    t2 = mul t0, #2.0:float : float
-    t3 = mul t2, t1 : float
+    t1 = mul t0, #2.0:float : float
+    t2 = neg #3.0:float : float
+    t3 = mul t1, t2 : float
     ret t3
 .endfunc
 

@@ -1,11 +1,5 @@
 .program
 
-.type struct HashEntry {
-  key:int32@0
-  value:int32@4
-  next:ptr<struct HashEntry>@8
-}
-
 .type struct HashTable {
   buckets:array<ptr<struct HashEntry>,10>@0
 }
@@ -14,54 +8,50 @@
   .frame locals=8 bytes align=4
   .slots
     param ht@0:ptr<struct HashTable>
-    param key@4:int32
-    param value@8:int32
     local index@0:int32
     local entry@4:ptr<struct HashEntry>
+    param key@4:int32
+    param value@8:int32
   .blocks
   L0:
-    t0 = addr_of_symbol local:index
-    t1 = addr_of_symbol param:key
-    t2 = load t1 : int32
-    t3 = mod t2, #10:int32 : int32
-    store t0, t3 : int32
+    t0 = addr_of_symbol param:key
+    t1 = load t0 : int32
+    t2 = mod t1, #10:int32 : int32
+
+    t3 = addr_of_symbol local:index
+    store t3, t2 : int32
+
     t4 = addr_of_symbol local:entry
     t5 = load t4 : ptr<struct HashEntry>
     t6 = addr_field t5, HashEntry.key
-    t7 = addr_of_symbol param:key
-    t8 = load t7 : int32
-    store t6, t8 : int32
-    t9 = addr_of_symbol local:entry
-    t10 = load t9 : ptr<struct HashEntry>
-    t11 = addr_field t10, HashEntry.value
-    t12 = addr_of_symbol param:value
-    t13 = load t12 : int32
-    store t11, t13 : int32
-    t14 = addr_of_symbol local:entry
-    t15 = load t14 : ptr<struct HashEntry>
-    t16 = addr_field t15, HashEntry.next
-    t17 = addr_of_symbol param:ht
-    t18 = load t17 : ptr<struct HashTable>
-    t19 = addr_field t18, HashTable.buckets
-    t20 = load t19 : array<ptr<struct HashEntry>,10>
-    t21 = addr_of_symbol local:index
-    t22 = load t21 : int32
-    t23 = addr_index t20, t22, 4
-    t24 = load t23 : ptr<struct HashEntry>
-    store t16, t24 : ptr<struct HashEntry>
-    t25 = addr_of_symbol param:ht
-    t26 = load t25 : ptr<struct HashTable>
-    t27 = addr_field t26, HashTable.buckets
-    t28 = load t27 : array<ptr<struct HashEntry>,10>
-    t29 = addr_of_symbol local:index
-    t30 = load t29 : int32
-    t31 = addr_index t28, t30, 4
-    t32 = addr_of_symbol local:entry
-    t33 = load t32 : ptr<struct HashEntry>
-    store t31, t33 : ptr<struct HashEntry>
-    ret
+    t7 = load t0 : int32
+    store t6, t7 : int32
 
+    t8 = load t4 : ptr<struct HashEntry>
+    t9 = addr_field t8, HashEntry.value
+    t10 = addr_of_symbol param:value
+    t11 = load t10 : int32
+    store t9, t11 : int32
+
+    t12 = load t4 : ptr<struct HashEntry>
+    t13 = addr_field t12, HashEntry.next
+    t14 = addr_of_symbol param:ht
+    t15 = load t14 : ptr<struct HashTable>
+    t16 = addr_field t15, HashTable.buckets
+    t17 = load t3 : int32
+    t18 = addr_index t16, t17, 4
+    t19 = load t18 : ptr<struct HashEntry>
+    store t13, t19 : ptr<struct HashEntry>
+
+    t20 = load t14 : ptr<struct HashTable>
+    t21 = addr_field t20, HashTable.buckets
+    t22 = load t3 : int32
+    t23 = addr_index t21, t22, 4
+    t24 = load t4 : ptr<struct HashEntry>
+    store t23, t24 : ptr<struct HashEntry>
+    ret
 .endfunc
+
 .func main():int32
   .frame locals=44 bytes align=4
   .slots
@@ -72,36 +62,27 @@
     t0 = addr_of_symbol local:i
     store t0, #0:int32 : int32
     jmp L1
-
   L1:
     t1 = addr_of_symbol local:i
     t2 = load t1 : int32
     t3 = cmp_lt t2, #10:int32 : bool
-    br t3, L2, L4
-
+    br t3, L2, L3
   L2:
     t4 = addr_of_symbol local:ht
     t5 = addr_field t4, HashTable.buckets
-    t6 = load t5 : array<ptr<struct HashEntry>,10>
-    t7 = addr_of_symbol local:i
-    t8 = load t7 : int32
-    t9 = addr_index t6, t8, 4
-    store t9, #0:int32 : ptr<struct HashEntry>
-    jmp L3
+    t6 = addr_of_symbol local:i
+    t7 = load t6 : int32
+    t8 = addr_index t5, t7, 4
+    store t8, null:ptr<struct HashEntry> : ptr<struct HashEntry>
 
-  L3:
-    t10 = addr_of_symbol local:i
-    t11 = addr_of_symbol local:i
-    t12 = load t11 : int32
-    t13 = add t12, #1:int32 : int32
-    store t10, t13 : int32
+    t9 = load t6 : int32
+    t10 = add t9, #1:int32 : int32
+    store t6, t10 : int32
     jmp L1
-
-  L4:
-    t14 = addr_of_symbol local:ht
-    call func:insert(t14, #42:int32, #100:int32):void
+  L3:
+    t11 = addr_of_symbol local:ht
+    call func:insert(t11, #42:int32, #100:int32) : void
     ret #0:int32
-
 .endfunc
 
 .endprogram

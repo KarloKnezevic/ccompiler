@@ -8,50 +8,58 @@
 }
 
 .func find_depth(node:ptr<struct PTree>):int32
-  .frame locals=4 bytes align=4
+  .frame locals=8 bytes align=4
   .slots
-    param node@0:ptr<struct PTree>
     local depth@0:int32
+    param node@0:ptr<struct PTree>
+    local __logical_result_0@4:bool
   .blocks
   L0:
     t0 = addr_of_symbol local:depth
     store t0, #0:int32 : int32
     jmp L1
-
   L1:
     t1 = addr_of_symbol param:node
     t2 = load t1 : ptr<struct PTree>
     t3 = cmp_ne t2, null:ptr<struct PTree> : bool
-    br t3, L4, L3
+    br t3, L4, L7
+  L2:
+    t13 = addr_of_symbol local:depth
+    t14 = load t13 : int32
+    t15 = add t14, #1:int32 : int32
+    store t13, t15 : int32
 
+    t16 = addr_of_symbol param:node
+    t17 = load t16 : ptr<struct PTree>
+    t18 = addr_field t17, PTree.parent
+    t19 = load t18 : ptr<struct PTree>
+    store t16, t19 : ptr<struct PTree>
+    jmp L1
+  L3:
+    t20 = addr_of_symbol local:depth
+    t21 = load t20 : int32
+    ret t21
   L4:
     t4 = addr_of_symbol param:node
     t5 = load t4 : ptr<struct PTree>
     t6 = addr_field t5, PTree.parent
     t7 = load t6 : ptr<struct PTree>
     t8 = cmp_ne t7, null:ptr<struct PTree> : bool
-    br t8, L2, L3
-
-  L2:
-    t9 = addr_of_symbol local:depth
-    t10 = addr_of_symbol local:depth
-    t11 = load t10 : int32
-    t12 = add t11, #1:int32 : int32
-    store t9, t12 : int32
-    t13 = addr_of_symbol param:node
-    t14 = addr_of_symbol param:node
-    t15 = load t14 : ptr<struct PTree>
-    t16 = addr_field t15, PTree.parent
-    t17 = load t16 : ptr<struct PTree>
-    store t13, t17 : ptr<struct PTree>
-    jmp L1
-
-  L3:
-    t18 = addr_of_symbol local:depth
-    t19 = load t18 : int32
-    ret t19
-
+    br t8, L6, L7
+  L5:
+    t11 = addr_of_symbol local:__logical_result_0
+    t12 = load t11 : bool
+    br t12, L2, L3
+  L6:
+    t9 = addr_of_symbol local:__logical_result_0
+    store t9, #1:bool : bool
+    jmp L5
+  L7:
+    t10 = addr_of_symbol local:__logical_result_0
+    store t10, #0:bool : bool
+    jmp L5
 .endfunc
+
 .func main():int32
   .frame locals=36 bytes align=4
   .slots
@@ -63,37 +71,27 @@
     t0 = addr_of_symbol local:root
     t1 = addr_field t0, PTree.value
     store t1, #10:int32 : int32
-    t2 = addr_of_symbol local:root
-    t3 = addr_field t2, PTree.parent
-    store t3, #0:int32 : ptr<struct PTree>
-    t4 = addr_of_symbol local:child
-    t5 = addr_field t4, PTree.value
-    store t5, #5:int32 : int32
-    t6 = addr_of_symbol local:child
-    t7 = addr_field t6, PTree.parent
-    t8 = addr_of_symbol local:root
-    store t7, t8 : ptr<struct PTree>
-    t9 = addr_of_symbol local:root
-    t10 = addr_field t9, PTree.left
-    t11 = addr_of_symbol local:child
-    store t10, t11 : ptr<struct PTree>
-    t12 = addr_of_symbol local:root
-    t13 = addr_field t12, PTree.right
-    store t13, #0:int32 : ptr<struct PTree>
-    t14 = addr_of_symbol local:child
-    t15 = addr_field t14, PTree.left
-    store t15, #0:int32 : ptr<struct PTree>
-    t16 = addr_of_symbol local:child
-    t17 = addr_field t16, PTree.right
-    store t17, #0:int32 : ptr<struct PTree>
-    t18 = addr_of_symbol local:depth
-    t19 = addr_of_symbol local:child
-    t20 = call func:find_depth(t19):int32
-    store t18, t20 : int32
-    t21 = addr_of_symbol local:depth
-    t22 = load t21 : int32
-    ret t22
+    t2 = addr_field t0, PTree.parent
+    store t2, null:ptr<struct PTree> : ptr<struct PTree>
 
+    t3 = addr_of_symbol local:child
+    t4 = addr_field t3, PTree.value
+    store t4, #5:int32 : int32
+    t5 = addr_field t3, PTree.parent
+    store t5, t0 : ptr<struct PTree>
+    t6 = addr_field t0, PTree.left
+    store t6, t3 : ptr<struct PTree>
+    t7 = addr_field t0, PTree.right
+    store t7, null:ptr<struct PTree> : ptr<struct PTree>
+    t8 = addr_field t3, PTree.left
+    store t8, null:ptr<struct PTree> : ptr<struct PTree>
+    t9 = addr_field t3, PTree.right
+    store t9, null:ptr<struct PTree> : ptr<struct PTree>
+    t10 = call func:find_depth(t3) : int32
+    t11 = addr_of_symbol local:depth
+    store t11, t10 : int32
+    t12 = load t11 : int32
+    ret t12
 .endfunc
 
 .endprogram

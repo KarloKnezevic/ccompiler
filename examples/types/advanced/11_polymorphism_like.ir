@@ -1,13 +1,13 @@
 .program
 
-.type struct Shape {
-  type:int32@0
-  area:float@4
-}
-
 .type struct Circle {
   base:struct Shape@0
   radius:float@8
+}
+
+.type struct Shape {
+  type:int32@0
+  area:float@4
 }
 
 .func calculate_circle_area(radius:float):float
@@ -19,12 +19,10 @@
     t0 = addr_of_symbol param:radius
     t1 = load t0 : float
     t2 = mul #3.14:float, t1 : float
-    t3 = addr_of_symbol param:radius
-    t4 = load t3 : float
-    t5 = mul t2, t4 : float
-    ret t5
-
+    t3 = mul t2, t1 : float
+    ret t3
 .endfunc
+
 .func main():int32
   .frame locals=16 bytes align=4
   .slots
@@ -36,26 +34,19 @@
     t1 = addr_field t0, Circle.base
     t2 = addr_field t1, Shape.type
     store t2, #1:int32 : int32
-    t3 = addr_of_symbol local:circle
-    t4 = addr_field t3, Circle.radius
-    store t4, #5.0:float : float
-    t5 = addr_of_symbol local:area
-    t6 = addr_of_symbol local:circle
-    t7 = addr_field t6, Circle.radius
-    t8 = load t7 : float
-    t9 = call func:calculate_circle_area(t8):float
-    store t5, t9 : float
-    t10 = addr_of_symbol local:circle
-    t11 = addr_field t10, Circle.base
-    t12 = addr_field t11, Shape.area
-    t13 = addr_of_symbol local:area
-    t14 = load t13 : float
-    store t12, t14 : float
-    t15 = addr_of_symbol local:area
-    t16 = load t15 : float
-    t17 = ftoi t16 : int32
-    ret t17
+    t3 = addr_field t0, Circle.radius
+    store t3, #5.0:float : float
 
+    t4 = load t3 : float
+    t5 = call func:calculate_circle_area(t4) : float
+    t6 = addr_of_symbol local:area
+    store t6, t5 : float
+    t7 = addr_field t1, Shape.area
+    t8 = load t6 : float
+    store t7, t8 : float
+    t9 = load t6 : float
+    t10 = ftoi t9 : int32
+    ret t10
 .endfunc
 
 .endprogram

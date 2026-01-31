@@ -14,19 +14,15 @@
     t0 = addr_of_symbol param:c
     t1 = load t0 : ptr<struct Counter>
     t2 = addr_field t1, Counter.count
-    t3 = addr_of_symbol param:c
-    t4 = load t3 : ptr<struct Counter>
-    t5 = addr_field t4, Counter.count
+    t3 = load t2 : int32
+    t4 = load t0 : ptr<struct Counter>
+    t5 = addr_field t4, Counter.step
     t6 = load t5 : int32
-    t7 = addr_of_symbol param:c
-    t8 = load t7 : ptr<struct Counter>
-    t9 = addr_field t8, Counter.step
-    t10 = load t9 : int32
-    t11 = add t6, t10 : int32
-    store t2, t11 : int32
+    t7 = add t3, t6 : int32
+    store t2, t7 : int32
     ret
-
 .endfunc
+
 .func get_count(c:ptr<struct Counter>):int32
   .frame locals=0 bytes align=4
   .slots
@@ -38,8 +34,8 @@
     t2 = addr_field t1, Counter.count
     t3 = load t2 : int32
     ret t3
-
 .endfunc
+
 .func main():int32
   .frame locals=12 bytes align=4
   .slots
@@ -50,21 +46,15 @@
     t0 = addr_of_symbol local:c
     t1 = addr_field t0, Counter.count
     store t1, #0:int32 : int32
-    t2 = addr_of_symbol local:c
-    t3 = addr_field t2, Counter.step
-    store t3, #5:int32 : int32
-    t4 = addr_of_symbol local:c
-    call func:increment_counter(t4):void
-    t5 = addr_of_symbol local:c
-    call func:increment_counter(t5):void
-    t6 = addr_of_symbol local:result
-    t7 = addr_of_symbol local:c
-    t8 = call func:get_count(t7):int32
-    store t6, t8 : int32
-    t9 = addr_of_symbol local:result
-    t10 = load t9 : int32
-    ret t10
-
+    t2 = addr_field t0, Counter.step
+    store t2, #5:int32 : int32
+    call func:increment_counter(t0) : void
+    call func:increment_counter(t0) : void
+    t3 = call func:get_count(t0) : int32
+    t4 = addr_of_symbol local:result
+    store t4, t3 : int32
+    t5 = load t4 : int32
+    ret t5
 .endfunc
 
 .endprogram

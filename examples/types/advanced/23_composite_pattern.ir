@@ -14,16 +14,15 @@
     local i@4:int32
   .blocks
   L0:
-    t0 = addr_of_symbol local:total
-    t1 = addr_of_symbol param:c
-    t2 = load t1 : ptr<struct Component>
-    t3 = addr_field t2, Component.value
-    t4 = load t3 : int32
-    store t0, t4 : int32
+    t0 = addr_of_symbol param:c
+    t1 = load t0 : ptr<struct Component>
+    t2 = addr_field t1, Component.value
+    t3 = load t2 : int32
+    t4 = addr_of_symbol local:total
+    store t4, t3 : int32
     t5 = addr_of_symbol local:i
     store t5, #0:int32 : int32
     jmp L1
-
   L1:
     t6 = addr_of_symbol local:i
     t7 = load t6 : int32
@@ -32,54 +31,45 @@
     t10 = addr_field t9, Component.child_count
     t11 = load t10 : int32
     t12 = cmp_lt t7, t11 : bool
-    br t12, L2, L4
-
+    br t12, L2, L3
   L2:
     t13 = addr_of_symbol param:c
     t14 = load t13 : ptr<struct Component>
     t15 = addr_field t14, Component.children
-    t16 = load t15 : array<ptr<struct Component>,5>
-    t17 = addr_of_symbol local:i
-    t18 = load t17 : int32
-    t19 = addr_index t16, t18, 4
-    t20 = load t19 : ptr<struct Component>
-    t21 = cmp_ne t20, null:ptr<struct Component> : bool
-    br t21, L5, L6
-
-  L5:
-    t22 = addr_of_symbol local:total
-    t23 = addr_of_symbol local:total
-    t24 = load t23 : int32
-    t25 = addr_of_symbol param:c
-    t26 = load t25 : ptr<struct Component>
-    t27 = addr_field t26, Component.children
-    t28 = load t27 : array<ptr<struct Component>,5>
-    t29 = addr_of_symbol local:i
-    t30 = load t29 : int32
-    t31 = addr_index t28, t30, 4
-    t32 = load t31 : ptr<struct Component>
-    t33 = call func:sum_component(t32):int32
-    t34 = add t24, t33 : int32
-    store t22, t34 : int32
-    jmp L6
-
-  L6:
-    jmp L3
-
+    t16 = addr_of_symbol local:i
+    t17 = load t16 : int32
+    t18 = addr_index t15, t17, 4
+    t19 = load t18 : ptr<struct Component>
+    t20 = cmp_ne t19, null:ptr<struct Component> : bool
+    br t20, L4, L5
   L3:
-    t35 = addr_of_symbol local:i
-    t36 = addr_of_symbol local:i
-    t37 = load t36 : int32
-    t38 = add t37, #1:int32 : int32
-    store t35, t38 : int32
-    jmp L1
-
+    t35 = addr_of_symbol local:total
+    t36 = load t35 : int32
+    ret t36
   L4:
-    t39 = addr_of_symbol local:total
-    t40 = load t39 : int32
-    ret t40
-
+    t21 = addr_of_symbol local:total
+    t22 = load t21 : int32
+    t23 = addr_of_symbol param:c
+    t24 = load t23 : ptr<struct Component>
+    t25 = addr_field t24, Component.children
+    t26 = addr_of_symbol local:i
+    t27 = load t26 : int32
+    t28 = addr_index t25, t27, 4
+    t29 = load t28 : ptr<struct Component>
+    t30 = call func:sum_component(t29) : int32
+    t31 = add t22, t30 : int32
+    store t21, t31 : int32
+    jmp L6
+  L5:
+    jmp L6
+  L6:
+    t32 = addr_of_symbol local:i
+    t33 = load t32 : int32
+    t34 = add t33, #1:int32 : int32
+    store t32, t34 : int32
+    jmp L1
 .endfunc
+
 .func main():int32
   .frame locals=32 bytes align=4
   .slots
@@ -90,17 +80,13 @@
     t0 = addr_of_symbol local:comp
     t1 = addr_field t0, Component.value
     store t1, #10:int32 : int32
-    t2 = addr_of_symbol local:comp
-    t3 = addr_field t2, Component.child_count
-    store t3, #0:int32 : int32
+    t2 = addr_field t0, Component.child_count
+    store t2, #0:int32 : int32
+    t3 = call func:sum_component(t0) : int32
     t4 = addr_of_symbol local:result
-    t5 = addr_of_symbol local:comp
-    t6 = call func:sum_component(t5):int32
-    store t4, t6 : int32
-    t7 = addr_of_symbol local:result
-    t8 = load t7 : int32
-    ret t8
-
+    store t4, t3 : int32
+    t5 = load t4 : int32
+    ret t5
 .endfunc
 
 .endprogram

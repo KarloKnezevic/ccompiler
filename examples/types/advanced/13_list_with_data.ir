@@ -22,27 +22,20 @@
     t1 = addr_field t0, ListNode.data
     t2 = addr_field t1, Data.id
     store t2, #1:int32 : int32
-    t3 = addr_of_symbol local:node1
-    t4 = addr_field t3, ListNode.data
-    t5 = addr_field t4, Data.score
-    store t5, #95.5:float : float
-    t6 = addr_of_symbol local:node2
-    t7 = addr_field t6, ListNode.data
-    t8 = addr_field t7, Data.id
-    store t8, #2:int32 : int32
-    t9 = addr_of_symbol local:node2
-    t10 = addr_field t9, ListNode.data
-    t11 = addr_field t10, Data.score
-    store t11, #87.0:float : float
-    t12 = addr_of_symbol local:node1
-    t13 = addr_field t12, ListNode.next
-    t14 = addr_of_symbol local:node2
-    store t13, t14 : ptr<struct ListNode>
-    t15 = addr_of_symbol local:node2
-    t16 = addr_field t15, ListNode.next
-    store t16, #0:int32 : ptr<struct ListNode>
-    ret #0:int32
+    t3 = addr_field t1, Data.score
+    store t3, #95.5:float : float
 
+    t4 = addr_of_symbol local:node2
+    t5 = addr_field t4, ListNode.data
+    t6 = addr_field t5, Data.id
+    store t6, #2:int32 : int32
+    t7 = addr_field t5, Data.score
+    store t7, #87.0:float : float
+    t8 = addr_field t0, ListNode.next
+    store t8, t4 : ptr<struct ListNode>
+    t9 = addr_field t4, ListNode.next
+    store t9, null:ptr<struct ListNode> : ptr<struct ListNode>
+    ret #0:int32
 .endfunc
 
 .endprogram

@@ -1,15 +1,19 @@
 package hr.fer.ppj.ir.lowering.decl;
 
 import hr.fer.ppj.ir.build.IrFunctionBuilder;
+import hr.fer.ppj.ir.build.StructLayoutRegistry;
+import hr.fer.ppj.ir.build.TypeMapper;
 import hr.fer.ppj.ir.lowering.ExpressionGenerator;
 import hr.fer.ppj.ir.lowering.FunctionContext;
 import hr.fer.ppj.ir.types.IrType;
-import hr.fer.ppj.ir.build.TypeMapper;
 import hr.fer.ppj.ir.util.VariableSlotManager;
 import hr.fer.ppj.semantics.symbols.SymbolTable;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
+import hr.fer.ppj.semantics.types.ArrayType;
+import hr.fer.ppj.semantics.types.StructType;
 import hr.fer.ppj.semantics.types.Type;
+import hr.fer.ppj.semantics.types.TypeSystem;
 import hr.fer.ppj.semantics.util.NodeUtils;
 import java.util.List;
 import java.util.Objects;
@@ -128,15 +132,40 @@ public final class LocalDeclarationGenerator {
 
     VariableSlotManager.declareInScope(varName, varType, functionContext.functionScope());
 
-    IrType irType = TypeMapper.toIrType(varType);
+    // Ensure struct types are registered and their definitions emitted
+    Type strippedVarType = TypeSystem.stripConst(varType);
+    StructLayoutRegistry structRegistry = functionContext.structLayoutRegistry();
+    if (structRegistry != null) {
+      ensureStructTypeReady(strippedVarType, structRegistry);
+    }
+
+    IrType irType;
+    if (structRegistry != null) {
+      irType = TypeMapper.toIrType(varType, structRegistry.getStructNameRegistry());
+    } else {
+      irType = TypeMapper.toIrType(varType);
+    }
     int[] currentOffset = {functionContext.localOffset()};
-    VariableSlotManager.createLocalSlot(actualVarName, irType, builder, currentOffset);
+    VariableSlotManager.createLocalSlot(
+        actualVarName, irType, builder, currentOffset, structRegistry);
     functionContext.setLocalOffset(currentOffset[0]);
 
     if (children.size() == 3) {
       NonTerminalNode initializer =
           NodeUtils.asNonTerminal(children.get(2), "<inicijalizator>");
       initializerGenerator.generateInitializer(initializer, varName, varType, irType, functionContext);
+    }
+  }
+
+  /**
+   * Ensures that any struct type within a type (including array element types) is registered.
+   */
+  private void ensureStructTypeReady(Type type, StructLayoutRegistry structRegistry) {
+    Type stripped = TypeSystem.stripConst(type);
+    if (stripped instanceof StructType structType) {
+      structRegistry.ensureStructReady(structType);
+    } else if (stripped instanceof ArrayType arrayType) {
+      ensureStructTypeReady(arrayType.elementType(), structRegistry);
     }
   }
 }

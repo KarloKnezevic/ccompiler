@@ -1,0 +1,59 @@
+.program
+
+.func div_conditional(a:float, b:float, c:float):float
+  .frame locals=0 bytes align=4
+  .slots
+    param a@0:float
+    param b@4:float
+    param c@8:float
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:a
+    t1 = load t0 : float
+    t2 = addr_of_symbol param:b
+    t3 = load t2 : float
+    t4 = cmp_gt t1, t3 : bool
+    br t4, L1, L2
+  L1:
+    t5 = addr_of_symbol param:a
+    t6 = load t5 : float
+    t7 = addr_of_symbol param:c
+    t8 = load t7 : float
+    t9 = div t6, t8 : float
+    ret t9
+  L2:
+    t10 = addr_of_symbol param:b
+    t11 = load t10 : float
+    t12 = addr_of_symbol param:c
+    t13 = load t12 : float
+    t14 = div t11, t13 : float
+    ret t14
+.endfunc
+
+.func main():float
+  .frame locals=16 bytes align=4
+  .slots
+    local x@0:float
+    local y@4:float
+    local z@8:float
+    local result@12:float
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:x
+    store t0, #12.0:float : float
+    t1 = addr_of_symbol local:y
+    store t1, #8.0:float : float
+    t2 = addr_of_symbol local:z
+    store t2, #4.0:float : float
+
+    t3 = load t0 : float
+    t4 = load t1 : float
+    t5 = load t2 : float
+    t6 = call func:div_conditional(t3, t4, t5) : float
+    t7 = addr_of_symbol local:result
+    store t7, t6 : float
+    t8 = load t7 : float
+    ret t8
+.endfunc
+
+.endprogram

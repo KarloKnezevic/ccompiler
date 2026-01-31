@@ -15,27 +15,18 @@
     t0 = addr_of_symbol local:p
     t1 = addr_field t0, Point.x
     store t1, #10:int32 : int32
+    t2 = addr_field t0, Point.y
+    store t2, #20:int32 : int32
 
-    t2 = addr_of_symbol local:p
-    t3 = addr_field t2, Point.y
-    store t3, #20:int32 : int32
-
-    t4 = addr_of_symbol local:p
-    t5 = load t4 : struct Point
-
-    t6 = addr_of_symbol local:q
-    store t6, t5 : struct Point
-
-    t7 = addr_of_symbol local:q
-    t8 = addr_field t7, Point.x
-    t9 = load t8 : int32
-
-    t10 = addr_of_symbol local:q
-    t11 = addr_field t10, Point.y
-    t12 = load t11 : int32
-
-    t13 = add t9, t12 : int32
-    ret t13
+    t3 = addr_of_symbol local:q
+    t4 = load t0 : struct Point
+    store t3, t4 : struct Point
+    t5 = addr_field t3, Point.x
+    t6 = load t5 : int32
+    t7 = addr_field t3, Point.y
+    t8 = load t7 : int32
+    t9 = add t6, t8 : int32
+    ret t9
 .endfunc
 
 .endprogram

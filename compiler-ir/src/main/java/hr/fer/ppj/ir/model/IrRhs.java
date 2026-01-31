@@ -163,7 +163,8 @@ public sealed interface IrRhs {
 
   public enum UnaryOpName {
     NEG("neg"),
-    NOT("not");
+    NOT("not"),
+    BITNOT("bitnot");
 
     private final String irString;
 

@@ -7,6 +7,9 @@ import hr.fer.ppj.ir.model.IrInstruction;
 import hr.fer.ppj.ir.model.IrRhs;
 import hr.fer.ppj.ir.model.IrTemp;
 import hr.fer.ppj.ir.model.IrValue;
+import hr.fer.ppj.ir.model.IrConst;
+import hr.fer.ppj.ir.types.IrPointerType;
+import hr.fer.ppj.ir.types.IrPrimitiveType;
 import hr.fer.ppj.ir.types.IrType;
 import hr.fer.ppj.ir.util.OperatorMapper;
 import hr.fer.ppj.ir.util.TypePromoter;
@@ -39,9 +42,10 @@ public final class BinaryExpressionGenerator {
    */
   public IrValue emitMultiplicative(NonTerminalNode node, FunctionContext ctx) {
     return emitBinary(node, ctx,
-        new String[] {"OP_PUTA", "OP_DIJELI", "OP_MOD"},
+        new String[] {"OP_PUTA", "ASTERISK", "OP_DIJELI", "OP_MOD"},
         new IrRhs.BinOp.BinOpName[] {
-            IrRhs.BinOp.BinOpName.MUL, IrRhs.BinOp.BinOpName.DIV, IrRhs.BinOp.BinOpName.MOD
+            IrRhs.BinOp.BinOpName.MUL, IrRhs.BinOp.BinOpName.MUL, 
+            IrRhs.BinOp.BinOpName.DIV, IrRhs.BinOp.BinOpName.MOD
         });
   }
 
@@ -76,11 +80,17 @@ public final class BinaryExpressionGenerator {
     NonTerminalNode leftNode = extractOperand(children.get(0), "left");
     NonTerminalNode rightNode = extractOperand(children.get(2), "right");
 
-    IrType irResultType = determineResultType(leftNode, rightNode);
     IrType leftIrType = TypeMapper.toIrType(leftNode.attributes().type());
     IrType rightIrType = TypeMapper.toIrType(rightNode.attributes().type());
-
     IrFunctionBuilder builder = ctx.functionBuilder();
+
+    // Check for pointer arithmetic: ptr + int, int + ptr, or ptr - int
+    if ((opSymbol.equals("PLUS") || opSymbol.equals("MINUS")) 
+        && (leftIrType instanceof hr.fer.ppj.ir.types.IrPointerType || rightIrType instanceof hr.fer.ppj.ir.types.IrPointerType)) {
+      return emitPointerArithmetic(leftNode, rightNode, opSymbol, leftIrType, rightIrType, ctx, builder);
+    }
+
+    IrType irResultType = determineResultType(leftNode, rightNode);
     IrValue left, right;
 
     if (shouldEvaluateRightFirst(leftNode, rightNode)) {
@@ -191,5 +201,80 @@ public final class BinaryExpressionGenerator {
     } catch (IllegalArgumentException e) {
       throw new IllegalStateException("Cannot map operator '" + opSymbol + "' in " + nodeSymbol, e);
     }
+  }
+
+  /**
+   * Emits IR for pointer arithmetic: ptr + int, int + ptr, or ptr - int.
+   * Uses ptrcast to convert between pointer and integer for the arithmetic.
+   */
+  private IrValue emitPointerArithmetic(NonTerminalNode leftNode, NonTerminalNode rightNode,
+      String opSymbol, IrType leftIrType, IrType rightIrType, FunctionContext ctx, 
+      IrFunctionBuilder builder) {
+    
+    // Determine which operand is the pointer and which is the integer
+    NonTerminalNode ptrNode;
+    NonTerminalNode intNode;
+    IrPointerType ptrType;
+    
+    if (leftIrType instanceof IrPointerType leftPtrType) {
+      ptrNode = leftNode;
+      intNode = rightNode;
+      ptrType = leftPtrType;
+    } else if (rightIrType instanceof IrPointerType rightPtrType) {
+      ptrNode = rightNode;
+      intNode = leftNode;
+      ptrType = rightPtrType;
+    } else {
+      throw new IllegalStateException("No pointer type in pointer arithmetic");
+    }
+    
+    // Get the element size for scaling
+    int elemSize = hr.fer.ppj.ir.build.TypeSizeCalculator.getTypeSize(ptrType.baseType());
+    
+    // Emit the pointer value
+    IrValue ptrValue = emitter.emitRValue(ptrNode, ctx);
+    
+    // Cast pointer to int32 using ptrcast
+    IrRhs.CastOp ptrToIntCast = new IrRhs.CastOp(
+        IrRhs.CastName.PTRCAST, ptrValue, IrPrimitiveType.INT32);
+    IrTemp ptrAsInt = builder.tempFactory().newTemp(IrPrimitiveType.INT32);
+    builder.addInstruction(new IrInstruction.IrAssignInstr(ptrAsInt, ptrToIntCast));
+    
+    // Emit the integer value and scale it by element size
+    IrValue intValue = emitter.emitRValue(intNode, ctx);
+    IrValue scaledOffset;
+    if (elemSize != 1) {
+      // If the integer value is a constant, fold the multiplication
+      if (intValue instanceof IrConst.IntConst intConst) {
+        int scaledValue = (int) intConst.value() * elemSize;
+        scaledOffset = new IrConst.IntConst(scaledValue, IrPrimitiveType.INT32);
+      } else {
+        // Scale the offset by element size
+        IrConst sizeConst = new IrConst.IntConst(elemSize, IrPrimitiveType.INT32);
+        IrRhs.BinOp scaleOp = new IrRhs.BinOp(
+            IrRhs.BinOp.BinOpName.MUL, intValue, sizeConst, IrPrimitiveType.INT32);
+        IrTemp scaledTemp = builder.tempFactory().newTemp(IrPrimitiveType.INT32);
+        builder.addInstruction(new IrInstruction.IrAssignInstr(scaledTemp, scaleOp));
+        scaledOffset = scaledTemp;
+      }
+    } else {
+      scaledOffset = intValue;
+    }
+    
+    // Add or subtract the scaled offset
+    IrRhs.BinOp.BinOpName binOp = opSymbol.equals("PLUS") 
+        ? IrRhs.BinOp.BinOpName.ADD 
+        : IrRhs.BinOp.BinOpName.SUB;
+    IrRhs.BinOp arithmetic = new IrRhs.BinOp(binOp, ptrAsInt, scaledOffset, IrPrimitiveType.INT32);
+    IrTemp resultInt = builder.tempFactory().newTemp(IrPrimitiveType.INT32);
+    builder.addInstruction(new IrInstruction.IrAssignInstr(resultInt, arithmetic));
+    
+    // Cast the result back to pointer using ptrcast
+    IrRhs.CastOp intToPtrCast = new IrRhs.CastOp(
+        IrRhs.CastName.PTRCAST, resultInt, ptrType);
+    IrTemp resultPtr = builder.tempFactory().newTemp(ptrType);
+    builder.addInstruction(new IrInstruction.IrAssignInstr(resultPtr, intToPtrCast));
+    
+    return resultPtr;
   }
 }

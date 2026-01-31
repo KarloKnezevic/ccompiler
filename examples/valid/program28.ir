@@ -15,15 +15,13 @@
     store t2, #123:int32 : int32
     t3 = addr_index t0, #2:int32, 4
     store t3, #1:int32 : int32
-    t4 = addr_index t0, #0:int32, 4
-    t5 = load t4 : int32
-    t6 = addr_index t0, #4:int32, 4
-    t7 = load t6 : int32
-    t8 = add t5, t7 : int32
-    t9 = addr_index t0, #2:int32, 4
-    t10 = load t9 : int32
-    t11 = add t8, t10 : int32
-    ret t11
+
+    t4 = load t1 : int32
+    t5 = load t2 : int32
+    t6 = add t4, t5 : int32
+    t7 = load t3 : int32
+    t8 = add t6, t7 : int32
+    ret t8
 .endfunc
 
 .endprogram

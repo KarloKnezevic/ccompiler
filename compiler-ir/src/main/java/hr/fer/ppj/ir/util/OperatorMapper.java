@@ -31,7 +31,7 @@ public final class OperatorMapper {
     return switch (opSymbol) {
       case "PLUS" -> IrRhs.BinOp.BinOpName.ADD;
       case "MINUS" -> IrRhs.BinOp.BinOpName.SUB;
-      case "OP_PUTA" -> IrRhs.BinOp.BinOpName.MUL;
+      case "OP_PUTA", "ASTERISK" -> IrRhs.BinOp.BinOpName.MUL;
       case "OP_DIJELI" -> IrRhs.BinOp.BinOpName.DIV;
       case "OP_MOD" -> IrRhs.BinOp.BinOpName.MOD;
       case "AMPERSAND" -> IrRhs.BinOp.BinOpName.AND;

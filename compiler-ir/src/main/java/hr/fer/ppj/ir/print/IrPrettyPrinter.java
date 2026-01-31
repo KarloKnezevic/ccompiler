@@ -52,6 +52,25 @@ public final class IrPrettyPrinter {
     // Add blank line after .program (matches golden files)
     out.append("\n");
 
+    // Print struct definitions FIRST (sorted by name for determinism)
+    List<IrStructDef> structDefs = new ArrayList<>(program.structDefs().values());
+    structDefs.sort(Comparator.comparing(IrStructDef::name));
+    for (IrStructDef structDef : structDefs) {
+      out.append(".type struct ").append(structDef.name()).append(" {\n");
+      // Fields are already in declaration order (LinkedHashMap in IrStructDef)
+      // Sort by offset to maintain proper ordering
+      List<Map.Entry<String, IrStructDef.Field>> sortedFields = structDef.fields().entrySet().stream()
+          .sorted(Comparator.comparingInt(e -> e.getValue().offset()))
+          .collect(Collectors.toList());
+      for (Map.Entry<String, IrStructDef.Field> entry : sortedFields) {
+        String fieldName = entry.getKey();
+        IrStructDef.Field field = entry.getValue();
+        out.append("  ").append(fieldName).append(":").append(field.type().toIrString())
+            .append("@").append(field.offset()).append("\n");
+      }
+      out.append("}\n\n"); // Blank line after struct definition
+    }
+
     // Print globals (sorted by name for determinism)
     List<IrGlobalVar> globals = new ArrayList<>(program.globals());
     globals.sort(Comparator.comparing(IrGlobalVar::name));
@@ -67,27 +86,8 @@ public final class IrPrettyPrinter {
       out.append("\n"); // Blank line after globals
     }
 
-    // Print struct definitions (sorted by name for determinism)
-    List<IrStructDef> structDefs = new ArrayList<>(program.structDefs().values());
-    structDefs.sort(Comparator.comparing(IrStructDef::name));
-    for (IrStructDef structDef : structDefs) {
-      out.append(".type struct ").append(structDef.name()).append(" {\n");
-      // Sort fields by name for determinism
-      List<Map.Entry<String, IrStructDef.Field>> sortedFields = structDef.fields().entrySet().stream()
-          .sorted(Comparator.comparing(Map.Entry::getKey))
-          .collect(Collectors.toList());
-      for (Map.Entry<String, IrStructDef.Field> entry : sortedFields) {
-        String fieldName = entry.getKey();
-        IrStructDef.Field field = entry.getValue();
-        out.append(fieldName).append(":").append(field.type().toIrString())
-            .append("@").append(field.offset()).append("\n");
-      }
-      out.append("}\n");
-    }
-
-    // Print functions (sorted by name for determinism, with blank line between them)
+    // Print functions in definition order (with blank line between them)
     List<IrFunction> functions = new ArrayList<>(program.functions());
-    functions.sort(Comparator.comparing(IrFunction::name));
     for (int i = 0; i < functions.size(); i++) {
       if (i > 0) {
         out.append("\n"); // Exactly one blank line between functions

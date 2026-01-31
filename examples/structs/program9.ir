@@ -20,51 +20,22 @@
     t2 = addr_field t1, Inner.arr
     t3 = addr_index t2, #0:int32, 4
     store t3, #1:int32 : int32
+    t4 = addr_index t2, #1:int32, 4
+    store t4, #2:int32 : int32
+    t5 = addr_index t2, #2:int32, 4
+    store t5, #3:int32 : int32
+    t6 = addr_field t0, Outer.base
+    store t6, #10:int32 : int32
 
-    t4 = addr_of_symbol local:o
-    t5 = addr_field t4, Outer.inner
-    t6 = addr_field t5, Inner.arr
-    t7 = addr_index t6, #1:int32, 4
-    store t7, #2:int32 : int32
+    t7 = load t3 : int32
+    t8 = load t4 : int32
+    t9 = add t7, t8 : int32
 
-    t8 = addr_of_symbol local:o
-    t9 = addr_field t8, Outer.inner
-    t10 = addr_field t9, Inner.arr
-    t11 = addr_index t10, #2:int32, 4
-    store t11, #3:int32 : int32
-
-    t12 = addr_of_symbol local:o
-    t13 = addr_field t12, Outer.base
-    store t13, #10:int32 : int32
-
-    t14 = addr_of_symbol local:o
-    t15 = addr_field t14, Outer.inner
-    t16 = addr_field t15, Inner.arr
-    t17 = addr_index t16, #0:int32, 4
-    t18 = load t17 : int32
-
-    t19 = addr_of_symbol local:o
-    t20 = addr_field t19, Outer.inner
-    t21 = addr_field t20, Inner.arr
-    t22 = addr_index t21, #1:int32, 4
-    t23 = load t22 : int32
-
-    t24 = add t18, t23 : int32
-
-    t25 = addr_of_symbol local:o
-    t26 = addr_field t25, Outer.inner
-    t27 = addr_field t26, Inner.arr
-    t28 = addr_index t27, #2:int32, 4
-    t29 = load t28 : int32
-
-    t30 = add t24, t29 : int32
-
-    t31 = addr_of_symbol local:o
-    t32 = addr_field t31, Outer.base
-    t33 = load t32 : int32
-
-    t34 = add t30, t33 : int32
-    ret t34
+    t10 = load t5 : int32
+    t11 = add t9, t10 : int32
+    t12 = load t6 : int32
+    t13 = add t11, t12 : int32
+    ret t13
 .endfunc
 
 .endprogram

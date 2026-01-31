@@ -15,51 +15,24 @@
     t1 = addr_index t0, #0:int32, 8
     t2 = addr_field t1, Point.x
     store t2, #1:int32 : int32
-
-    t3 = addr_of_symbol local:pts
-    t4 = addr_index t3, #0:int32, 8
-    t5 = addr_field t4, Point.y
-    store t5, #2:int32 : int32
-
-    t6 = addr_of_symbol local:pts
-    t7 = addr_index t6, #1:int32, 8
+    t3 = addr_field t1, Point.y
+    store t3, #2:int32 : int32
+    t4 = addr_index t0, #1:int32, 8
+    t5 = addr_field t4, Point.x
+    store t5, #3:int32 : int32
+    t6 = addr_field t4, Point.y
+    store t6, #4:int32 : int32
+    t7 = addr_index t0, #2:int32, 8
     t8 = addr_field t7, Point.x
-    store t8, #3:int32 : int32
-
-    t9 = addr_of_symbol local:pts
-    t10 = addr_index t9, #1:int32, 8
-    t11 = addr_field t10, Point.y
-    store t11, #4:int32 : int32
-
-    t12 = addr_of_symbol local:pts
-    t13 = addr_index t12, #2:int32, 8
-    t14 = addr_field t13, Point.x
-    store t14, #5:int32 : int32
-
-    t15 = addr_of_symbol local:pts
-    t16 = addr_index t15, #2:int32, 8
-    t17 = addr_field t16, Point.y
-    store t17, #6:int32 : int32
-
-    t18 = addr_of_symbol local:pts
-    t19 = addr_index t18, #0:int32, 8
-    t20 = addr_field t19, Point.x
-    t21 = load t20 : int32
-
-    t22 = addr_of_symbol local:pts
-    t23 = addr_index t22, #1:int32, 8
-    t24 = addr_field t23, Point.y
-    t25 = load t24 : int32
-
-    t26 = add t21, t25 : int32
-
-    t27 = addr_of_symbol local:pts
-    t28 = addr_index t27, #2:int32, 8
-    t29 = addr_field t28, Point.x
-    t30 = load t29 : int32
-
-    t31 = add t26, t30 : int32
-    ret t31
+    store t8, #5:int32 : int32
+    t9 = addr_field t7, Point.y
+    store t9, #6:int32 : int32
+    t10 = load t2 : int32
+    t11 = load t6 : int32
+    t12 = add t10, t11 : int32
+    t13 = load t8 : int32
+    t14 = add t12, t13 : int32
+    ret t14
 .endfunc
 
 .endprogram

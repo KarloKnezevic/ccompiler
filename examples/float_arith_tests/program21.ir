@@ -1,0 +1,47 @@
+.program
+
+.func compute(x:float, n:int32):float
+  .frame locals=0 bytes align=4
+  .slots
+    param x@0:float
+    param n@4:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:x
+    t1 = load t0 : float
+    t2 = addr_of_symbol param:n
+    t3 = load t2 : int32
+    t4 = itof t3 : float
+    t5 = div t1, t4 : float
+
+    t6 = load t0 : float
+    t7 = load t2 : int32
+    t8 = itof t7 : float
+    t9 = mul t6, t8 : float
+    t10 = add t5, t9 : float
+    ret t10
+.endfunc
+
+.func main():float
+  .frame locals=12 bytes align=4
+  .slots
+    local val@0:float
+    local num@4:int32
+    local result@8:float
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:val
+    store t0, #4.0:float : float
+    t1 = addr_of_symbol local:num
+    store t1, #2:int32 : int32
+
+    t2 = load t0 : float
+    t3 = load t1 : int32
+    t4 = call func:compute(t2, t3) : float
+    t5 = addr_of_symbol local:result
+    store t5, t4 : float
+    t6 = load t5 : float
+    ret t6
+.endfunc
+
+.endprogram

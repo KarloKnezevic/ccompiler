@@ -14,7 +14,6 @@
     t0 = addr_of_symbol local:c
     t1 = addr_field t0, Counter.value
     store t1, #0:int32 : int32
-
     t2 = addr_of_symbol local:i
     store t2, #0:int32 : int32
     jmp L1
@@ -29,24 +28,20 @@
     t6 = addr_of_symbol local:c
     t7 = addr_field t6, Counter.value
     t8 = load t7 : int32
-
     t9 = addr_of_symbol local:i
     t10 = load t9 : int32
-
     t11 = add t8, t10 : int32
     store t7, t11 : int32
-
-    t12 = addr_of_symbol local:i
-    t13 = load t12 : int32
-    t14 = add t13, #1:int32 : int32
-    store t12, t14 : int32
+    t12 = load t9 : int32
+    t13 = add t12, #1:int32 : int32
+    store t9, t13 : int32
     jmp L1
 
   L3:
-    t15 = addr_of_symbol local:c
-    t16 = addr_field t15, Counter.value
-    t17 = load t16 : int32
-    ret t17
+    t14 = addr_of_symbol local:c
+    t15 = addr_field t14, Counter.value
+    t16 = load t15 : int32
+    ret t16
 .endfunc
 
 .endprogram

@@ -1,6 +1,7 @@
 package hr.fer.ppj.ir.util;
 
 import hr.fer.ppj.ir.model.IrRhs;
+import hr.fer.ppj.ir.types.IrPointerType;
 import hr.fer.ppj.ir.types.IrPrimitiveType;
 import hr.fer.ppj.ir.types.IrType;
 import java.util.Objects;
@@ -48,6 +49,16 @@ public final class CastOperationDeterminer {
     // float -> int32: float to int (FTOI)
     if (fromType.equals(IrPrimitiveType.FLOAT) && toType.equals(IrPrimitiveType.INT32)) {
       return IrRhs.CastOp.CastName.FTOI;
+    }
+    
+    // pointer -> int32: pointer cast (PTRCAST)
+    if (fromType instanceof IrPointerType && toType.equals(IrPrimitiveType.INT32)) {
+      return IrRhs.CastOp.CastName.PTRCAST;
+    }
+    
+    // int32 -> pointer: pointer cast (PTRCAST)
+    if (fromType.equals(IrPrimitiveType.INT32) && toType instanceof IrPointerType) {
+      return IrRhs.CastOp.CastName.PTRCAST;
     }
 
     // No cast operation needed or not supported

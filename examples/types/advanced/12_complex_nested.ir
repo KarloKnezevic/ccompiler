@@ -1,13 +1,13 @@
 .program
 
-.type struct Level2 {
-  data_value:float@0
-  multiplier:int32@4
-}
-
 .type struct Level1 {
   matrix_value:int32@0
   level2:ptr<struct Level2>@4
+}
+
+.type struct Level2 {
+  data_value:float@0
+  multiplier:int32@4
 }
 
 .func calculate_total(l1:ptr<struct Level1>):int32
@@ -17,47 +17,43 @@
     local total@0:int32
   .blocks
   L0:
-    t0 = addr_of_symbol local:total
-    t1 = addr_of_symbol param:l1
-    t2 = load t1 : ptr<struct Level1>
-    t3 = addr_field t2, Level1.matrix_value
-    t4 = load t3 : int32
-    store t0, t4 : int32
-    t5 = addr_of_symbol param:l1
-    t6 = load t5 : ptr<struct Level1>
-    t7 = addr_field t6, Level1.level2
-    t8 = load t7 : ptr<struct Level2>
-    t9 = cmp_ne t8, null:ptr<struct Level2> : bool
-    br t9, L1, L2
+    t0 = addr_of_symbol param:l1
+    t1 = load t0 : ptr<struct Level1>
+    t2 = addr_field t1, Level1.matrix_value
+    t3 = load t2 : int32
+    t4 = addr_of_symbol local:total
+    store t4, t3 : int32
 
+    t5 = load t0 : ptr<struct Level1>
+    t6 = addr_field t5, Level1.level2
+    t7 = load t6 : ptr<struct Level2>
+    t8 = cmp_ne t7, null:ptr<struct Level2> : bool
+    br t8, L1, L2
   L1:
-    t10 = addr_of_symbol local:total
-    t11 = addr_of_symbol local:total
-    t12 = load t11 : int32
-    t13 = addr_of_symbol param:l1
-    t14 = load t13 : ptr<struct Level1>
-    t15 = addr_field t14, Level1.level2
-    t16 = load t15 : ptr<struct Level2>
-    t17 = addr_field t16, Level2.data_value
-    t18 = load t17 : float
-    t19 = ftoi t18 : int32
-    t20 = addr_of_symbol param:l1
-    t21 = load t20 : ptr<struct Level1>
-    t22 = addr_field t21, Level1.level2
-    t23 = load t22 : ptr<struct Level2>
-    t24 = addr_field t23, Level2.multiplier
-    t25 = load t24 : int32
-    t26 = mul t19, t25 : int32
-    t27 = add t12, t26 : int32
-    store t10, t27 : int32
-    jmp L2
-
+    t9 = addr_of_symbol local:total
+    t10 = load t9 : int32
+    t11 = addr_of_symbol param:l1
+    t12 = load t11 : ptr<struct Level1>
+    t13 = addr_field t12, Level1.level2
+    t14 = load t13 : ptr<struct Level2>
+    t15 = addr_field t14, Level2.data_value
+    t16 = load t15 : float
+    t17 = ftoi t16 : int32
+    t18 = load t13 : ptr<struct Level2>
+    t19 = addr_field t18, Level2.multiplier
+    t20 = load t19 : int32
+    t21 = mul t17, t20 : int32
+    t22 = add t10, t21 : int32
+    store t9, t22 : int32
+    jmp L3
   L2:
-    t28 = addr_of_symbol local:total
-    t29 = load t28 : int32
-    ret t29
-
+    jmp L3
+  L3:
+    t23 = addr_of_symbol local:total
+    t24 = load t23 : int32
+    ret t24
 .endfunc
+
 .func main():int32
   .frame locals=20 bytes align=4
   .slots
@@ -69,24 +65,19 @@
     t0 = addr_of_symbol local:l1
     t1 = addr_field t0, Level1.matrix_value
     store t1, #10:int32 : int32
+
     t2 = addr_of_symbol local:l2
     t3 = addr_field t2, Level2.data_value
     store t3, #5.5:float : float
-    t4 = addr_of_symbol local:l2
-    t5 = addr_field t4, Level2.multiplier
-    store t5, #2:int32 : int32
-    t6 = addr_of_symbol local:l1
-    t7 = addr_field t6, Level1.level2
-    t8 = addr_of_symbol local:l2
-    store t7, t8 : ptr<struct Level2>
-    t9 = addr_of_symbol local:result
-    t10 = addr_of_symbol local:l1
-    t11 = call func:calculate_total(t10):int32
-    store t9, t11 : int32
-    t12 = addr_of_symbol local:result
-    t13 = load t12 : int32
-    ret t13
-
+    t4 = addr_field t2, Level2.multiplier
+    store t4, #2:int32 : int32
+    t5 = addr_field t0, Level1.level2
+    store t5, t2 : ptr<struct Level2>
+    t6 = call func:calculate_total(t0) : int32
+    t7 = addr_of_symbol local:result
+    store t7, t6 : int32
+    t8 = load t7 : int32
+    ret t8
 .endfunc
 
 .endprogram

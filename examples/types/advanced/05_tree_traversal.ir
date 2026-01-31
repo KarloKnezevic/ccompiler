@@ -8,63 +8,52 @@
 .func count_nodes(node:ptr<struct Tree>):int32
   .frame locals=8 bytes align=4
   .slots
-    param node@0:ptr<struct Tree>
     local count@0:int32
+    param node@0:ptr<struct Tree>
     local i@4:int32
   .blocks
   L0:
     t0 = addr_of_symbol param:node
     t1 = load t0 : ptr<struct Tree>
-    t2 = cmp_ne t1, null:ptr<struct Tree> : bool
-    br t2, L2, L1
-
+    t2 = not t1 : bool
+    br t2, L1, L2
   L1:
     ret #0:int32
-
   L2:
     t3 = addr_of_symbol local:count
     store t3, #1:int32 : int32
     t4 = addr_of_symbol local:i
     store t4, #0:int32 : int32
     jmp L3
-
   L3:
     t5 = addr_of_symbol local:i
     t6 = load t5 : int32
     t7 = cmp_lt t6, #3:int32 : bool
-    br t7, L4, L6
-
+    br t7, L4, L5
   L4:
     t8 = addr_of_symbol local:count
-    t9 = addr_of_symbol local:count
-    t10 = load t9 : int32
-    t11 = addr_of_symbol param:node
-    t12 = load t11 : ptr<struct Tree>
-    t13 = addr_field t12, Tree.children
-    t14 = load t13 : array<ptr<struct Tree>,3>
-    t15 = addr_of_symbol local:i
-    t16 = load t15 : int32
-    t17 = addr_index t14, t16, 4
-    t18 = load t17 : ptr<struct Tree>
-    t19 = call func:count_nodes(t18):int32
-    t20 = add t10, t19 : int32
-    store t8, t20 : int32
-    jmp L5
+    t9 = load t8 : int32
+    t10 = addr_of_symbol param:node
+    t11 = load t10 : ptr<struct Tree>
+    t12 = addr_field t11, Tree.children
+    t13 = addr_of_symbol local:i
+    t14 = load t13 : int32
+    t15 = addr_index t12, t14, 4
+    t16 = load t15 : ptr<struct Tree>
+    t17 = call func:count_nodes(t16) : int32
+    t18 = add t9, t17 : int32
+    store t8, t18 : int32
 
-  L5:
-    t21 = addr_of_symbol local:i
-    t22 = addr_of_symbol local:i
-    t23 = load t22 : int32
-    t24 = add t23, #1:int32 : int32
-    store t21, t24 : int32
+    t19 = load t13 : int32
+    t20 = add t19, #1:int32 : int32
+    store t13, t20 : int32
     jmp L3
-
-  L6:
-    t25 = addr_of_symbol local:count
-    t26 = load t25 : int32
-    ret t26
-
+  L5:
+    t21 = addr_of_symbol local:count
+    t22 = load t21 : int32
+    ret t22
 .endfunc
+
 .func main():int32
   .frame locals=20 bytes align=4
   .slots
@@ -75,29 +64,18 @@
     t0 = addr_of_symbol local:t
     t1 = addr_field t0, Tree.data
     store t1, #1:int32 : int32
-    t2 = addr_of_symbol local:t
-    t3 = addr_field t2, Tree.children
-    t4 = load t3 : array<ptr<struct Tree>,3>
-    t5 = addr_index t4, #0:int32, 4
-    store t5, #0:int32 : ptr<struct Tree>
-    t6 = addr_of_symbol local:t
-    t7 = addr_field t6, Tree.children
-    t8 = load t7 : array<ptr<struct Tree>,3>
-    t9 = addr_index t8, #1:int32, 4
-    store t9, #0:int32 : ptr<struct Tree>
-    t10 = addr_of_symbol local:t
-    t11 = addr_field t10, Tree.children
-    t12 = load t11 : array<ptr<struct Tree>,3>
-    t13 = addr_index t12, #2:int32, 4
-    store t13, #0:int32 : ptr<struct Tree>
-    t14 = addr_of_symbol local:nodes
-    t15 = addr_of_symbol local:t
-    t16 = call func:count_nodes(t15):int32
-    store t14, t16 : int32
-    t17 = addr_of_symbol local:nodes
-    t18 = load t17 : int32
-    ret t18
-
+    t2 = addr_field t0, Tree.children
+    t3 = addr_index t2, #0:int32, 4
+    store t3, null:ptr<struct Tree> : ptr<struct Tree>
+    t4 = addr_index t2, #1:int32, 4
+    store t4, null:ptr<struct Tree> : ptr<struct Tree>
+    t5 = addr_index t2, #2:int32, 4
+    store t5, null:ptr<struct Tree> : ptr<struct Tree>
+    t6 = call func:count_nodes(t0) : int32
+    t7 = addr_of_symbol local:nodes
+    store t7, t6 : int32
+    t8 = load t7 : int32
+    ret t8
 .endfunc
 
 .endprogram

@@ -1,6 +1,7 @@
 package hr.fer.ppj.ir.lowering;
 
 import hr.fer.ppj.ir.build.IrFunctionBuilder;
+import hr.fer.ppj.ir.build.StructLayoutRegistry;
 import hr.fer.ppj.ir.types.IrType;
 import hr.fer.ppj.ir.util.AddressReuseContext;
 import hr.fer.ppj.ir.util.BlockLocalSymbolAddressCache;
@@ -20,6 +21,7 @@ import java.util.Objects;
  *   <li>Logical result counter</li>
  *   <li>Variable name manager (for shadowing)</li>
  *   <li>Address reuse context (for optimizations)</li>
+ *   <li>Struct layout registry (for struct size calculations)</li>
  * </ul>
  *
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
@@ -32,6 +34,7 @@ public final class FunctionContext {
   private final VariableNameManager variableNameManager;
   private final AddressReuseContext addressReuseContext;
   private final BlockLocalSymbolAddressCache blockLocalAddressCache;
+  private final StructLayoutRegistry structLayoutRegistry;
   private int localOffset;
   private int logicalResultCounter;
   private LoopContext loopContext;
@@ -52,16 +55,29 @@ public final class FunctionContext {
   public FunctionContext(
       IrFunctionBuilder functionBuilder,
       SymbolTable functionScope,
-      IrType returnType) {
+      IrType returnType,
+      StructLayoutRegistry structLayoutRegistry) {
     this.functionBuilder = Objects.requireNonNull(functionBuilder, "functionBuilder must not be null");
     this.functionScope = Objects.requireNonNull(functionScope, "functionScope must not be null");
     this.returnType = returnType; // Can be null for void functions
+    this.structLayoutRegistry = structLayoutRegistry; // Can be null for backward compatibility
     this.variableNameManager = new VariableNameManager();
     this.addressReuseContext = new AddressReuseContext();
     this.blockLocalAddressCache = new BlockLocalSymbolAddressCache();
     this.localOffset = 0;
     this.logicalResultCounter = 0;
     this.loopContext = LoopContext.empty();
+  }
+
+  /**
+   * @deprecated Use the constructor with StructLayoutRegistry
+   */
+  @Deprecated
+  public FunctionContext(
+      IrFunctionBuilder functionBuilder,
+      SymbolTable functionScope,
+      IrType returnType) {
+    this(functionBuilder, functionScope, returnType, null);
   }
 
   public IrFunctionBuilder functionBuilder() {
@@ -106,6 +122,10 @@ public final class FunctionContext {
 
   public BlockLocalSymbolAddressCache blockLocalAddressCache() {
     return blockLocalAddressCache;
+  }
+
+  public StructLayoutRegistry structLayoutRegistry() {
+    return structLayoutRegistry;
   }
 
   /**

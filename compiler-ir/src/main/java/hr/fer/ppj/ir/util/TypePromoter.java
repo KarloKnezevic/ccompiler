@@ -61,6 +61,10 @@ public final class TypePromoter {
     if (fromType.equals(IrPrimitiveType.CHAR) && toType.equals(IrPrimitiveType.INT32)) {
       castName = IrRhs.CastOp.CastName.SEXT;
     }
+    // bool -> int: zero-extend (ZEXT) - booleans are 0 or 1
+    else if (fromType.equals(IrPrimitiveType.BOOL) && toType.equals(IrPrimitiveType.INT32)) {
+      castName = IrRhs.CastOp.CastName.ZEXT;
+    }
     // int -> float: int to float (ITOF)
     else if (fromType.equals(IrPrimitiveType.INT32) && toType.equals(IrPrimitiveType.FLOAT)) {
       castName = IrRhs.CastOp.CastName.ITOF;
@@ -70,6 +74,11 @@ public final class TypePromoter {
       // First promote char to int
       IrValue intValue = promoteValue(value, IrPrimitiveType.CHAR, IrPrimitiveType.INT32, builder);
       // Then promote int to float
+      return promoteValue(intValue, IrPrimitiveType.INT32, IrPrimitiveType.FLOAT, builder);
+    }
+    // bool -> float: bool -> int -> float (two-step)
+    else if (fromType.equals(IrPrimitiveType.BOOL) && toType.equals(IrPrimitiveType.FLOAT)) {
+      IrValue intValue = promoteValue(value, IrPrimitiveType.BOOL, IrPrimitiveType.INT32, builder);
       return promoteValue(intValue, IrPrimitiveType.INT32, IrPrimitiveType.FLOAT, builder);
     }
     // float -> int: float to int (FTOI) - but this is not a promotion, it's a conversion

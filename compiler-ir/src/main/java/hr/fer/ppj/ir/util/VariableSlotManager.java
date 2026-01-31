@@ -1,10 +1,12 @@
 package hr.fer.ppj.ir.util;
 
 import hr.fer.ppj.ir.build.IrFunctionBuilder;
-import hr.fer.ppj.ir.model.IrSlot;
-import hr.fer.ppj.ir.types.IrType;
-import hr.fer.ppj.ir.build.TypeSizeCalculator;
+import hr.fer.ppj.ir.build.StructLayoutRegistry;
 import hr.fer.ppj.ir.build.TypeAlignmentCalculator;
+import hr.fer.ppj.ir.build.TypeSizeCalculator;
+import hr.fer.ppj.ir.model.IrSlot;
+import hr.fer.ppj.ir.types.IrStructType;
+import hr.fer.ppj.ir.types.IrType;
 import hr.fer.ppj.semantics.symbols.SymbolTable;
 import hr.fer.ppj.semantics.symbols.VariableSymbol;
 import java.util.Objects;
@@ -63,20 +65,32 @@ public final class VariableSlotManager {
    * @param varType the variable type
    * @param functionBuilder the function builder
    * @param currentOffset the current local offset (will be updated)
+   * @param structLayoutRegistry the struct layout registry (for struct types)
    * @return the slot offset
    */
   public static int createLocalSlot(
       String varName,
       IrType varType,
       IrFunctionBuilder functionBuilder,
-      int[] currentOffset) {
+      int[] currentOffset,
+      StructLayoutRegistry structLayoutRegistry) {
     Objects.requireNonNull(varName, "varName must not be null");
     Objects.requireNonNull(varType, "varType must not be null");
     Objects.requireNonNull(functionBuilder, "functionBuilder must not be null");
     Objects.requireNonNull(currentOffset, "currentOffset must not be null");
 
-    int varSize = TypeSizeCalculator.getTypeSize(varType);
-    int varAlign = TypeAlignmentCalculator.getTypeAlignment(varType);
+    int varSize;
+    int varAlign;
+    if (varType instanceof IrStructType structType && structLayoutRegistry != null) {
+      varSize = structLayoutRegistry.getTypeSize(varType);
+      varAlign = structLayoutRegistry.getTypeAlignment(varType);
+    } else if (structLayoutRegistry != null) {
+      varSize = structLayoutRegistry.getTypeSize(varType);
+      varAlign = structLayoutRegistry.getTypeAlignment(varType);
+    } else {
+      varSize = TypeSizeCalculator.getTypeSize(varType);
+      varAlign = TypeAlignmentCalculator.getTypeAlignment(varType);
+    }
 
     currentOffset[0] = (currentOffset[0] + varAlign - 1) / varAlign * varAlign;
     int offset = currentOffset[0];
@@ -91,6 +105,25 @@ public final class VariableSlotManager {
     }
 
     return offset;
+  }
+
+  /**
+   * Creates a slot for a local variable and updates the local offset.
+   *
+   * @param varName the variable name (already unique)
+   * @param varType the variable type
+   * @param functionBuilder the function builder
+   * @param currentOffset the current local offset (will be updated)
+   * @return the slot offset
+   * @deprecated Use the overload with StructLayoutRegistry for struct support
+   */
+  @Deprecated
+  public static int createLocalSlot(
+      String varName,
+      IrType varType,
+      IrFunctionBuilder functionBuilder,
+      int[] currentOffset) {
+    return createLocalSlot(varName, varType, functionBuilder, currentOffset, null);
   }
 
   /**

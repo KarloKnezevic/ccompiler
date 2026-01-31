@@ -14,15 +14,10 @@
     t0 = addr_of_symbol local:s
     t1 = addr_field t0, CharStruct.c
     store t1, #'A':char : char
-
-    t2 = addr_of_symbol local:s
-    t3 = addr_field t2, CharStruct.x
-    store t3, #65:int32 : int32
-
-    t4 = addr_of_symbol local:s
-    t5 = addr_field t4, CharStruct.x
-    t6 = load t5 : int32
-    ret t6
+    t2 = addr_field t0, CharStruct.x
+    store t2, #65:int32 : int32
+    t3 = load t2 : int32
+    ret t3
 .endfunc
 
 .endprogram

@@ -5,10 +5,9 @@
   .slots
   .blocks
   L0:
-    t0 = neg #3:int32 : int32
-    t1 = itof t0 : float
-    t2 = mul t1, #4.0:float : float
-    ret t2
+    t0 = itof #-3:int32 : float
+    t1 = mul t0, #4.0:float : float
+    ret t1
 .endfunc
 
 .endprogram

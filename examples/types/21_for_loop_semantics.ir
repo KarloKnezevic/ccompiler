@@ -9,31 +9,26 @@
     t0 = addr_of_symbol local:i
     store t0, #0:int32 : int32
     jmp L1
-
   L1:
     t1 = addr_of_symbol local:i
     t2 = load t1 : int32
     t3 = cmp_lt t2, #10:int32 : bool
-    br t3, L2, L5
-
+    br t3, L2, L3
   L2:
     t4 = addr_of_symbol local:i
     t5 = load t4 : int32
     t6 = cmp_gt t5, #5:int32 : bool
-    br t6, L3, L4
-
+    br t6, L4, L5
   L3:
-    jmp L5
-
+    ret #0:int32
   L4:
+    jmp L3
+  L5:
     t7 = addr_of_symbol local:i
     t8 = load t7 : int32
     t9 = add t8, #1:int32 : int32
     store t7, t9 : int32
     jmp L1
-
-  L5:
-    ret #0:int32
 .endfunc
 
 .endprogram

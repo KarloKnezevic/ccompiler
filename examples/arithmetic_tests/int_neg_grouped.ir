@@ -1,0 +1,13 @@
+.program
+
+.func main():int32
+  .frame locals=0 bytes align=4
+  .slots
+  .blocks
+  L0:
+    t0 = mul #3:int32, #4:int32 : int32
+    t1 = neg t0 : int32
+    ret t1
+.endfunc
+
+.endprogram

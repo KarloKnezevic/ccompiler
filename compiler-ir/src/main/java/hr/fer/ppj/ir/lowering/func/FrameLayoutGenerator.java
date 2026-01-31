@@ -1,6 +1,7 @@
 package hr.fer.ppj.ir.lowering.func;
 
 import hr.fer.ppj.ir.build.IrFunctionBuilder;
+import hr.fer.ppj.ir.build.StructLayoutRegistry;
 import hr.fer.ppj.ir.build.TypeMapper;
 import hr.fer.ppj.ir.model.IrFunction;
 import hr.fer.ppj.ir.model.IrSlot;
@@ -14,6 +15,16 @@ import java.util.Objects;
  */
 public final class FrameLayoutGenerator {
 
+  private final StructLayoutRegistry structLayoutRegistry;
+
+  public FrameLayoutGenerator(StructLayoutRegistry structLayoutRegistry) {
+    this.structLayoutRegistry = structLayoutRegistry; // Can be null for backward compatibility
+  }
+
+  public FrameLayoutGenerator() {
+    this(null);
+  }
+
   /**
    * Generates parameter slots for a function.
    */
@@ -26,8 +37,8 @@ public final class FrameLayoutGenerator {
     int maxAlign = 4;
 
     for (IrFunction.Parameter param : parameters) {
-      int paramSize = TypeMapper.getTypeSize(param.type());
-      int paramAlign = TypeMapper.getTypeAlignment(param.type());
+      int paramSize = getTypeSize(param.type());
+      int paramAlign = getTypeAlignment(param.type());
       maxAlign = Math.max(maxAlign, paramAlign);
 
       // Align offset
@@ -51,9 +62,9 @@ public final class FrameLayoutGenerator {
 
     for (IrSlot slot : allSlots) {
       if (slot.kind() == IrSlot.Kind.LOCAL) {
-        int slotEnd = slot.offset() + TypeMapper.getTypeSize(slot.type());
+        int slotEnd = slot.offset() + getTypeSize(slot.type());
         maxOffset = Math.max(maxOffset, slotEnd);
-        maxAlign = Math.max(maxAlign, TypeMapper.getTypeAlignment(slot.type()));
+        maxAlign = Math.max(maxAlign, getTypeAlignment(slot.type()));
       }
     }
 
@@ -63,5 +74,19 @@ public final class FrameLayoutGenerator {
     }
 
     builder.setFrame(maxOffset, maxAlign);
+  }
+
+  private int getTypeSize(hr.fer.ppj.ir.types.IrType type) {
+    if (structLayoutRegistry != null) {
+      return structLayoutRegistry.getTypeSize(type);
+    }
+    return TypeMapper.getTypeSize(type);
+  }
+
+  private int getTypeAlignment(hr.fer.ppj.ir.types.IrType type) {
+    if (structLayoutRegistry != null) {
+      return structLayoutRegistry.getTypeAlignment(type);
+    }
+    return TypeMapper.getTypeAlignment(type);
   }
 }

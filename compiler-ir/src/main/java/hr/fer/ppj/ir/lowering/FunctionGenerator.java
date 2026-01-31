@@ -1,6 +1,7 @@
 package hr.fer.ppj.ir.lowering;
 
 import hr.fer.ppj.ir.build.IrFunctionBuilder;
+import hr.fer.ppj.ir.build.StructLayoutRegistry;
 import hr.fer.ppj.ir.build.TypeMapper;
 import hr.fer.ppj.ir.lowering.func.FrameLayoutGenerator;
 import hr.fer.ppj.ir.lowering.func.ParameterExtractor;
@@ -14,9 +15,12 @@ import hr.fer.ppj.semantics.symbols.SymbolTable;
 import hr.fer.ppj.semantics.symbols.VariableSymbol;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
+import hr.fer.ppj.semantics.types.ArrayType;
 import hr.fer.ppj.semantics.types.FunctionType;
 import hr.fer.ppj.semantics.types.PrimitiveType;
+import hr.fer.ppj.semantics.types.StructType;
 import hr.fer.ppj.semantics.types.Type;
+import hr.fer.ppj.semantics.types.TypeSystem;
 import hr.fer.ppj.semantics.util.NodeUtils;
 import java.util.List;
 import java.util.Objects;
@@ -42,17 +46,31 @@ public final class FunctionGenerator {
   private final StatementGenerator statementGenerator;
   private final ParameterExtractor parameterExtractor;
   private final FrameLayoutGenerator frameLayoutGenerator;
+  private final StructLayoutRegistry structLayoutRegistry;
 
   public FunctionGenerator(
       SymbolTable globalScope,
       IrProgram.Builder programBuilder,
-      StatementGenerator statementGenerator) {
+      StatementGenerator statementGenerator,
+      StructLayoutRegistry structLayoutRegistry) {
     this.globalScope = Objects.requireNonNull(globalScope, "globalScope must not be null");
     this.programBuilder = Objects.requireNonNull(programBuilder, "programBuilder must not be null");
     this.statementGenerator = Objects.requireNonNull(
         statementGenerator, "statementGenerator must not be null");
+    this.structLayoutRegistry = structLayoutRegistry; // Can be null
     this.parameterExtractor = new ParameterExtractor();
-    this.frameLayoutGenerator = new FrameLayoutGenerator();
+    this.frameLayoutGenerator = new FrameLayoutGenerator(structLayoutRegistry);
+  }
+
+  /**
+   * @deprecated Use the constructor with StructLayoutRegistry
+   */
+  @Deprecated
+  public FunctionGenerator(
+      SymbolTable globalScope,
+      IrProgram.Builder programBuilder,
+      StatementGenerator statementGenerator) {
+    this(globalScope, programBuilder, statementGenerator, null);
   }
 
   /**
@@ -115,12 +133,23 @@ public final class FunctionGenerator {
     }
 
     // Create function context
-    FunctionContext functionContext = new FunctionContext(builder, functionScope, irReturnType);
+    FunctionContext functionContext = new FunctionContext(
+        builder, functionScope, irReturnType, structLayoutRegistry);
 
     // Wire block start callback to clear block-local caches
     builder.setOnBlockStartCallback(() -> functionContext.onNewBlock(builder.getCurrentBlockLabel()));
 
     try {
+      // Ensure struct types in parameters and return type are registered
+      if (structLayoutRegistry != null) {
+        for (Type paramType : funcType.parameterTypes()) {
+          ensureStructTypeReady(paramType, structLayoutRegistry);
+        }
+        if (!funcType.returnType().isVoid()) {
+          ensureStructTypeReady(funcType.returnType(), structLayoutRegistry);
+        }
+      }
+
       // Generate parameter slots
       frameLayoutGenerator.generateParameterSlots(builder, parameters);
 
@@ -179,5 +208,17 @@ public final class FunctionGenerator {
     }
 
     return declaratorNode;
+  }
+
+  /**
+   * Ensures that any struct type within a type (including array element types) is registered.
+   */
+  private void ensureStructTypeReady(Type type, StructLayoutRegistry registry) {
+    Type stripped = TypeSystem.stripConst(type);
+    if (stripped instanceof StructType structType) {
+      registry.ensureStructReady(structType);
+    } else if (stripped instanceof ArrayType arrayType) {
+      ensureStructTypeReady(arrayType.elementType(), registry);
+    }
   }
 }

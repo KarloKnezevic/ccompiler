@@ -1,12 +1,12 @@
 package hr.fer.ppj.ir.lowering;
 
 import hr.fer.ppj.ir.build.IrFunctionBuilder;
-import hr.fer.ppj.ir.model.IrTemp;
-import hr.fer.ppj.ir.model.IrValue;
+import hr.fer.ppj.ir.build.StructLayoutRegistry;
+import hr.fer.ppj.ir.build.StructNameRegistry;
+import hr.fer.ppj.ir.lowering.expr.AssignmentExpressionGenerator;
 import hr.fer.ppj.ir.lowering.expr.BinaryExpressionGenerator;
 import hr.fer.ppj.ir.lowering.expr.BitwiseExpressionGenerator;
 import hr.fer.ppj.ir.lowering.expr.CastExpressionGenerator;
-import hr.fer.ppj.ir.lowering.expr.AssignmentExpressionGenerator;
 import hr.fer.ppj.ir.lowering.expr.ComparisonExpressionGenerator;
 import hr.fer.ppj.ir.lowering.expr.ExpressionEmitter;
 import hr.fer.ppj.ir.lowering.expr.LogicalExpressionGenerator;
@@ -15,6 +15,8 @@ import hr.fer.ppj.ir.lowering.expr.LValueGenerator;
 import hr.fer.ppj.ir.lowering.expr.PostfixExpressionGenerator;
 import hr.fer.ppj.ir.lowering.expr.PrimaryExpressionGenerator;
 import hr.fer.ppj.ir.lowering.expr.UnaryExpressionGenerator;
+import hr.fer.ppj.ir.model.IrTemp;
+import hr.fer.ppj.ir.model.IrValue;
 import hr.fer.ppj.semantics.symbols.SymbolTable;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
@@ -40,12 +42,18 @@ public final class ExpressionGenerator implements ExpressionEmitter, LValueEmitt
   private final LogicalExpressionGenerator logicalGenerator;
   private final AssignmentExpressionGenerator assignmentGenerator;
   private final SymbolTable globalScope;
-  private final hr.fer.ppj.ir.build.StructNameRegistry structNameRegistry;
+  private final StructNameRegistry structNameRegistry;
+  private final StructLayoutRegistry structLayoutRegistry;
   private LValueGenerator lValueGenerator; // Lazy initialization to avoid circular dependency
 
-  public ExpressionGenerator(SymbolTable globalScope, hr.fer.ppj.ir.build.StructNameRegistry structNameRegistry) {
+  public ExpressionGenerator(
+      SymbolTable globalScope,
+      StructNameRegistry structNameRegistry,
+      StructLayoutRegistry structLayoutRegistry) {
     this.globalScope = Objects.requireNonNull(globalScope, "globalScope must not be null");
-    this.structNameRegistry = Objects.requireNonNull(structNameRegistry, "structNameRegistry must not be null");
+    this.structNameRegistry = Objects.requireNonNull(
+        structNameRegistry, "structNameRegistry must not be null");
+    this.structLayoutRegistry = structLayoutRegistry; // Can be null for backward compatibility
     // Initialize generators with circular dependency via ExpressionEmitter interface
     this.primaryGenerator = new PrimaryExpressionGenerator(this);
     this.castGenerator = new CastExpressionGenerator(this);
@@ -56,6 +64,14 @@ public final class ExpressionGenerator implements ExpressionEmitter, LValueEmitt
     this.postfixGenerator = new PostfixExpressionGenerator(this, this);
     this.logicalGenerator = new LogicalExpressionGenerator(this);
     this.assignmentGenerator = new AssignmentExpressionGenerator(this, this);
+  }
+
+  /**
+   * @deprecated Use the constructor with StructLayoutRegistry
+   */
+  @Deprecated
+  public ExpressionGenerator(SymbolTable globalScope, StructNameRegistry structNameRegistry) {
+    this(globalScope, structNameRegistry, null);
   }
 
   /**

@@ -19,35 +19,29 @@
     t3 = load t2 : int32
     t4 = cmp_lt t3, #5:int32 : bool
     br t4, L1, L2
-
   L1:
     t5 = addr_of_symbol param:node
     t6 = load t5 : ptr<struct GraphNode>
     t7 = addr_field t6, GraphNode.neighbors
-    t8 = load t7 : array<ptr<struct GraphNode>,5>
-    t9 = addr_of_symbol param:node
-    t10 = load t9 : ptr<struct GraphNode>
-    t11 = addr_field t10, GraphNode.neighbor_count
-    t12 = load t11 : int32
-    t13 = addr_index t8, t12, 4
-    t14 = addr_of_symbol param:neighbor
-    t15 = load t14 : ptr<struct GraphNode>
-    store t13, t15 : ptr<struct GraphNode>
-    t16 = addr_of_symbol param:node
-    t17 = load t16 : ptr<struct GraphNode>
-    t18 = addr_field t17, GraphNode.neighbor_count
-    t19 = addr_of_symbol param:node
-    t20 = load t19 : ptr<struct GraphNode>
-    t21 = addr_field t20, GraphNode.neighbor_count
-    t22 = load t21 : int32
-    t23 = add t22, #1:int32 : int32
-    store t18, t23 : int32
-    jmp L2
+    t8 = addr_field t6, GraphNode.neighbor_count
+    t9 = load t8 : int32
+    t10 = addr_index t7, t9, 4
+    t11 = addr_of_symbol param:neighbor
+    t12 = load t11 : ptr<struct GraphNode>
+    store t10, t12 : ptr<struct GraphNode>
 
+    t13 = load t5 : ptr<struct GraphNode>
+    t14 = addr_field t13, GraphNode.neighbor_count
+    t15 = load t14 : int32
+    t16 = add t15, #1:int32 : int32
+    store t14, t16 : int32
+    jmp L3
   L2:
+    jmp L3
+  L3:
     ret
-
 .endfunc
+
 .func main():int32
   .frame locals=56 bytes align=4
   .slots
@@ -58,20 +52,16 @@
     t0 = addr_of_symbol local:g1
     t1 = addr_field t0, GraphNode.id
     store t1, #1:int32 : int32
+
     t2 = addr_of_symbol local:g2
     t3 = addr_field t2, GraphNode.id
     store t3, #2:int32 : int32
-    t4 = addr_of_symbol local:g1
-    t5 = addr_field t4, GraphNode.neighbor_count
+    t4 = addr_field t0, GraphNode.neighbor_count
+    store t4, #0:int32 : int32
+    t5 = addr_field t2, GraphNode.neighbor_count
     store t5, #0:int32 : int32
-    t6 = addr_of_symbol local:g2
-    t7 = addr_field t6, GraphNode.neighbor_count
-    store t7, #0:int32 : int32
-    t8 = addr_of_symbol local:g1
-    t9 = addr_of_symbol local:g2
-    call func:add_neighbor(t8, t9):void
+    call func:add_neighbor(t0, t2) : void
     ret #0:int32
-
 .endfunc
 
 .endprogram

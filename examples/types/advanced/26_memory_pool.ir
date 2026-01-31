@@ -1,11 +1,5 @@
 .program
 
-.type struct PoolBlock {
-  used:int32@0
-  data:array<char,64>@4
-  next:ptr<struct PoolBlock>@68
-}
-
 .type struct MemoryPool {
   blocks:ptr<struct PoolBlock>@0
   free_list:ptr<struct PoolBlock>@4
@@ -16,27 +10,26 @@
 .func count_used_blocks(pool:ptr<struct MemoryPool>):int32
   .frame locals=8 bytes align=4
   .slots
-    param pool@0:ptr<struct MemoryPool>
     local block@0:ptr<struct PoolBlock>
+    param pool@0:ptr<struct MemoryPool>
     local count@4:int32
   .blocks
   L0:
     t0 = addr_of_symbol local:count
     store t0, #0:int32 : int32
-    t1 = addr_of_symbol local:block
-    t2 = addr_of_symbol param:pool
-    t3 = load t2 : ptr<struct MemoryPool>
-    t4 = addr_field t3, MemoryPool.blocks
-    t5 = load t4 : ptr<struct PoolBlock>
-    store t1, t5 : ptr<struct PoolBlock>
-    jmp L1
 
+    t1 = addr_of_symbol param:pool
+    t2 = load t1 : ptr<struct MemoryPool>
+    t3 = addr_field t2, MemoryPool.blocks
+    t4 = load t3 : ptr<struct PoolBlock>
+    t5 = addr_of_symbol local:block
+    store t5, t4 : ptr<struct PoolBlock>
+    jmp L1
   L1:
     t6 = addr_of_symbol local:block
     t7 = load t6 : ptr<struct PoolBlock>
     t8 = cmp_ne t7, null:ptr<struct PoolBlock> : bool
     br t8, L2, L3
-
   L2:
     t9 = addr_of_symbol local:block
     t10 = load t9 : ptr<struct PoolBlock>
@@ -44,30 +37,27 @@
     t12 = load t11 : int32
     t13 = cmp_ne t12, #0:int32 : bool
     br t13, L4, L5
-
+  L3:
+    t21 = addr_of_symbol local:count
+    t22 = load t21 : int32
+    ret t22
   L4:
     t14 = addr_of_symbol local:count
-    t15 = addr_of_symbol local:count
-    t16 = load t15 : int32
-    t17 = add t16, #1:int32 : int32
-    store t14, t17 : int32
-    jmp L5
-
+    t15 = load t14 : int32
+    t16 = add t15, #1:int32 : int32
+    store t14, t16 : int32
+    jmp L6
   L5:
-    t18 = addr_of_symbol local:block
-    t19 = addr_of_symbol local:block
+    jmp L6
+  L6:
+    t17 = addr_of_symbol local:block
+    t18 = load t17 : ptr<struct PoolBlock>
+    t19 = addr_field t18, PoolBlock.next
     t20 = load t19 : ptr<struct PoolBlock>
-    t21 = addr_field t20, PoolBlock.next
-    t22 = load t21 : ptr<struct PoolBlock>
-    store t18, t22 : ptr<struct PoolBlock>
+    store t17, t20 : ptr<struct PoolBlock>
     jmp L1
-
-  L3:
-    t23 = addr_of_symbol local:count
-    t24 = load t23 : int32
-    ret t24
-
 .endfunc
+
 .func main():int32
   .frame locals=20 bytes align=4
   .slots
@@ -77,24 +67,18 @@
   L0:
     t0 = addr_of_symbol local:pool
     t1 = addr_field t0, MemoryPool.blocks
-    store t1, #0:int32 : ptr<struct PoolBlock>
-    t2 = addr_of_symbol local:pool
-    t3 = addr_field t2, MemoryPool.free_list
-    store t3, #0:int32 : ptr<struct PoolBlock>
-    t4 = addr_of_symbol local:pool
-    t5 = addr_field t4, MemoryPool.total_blocks
-    store t5, #0:int32 : int32
-    t6 = addr_of_symbol local:pool
-    t7 = addr_field t6, MemoryPool.used_blocks
-    store t7, #0:int32 : int32
-    t8 = addr_of_symbol local:result
-    t9 = addr_of_symbol local:pool
-    t10 = call func:count_used_blocks(t9):int32
-    store t8, t10 : int32
-    t11 = addr_of_symbol local:result
-    t12 = load t11 : int32
-    ret t12
-
+    store t1, null:ptr<struct PoolBlock> : ptr<struct PoolBlock>
+    t2 = addr_field t0, MemoryPool.free_list
+    store t2, null:ptr<struct PoolBlock> : ptr<struct PoolBlock>
+    t3 = addr_field t0, MemoryPool.total_blocks
+    store t3, #0:int32 : int32
+    t4 = addr_field t0, MemoryPool.used_blocks
+    store t4, #0:int32 : int32
+    t5 = call func:count_used_blocks(t0) : int32
+    t6 = addr_of_symbol local:result
+    store t6, t5 : int32
+    t7 = load t6 : int32
+    ret t7
 .endfunc
 
 .endprogram

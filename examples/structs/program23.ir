@@ -20,28 +20,19 @@
     t1 = addr_field t0, Outer.inner
     t2 = addr_field t1, Inner.value
     store t2, #42:int32 : int32
+    t3 = addr_field t0, Outer.y
+    store t3, #10:int32 : int32
 
-    t3 = addr_of_symbol local:o1
-    t4 = addr_field t3, Outer.y
-    store t4, #10:int32 : int32
-
-    t5 = addr_of_symbol local:o1
-    t6 = load t5 : struct Outer
-
-    t7 = addr_of_symbol local:o2
-    store t7, t6 : struct Outer
-
-    t8 = addr_of_symbol local:o2
-    t9 = addr_field t8, Outer.inner
-    t10 = addr_field t9, Inner.value
-    t11 = load t10 : int32
-
-    t12 = addr_of_symbol local:o2
-    t13 = addr_field t12, Outer.y
-    t14 = load t13 : int32
-
-    t15 = add t11, t14 : int32
-    ret t15
+    t4 = addr_of_symbol local:o2
+    t5 = load t0 : struct Outer
+    store t4, t5 : struct Outer
+    t6 = addr_field t4, Outer.inner
+    t7 = addr_field t6, Inner.value
+    t8 = load t7 : int32
+    t9 = addr_field t4, Outer.y
+    t10 = load t9 : int32
+    t11 = add t8, t10 : int32
+    ret t11
 .endfunc
 
 .endprogram

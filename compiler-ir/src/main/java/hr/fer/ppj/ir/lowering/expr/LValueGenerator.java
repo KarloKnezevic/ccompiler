@@ -72,6 +72,14 @@ public final class LValueGenerator {
     return switch (symbol) {
       case "<primarni_izraz>" -> emitLValuePrimary(node, functionContext);
       case "<postfiks_izraz>" -> emitLValuePostfix(node, functionContext);
+      case "<cast_izraz>" -> {
+        // Cast expression: pass-through to unary expression if not an explicit cast
+        List<ParseNode> children = node.children();
+        if (children.size() == 1 && children.get(0) instanceof NonTerminalNode child) {
+          yield emitLValue(child, functionContext);
+        }
+        throw new IllegalArgumentException("Cast expression is not addressable as l-value");
+      }
       case "<unarni_izraz>" -> {
         List<ParseNode> children = node.children();
         if (children.size() == 1 && children.get(0) instanceof NonTerminalNode child) {
@@ -80,13 +88,15 @@ public final class LValueGenerator {
           yield emitLValueUnary(node, functionContext);
         }
       }
-      case "<cast_izraz>" -> {
+      // Pass-through expression types: forward to child if single child
+      case "<izraz>", "<izraz_pridruzivanja>", "<log_ili_izraz>", "<log_i_izraz>",
+           "<bin_ili_izraz>", "<bin_xili_izraz>", "<bin_i_izraz>", "<jednakosni_izraz>",
+           "<odnosni_izraz>", "<aditivni_izraz>", "<multiplikativni_izraz>" -> {
         List<ParseNode> children = node.children();
         if (children.size() == 1 && children.get(0) instanceof NonTerminalNode child) {
           yield emitLValue(child, functionContext);
-        } else {
-          throw new IllegalArgumentException("Cannot emit l-value for cast expression");
         }
+        throw new IllegalArgumentException("Expression " + symbol + " is not addressable as l-value");
       }
       default -> throw new IllegalArgumentException("Cannot emit l-value for: " + symbol);
     };
@@ -103,37 +113,38 @@ public final class LValueGenerator {
     }
 
     ParseNode firstChild = children.get(0);
-    if (firstChild instanceof TerminalNode term && term.symbol().equals("IDN")) {
-      String varName = term.lexeme();
-      SemanticAttributes attrs = node.attributes();
-      Type varType = attrs.type();
+    if (firstChild instanceof TerminalNode term) {
+      if (term.symbol().equals("IDN")) {
+        String varName = term.lexeme();
+        SemanticAttributes attrs = node.attributes();
+        Type varType = attrs.type();
 
-      // Check for address reuse from assignment context
-      // Only reuse if we have both the variable name AND a valid address
-      if (addressReuseContext.canReuse(varName)) {
-        IrTemp reuseAddr = addressReuseContext.getReuseAddress(varName);
-        if (reuseAddr != null) {
-          return reuseAddr;
+        // Check for address reuse from assignment context
+        // Only reuse if we have both the variable name AND a valid address
+        if (addressReuseContext.canReuse(varName)) {
+          IrTemp reuseAddr = addressReuseContext.getReuseAddress(varName);
+          if (reuseAddr != null) {
+            return reuseAddr;
+          }
+          // If canReuse is true but address is null, fall through to get a new address
         }
-        // If canReuse is true but address is null, fall through to get a new address
+
+        // Check for last load address (for reusing address used in right side evaluation)
+        IrTemp lastLoadAddr = addressReuseContext.getLastLoadAddress(varName);
+        if (lastLoadAddr != null) {
+          return lastLoadAddr;
+        }
+
+        return emitLValueForVariable(varName, varType, functionContext);
       }
-
-      // Check for last load address (for reusing address used in right side evaluation)
-      IrTemp lastLoadAddr = addressReuseContext.getLastLoadAddress(varName);
-      if (lastLoadAddr != null) {
-        return lastLoadAddr;
+      
+      // Parenthesized expression: ( <izraz> )
+      if (term.symbol().equals("L_ZAGRADA") && children.size() >= 3) {
+        ParseNode middle = children.get(1);
+        if (middle instanceof NonTerminalNode inner) {
+          return emitLValue(inner, functionContext);
+        }
       }
-
-      // Note: Array base address reuse is disabled to match expected IR output format
-      // which recomputes addr_of_symbol for each array access
-      // Type strippedVarType = TypeSystem.stripConst(varType);
-      // boolean isArrayType = strippedVarType instanceof ArrayType;
-      // if (isArrayType
-      //     && addressReuseContext.canReuseArrayBase(varName)) {
-      //   return addressReuseContext.getArrayBaseAddress(varName);
-      // }
-
-      return emitLValueForVariable(varName, varType, functionContext);
     }
 
     throw new IllegalArgumentException("Cannot emit l-value for primary expression");
@@ -147,7 +158,21 @@ public final class LValueGenerator {
     List<ParseNode> children = node.children();
     if (children.size() >= 2) {
       ParseNode first = children.get(0);
-      if (first instanceof TerminalNode term && term.symbol().equals("OP_PUTA")) {
+      
+      // Check for dereference operator: ASTERISK (*)
+      boolean isDereference = false;
+      if (first instanceof TerminalNode term && term.symbol().equals("ASTERISK")) {
+        isDereference = true;
+      } else if (first instanceof NonTerminalNode nt && nt.symbol().equals("<unarni_operator>")) {
+        List<ParseNode> opChildren = nt.children();
+        if (!opChildren.isEmpty() && opChildren.get(0) instanceof TerminalNode opTerm) {
+          if (opTerm.symbol().equals("ASTERISK")) {
+            isDereference = true;
+          }
+        }
+      }
+      
+      if (isDereference) {
         NonTerminalNode operand = NodeUtils.asNonTerminal(children.get(1), "<cast_izraz>");
         IrValue ptrValue = emitter.emitRValue(operand, functionContext);
 
@@ -248,12 +273,34 @@ public final class LValueGenerator {
           throw new IllegalArgumentException("Base type is not array or pointer: " + baseType);
         }
         IrType irElementType = TypeMapper.toIrType(elementType);
-        int elemSize = hr.fer.ppj.ir.build.TypeSizeCalculator.getTypeSize(irElementType);
+        int elemSize;
+        if (functionContext.structLayoutRegistry() != null) {
+          elemSize = functionContext.structLayoutRegistry().getTypeSize(irElementType);
+        } else {
+          elemSize = hr.fer.ppj.ir.build.TypeSizeCalculator.getTypeSize(irElementType);
+        }
+
+        // Check cache for constant array indices
+        String indexCacheKey = null;
+        if (index instanceof hr.fer.ppj.ir.model.IrConst constIndex) {
+          indexCacheKey = "index:" + baseAddr.index() + "[" + constIndex.toIrString() + "]";
+          BlockLocalSymbolAddressCache blockCache = functionContext.blockLocalAddressCache();
+          IrTemp cachedAddr = blockCache.get(indexCacheKey);
+          if (cachedAddr != null) {
+            return cachedAddr;
+          }
+        }
 
         IrRhs.AddrIndex addrIndex =
             new IrRhs.AddrIndex(baseAddr, index, elemSize, new IrPointerType(irElementType));
         IrTemp result = builder.tempFactory().newTemp(addrIndex.resultType());
         builder.addInstruction(new IrInstruction.IrAssignInstr(result, addrIndex));
+
+        // Cache the result for constant indices
+        if (indexCacheKey != null) {
+          functionContext.blockLocalAddressCache().put(indexCacheKey, result);
+        }
+
         return result;
       }
     }
@@ -284,10 +331,22 @@ public final class LValueGenerator {
         String structName = structNameRegistry.getStructName(structType.tag(), structType);
         IrType fieldType = TypeMapper.toIrType(structType.getFieldType(fieldName), structNameRegistry);
 
+        // Create a cache key for field addresses based on base temp ID and field name
+        String fieldCacheKey = "field:" + baseAddr.index() + "." + fieldName;
+        BlockLocalSymbolAddressCache blockCache = functionContext.blockLocalAddressCache();
+        IrTemp cachedFieldAddr = blockCache.get(fieldCacheKey);
+        if (cachedFieldAddr != null) {
+          return cachedFieldAddr;
+        }
+
         IrRhs.AddrField addrField =
             new IrRhs.AddrField(baseAddr, structName, fieldName, new IrPointerType(fieldType));
         IrTemp result = builder.tempFactory().newTemp(addrField.resultType());
         builder.addInstruction(new IrInstruction.IrAssignInstr(result, addrField));
+
+        // Cache the field address
+        blockCache.put(fieldCacheKey, result);
+
         return result;
       }
     }

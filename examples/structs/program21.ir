@@ -14,33 +14,21 @@
     t0 = addr_of_symbol local:p
     t1 = addr_field t0, Point.x
     store t1, #5:int32 : int32
-
-    t2 = addr_of_symbol local:p
-    t3 = addr_field t2, Point.y
-    store t3, #10:int32 : int32
-
-    t4 = addr_of_symbol local:p
-    t5 = addr_field t4, Point.x
-    t6 = load t5 : int32
-
-    t7 = addr_of_symbol local:p
-    t8 = addr_field t7, Point.y
-    t9 = load t8 : int32
-
-    t10 = cmp_lt t6, t9 : bool
-    br t10, L1, L2
+    t2 = addr_field t0, Point.y
+    store t2, #10:int32 : int32
+    t3 = load t1 : int32
+    t4 = load t2 : int32
+    t5 = cmp_lt t3, t4 : bool
+    br t5, L1, L2
 
   L1:
-    t11 = addr_of_symbol local:p
-    t12 = addr_field t11, Point.y
-    t13 = load t12 : int32
-
-    t14 = addr_of_symbol local:p
-    t15 = addr_field t14, Point.x
-    t16 = load t15 : int32
-
-    t17 = sub t13, t16 : int32
-    ret t17
+    t6 = addr_of_symbol local:p
+    t7 = addr_field t6, Point.y
+    t8 = load t7 : int32
+    t9 = addr_field t6, Point.x
+    t10 = load t9 : int32
+    t11 = sub t8, t10 : int32
+    ret t11
 
   L2:
     ret #0:int32

@@ -16,6 +16,7 @@ import hr.fer.ppj.semantics.tree.SemanticAttributes;
 import hr.fer.ppj.semantics.tree.TerminalNode;
 import hr.fer.ppj.semantics.types.ArrayType;
 import hr.fer.ppj.semantics.types.PointerType;
+import hr.fer.ppj.semantics.types.StructType;
 import hr.fer.ppj.semantics.types.Type;
 import hr.fer.ppj.semantics.types.TypeSystem;
 import hr.fer.ppj.semantics.util.NodeUtils;
@@ -107,32 +108,42 @@ public final class AssignmentExpressionGenerator {
           // This matches expected IR for expressions like x = ++y
           value = emitter.emitRValue(rightNode, functionContext);
           addr = lValueEmitter.emitLValue(leftNode, functionContext);
-        } else if (rightHasArrayIndex && leftIsSimpleVar) {
-          // Special case: right has array indexing, left is simple variable
-          // Always evaluate right side first (array operations), then get address for store
-          // This matches expected IR order: array ops, then address, then load, then store
-          // When shouldReuse is true, we set up the assignment reuse context BEFORE evaluating
-          // the right side, so that PostfixExpressionGenerator can record addresses for variables
-          // loaded in the right side. Then we retrieve and reuse that address.
-          value = emitter.emitRValue(rightNode, functionContext);
+        } else if (leftIsSimpleVar) {
+          // Check if this is a struct assignment - use standard order for structs
+          Type leftTypeCheck = leftNode.attributes().type();
+          Type strippedLeftType = TypeSystem.stripConst(leftTypeCheck);
+          boolean isStructAssignment = strippedLeftType instanceof StructType;
           
-          // Get address after evaluating right side
-          // If shouldReuse, try to reuse the address that was used in the right side evaluation
-          if (shouldReuse) {
-            IrTemp lastLoadAddr = addressReuseContext.getLastLoadAddress(leftVarName);
-            if (lastLoadAddr != null) {
-              // Reuse the address that was used when loading the variable in the right side
-              addr = lastLoadAddr;
-              // Clear the last load address and restore the saved assignment reuse context
-              addressReuseContext.clearLastLoadAddress();
-              addressReuseContext.setAssignmentReuse(savedReuseAddr, savedReuseVarName);
-            } else {
-              // Fallback: emitLValue will check for last load address automatically
-              addr = lValueEmitter.emitLValue(leftNode, functionContext);
-              addressReuseContext.setAssignmentReuse(savedReuseAddr, savedReuseVarName);
-            }
-          } else {
+          if (isStructAssignment) {
+            // Struct assignment: use standard order (l-value first, then r-value)
             addr = lValueEmitter.emitLValue(leftNode, functionContext);
+            value = emitter.emitRValue(rightNode, functionContext);
+          } else {
+            // When left side is a simple non-struct variable, evaluate r-value first
+            // This matches expected IR order: compute value, then address, then store
+            // When shouldReuse is true, we set up the assignment reuse context BEFORE evaluating
+            // the right side, so that PostfixExpressionGenerator can record addresses for variables
+            // loaded in the right side. Then we retrieve and reuse that address.
+            value = emitter.emitRValue(rightNode, functionContext);
+            
+            // Get address after evaluating right side
+            // If shouldReuse, try to reuse the address that was used in the right side evaluation
+            if (shouldReuse) {
+              IrTemp lastLoadAddr = addressReuseContext.getLastLoadAddress(leftVarName);
+              if (lastLoadAddr != null) {
+                // Reuse the address that was used when loading the variable in the right side
+                addr = lastLoadAddr;
+                // Clear the last load address and restore the saved assignment reuse context
+                addressReuseContext.clearLastLoadAddress();
+                addressReuseContext.setAssignmentReuse(savedReuseAddr, savedReuseVarName);
+              } else {
+                // Fallback: emitLValue will check for last load address automatically
+                addr = lValueEmitter.emitLValue(leftNode, functionContext);
+                addressReuseContext.setAssignmentReuse(savedReuseAddr, savedReuseVarName);
+              }
+            } else {
+              addr = lValueEmitter.emitLValue(leftNode, functionContext);
+            }
           }
         } else {
           // Standard order: left side (address) first, then right side (value)
@@ -152,6 +163,13 @@ public final class AssignmentExpressionGenerator {
 
         Type leftType = leftNode.attributes().type();
         IrType irType = TypeMapper.toIrType(leftType);
+
+        // Handle null pointer assignment: when assigning 0 to a pointer, use NullConst
+        if (irType instanceof IrPointerType ptrType) {
+          if (value instanceof hr.fer.ppj.ir.model.IrConst.IntConst intConst && intConst.value() == 0) {
+            value = new hr.fer.ppj.ir.model.IrConst.NullConst(ptrType);
+          }
+        }
 
         builder.addInstruction(new IrInstruction.IrStoreInstr(addr, value, irType));
         

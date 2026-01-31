@@ -15,18 +15,15 @@
     t0 = addr_of_symbol local:n1
     t1 = addr_field t0, Node.data
     store t1, #10:int32 : int32
+
     t2 = addr_of_symbol local:n2
     t3 = addr_field t2, Node.data
     store t3, #20:int32 : int32
-    t4 = addr_of_symbol local:n1
-    t5 = addr_field t4, Node.next
-    t6 = addr_of_symbol local:n2
-    store t5, t6 : ptr<struct Node>
-    t7 = addr_of_symbol local:n2
-    t8 = addr_field t7, Node.next
-    store t8, #0:int32 : ptr<struct Node>
+    t4 = addr_field t0, Node.next
+    store t4, t2 : ptr<struct Node>
+    t5 = addr_field t2, Node.next
+    store t5, null:ptr<struct Node> : ptr<struct Node>
     ret #0:int32
-
 .endfunc
 
 .endprogram

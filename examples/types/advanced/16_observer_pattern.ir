@@ -14,15 +14,14 @@
 .func notify_observers(subj:ptr<struct Subject>, value:int32):void
   .frame locals=4 bytes align=4
   .slots
+    local i@0:int32
     param subj@0:ptr<struct Subject>
     param value@4:int32
-    local i@0:int32
   .blocks
   L0:
     t0 = addr_of_symbol local:i
     store t0, #0:int32 : int32
     jmp L1
-
   L1:
     t1 = addr_of_symbol local:i
     t2 = load t1 : int32
@@ -31,50 +30,42 @@
     t5 = addr_field t4, Subject.observer_count
     t6 = load t5 : int32
     t7 = cmp_lt t2, t6 : bool
-    br t7, L2, L4
-
+    br t7, L2, L3
   L2:
     t8 = addr_of_symbol param:subj
     t9 = load t8 : ptr<struct Subject>
     t10 = addr_field t9, Subject.observers
-    t11 = load t10 : array<ptr<struct Observer>,10>
-    t12 = addr_of_symbol local:i
-    t13 = load t12 : int32
-    t14 = addr_index t11, t13, 4
-    t15 = load t14 : ptr<struct Observer>
-    t16 = cmp_ne t15, null:ptr<struct Observer> : bool
-    br t16, L5, L6
-
-  L5:
-    t17 = addr_of_symbol param:subj
-    t18 = load t17 : ptr<struct Subject>
-    t19 = addr_field t18, Subject.observers
-    t20 = load t19 : array<ptr<struct Observer>,10>
-    t21 = addr_of_symbol local:i
-    t22 = load t21 : int32
-    t23 = addr_index t20, t22, 4
-    t24 = load t23 : ptr<struct Observer>
-    t25 = addr_field t24, Observer.last_value
-    t26 = addr_of_symbol param:value
-    t27 = load t26 : int32
-    store t25, t27 : int32
-    jmp L6
-
-  L6:
-    jmp L3
-
+    t11 = addr_of_symbol local:i
+    t12 = load t11 : int32
+    t13 = addr_index t10, t12, 4
+    t14 = load t13 : ptr<struct Observer>
+    t15 = cmp_ne t14, null:ptr<struct Observer> : bool
+    br t15, L4, L5
   L3:
-    t28 = addr_of_symbol local:i
-    t29 = addr_of_symbol local:i
-    t30 = load t29 : int32
-    t31 = add t30, #1:int32 : int32
-    store t28, t31 : int32
-    jmp L1
-
-  L4:
     ret
-
+  L4:
+    t16 = addr_of_symbol param:subj
+    t17 = load t16 : ptr<struct Subject>
+    t18 = addr_field t17, Subject.observers
+    t19 = addr_of_symbol local:i
+    t20 = load t19 : int32
+    t21 = addr_index t18, t20, 4
+    t22 = load t21 : ptr<struct Observer>
+    t23 = addr_field t22, Observer.last_value
+    t24 = addr_of_symbol param:value
+    t25 = load t24 : int32
+    store t23, t25 : int32
+    jmp L6
+  L5:
+    jmp L6
+  L6:
+    t26 = addr_of_symbol local:i
+    t27 = load t26 : int32
+    t28 = add t27, #1:int32 : int32
+    store t26, t28 : int32
+    jmp L1
 .endfunc
+
 .func main():int32
   .frame locals=60 bytes align=4
   .slots
@@ -86,32 +77,23 @@
     t0 = addr_of_symbol local:s
     t1 = addr_field t0, Subject.observer_count
     store t1, #1:int32 : int32
-    t2 = addr_of_symbol local:s
-    t3 = addr_field t2, Subject.state
-    store t3, #0:int32 : int32
-    t4 = addr_of_symbol local:o
-    t5 = addr_field t4, Observer.id
-    store t5, #1:int32 : int32
-    t6 = addr_of_symbol local:o
-    t7 = addr_field t6, Observer.last_value
-    store t7, #0:int32 : int32
-    t8 = addr_of_symbol local:s
-    t9 = addr_field t8, Subject.observers
-    t10 = load t9 : array<ptr<struct Observer>,10>
-    t11 = addr_index t10, #0:int32, 4
-    t12 = addr_of_symbol local:o
-    store t11, t12 : ptr<struct Observer>
-    t13 = addr_of_symbol local:s
-    call func:notify_observers(t13, #42:int32):void
-    t14 = addr_of_symbol local:result
-    t15 = addr_of_symbol local:o
-    t16 = addr_field t15, Observer.last_value
-    t17 = load t16 : int32
-    store t14, t17 : int32
-    t18 = addr_of_symbol local:result
-    t19 = load t18 : int32
-    ret t19
+    t2 = addr_field t0, Subject.state
+    store t2, #0:int32 : int32
 
+    t3 = addr_of_symbol local:o
+    t4 = addr_field t3, Observer.id
+    store t4, #1:int32 : int32
+    t5 = addr_field t3, Observer.last_value
+    store t5, #0:int32 : int32
+    t6 = addr_field t0, Subject.observers
+    t7 = addr_index t6, #0:int32, 4
+    store t7, t3 : ptr<struct Observer>
+    call func:notify_observers(t0, #42:int32) : void
+    t8 = load t5 : int32
+    t9 = addr_of_symbol local:result
+    store t9, t8 : int32
+    t10 = load t9 : int32
+    ret t10
 .endfunc
 
 .endprogram

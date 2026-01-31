@@ -14,38 +14,34 @@
     t0 = addr_of_symbol local:a
     store t0, #5:int32 : int32
     t1 = addr_of_symbol local:b
-    store t1, #3:char : char
+    store t1, #3:int32 : char
     t2 = addr_of_symbol local:c
     store t2, #2.0:float : float
 
-    t3 = addr_of_symbol local:a
-    t4 = load t3 : int32
-    t5 = itof t4 : float
-    t6 = addr_of_symbol local:c
-    t7 = load t6 : float
-    t8 = add t5, t7 : float
-    t9 = addr_of_symbol local:d
-    store t9, t8 : float
+    t3 = load t0 : int32
+    t4 = itof t3 : float
+    t5 = load t2 : float
+    t6 = add t4, t5 : float
 
-    t10 = addr_of_symbol local:b
-    t11 = load t10 : char
-    t12 = sext t11 : int32
-    t13 = itof t12 : float
-    t14 = addr_of_symbol local:c
-    t15 = load t14 : float
-    t16 = add t13, t15 : float
-    t17 = addr_of_symbol local:e
-    store t17, t16 : float
+    t7 = addr_of_symbol local:d
+    store t7, t6 : float
 
-    t18 = addr_of_symbol local:a
-    t19 = load t18 : int32
-    t20 = itof t19 : float
-    t21 = addr_of_symbol local:c
-    t22 = load t21 : float
-    t23 = mul t20, t22 : float
-    t24 = addr_of_symbol local:f
-    store t24, t23 : float
+    t8 = load t1 : char
+    t9 = sext t8 : int32
+    t10 = itof t9 : float
+    t11 = load t2 : float
+    t12 = add t10, t11 : float
 
+    t13 = addr_of_symbol local:e
+    store t13, t12 : float
+
+    t14 = load t0 : int32
+    t15 = itof t14 : float
+    t16 = load t2 : float
+    t17 = mul t15, t16 : float
+
+    t18 = addr_of_symbol local:f
+    store t18, t17 : float
     ret #0:int32
 .endfunc
 

@@ -21,28 +21,16 @@
     t2 = addr_field t1, Inner.arr
     t3 = addr_index t2, #0:int32, 4
     t4 = load t3 : int32
-
-    t5 = addr_of_symbol param:o
-    t6 = addr_field t5, Outer.inner
-    t7 = addr_field t6, Inner.arr
-    t8 = addr_index t7, #1:int32, 4
+    t5 = addr_index t2, #1:int32, 4
+    t6 = load t5 : int32
+    t7 = add t4, t6 : int32
+    t8 = addr_field t1, Inner.value
     t9 = load t8 : int32
-
-    t10 = add t4, t9 : int32
-
-    t11 = addr_of_symbol param:o
-    t12 = addr_field t11, Outer.inner
-    t13 = addr_field t12, Inner.value
-    t14 = load t13 : int32
-
-    t15 = add t10, t14 : int32
-
-    t16 = addr_of_symbol param:o
-    t17 = addr_field t16, Outer.base
-    t18 = load t17 : int32
-
-    t19 = add t15, t18 : int32
-    ret t19
+    t10 = add t7, t9 : int32
+    t11 = addr_field t0, Outer.base
+    t12 = load t11 : int32
+    t13 = add t10, t12 : int32
+    ret t13
 .endfunc
 
 .func main():int32
@@ -57,31 +45,18 @@
     t2 = addr_field t1, Inner.arr
     t3 = addr_index t2, #0:int32, 4
     store t3, #1:int32 : int32
+    t4 = addr_index t2, #1:int32, 4
+    store t4, #2:int32 : int32
+    t5 = addr_field t1, Inner.value
+    store t5, #3:int32 : int32
+    t6 = addr_field t0, Outer.base
+    store t6, #4:int32 : int32
 
-    t4 = addr_of_symbol local:o1
-    t5 = addr_field t4, Outer.inner
-    t6 = addr_field t5, Inner.arr
-    t7 = addr_index t6, #1:int32, 4
-    store t7, #2:int32 : int32
-
-    t8 = addr_of_symbol local:o1
-    t9 = addr_field t8, Outer.inner
-    t10 = addr_field t9, Inner.value
-    store t10, #3:int32 : int32
-
-    t11 = addr_of_symbol local:o1
-    t12 = addr_field t11, Outer.base
-    store t12, #4:int32 : int32
-
-    t13 = addr_of_symbol local:o1
-    t14 = load t13 : struct Outer
-
-    t15 = addr_of_symbol local:o2
-    store t15, t14 : struct Outer
-
-    t16 = addr_of_symbol local:o2
-    t17 = call func:compute(t16) : int32
-    ret t17
+    t7 = addr_of_symbol local:o2
+    t8 = load t0 : struct Outer
+    store t7, t8 : struct Outer
+    t9 = call func:compute(t7) : int32
+    ret t9
 .endfunc
 
 .endprogram

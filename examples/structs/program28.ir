@@ -14,10 +14,8 @@
   L0:
     t0 = addr_of_symbol param:a
     t1 = load t0 : int32
-
     t2 = addr_of_symbol param:b
     t3 = load t2 : int32
-
     t4 = add t1, t3 : int32
     ret t4
 .endfunc
@@ -31,21 +29,12 @@
     t0 = addr_of_symbol local:p
     t1 = addr_field t0, Point.x
     store t1, #15:int32 : int32
-
-    t2 = addr_of_symbol local:p
-    t3 = addr_field t2, Point.y
-    store t3, #25:int32 : int32
-
-    t4 = addr_of_symbol local:p
-    t5 = addr_field t4, Point.x
-    t6 = load t5 : int32
-
-    t7 = addr_of_symbol local:p
-    t8 = addr_field t7, Point.y
-    t9 = load t8 : int32
-
-    t10 = call func:add(t6, t9) : int32
-    ret t10
+    t2 = addr_field t0, Point.y
+    store t2, #25:int32 : int32
+    t3 = load t1 : int32
+    t4 = load t2 : int32
+    t5 = call func:add(t3, t4) : int32
+    ret t5
 .endfunc
 
 .endprogram

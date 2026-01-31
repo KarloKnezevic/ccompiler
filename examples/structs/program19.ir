@@ -15,33 +15,18 @@
     t0 = addr_of_symbol local:t
     t1 = addr_field t0, Triple.a
     store t1, #1:int32 : int32
-
-    t2 = addr_of_symbol local:t
-    t3 = addr_field t2, Triple.b
-    store t3, #2:int32 : int32
-
-    t4 = addr_of_symbol local:t
-    t5 = addr_field t4, Triple.c
-    store t5, #3:int32 : int32
-
-    t6 = addr_of_symbol local:t
-    t7 = addr_field t6, Triple.a
-    t8 = load t7 : int32
-    t9 = mul t8, #100:int32 : int32
-
-    t10 = addr_of_symbol local:t
-    t11 = addr_field t10, Triple.b
-    t12 = load t11 : int32
-    t13 = mul t12, #10:int32 : int32
-
-    t14 = add t9, t13 : int32
-
-    t15 = addr_of_symbol local:t
-    t16 = addr_field t15, Triple.c
-    t17 = load t16 : int32
-
-    t18 = add t14, t17 : int32
-    ret t18
+    t2 = addr_field t0, Triple.b
+    store t2, #2:int32 : int32
+    t3 = addr_field t0, Triple.c
+    store t3, #3:int32 : int32
+    t4 = load t1 : int32
+    t5 = mul t4, #100:int32 : int32
+    t6 = load t2 : int32
+    t7 = mul t6, #10:int32 : int32
+    t8 = add t5, t7 : int32
+    t9 = load t3 : int32
+    t10 = add t8, t9 : int32
+    ret t10
 .endfunc
 
 .endprogram

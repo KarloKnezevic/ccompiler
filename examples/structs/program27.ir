@@ -13,11 +13,8 @@
     t0 = addr_of_symbol local:s
     t1 = addr_field t0, Single.value
     store t1, #42:int32 : int32
-
-    t2 = addr_of_symbol local:s
-    t3 = addr_field t2, Single.value
-    t4 = load t3 : int32
-    ret t4
+    t2 = load t1 : int32
+    ret t2
 .endfunc
 
 .endprogram

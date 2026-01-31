@@ -18,44 +18,43 @@
     local height@4:int32
   .blocks
   L0:
-    t0 = addr_of_symbol local:width
-    t1 = addr_of_symbol param:rect
-    t2 = load t1 : ptr<struct Rectangle>
-    t3 = addr_field t2, Rectangle.bottom_right
-    t4 = load t3 : ptr<struct Point>
-    t5 = addr_field t4, Point.x
-    t6 = load t5 : int32
-    t7 = addr_of_symbol param:rect
-    t8 = load t7 : ptr<struct Rectangle>
-    t9 = addr_field t8, Rectangle.top_left
-    t10 = load t9 : ptr<struct Point>
-    t11 = addr_field t10, Point.x
-    t12 = load t11 : int32
-    t13 = sub t6, t12 : int32
-    store t0, t13 : int32
-    t14 = addr_of_symbol local:height
-    t15 = addr_of_symbol param:rect
-    t16 = load t15 : ptr<struct Rectangle>
-    t17 = addr_field t16, Rectangle.top_left
-    t18 = load t17 : ptr<struct Point>
-    t19 = addr_field t18, Point.y
-    t20 = load t19 : int32
-    t21 = addr_of_symbol param:rect
-    t22 = load t21 : ptr<struct Rectangle>
-    t23 = addr_field t22, Rectangle.bottom_right
-    t24 = load t23 : ptr<struct Point>
-    t25 = addr_field t24, Point.y
-    t26 = load t25 : int32
-    t27 = sub t20, t26 : int32
-    store t14, t27 : int32
-    t28 = addr_of_symbol local:width
-    t29 = load t28 : int32
-    t30 = addr_of_symbol local:height
-    t31 = load t30 : int32
-    t32 = mul t29, t31 : int32
-    ret t32
+    t0 = addr_of_symbol param:rect
+    t1 = load t0 : ptr<struct Rectangle>
+    t2 = addr_field t1, Rectangle.bottom_right
+    t3 = load t2 : ptr<struct Point>
+    t4 = addr_field t3, Point.x
+    t5 = load t4 : int32
+    t6 = load t0 : ptr<struct Rectangle>
+    t7 = addr_field t6, Rectangle.top_left
+    t8 = load t7 : ptr<struct Point>
+    t9 = addr_field t8, Point.x
+    t10 = load t9 : int32
+    t11 = sub t5, t10 : int32
 
+    t12 = addr_of_symbol local:width
+    store t12, t11 : int32
+
+    t13 = load t0 : ptr<struct Rectangle>
+    t14 = addr_field t13, Rectangle.top_left
+    t15 = load t14 : ptr<struct Point>
+    t16 = addr_field t15, Point.y
+    t17 = load t16 : int32
+    t18 = load t0 : ptr<struct Rectangle>
+    t19 = addr_field t18, Rectangle.bottom_right
+    t20 = load t19 : ptr<struct Point>
+    t21 = addr_field t20, Point.y
+    t22 = load t21 : int32
+    t23 = sub t17, t22 : int32
+
+    t24 = addr_of_symbol local:height
+    store t24, t23 : int32
+
+    t25 = load t12 : int32
+    t26 = load t24 : int32
+    t27 = mul t25, t26 : int32
+    ret t27
 .endfunc
+
 .func main():int32
   .frame locals=28 bytes align=4
   .slots
@@ -68,31 +67,25 @@
     t0 = addr_of_symbol local:p1
     t1 = addr_field t0, Point.x
     store t1, #0:int32 : int32
-    t2 = addr_of_symbol local:p1
-    t3 = addr_field t2, Point.y
-    store t3, #10:int32 : int32
-    t4 = addr_of_symbol local:p2
-    t5 = addr_field t4, Point.x
-    store t5, #5:int32 : int32
-    t6 = addr_of_symbol local:p2
-    t7 = addr_field t6, Point.y
-    store t7, #0:int32 : int32
-    t8 = addr_of_symbol local:rect
-    t9 = addr_field t8, Rectangle.top_left
-    t10 = addr_of_symbol local:p1
-    store t9, t10 : ptr<struct Point>
-    t11 = addr_of_symbol local:rect
-    t12 = addr_field t11, Rectangle.bottom_right
-    t13 = addr_of_symbol local:p2
-    store t12, t13 : ptr<struct Point>
-    t14 = addr_of_symbol local:area
-    t15 = addr_of_symbol local:rect
-    t16 = call func:calculate_area(t15):int32
-    store t14, t16 : int32
-    t17 = addr_of_symbol local:area
-    t18 = load t17 : int32
-    ret t18
+    t2 = addr_field t0, Point.y
+    store t2, #10:int32 : int32
 
+    t3 = addr_of_symbol local:p2
+    t4 = addr_field t3, Point.x
+    store t4, #5:int32 : int32
+    t5 = addr_field t3, Point.y
+    store t5, #0:int32 : int32
+
+    t6 = addr_of_symbol local:rect
+    t7 = addr_field t6, Rectangle.top_left
+    store t7, t0 : ptr<struct Point>
+    t8 = addr_field t6, Rectangle.bottom_right
+    store t8, t3 : ptr<struct Point>
+    t9 = call func:calculate_area(t6) : int32
+    t10 = addr_of_symbol local:area
+    store t10, t9 : int32
+    t11 = load t10 : int32
+    ret t11
 .endfunc
 
 .endprogram

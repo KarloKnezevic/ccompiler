@@ -20,7 +20,7 @@
   .slots
   .blocks
   L0:
-    t0 = call func:add(#1.5:float, #2.5:float):float
+    t0 = call func:add(#1.5:float, #2.5:float) : float
     ret t0
 .endfunc
 
