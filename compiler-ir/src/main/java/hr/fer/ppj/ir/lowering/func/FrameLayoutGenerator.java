@@ -27,8 +27,10 @@ public final class FrameLayoutGenerator {
 
   /**
    * Generates parameter slots for a function.
+   *
+   * @return the offset after all parameters (for locals to start at)
    */
-  public void generateParameterSlots(
+  public int generateParameterSlots(
       IrFunctionBuilder builder, List<IrFunction.Parameter> parameters) {
     Objects.requireNonNull(builder, "builder must not be null");
     Objects.requireNonNull(parameters, "parameters must not be null");
@@ -48,10 +50,14 @@ public final class FrameLayoutGenerator {
       builder.addSlot(slot);
       offset += paramSize;
     }
+    
+    return offset;
   }
 
   /**
    * Computes and sets the final frame size for a function.
+   * The frame "locals" value is the total space used by all slots (params + locals),
+   * as locals start after params.
    */
   public void computeFrameSize(IrFunctionBuilder builder) {
     Objects.requireNonNull(builder, "builder must not be null");
@@ -60,6 +66,7 @@ public final class FrameLayoutGenerator {
     int maxOffset = 0;
     int maxAlign = 4;
 
+    // Only count LOCAL slots in frame size - params are passed by the caller
     for (IrSlot slot : allSlots) {
       if (slot.kind() == IrSlot.Kind.LOCAL) {
         int slotEnd = slot.offset() + getTypeSize(slot.type());

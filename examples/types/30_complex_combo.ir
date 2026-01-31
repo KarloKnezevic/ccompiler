@@ -6,12 +6,12 @@
 }
 
 .func distance(p1:ptr<struct Point>, p2:ptr<struct Point>):float
-  .frame locals=16 bytes align=4
+  .frame locals=8 bytes align=4
   .slots
+    local dx@0:float
     param p1@0:ptr<struct Point>
+    local dy@4:float
     param p2@4:ptr<struct Point>
-    local dx@8:float
-    local dy@12:float
   .blocks
   L0:
     t0 = addr_of_symbol param:p1
@@ -23,8 +23,10 @@
     t6 = addr_field t5, Point.x
     t7 = load t6 : float
     t8 = sub t3, t7 : float
+
     t9 = addr_of_symbol local:dx
     store t9, t8 : float
+
     t10 = load t0 : ptr<struct Point>
     t11 = addr_field t10, Point.y
     t12 = load t11 : float
@@ -32,10 +34,13 @@
     t14 = addr_field t13, Point.y
     t15 = load t14 : float
     t16 = sub t12, t15 : float
+
     t17 = addr_of_symbol local:dy
     store t17, t16 : float
+
     t18 = load t9 : float
     t19 = mul t18, t18 : float
+
     t20 = load t17 : float
     t21 = mul t20, t20 : float
     t22 = add t19, t21 : float
@@ -54,16 +59,18 @@
     local count@68:int32
   .blocks
   L0:
-    t0 = addr_of_symbol local:count
-    store t0, #10:int32 : int32
-    t1 = addr_of_symbol local:arr
-    t2 = addr_of_symbol local:p
-    store t2, t1 : ptr<int32>
+    t0 = addr_of_symbol local:arr
+    t1 = addr_of_symbol local:p
+    store t1, t0 : ptr<int32>
+    t2 = addr_of_symbol local:count
+    store t2, #10:int32 : int32
+
     t3 = addr_of_symbol local:p1
     t4 = addr_field t3, Point.x
     store t4, #1.0:float : float
     t5 = addr_field t3, Point.y
     store t5, #2.0:float : float
+
     t6 = addr_of_symbol local:p2
     t7 = addr_field t6, Point.x
     store t7, #3.0:float : float
@@ -75,15 +82,13 @@
     t11 = addr_of_symbol local:i
     store t11, #0:int32 : int32
     jmp L1
-
   L1:
     t12 = addr_of_symbol local:i
     t13 = load t12 : int32
     t14 = addr_of_symbol local:count
     t15 = load t14 : int32
     t16 = cmp_lt t13, t15 : bool
-    br t16, L2, L5
-
+    br t16, L2, L3
   L2:
     t17 = addr_of_symbol local:arr
     t18 = addr_of_symbol local:i
@@ -95,22 +100,22 @@
     t24 = load t18 : int32
     t25 = add t23, t24 : int32
     store t20, t25 : int32
-    t26 = load t20 : int32
-    t27 = cmp_gt t26, #100:int32 : bool
-    br t27, L4, L3
 
+    t26 = load t18 : int32
+    t27 = addr_index t17, t26, 4
+    t28 = load t27 : int32
+    t29 = cmp_gt t28, #100:int32 : bool
+    br t29, L4, L5
   L3:
-    t28 = addr_of_symbol local:i
-    t29 = load t28 : int32
-    t30 = add t29, #1:int32 : int32
-    store t28, t30 : int32
-    jmp L1
-
-  L4:
-    jmp L5
-
-  L5:
     ret #0:int32
+  L4:
+    jmp L3
+  L5:
+    t30 = addr_of_symbol local:i
+    t31 = load t30 : int32
+    t32 = add t31, #1:int32 : int32
+    store t30, t32 : int32
+    jmp L1
 .endfunc
 
 .endprogram
