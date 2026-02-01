@@ -7,7 +7,6 @@ import hr.fer.ppj.parser.grammar.GrammarParser;
 import hr.fer.ppj.parser.io.TokenReader;
 import hr.fer.ppj.parser.io.TokenReader.Token;
 import hr.fer.ppj.parser.lr.LRParser;
-import hr.fer.ppj.parser.lr.LRTableBuilder;
 import hr.fer.ppj.parser.table.LRTable;
 import hr.fer.ppj.parser.tree.ParseTree;
 import java.io.IOException;
@@ -18,34 +17,42 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- * Main parser class that coordinates grammar parsing, table generation, and parsing.
+ * Main parser class that coordinates grammar parsing, table generation, and
+ * parsing.
  * 
- * <p>This class orchestrates the entire parsing process:
+ * <p>
+ * This class orchestrates the entire parsing process:
  * <ol>
- *   <li>Parses the grammar definition from {@code parser_definition.txt}</li>
- *   <li>Computes FIRST sets for the grammar</li>
- *   <li>Builds or loads cached LR(1) parsing tables</li>
- *   <li>Reads input tokens from lexer output</li>
- *   <li>Parses tokens into a parse tree</li>
- *   <li>Generates output files: {@code generativno_stablo.txt} and {@code sintaksno_stablo.txt}</li>
+ * <li>Parses the grammar definition from {@code parser_definition.txt}</li>
+ * <li>Computes FIRST sets for the grammar</li>
+ * <li>Builds or loads cached LR(1) parsing tables</li>
+ * <li>Reads input tokens from lexer output</li>
+ * <li>Parses tokens into a parse tree</li>
+ * <li>Generates output files: {@code generativno_stablo.txt} and
+ * {@code sintaksno_stablo.txt}</li>
  * </ol>
  * 
- * <p>Usage:
+ * <p>
+ * Usage:
+ * 
  * <pre>
  * ParserConfig.Config config = ParserConfig.Config.createDefault(inputTokens, outputDir);
  * Parser parser = new Parser();
  * parser.parse(config);
  * </pre>
  * 
- * <p>The parser uses canonical LR(1) parsing algorithm and generates approximately 823 states
- * for the PPJ grammar. Parsing tables are cached to avoid regeneration on every run.
+ * <p>
+ * The parser uses canonical LR(1) parsing algorithm and generates approximately
+ * 823 states
+ * for the PPJ grammar. Parsing tables are cached to avoid regeneration on every
+ * run.
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */
 public final class Parser {
-  
+
   private static final Logger LOG = Logger.getLogger(Parser.class.getName());
-  
+
   /**
    * Parses input tokens according to the grammar and generates output files.
    * 
@@ -73,13 +80,24 @@ public final class Parser {
    * Parses already tokenized input using the default grammar definition.
    */
   public ParseTree parseTokens(List<TokenReader.Token> tokens) throws ParserException {
-    return parseTokens(ParserConfig.getParserDefinitionPath(), tokens);
+    return parseTokens(ParserConfig.getParserDefinitionPath(), tokens, null);
+  }
+
+  public ParseTree parseTokens(List<TokenReader.Token> tokens, hr.fer.ppj.common.diagnostic.DiagnosticReporter reporter)
+      throws ParserException {
+    return parseTokens(ParserConfig.getParserDefinitionPath(), tokens, reporter);
   }
 
   /**
    * Parses already tokenized input using the provided grammar definition path.
    */
   public ParseTree parseTokens(Path grammarDefinition, List<TokenReader.Token> tokens)
+      throws ParserException {
+    return parseTokens(grammarDefinition, tokens, null);
+  }
+
+  public ParseTree parseTokens(Path grammarDefinition, List<TokenReader.Token> tokens,
+      hr.fer.ppj.common.diagnostic.DiagnosticReporter reporter)
       throws ParserException {
     try {
       LOG.info("Parsing grammar from " + grammarDefinition);
@@ -89,7 +107,7 @@ public final class Parser {
       LOG.info("Building LR(1) parsing table");
       LRTable table = hr.fer.ppj.parser.table.LRTableCache.getOrBuild(grammar, firstComputer);
       LOG.info("Parsing " + tokens.size() + " tokens");
-      LRParser parser = new LRParser(table, grammar);
+      LRParser parser = new LRParser(table, grammar, reporter);
       return parser.parse(tokens);
     } catch (IOException e) {
       throw new ParserException("I/O error: " + e.getMessage(), e);
@@ -97,7 +115,7 @@ public final class Parser {
       throw new ParserException(e.getMessage(), e);
     }
   }
-  
+
   /**
    * Parses the grammar definition file.
    */
@@ -108,7 +126,7 @@ public final class Parser {
     }
     return new Grammar(parser);
   }
-  
+
   /**
    * Reads tokens from the lexer output file.
    */
@@ -118,7 +136,7 @@ public final class Parser {
       return reader.readTokens(fileReader);
     }
   }
-  
+
   /**
    * Writes the generative tree to file.
    */
@@ -126,7 +144,7 @@ public final class Parser {
     String output = tree.toGenerativeTreeString();
     Files.writeString(outputPath, output);
   }
-  
+
   /**
    * Writes the syntax tree to file.
    */
@@ -144,7 +162,7 @@ public final class Parser {
       LOG.warning("Failed to write parse error outputs: " + e.getMessage());
     }
   }
-  
+
   /**
    * Exception thrown by the parser.
    */
@@ -152,10 +170,9 @@ public final class Parser {
     public ParserException(String message) {
       super(message);
     }
-    
+
     public ParserException(String message, Throwable cause) {
       super(message, cause);
     }
   }
 }
-

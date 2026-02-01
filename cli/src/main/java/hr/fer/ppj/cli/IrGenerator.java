@@ -23,7 +23,8 @@ import java.util.List;
 /**
  * Command-line tool to generate IR from a C source file.
  * 
- * <p>Usage: java IrGenerator <input.c> [output.ir]
+ * <p>
+ * Usage: java IrGenerator <input.c> [output.ir]
  * If output.ir is not specified, writes to stdout.
  */
 public final class IrGenerator {
@@ -51,7 +52,7 @@ public final class IrGenerator {
       try (FileReader reader = new FileReader(specPath.toFile())) {
         lexerResult = generator.generate(reader);
       }
-      
+
       Lexer lexer = new Lexer(lexerResult);
       List<Token> tokens;
       try (Reader reader = new FileReader(inputPath.toFile())) {
@@ -70,13 +71,29 @@ public final class IrGenerator {
       SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
       SemanticAnalyzer.SemanticAnalysisResult semanticResult;
       try {
-        semanticResult = semanticAnalyzer.analyzeWithResults(parseTree, System.err, null);
+        hr.fer.ppj.common.diagnostic.DiagnosticReporter reporter = new hr.fer.ppj.common.diagnostic.DiagnosticReporter() {
+          @Override
+          public void report(hr.fer.ppj.common.diagnostic.Diagnostic diagnostic) {
+            System.err.println(diagnostic.message());
+          }
+
+          @Override
+          public boolean hasErrors() {
+            return false;
+          }
+
+          @Override
+          public java.util.List<hr.fer.ppj.common.diagnostic.Diagnostic> getDiagnostics() {
+            return java.util.Collections.emptyList();
+          }
+        };
+        semanticResult = semanticAnalyzer.analyzeWithResults(parseTree, reporter, null);
         NonTerminalNode semanticTree = semanticResult.parseTree();
-        
+
         // Generate IR
         IrProgram irProgram = IrPipeline.generate(semanticResult.globalScope(), semanticTree);
         String irString = IrPipeline.print(irProgram);
-        
+
         // Write output
         if (outputFile != null) {
           Files.writeString(Paths.get(outputFile), irString);
@@ -108,4 +125,3 @@ public final class IrGenerator {
     }
   }
 }
-

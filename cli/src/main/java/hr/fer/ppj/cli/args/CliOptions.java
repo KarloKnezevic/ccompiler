@@ -19,6 +19,7 @@ public final class CliOptions {
   private final Path outputDir;
   private final Path goldenDir;
   private final boolean recursive;
+  private final String filter;
 
   private CliOptions(Builder builder) {
     this.command = builder.command;
@@ -26,6 +27,7 @@ public final class CliOptions {
     this.outputDir = builder.outputDir != null ? builder.outputDir : Paths.get(DEFAULT_OUTPUT_DIR);
     this.goldenDir = builder.goldenDir;
     this.recursive = builder.recursive;
+    this.filter = builder.filter;
   }
 
   public Command command() {
@@ -48,6 +50,10 @@ public final class CliOptions {
     return recursive;
   }
 
+  public Optional<String> filter() {
+    return Optional.ofNullable(filter);
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -61,6 +67,7 @@ public final class CliOptions {
     SEMANTIC,
     IR,
     IR_TEST,
+    TEST,
     RUN,
     HELP
   }
@@ -71,8 +78,10 @@ public final class CliOptions {
     private Path outputDir;
     private Path goldenDir;
     private boolean recursive;
+    private String filter;
 
-    private Builder() {}
+    private Builder() {
+    }
 
     public Builder command(Command command) {
       this.command = command;
@@ -96,6 +105,11 @@ public final class CliOptions {
 
     public Builder recursive(boolean recursive) {
       this.recursive = recursive;
+      return this;
+    }
+
+    public Builder filter(String filter) {
+      this.filter = filter;
       return this;
     }
 

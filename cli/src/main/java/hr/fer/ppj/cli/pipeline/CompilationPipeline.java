@@ -21,12 +21,13 @@ import java.util.List;
 /**
  * Compilation pipeline that orchestrates all compiler phases.
  *
- * <p>Phases:
+ * <p>
+ * Phases:
  * <ol>
- *   <li>Lexical analysis - tokenizes source code</li>
- *   <li>Syntax analysis - builds parse tree</li>
- *   <li>Semantic analysis - type checking and symbol resolution</li>
- *   <li>IR generation - generates intermediate representation</li>
+ * <li>Lexical analysis - tokenizes source code</li>
+ * <li>Syntax analysis - builds parse tree</li>
+ * <li>Semantic analysis - type checking and symbol resolution</li>
+ * <li>IR generation - generates intermediate representation</li>
  * </ol>
  *
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
@@ -87,7 +88,23 @@ public final class CompilationPipeline {
    */
   public SemanticAnalysisResult semanticAnalysis(ParseTree parseTree) throws Exception {
     SemanticAnalyzer analyzer = new SemanticAnalyzer();
-    return analyzer.analyzeWithResults(parseTree, System.out, null);
+    hr.fer.ppj.common.diagnostic.DiagnosticReporter reporter = new hr.fer.ppj.common.diagnostic.DiagnosticReporter() {
+      @Override
+      public void report(hr.fer.ppj.common.diagnostic.Diagnostic diagnostic) {
+        System.out.println(diagnostic.message());
+      }
+
+      @Override
+      public boolean hasErrors() {
+        return false;
+      }
+
+      @Override
+      public java.util.List<hr.fer.ppj.common.diagnostic.Diagnostic> getDiagnostics() {
+        return java.util.Collections.emptyList();
+      }
+    };
+    return analyzer.analyzeWithResults(parseTree, reporter, null);
   }
 
   /**
@@ -129,7 +146,8 @@ public final class CompilationPipeline {
   /**
    * Result of lexical analysis.
    */
-  public record LexicalResult(List<Token> tokens, List<SymbolTableEntry> symbolTable) {}
+  public record LexicalResult(List<Token> tokens, List<SymbolTableEntry> symbolTable) {
+  }
 
   /**
    * Result of the full compilation pipeline.
@@ -139,5 +157,6 @@ public final class CompilationPipeline {
       ParseTree parseTree,
       SemanticAnalysisResult semantic,
       IrProgram irProgram,
-      String irString) {}
+      String irString) {
+  }
 }

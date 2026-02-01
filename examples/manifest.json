@@ -1,0 +1,3834 @@
+[
+  {
+    "id": "0001",
+    "path": "valid/basics/0001_basics_program40",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "10"
+    }
+  },
+  {
+    "id": "0002",
+    "path": "valid/basics/0002_basics_program21",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "4"
+    }
+  },
+  {
+    "id": "0003",
+    "path": "valid/basics/0003_basics_program25",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "32"
+    }
+  },
+  {
+    "id": "0004",
+    "path": "valid/basics/0004_basics_program44",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "2"
+    }
+  },
+  {
+    "id": "0005",
+    "path": "valid/basics/0005_basics_program10",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "91"
+    }
+  },
+  {
+    "id": "0006",
+    "path": "valid/basics/0006_basics_program6",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "172"
+    }
+  },
+  {
+    "id": "0007",
+    "path": "valid/basics/0007_basics_program35",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "2"
+    }
+  },
+  {
+    "id": "0008",
+    "path": "valid/basics/0008_basics_program8",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "3"
+    }
+  },
+  {
+    "id": "0009",
+    "path": "valid/basics/0009_basics_program2",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "3"
+    }
+  },
+  {
+    "id": "0010",
+    "path": "valid/basics/0010_basics_program31",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "5"
+    }
+  },
+  {
+    "id": "0011",
+    "path": "valid/basics/0011_basics_program14",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "12"
+    }
+  },
+  {
+    "id": "0012",
+    "path": "valid/basics/0012_basics_program28",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "124"
+    }
+  },
+  {
+    "id": "0013",
+    "path": "valid/basics/0013_basics_program43",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "5"
+    }
+  },
+  {
+    "id": "0014",
+    "path": "valid/basics/0014_basics_program22",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "21"
+    }
+  },
+  {
+    "id": "0015",
+    "path": "valid/basics/0015_basics_program26",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "98"
+    }
+  },
+  {
+    "id": "0016",
+    "path": "valid/basics/0016_basics_program36",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "15"
+    }
+  },
+  {
+    "id": "0017",
+    "path": "valid/basics/0017_basics_program5",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "210"
+    }
+  },
+  {
+    "id": "0018",
+    "path": "valid/basics/0018_basics_program13",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "123"
+    }
+  },
+  {
+    "id": "0019",
+    "path": "valid/basics/0019_basics_program19",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "28"
+    }
+  },
+  {
+    "id": "0020",
+    "path": "valid/basics/0020_basics_program17",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "123"
+    }
+  },
+  {
+    "id": "0021",
+    "path": "valid/basics/0021_basics_program38",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "25"
+    }
+  },
+  {
+    "id": "0022",
+    "path": "valid/basics/0022_basics_program32",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "84"
+    }
+  },
+  {
+    "id": "0023",
+    "path": "valid/basics/0023_basics_program1",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "71"
+    }
+  },
+  {
+    "id": "0024",
+    "path": "valid/basics/0024_basics_program23",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "11"
+    }
+  },
+  {
+    "id": "0025",
+    "path": "valid/basics/0025_basics_program42",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "5"
+    }
+  },
+  {
+    "id": "0026",
+    "path": "valid/basics/0026_basics_program29",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "123"
+    }
+  },
+  {
+    "id": "0027",
+    "path": "valid/basics/0027_basics_program27",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "12"
+    }
+  },
+  {
+    "id": "0028",
+    "path": "valid/basics/0028_basics_program37",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "59"
+    }
+  },
+  {
+    "id": "0029",
+    "path": "valid/basics/0029_basics_program4",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "72"
+    }
+  },
+  {
+    "id": "0030",
+    "path": "valid/basics/0030_basics_program18",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "32"
+    }
+  },
+  {
+    "id": "0031",
+    "path": "valid/basics/0031_basics_program12",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "90"
+    }
+  },
+  {
+    "id": "0032",
+    "path": "valid/basics/0032_basics_program16",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "167"
+    }
+  },
+  {
+    "id": "0033",
+    "path": "valid/basics/0033_basics_program33",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "16"
+    }
+  },
+  {
+    "id": "0034",
+    "path": "valid/basics/0034_basics_program39",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "112"
+    }
+  },
+  {
+    "id": "0035",
+    "path": "valid/basics/0035_basics_program20",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "99"
+    }
+  },
+  {
+    "id": "0036",
+    "path": "valid/basics/0036_basics_program41",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "2"
+    }
+  },
+  {
+    "id": "0037",
+    "path": "valid/basics/0037_basics_program24",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "12"
+    }
+  },
+  {
+    "id": "0038",
+    "path": "valid/basics/0038_basics_program11",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0039",
+    "path": "valid/basics/0039_basics_program7",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "31"
+    }
+  },
+  {
+    "id": "0040",
+    "path": "valid/basics/0040_basics_program34",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "2"
+    }
+  },
+  {
+    "id": "0041",
+    "path": "valid/basics/0041_basics_program3",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "31"
+    }
+  },
+  {
+    "id": "0042",
+    "path": "valid/basics/0042_basics_program30",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "5"
+    }
+  },
+  {
+    "id": "0043",
+    "path": "valid/basics/0043_basics_program9",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "3"
+    }
+  },
+  {
+    "id": "0044",
+    "path": "valid/basics/0044_basics_program15",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "13"
+    }
+  },
+  {
+    "id": "0045",
+    "path": "valid/arithmetic_float/0045_float_neg_paren",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "-12"
+    }
+  },
+  {
+    "id": "0046",
+    "path": "valid/arithmetic_float/0046_float_neg_mul",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "-12"
+    }
+  },
+  {
+    "id": "0047",
+    "path": "valid/arithmetic_float/0047_float_simple_sub",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0048",
+    "path": "valid/arithmetic_float/0048_float_add",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "3"
+    }
+  },
+  {
+    "id": "0049",
+    "path": "valid/arithmetic_float/0049_float_sub",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "-0"
+    }
+  },
+  {
+    "id": "0050",
+    "path": "valid/arithmetic_float/0050_float_chained_mul",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "13"
+    }
+  },
+  {
+    "id": "0051",
+    "path": "valid/arithmetic_int/0051_int_sub",
+    "valid": true,
+    "category": "arithmetic_int",
+    "tags": [
+      "arithmetic_int"
+    ],
+    "expected": {
+      "return": "-1"
+    }
+  },
+  {
+    "id": "0052",
+    "path": "valid/arithmetic_int/0052_int_add",
+    "valid": true,
+    "category": "arithmetic_int",
+    "tags": [
+      "arithmetic_int"
+    ],
+    "expected": {
+      "return": "7"
+    }
+  },
+  {
+    "id": "0053",
+    "path": "valid/arithmetic_float/0053_float_neg_grouped",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "-12"
+    }
+  },
+  {
+    "id": "0054",
+    "path": "valid/arithmetic_int/0054_int_neg_paren",
+    "valid": true,
+    "category": "arithmetic_int",
+    "tags": [
+      "arithmetic_int"
+    ],
+    "expected": {
+      "return": "-12"
+    }
+  },
+  {
+    "id": "0055",
+    "path": "valid/arithmetic_int/0055_int_neg_grouped",
+    "valid": true,
+    "category": "arithmetic_int",
+    "tags": [
+      "arithmetic_int"
+    ],
+    "expected": {
+      "return": "-12"
+    }
+  },
+  {
+    "id": "0056",
+    "path": "valid/arithmetic_int/0056_int_mul",
+    "valid": true,
+    "category": "arithmetic_int",
+    "tags": [
+      "arithmetic_int"
+    ],
+    "expected": {
+      "return": "12"
+    }
+  },
+  {
+    "id": "0057",
+    "path": "valid/arithmetic_float/0057_float_precedence1",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "5"
+    }
+  },
+  {
+    "id": "0058",
+    "path": "valid/arithmetic_float/0058_float_div",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "2"
+    }
+  },
+  {
+    "id": "0059",
+    "path": "valid/arithmetic_int/0059_int_neg_mul",
+    "valid": true,
+    "category": "arithmetic_int",
+    "tags": [
+      "arithmetic_int"
+    ],
+    "expected": {
+      "return": "-12"
+    }
+  },
+  {
+    "id": "0060",
+    "path": "valid/arithmetic_float/0060_float_neg_add",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "-3"
+    }
+  },
+  {
+    "id": "0061",
+    "path": "valid/arithmetic_float/0061_float_precedence2",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "6"
+    }
+  },
+  {
+    "id": "0062",
+    "path": "valid/arithmetic_float/0062_float_mul",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "12"
+    }
+  },
+  {
+    "id": "0063",
+    "path": "valid/arithmetic_int/0063_int_div",
+    "valid": true,
+    "category": "arithmetic_int",
+    "tags": [
+      "arithmetic_int"
+    ],
+    "expected": {
+      "return": "2"
+    }
+  },
+  {
+    "id": "0064",
+    "path": "valid/arithmetic_float/0064_arithmetic_float_program21",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "2"
+    }
+  },
+  {
+    "id": "0065",
+    "path": "valid/arithmetic_float/0065_arithmetic_float_program25",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0066",
+    "path": "valid/arithmetic_float/0066_arithmetic_float_program10",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0067",
+    "path": "valid/arithmetic_float/0067_arithmetic_float_program6",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0068",
+    "path": "valid/arithmetic_float/0068_arithmetic_float_program8",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0069",
+    "path": "valid/arithmetic_float/0069_arithmetic_float_program2",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0070",
+    "path": "valid/arithmetic_float/0070_arithmetic_float_program14",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0071",
+    "path": "valid/arithmetic_float/0071_arithmetic_float_program28",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0072",
+    "path": "valid/arithmetic_float/0072_arithmetic_float_program22",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0073",
+    "path": "valid/arithmetic_float/0073_arithmetic_float_program26",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0074",
+    "path": "valid/arithmetic_float/0074_arithmetic_float_program5",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0075",
+    "path": "valid/arithmetic_float/0075_arithmetic_float_program13",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0076",
+    "path": "valid/arithmetic_float/0076_arithmetic_float_program19",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0077",
+    "path": "valid/arithmetic_float/0077_arithmetic_float_program17",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0078",
+    "path": "valid/arithmetic_float/0078_arithmetic_float_program1",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0079",
+    "path": "valid/arithmetic_float/0079_arithmetic_float_program23",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0080",
+    "path": "valid/arithmetic_float/0080_arithmetic_float_program29",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0081",
+    "path": "valid/arithmetic_float/0081_arithmetic_float_program27",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0082",
+    "path": "valid/arithmetic_float/0082_arithmetic_float_program4",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0083",
+    "path": "valid/arithmetic_float/0083_arithmetic_float_program18",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0084",
+    "path": "valid/arithmetic_float/0084_arithmetic_float_program12",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0085",
+    "path": "valid/arithmetic_float/0085_arithmetic_float_program16",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0086",
+    "path": "valid/arithmetic_float/0086_arithmetic_float_program20",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0087",
+    "path": "valid/arithmetic_float/0087_arithmetic_float_program24",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0088",
+    "path": "valid/arithmetic_float/0088_arithmetic_float_program11",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0089",
+    "path": "valid/arithmetic_float/0089_arithmetic_float_program7",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0090",
+    "path": "valid/arithmetic_float/0090_arithmetic_float_program3",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0091",
+    "path": "valid/arithmetic_float/0091_arithmetic_float_program30",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0092",
+    "path": "valid/arithmetic_float/0092_arithmetic_float_program9",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0093",
+    "path": "valid/arithmetic_float/0093_arithmetic_float_program15",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0094",
+    "path": "valid/arithmetic_float/0094_03_basic_mul",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0095",
+    "path": "valid/arithmetic_float/0095_15_small_float",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0096",
+    "path": "valid/arithmetic_float/0096_01_basic_add",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0097",
+    "path": "valid/arithmetic_float/0097_06_float_cast",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0098",
+    "path": "valid/arithmetic_float/0098_18_phi",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0099",
+    "path": "valid/arithmetic_float/0099_05_neg_mul1",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0100",
+    "path": "valid/arithmetic_float/0100_16_div_neg3",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0101",
+    "path": "valid/arithmetic_float/0101_21_exponent_uppercase",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0102",
+    "path": "valid/arithmetic_float/0102_09_pi_e_mul",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "8"
+    }
+  },
+  {
+    "id": "0103",
+    "path": "valid/arithmetic_float/0103_17_e",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0104",
+    "path": "valid/arithmetic_float/0104_16_pi",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0105",
+    "path": "valid/arithmetic_float/0105_02_basic_sub",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0106",
+    "path": "valid/arithmetic_float/0106_15_div_neg2",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0107",
+    "path": "valid/arithmetic_float/0107_12_neg_triple_mul",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "9"
+    }
+  },
+  {
+    "id": "0108",
+    "path": "valid/arithmetic_float/0108_14_zero",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0109",
+    "path": "valid/arithmetic_float/0109_19_exponent",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0110",
+    "path": "valid/arithmetic_float/0110_09_comparison_eq",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0111",
+    "path": "valid/arithmetic_float/0111_04_basic_div",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0112",
+    "path": "valid/arithmetic_float/0112_10_xyz_mul",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "13"
+    }
+  },
+  {
+    "id": "0113",
+    "path": "valid/arithmetic_float/0113_08_comparison_lt",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0114",
+    "path": "valid/arithmetic_float/0114_06_neg_mul2",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "-12"
+    }
+  },
+  {
+    "id": "0115",
+    "path": "valid/arithmetic_float/0115_05_mixed_int_float",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0116",
+    "path": "valid/arithmetic_float/0116_13_div_basic",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0117",
+    "path": "valid/arithmetic_float/0117_07_int_cast",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "3"
+    }
+  },
+  {
+    "id": "0118",
+    "path": "valid/arithmetic_float/0118_11_triple_mul",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "10"
+    }
+  },
+  {
+    "id": "0119",
+    "path": "valid/arithmetic_float/0119_05_neg_mul",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "-12"
+    }
+  },
+  {
+    "id": "0120",
+    "path": "valid/arithmetic_float/0120_22_decimal_only",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0121",
+    "path": "valid/arithmetic_float/0121_14_div_neg",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0122",
+    "path": "valid/arithmetic_float/0122_13_complex_expr",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0123",
+    "path": "valid/arithmetic_float/0123_11_float_variable",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0124",
+    "path": "valid/arithmetic_float/0124_08_neg_mul4",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "-12"
+    }
+  },
+  {
+    "id": "0125",
+    "path": "valid/arithmetic_float/0125_12_float_parameter",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0126",
+    "path": "valid/arithmetic_float/0126_17_div_fractional",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0127",
+    "path": "valid/arithmetic_float/0127_07_neg_mul3",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "-12"
+    }
+  },
+  {
+    "id": "0128",
+    "path": "valid/arithmetic_float/0128_20_exponent_negative",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0129",
+    "path": "valid/arithmetic_float/0129_10_negative_float",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0130",
+    "path": "valid/structs/0130_structs_program21",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "5"
+    }
+  },
+  {
+    "id": "0131",
+    "path": "valid/structs/0131_structs_program25",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "11"
+    }
+  },
+  {
+    "id": "0132",
+    "path": "valid/structs/0132_program_comprehensive",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "10"
+    }
+  },
+  {
+    "id": "0133",
+    "path": "valid/structs/0133_structs_program10",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "30"
+    }
+  },
+  {
+    "id": "0134",
+    "path": "valid/structs/0134_structs_program6",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "100"
+    }
+  },
+  {
+    "id": "0135",
+    "path": "valid/structs/0135_structs_program8",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "40"
+    }
+  },
+  {
+    "id": "0136",
+    "path": "valid/structs/0136_structs_program2",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "52"
+    }
+  },
+  {
+    "id": "0137",
+    "path": "valid/structs/0137_structs_program14",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "55"
+    }
+  },
+  {
+    "id": "0138",
+    "path": "valid/structs/0138_structs_program28",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "40"
+    }
+  },
+  {
+    "id": "0139",
+    "path": "valid/structs/0139_structs_program22",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "10"
+    }
+  },
+  {
+    "id": "0140",
+    "path": "valid/structs/0140_structs_program26",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "4"
+    }
+  },
+  {
+    "id": "0141",
+    "path": "valid/structs/0141_structs_program5",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "35"
+    }
+  },
+  {
+    "id": "0142",
+    "path": "valid/structs/0142_test_deep",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "17"
+    }
+  },
+  {
+    "id": "0143",
+    "path": "valid/structs/0143_structs_program13",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "6"
+    }
+  },
+  {
+    "id": "0144",
+    "path": "valid/structs/0144_structs_program19",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "123"
+    }
+  },
+  {
+    "id": "0145",
+    "path": "valid/structs/0145_structs_program17",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "17"
+    }
+  },
+  {
+    "id": "0146",
+    "path": "valid/structs/0146_structs_program1",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "30"
+    }
+  },
+  {
+    "id": "0147",
+    "path": "valid/structs/0147_structs_program23",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "52"
+    }
+  },
+  {
+    "id": "0148",
+    "path": "valid/structs/0148_structs_program29",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "10"
+    }
+  },
+  {
+    "id": "0149",
+    "path": "valid/structs/0149_structs_program27",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "42"
+    }
+  },
+  {
+    "id": "0150",
+    "path": "valid/structs/0150_structs_program4",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "65"
+    }
+  },
+  {
+    "id": "0151",
+    "path": "valid/structs/0151_structs_program18",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "17"
+    }
+  },
+  {
+    "id": "0152",
+    "path": "valid/structs/0152_structs_program12",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "103"
+    }
+  },
+  {
+    "id": "0153",
+    "path": "valid/structs/0153_structs_program16",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "33"
+    }
+  },
+  {
+    "id": "0154",
+    "path": "valid/structs/0154_structs_program20",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "100"
+    }
+  },
+  {
+    "id": "0155",
+    "path": "valid/structs/0155_structs_program24",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "10"
+    }
+  },
+  {
+    "id": "0156",
+    "path": "valid/structs/0156_structs_program11",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "42"
+    }
+  },
+  {
+    "id": "0157",
+    "path": "valid/structs/0157_structs_program7",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "10"
+    }
+  },
+  {
+    "id": "0158",
+    "path": "valid/structs/0158_structs_program3",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "15"
+    }
+  },
+  {
+    "id": "0159",
+    "path": "valid/structs/0159_structs_program30",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "10"
+    }
+  },
+  {
+    "id": "0160",
+    "path": "valid/structs/0160_structs_program9",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "16"
+    }
+  },
+  {
+    "id": "0161",
+    "path": "valid/structs/0161_structs_program15",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "15"
+    }
+  },
+  {
+    "id": "0162",
+    "path": "invalid/sema_types/0162_18_if_struct_condition",
+    "valid": false,
+    "category": "sema_types",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "use of undeclared identifier|type mismatch|error"
+      }
+    }
+  },
+  {
+    "id": "0163",
+    "path": "invalid/sema_types/0163_20_break_continue_outside_loop",
+    "valid": false,
+    "category": "sema_types",
+    "tags": [
+      "control_flow"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "use of undeclared identifier|type mismatch|error"
+      }
+    }
+  },
+  {
+    "id": "0164",
+    "path": "valid/arithmetic_float/0164_17_if_float_condition",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0165",
+    "path": "valid/pointers/0165_08_pointer_arithmetic",
+    "valid": true,
+    "category": "pointers",
+    "tags": [
+      "pointers"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0166",
+    "path": "valid/pointers/0166_11_const_pointer",
+    "valid": true,
+    "category": "pointers",
+    "tags": [
+      "pointers"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0167",
+    "path": "valid/arithmetic_float/0167_12_cast_int_float",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0168",
+    "path": "valid/arithmetic_float/0168_01_float_basic",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0169",
+    "path": "valid/structs/0169_05_struct_nested",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0170",
+    "path": "invalid/sema_types/0170_27_uninitialized_use",
+    "valid": false,
+    "category": "sema_types",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "use of undeclared identifier|type mismatch|error"
+      }
+    }
+  },
+  {
+    "id": "0171",
+    "path": "valid/pointers/0171_13_cast_pointer_int",
+    "valid": true,
+    "category": "pointers",
+    "tags": [
+      "pointers"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0172",
+    "path": "valid/structs/0172_29_mixed_pointer_struct",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0173",
+    "path": "invalid/sema_types/0173_10_const_variable",
+    "valid": false,
+    "category": "sema_types",
+    "tags": [
+      "const"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "use of undeclared identifier|type mismatch|error"
+      }
+    }
+  },
+  {
+    "id": "0174",
+    "path": "valid/structs/0174_16_struct_array_fields",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0175",
+    "path": "invalid/sema_other/0175_14_cast_struct_invalid",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0176",
+    "path": "valid/arithmetic_float/0176_02_float_promotions",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0177",
+    "path": "invalid/sema_types/0177_26_multiple_definitions",
+    "valid": false,
+    "category": "sema_types",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "use of undeclared identifier|type mismatch|error"
+      }
+    }
+  },
+  {
+    "id": "0178",
+    "path": "valid/arrays/0178_15_array_param_decay",
+    "valid": true,
+    "category": "arrays",
+    "tags": [
+      "arrays"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0179",
+    "path": "valid/structs/0179_04_struct_simple",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0180",
+    "path": "valid/control_flow/0180_21_for_loop_semantics",
+    "valid": true,
+    "category": "control_flow",
+    "tags": [
+      "control_flow"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0181",
+    "path": "valid/pointers/0181_07_pointer_basic",
+    "valid": true,
+    "category": "pointers",
+    "tags": [
+      "pointers"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0182",
+    "path": "valid/arrays/0182_28_array_initialization",
+    "valid": true,
+    "category": "arrays",
+    "tags": [
+      "arrays"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0183",
+    "path": "invalid/sema_other/0183_09_pointer_invalid_deref",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0184",
+    "path": "valid/basics/0184_24_nested_scopes",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0185",
+    "path": "valid/pointers/0185_19_while_pointer_condition",
+    "valid": true,
+    "category": "pointers",
+    "tags": [
+      "pointers"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0186",
+    "path": "valid/comparisons/0186_30_complex_combo",
+    "valid": true,
+    "category": "comparisons",
+    "tags": [
+      "comparisons"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0187",
+    "path": "invalid/sema_types/0187_22_return_type_mismatch",
+    "valid": false,
+    "category": "sema_types",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "use of undeclared identifier|type mismatch|error"
+      }
+    }
+  },
+  {
+    "id": "0188",
+    "path": "valid/arithmetic_float/0188_03_float_relational",
+    "valid": true,
+    "category": "arithmetic_float",
+    "tags": [
+      "arithmetic_float"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0189",
+    "path": "invalid/sema_types/0189_06_struct_incomplete",
+    "valid": false,
+    "category": "sema_types",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "use of undeclared identifier|type mismatch|error"
+      }
+    }
+  },
+  {
+    "id": "0190",
+    "path": "valid/structs/0190_25_struct_typedef_like_tag",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0191",
+    "path": "invalid/sema_types/0191_23_return_void_function",
+    "valid": false,
+    "category": "sema_types",
+    "tags": [
+      "functions"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "use of undeclared identifier|type mismatch|error"
+      }
+    }
+  },
+  {
+    "id": "0192",
+    "path": "valid/basics/0192_25_state_machine",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "15"
+    }
+  },
+  {
+    "id": "0193",
+    "path": "valid/comparisons/0193_23_composite_pattern",
+    "valid": true,
+    "category": "comparisons",
+    "tags": [
+      "comparisons"
+    ],
+    "expected": {
+      "return": "10"
+    }
+  },
+  {
+    "id": "0194",
+    "path": "valid/pointers/0194_07_nested_pointers",
+    "valid": true,
+    "category": "pointers",
+    "tags": [
+      "pointers"
+    ],
+    "expected": {
+      "return": "13"
+    }
+  },
+  {
+    "id": "0195",
+    "path": "valid/basics/0195_17_stack_implementation",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0196",
+    "path": "valid/basics/0196_19_hash_table_like",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "-11"
+    }
+  },
+  {
+    "id": "0197",
+    "path": "valid/basics/0197_15_iterator_pattern",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "15"
+    }
+  },
+  {
+    "id": "0198",
+    "path": "valid/comparisons/0198_12_complex_nested",
+    "valid": true,
+    "category": "comparisons",
+    "tags": [
+      "comparisons"
+    ],
+    "expected": {
+      "return": "20"
+    }
+  },
+  {
+    "id": "0199",
+    "path": "valid/basics/0199_01_linked_list_simple",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0200",
+    "path": "valid/basics/0200_27_skip_list_like",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0201",
+    "path": "valid/structs/0201_06_object_like_struct",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "50"
+    }
+  },
+  {
+    "id": "0202",
+    "path": "valid/basics/0202_02_linked_list_traversal",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0203",
+    "path": "valid/basics/0203_11_polymorphism_like",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "78"
+    }
+  },
+  {
+    "id": "0204",
+    "path": "valid/basics/0204_29_object_hierarchy",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "40"
+    }
+  },
+  {
+    "id": "0205",
+    "path": "valid/basics/0205_24_strategy_pattern",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "8"
+    }
+  },
+  {
+    "id": "0206",
+    "path": "valid/basics/0206_20_binary_search_tree",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "10"
+    }
+  },
+  {
+    "id": "0207",
+    "path": "valid/basics/0207_28_red_black_tree",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0208",
+    "path": "valid/basics/0208_04_binary_tree",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "30"
+    }
+  },
+  {
+    "id": "0209",
+    "path": "valid/basics/0209_26_memory_pool",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0210",
+    "path": "valid/basics/0210_16_observer_pattern",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "42"
+    }
+  },
+  {
+    "id": "0211",
+    "path": "valid/basics/0211_03_doubly_linked_list",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0212",
+    "path": "valid/basics/0212_10_class_like_encapsulation",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "10"
+    }
+  },
+  {
+    "id": "0213",
+    "path": "valid/basics/0213_08_circular_list",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0214",
+    "path": "valid/basics/0214_14_tree_with_parent",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0215",
+    "path": "valid/structs/0215_21_trie_structure",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0216",
+    "path": "valid/comparisons/0216_30_ultimate_complex",
+    "valid": true,
+    "category": "comparisons",
+    "tags": [
+      "comparisons"
+    ],
+    "expected": {
+      "return": "3"
+    }
+  },
+  {
+    "id": "0217",
+    "path": "valid/basics/0217_05_tree_traversal",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0218",
+    "path": "valid/basics/0218_18_queue_implementation",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0219",
+    "path": "valid/structs/0219_09_graph_structure",
+    "valid": true,
+    "category": "structs",
+    "tags": [
+      "structs"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0220",
+    "path": "valid/basics/0220_22_avl_tree_like",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0221",
+    "path": "valid/basics/0221_13_list_with_data",
+    "valid": true,
+    "category": "basics",
+    "tags": [
+      "basics"
+    ],
+    "expected": {
+      "return": "0"
+    }
+  },
+  {
+    "id": "0222",
+    "path": "invalid/sema_other/0222_sema_other_program40",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0223",
+    "path": "invalid/sema_other/0223_sema_other_program21",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0224",
+    "path": "invalid/sema_other/0224_sema_other_program82",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0225",
+    "path": "valid/control_flow/0225_sema_other_program65",
+    "valid": true,
+    "category": "control_flow",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "return": "11"
+    }
+  },
+  {
+    "id": "0226",
+    "path": "invalid/sema_other/0226_sema_other_program61",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0227",
+    "path": "invalid/sema_other/0227_sema_other_program25",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0228",
+    "path": "invalid/sema_other/0228_sema_other_program44",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0229",
+    "path": "invalid/sema_other/0229_sema_other_program10",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0230",
+    "path": "invalid/sema_other/0230_sema_other_program71",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0231",
+    "path": "invalid/sema_other/0231_sema_other_program6",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0232",
+    "path": "invalid/sema_other/0232_sema_other_program35",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0233",
+    "path": "invalid/sema_other/0233_sema_other_program54",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0234",
+    "path": "invalid/sema_other/0234_sema_other_program50",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0235",
+    "path": "invalid/sema_other/0235_sema_other_program8",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0236",
+    "path": "invalid/sema_other/0236_sema_other_program2",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0237",
+    "path": "invalid/sema_other/0237_sema_other_program31",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0238",
+    "path": "invalid/sema_other/0238_sema_other_program75",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0239",
+    "path": "invalid/sema_other/0239_sema_other_program14",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0240",
+    "path": "invalid/sema_other/0240_sema_other_program81",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0241",
+    "path": "valid/control_flow/0241_sema_other_program66",
+    "valid": true,
+    "category": "control_flow",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "return": "10"
+    }
+  },
+  {
+    "id": "0242",
+    "path": "invalid/sema_other/0242_sema_other_program28",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0243",
+    "path": "invalid/sema_other/0243_sema_other_program43",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0244",
+    "path": "invalid/sema_other/0244_sema_other_program49",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0245",
+    "path": "invalid/sema_other/0245_sema_other_program22",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0246",
+    "path": "invalid/sema_other/0246_sema_other_program26",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0247",
+    "path": "invalid/sema_other/0247_sema_other_program47",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0248",
+    "path": "invalid/sema_other/0248_sema_other_program68",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0249",
+    "path": "valid/control_flow/0249_sema_other_program85",
+    "valid": true,
+    "category": "control_flow",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {}
+  },
+  {
+    "id": "0250",
+    "path": "invalid/sema_other/0250_sema_other_program62",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0251",
+    "path": "valid/control_flow/0251_sema_other_program36",
+    "valid": true,
+    "category": "control_flow",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0252",
+    "path": "invalid/sema_other/0252_sema_other_program5",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0253",
+    "path": "invalid/sema_other/0253_sema_other_program57",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0254",
+    "path": "invalid/sema_other/0254_sema_other_program78",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0255",
+    "path": "valid/control_flow/0255_sema_other_program13",
+    "valid": true,
+    "category": "control_flow",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {}
+  },
+  {
+    "id": "0256",
+    "path": "invalid/sema_other/0256_sema_other_program19",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0257",
+    "path": "invalid/sema_other/0257_sema_other_program72",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0258",
+    "path": "valid/control_flow/0258_sema_other_program76",
+    "valid": true,
+    "category": "control_flow",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {}
+  },
+  {
+    "id": "0259",
+    "path": "valid/control_flow/0259_sema_other_program17",
+    "valid": true,
+    "category": "control_flow",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "return": "1"
+    }
+  },
+  {
+    "id": "0260",
+    "path": "invalid/sema_other/0260_sema_other_program38",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0261",
+    "path": "invalid/sema_other/0261_sema_other_program53",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0262",
+    "path": "invalid/sema_other/0262_sema_other_program59",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0263",
+    "path": "invalid/sema_other/0263_sema_other_program32",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0264",
+    "path": "invalid/sema_other/0264_sema_other_program1",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0265",
+    "path": "invalid/sema_other/0265_sema_other_program67",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0266",
+    "path": "invalid/sema_other/0266_sema_other_program80",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0267",
+    "path": "invalid/sema_other/0267_sema_other_program23",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0268",
+    "path": "invalid/sema_other/0268_sema_other_program48",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0269",
+    "path": "valid/control_flow/0269_sema_other_program42",
+    "valid": true,
+    "category": "control_flow",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "return": "-6"
+    }
+  },
+  {
+    "id": "0270",
+    "path": "invalid/sema_other/0270_sema_other_program29",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0271",
+    "path": "invalid/sema_other/0271_sema_other_program46",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0272",
+    "path": "valid/control_flow/0272_sema_other_program27",
+    "valid": true,
+    "category": "control_flow",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "return": "10"
+    }
+  },
+  {
+    "id": "0273",
+    "path": "invalid/sema_other/0273_sema_other_program63",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0274",
+    "path": "invalid/sema_other/0274_sema_other_program84",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0275",
+    "path": "invalid/sema_other/0275_sema_other_program69",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0276",
+    "path": "invalid/sema_other/0276_sema_other_program56",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0277",
+    "path": "invalid/sema_other/0277_sema_other_program37",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0278",
+    "path": "invalid/sema_other/0278_sema_other_program4",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0279",
+    "path": "invalid/sema_other/0279_sema_other_program73",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0280",
+    "path": "invalid/sema_other/0280_sema_other_program18",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0281",
+    "path": "valid/control_flow/0281_sema_other_program12",
+    "valid": true,
+    "category": "control_flow",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {}
+  },
+  {
+    "id": "0282",
+    "path": "invalid/sema_other/0282_sema_other_program79",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0283",
+    "path": "invalid/sema_other/0283_sema_other_program16",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0284",
+    "path": "invalid/sema_other/0284_sema_other_program77",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0285",
+    "path": "invalid/sema_other/0285_sema_other_program33",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0286",
+    "path": "invalid/sema_other/0286_sema_other_program58",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0287",
+    "path": "invalid/sema_other/0287_sema_other_program52",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0288",
+    "path": "invalid/sema_other/0288_sema_other_program39",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0289",
+    "path": "invalid/sema_other/0289_sema_other_program20",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0290",
+    "path": "invalid/sema_other/0290_sema_other_program41",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0291",
+    "path": "valid/control_flow/0291_sema_other_program64",
+    "valid": true,
+    "category": "control_flow",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "return": "10"
+    }
+  },
+  {
+    "id": "0292",
+    "path": "invalid/sema_other/0292_sema_other_program83",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0293",
+    "path": "invalid/sema_other/0293_sema_other_program60",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0294",
+    "path": "invalid/sema_other/0294_sema_other_program45",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0295",
+    "path": "invalid/sema_other/0295_sema_other_program24",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0296",
+    "path": "invalid/sema_other/0296_sema_other_program70",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0297",
+    "path": "invalid/sema_other/0297_sema_other_program11",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0298",
+    "path": "invalid/sema_other/0298_sema_other_program55",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0299",
+    "path": "invalid/sema_other/0299_sema_other_program7",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0300",
+    "path": "invalid/sema_other/0300_sema_other_program34",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0301",
+    "path": "invalid/sema_other/0301_sema_other_program3",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0302",
+    "path": "invalid/sema_other/0302_sema_other_program30",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0303",
+    "path": "invalid/sema_other/0303_sema_other_program9",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0304",
+    "path": "invalid/sema_other/0304_sema_other_program51",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0305",
+    "path": "invalid/sema_other/0305_sema_other_program15",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  },
+  {
+    "id": "0306",
+    "path": "invalid/sema_other/0306_sema_other_program74",
+    "valid": false,
+    "category": "sema_other",
+    "tags": [
+      "sema_other"
+    ],
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
+  }
+]

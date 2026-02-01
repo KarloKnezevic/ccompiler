@@ -29,14 +29,19 @@ import org.junit.jupiter.api.Disabled;
 /**
  * Validates IR generation for all programs in examples/valid.
  *
- * <p>This test suite runs the full compilation pipeline (lexer → parser →
+ * <p>
+ * This test suite runs the full compilation pipeline (lexer → parser →
  * semantic analysis → IR generation) for each C program in examples/valid
  * and compares the generated IR with the expected .ir files using normalized
  * comparison (blank lines are ignored).
  *
- * <p>Generated IR files are written to compiler-bin/ preserving the directory structure.
+ * <p>
+ * Generated IR files are written to compiler-bin/ preserving the directory
+ * structure.
  *
- * <p>To run a specific test, use:
+ * <p>
+ * To run a specific test, use:
+ * 
  * <pre>{@code
  * mvn test -Dtest=ExamplesValidationTest#testProgram1
  * }</pre>
@@ -56,7 +61,7 @@ public class ExamplesValidationTest {
   private static Path findProjectRoot() {
     // Start from the current working directory
     Path current = Paths.get(".").toAbsolutePath().normalize();
-    
+
     // Walk up the directory tree looking for project root indicators
     Path testPath = current;
     for (int i = 0; i < 10; i++) {
@@ -65,22 +70,23 @@ public class ExamplesValidationTest {
           && Files.exists(testPath.resolve("examples"))) {
         return testPath;
       }
-      
-      // Also check if we're in a module directory (has pom.xml but parent has examples)
+
+      // Also check if we're in a module directory (has pom.xml but parent has
+      // examples)
       if (Files.exists(testPath.resolve("pom.xml"))) {
         Path parent = testPath.getParent();
         if (parent != null && Files.exists(parent.resolve("examples"))) {
           return parent;
         }
       }
-      
+
       Path parent = testPath.getParent();
       if (parent == null) {
         break;
       }
       testPath = parent;
     }
-    
+
     // Fallback: try to find examples directory anywhere up the tree
     testPath = current;
     for (int i = 0; i < 10; i++) {
@@ -93,7 +99,7 @@ public class ExamplesValidationTest {
       }
       testPath = parent;
     }
-    
+
     // Last resort: use current directory
     return current;
   }
@@ -195,7 +201,87 @@ public class ExamplesValidationTest {
   }
 
   /**
-   * Discovers all program*.c files in examples/valid and generates test methods.
+   * Runs validation for a single program given its path.
+   * This method only verifies that the compilation succeeds and IR is valid,
+   * without requiring an expected .ir file.
+   */
+  private void validateProgramPath(Path sourceFile) throws IOException {
+    String programName = EXAMPLES_DIR.relativize(sourceFile).toString();
+
+    if (!Files.exists(sourceFile)) {
+      throw new AssertionError("Source file not found: " + sourceFile);
+    }
+
+    // Read source
+    String source = Files.readString(sourceFile, StandardCharsets.UTF_8);
+
+    // Run lexer
+    LexerGenerator generator = new LexerGenerator();
+    LexerGeneratorResult generatorResult;
+    try (FileReader reader = new FileReader(LexerConfig.getLexerDefinitionPath().toFile())) {
+      generatorResult = generator.generate(reader);
+    } catch (Exception e) {
+      throw new AssertionError("Lexer generation failed for " + programName + ": "
+          + e.getMessage(), e);
+    }
+
+    Lexer lexer = new Lexer(generatorResult);
+    List<Token> lexerTokens;
+    try (StringReader reader = new StringReader(source)) {
+      lexerTokens = lexer.tokenize(reader);
+    }
+
+    // Convert lexer tokens to parser tokens
+    List<TokenReader.Token> parserTokens = new ArrayList<>();
+    for (Token token : lexerTokens) {
+      parserTokens.add(new TokenReader.Token(token.type(), token.line(), token.value()));
+    }
+
+    // Run parser
+    Parser parser = new Parser();
+    ParseTree parseTree;
+    try {
+      parseTree = parser.parseTokens(parserTokens);
+    } catch (ParserException e) {
+      throw new AssertionError("Parsing failed for " + programName + ": "
+          + e.getMessage(), e);
+    }
+
+    // Run semantic analysis
+    PrintStream nullStream = new PrintStream(new java.io.ByteArrayOutputStream());
+    SemanticAnalyzer analyzer = new SemanticAnalyzer();
+    SemanticAnalyzer.SemanticAnalysisResult result;
+    try {
+      result = analyzer.analyzeWithResults(parseTree, nullStream, null);
+    } catch (hr.fer.ppj.semantics.errors.SemanticException e) {
+      throw new AssertionError("Semantic analysis failed for " + programName + ": "
+          + e.getMessage(), e);
+    }
+
+    // Generate IR
+    IrProgram irProgram;
+    try {
+      irProgram = IrPipeline.generate(result.globalScope(), result.parseTree());
+    } catch (Exception e) {
+      throw new AssertionError("IR generation failed for " + programName + ": "
+          + e.getMessage(), e);
+    }
+
+    // Verify IR
+    try {
+      IrPipeline.verify(irProgram);
+    } catch (hr.fer.ppj.ir.verify.IrVerifier.IrVerificationException e) {
+      throw new AssertionError("IR verification failed for " + programName + ": "
+          + e.getMessage(), e);
+    }
+
+    // Print IR - just to verify it doesn't throw
+    IrPipeline.print(irProgram);
+  }
+
+  /**
+   * Discovers all *.c files in examples/valid (recursively) and generates test
+   * methods.
    */
   @Test
   @Disabled("Use testAllPrograms() instead")
@@ -205,22 +291,21 @@ public class ExamplesValidationTest {
           + " (project root: " + PROJECT_ROOT + ")");
     }
 
-    List<String> programs = new ArrayList<>();
-    try (Stream<Path> paths = Files.list(EXAMPLES_DIR)) {
+    List<Path> programs = new ArrayList<>();
+    try (Stream<Path> paths = Files.walk(EXAMPLES_DIR)) {
       paths.filter(p -> p.toString().endsWith(".c"))
-          .map(p -> p.getFileName().toString().replace(".c", ""))
-          .filter(name -> name.startsWith("program"))
+          .filter(p -> Files.isRegularFile(p))
           .sorted()
           .forEach(programs::add);
     }
 
     if (programs.isEmpty()) {
-      throw new AssertionError("No program*.c files found in " + EXAMPLES_DIR);
+      throw new AssertionError("No *.c files found in " + EXAMPLES_DIR);
     }
 
     int passed = 0;
     int failed = 0;
-    List<String> failures = new ArrayList<>();
+    List<Path> failures = new ArrayList<>();
 
     System.out.println("Running validation for " + programs.size() + " programs...");
     System.out.println("Project root: " + PROJECT_ROOT);
@@ -228,19 +313,19 @@ public class ExamplesValidationTest {
     System.out.println("Output dir: " + OUTPUT_DIR);
     System.out.println();
 
-    for (String program : programs) {
+    for (Path program : programs) {
       try {
-        validateProgram(program);
+        validateProgramPath(program);
         passed++;
-        System.out.println("PASS: " + program);
+        System.out.println("PASS: " + EXAMPLES_DIR.relativize(program));
       } catch (AssertionError e) {
         failed++;
         failures.add(program);
-        System.err.println("FAIL: " + program + " - " + e.getMessage());
+        System.err.println("FAIL: " + EXAMPLES_DIR.relativize(program) + " - " + e.getMessage());
       } catch (Exception e) {
         failed++;
         failures.add(program);
-        System.err.println("ERROR: " + program + " - " + e.getMessage());
+        System.err.println("ERROR: " + EXAMPLES_DIR.relativize(program) + " - " + e.getMessage());
         e.printStackTrace(System.err);
       }
     }
@@ -252,8 +337,8 @@ public class ExamplesValidationTest {
 
     if (failed > 0) {
       System.err.println("\nFailed programs:");
-      for (String program : failures) {
-        System.err.println("  - " + program);
+      for (Path program : failures) {
+        System.err.println("  - " + EXAMPLES_DIR.relativize(program));
       }
       throw new AssertionError(failed + " program(s) failed validation");
     }
@@ -262,7 +347,8 @@ public class ExamplesValidationTest {
   /**
    * Test all programs in examples/valid.
    * 
-   * <p>This method validates all program*.c files found in examples/valid.
+   * <p>
+   * This method validates all program*.c files found in examples/valid.
    */
   @Test
   public void testAllPrograms() throws IOException {

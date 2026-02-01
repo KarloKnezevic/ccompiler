@@ -7,22 +7,33 @@ import java.nio.file.Paths;
 /**
  * Parses command-line arguments into {@link CliOptions}.
  *
- * <p>Supported commands and flags:
+ * <p>
+ * Supported commands and flags:
  * <ul>
- *   <li>{@code lexer <file>} - Lexical analysis only</li>
- *   <li>{@code syntax <file>} - Lexical + syntax analysis</li>
- *   <li>{@code semantic <file>} - Full compilation pipeline</li>
- *   <li>{@code ir --in <file> [--out <dir>]} - Generate IR for a single file</li>
- *   <li>{@code ir-test --golden <dir> [--out <dir>] [--recursive]} - Run golden IR tests</li>
- *   <li>{@code run <frisc-file>} - Execute FRISC assembly</li>
- *   <li>{@code <file>} - Full compilation (default, same as semantic)</li>
+ * <li>{@code lexer <file>} - Lexical analysis only</li>
+ * <li>{@code syntax <file>} - Lexical + syntax analysis</li>
+ * <li>{@code semantic <file>} - Full compilation pipeline</li>
+ * <li>{@code ir --in <file> [--out 
+ * 
+<dir>
+ * ]} - Generate IR for a single file</li>
+ * <li>{@code ir-test --golden 
+ * 
+<dir>
+ *  [--out 
+ * 
+<dir>
+ * ] [--recursive]} - Run golden IR tests</li>
+ * <li>{@code run <frisc-file>} - Execute FRISC assembly</li>
+ * <li>{@code <file>} - Full compilation (default, same as semantic)</li>
  * </ul>
  *
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */
 public final class ArgsParser {
 
-  private ArgsParser() {}
+  private ArgsParser() {
+  }
 
   /**
    * Parses command-line arguments.
@@ -50,6 +61,7 @@ public final class ArgsParser {
       case "semantic" -> parseSemantic(args);
       case "ir" -> parseIr(args);
       case "ir-test" -> parseIrTest(args);
+      case "test" -> parseTest(args);
       case "run" -> parseRun(args);
       default -> parseDefault(args);
     };
@@ -167,6 +179,20 @@ public final class ArgsParser {
       builder.outputDir(outputDir);
     }
 
+    return builder.build();
+  }
+
+  private static CliOptions parseTest(String[] args) throws ArgsParseException {
+    CliOptions.Builder builder = CliOptions.builder().command(Command.TEST);
+    for (int i = 1; i < args.length; i++) {
+      String arg = args[i];
+      if (arg.equals("--filter") || arg.equals("-f")) {
+        if (i + 1 >= args.length) {
+          throw new ArgsParseException("--filter requires a string argument");
+        }
+        builder.filter(args[++i]);
+      }
+    }
     return builder.build();
   }
 

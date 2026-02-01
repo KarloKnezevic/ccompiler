@@ -1,6 +1,5 @@
 package hr.fer.ppj.cli;
 
-// import hr.fer.ppj.codegen.util.FloatCodegenHelper; // Codegen removed - IR focus only
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -13,7 +12,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * Utility for executing FRISC assembly programs via the FRISCjs simulator.
  * 
- * <p>The FRISC simulator outputs the decimal value of register R6 to stdout.
+ * <p>
+ * The FRISC simulator outputs the decimal value of register R6 to stdout.
  */
 public final class FriscRunner {
 
@@ -124,7 +124,7 @@ public final class FriscRunner {
     public String r6Value() {
       return r6Value;
     }
-    
+
     /**
      * Returns the R6 register value as an integer.
      * 
@@ -137,39 +137,42 @@ public final class FriscRunner {
         return 0;
       }
     }
-    
+
     /**
      * Converts the R6 register value from Q16.16 fixed-point format to float.
      * 
-     * <p>If the R6 value represents a Q16.16 fixed-point number (used for float return values),
+     * <p>
+     * If the R6 value represents a Q16.16 fixed-point number (used for float return
+     * values),
      * this method converts it to the actual float value by dividing by 65536.0.
      * 
-     * <p>Example: If R6 = 65536 (Q16.16), this returns 1.0f
+     * <p>
+     * Example: If R6 = 65536 (Q16.16), this returns 1.0f
      * 
      * @return the float value represented by the Q16.16 integer in R6
      */
     public float r6ValueAsFloat() {
       try {
         int q16_16 = Integer.parseInt(r6Value);
-        // TODO: Re-enable when codegen is added back
-        // return FloatCodegenHelper.q16_16ToFloat(q16_16);
         return (float) q16_16 / 65536.0f; // Simple Q16.16 conversion
       } catch (NumberFormatException e) {
         return 0.0f;
       }
     }
-    
+
     /**
      * Returns the R6 register value formatted as a float string.
      * 
-     * <p>This converts the Q16.16 integer value to float and formats it as a string.
+     * <p>
+     * This converts the Q16.16 integer value to float and formats it as a string.
      * Useful for displaying float results in test output.
      * 
      * @return the float value as a string (e.g., "3.0", "1.5", "-2.25")
      */
     public String r6ValueAsFloatString() {
       float floatValue = r6ValueAsFloat();
-      // Format to remove unnecessary trailing zeros, but keep at least one decimal place for floats
+      // Format to remove unnecessary trailing zeros, but keep at least one decimal
+      // place for floats
       if (floatValue == (int) floatValue) {
         return String.format("%.1f", floatValue);
       } else {
@@ -186,4 +189,3 @@ public final class FriscRunner {
     }
   }
 }
-

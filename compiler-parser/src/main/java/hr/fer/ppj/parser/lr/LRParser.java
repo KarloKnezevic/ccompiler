@@ -14,32 +14,40 @@ import java.util.logging.Logger;
 /**
  * LR(1) parser runtime.
  * 
- * <p>Uses ACTION/GOTO tables to parse tokens into a parse tree.
+ * <p>
+ * Uses ACTION/GOTO tables to parse tokens into a parse tree.
  * 
- * <p>Algorithm:
+ * <p>
+ * Algorithm:
  * <ol>
- *   <li>Initialize with start state</li>
- *   <li>For each token, look up ACTION</li>
- *   <li>SHIFT: push state and create leaf node</li>
- *   <li>REDUCE: pop RHS symbols, create parent node, perform GOTO</li>
- *   <li>ACCEPT: return root of parse tree</li>
+ * <li>Initialize with start state</li>
+ * <li>For each token, look up ACTION</li>
+ * <li>SHIFT: push state and create leaf node</li>
+ * <li>REDUCE: pop RHS symbols, create parent node, perform GOTO</li>
+ * <li>ACCEPT: return root of parse tree</li>
  * </ol>
  * 
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */
 public final class LRParser {
-  
+
   private static final Logger LOG = Logger.getLogger(LRParser.class.getName());
   private static final String END_MARKER = "#";
-  
+
   private final LRTable table;
   private final Grammar grammar;
-  
+  private final hr.fer.ppj.common.diagnostic.DiagnosticReporter reporter;
+
   public LRParser(LRTable table, Grammar grammar) {
+    this(table, grammar, null);
+  }
+
+  public LRParser(LRTable table, Grammar grammar, hr.fer.ppj.common.diagnostic.DiagnosticReporter reporter) {
     this.table = table;
     this.grammar = grammar;
+    this.reporter = reporter;
   }
-  
+
   /**
    * Parses a list of tokens into a parse tree.
    * 
@@ -50,21 +58,21 @@ public final class LRParser {
   public ParseTree parse(List<Token> tokens) throws ParseException {
     Stack<Integer> stateStack = new Stack<>();
     Stack<ParseTree> treeStack = new Stack<>();
-    
+
     stateStack.push(0); // Start state
-    
+
     int tokenIndex = 0;
-    
+
     // Add end marker
     List<Token> tokensWithEnd = new ArrayList<>(tokens);
     tokensWithEnd.add(new Token(END_MARKER, tokens.isEmpty() ? 1 : tokens.get(tokens.size() - 1).line(), ""));
-    
+
     while (tokenIndex < tokensWithEnd.size()) {
       Token token = tokensWithEnd.get(tokenIndex);
       int currentState = stateStack.peek();
-      
+
       String action = table.getAction(currentState, token.type());
-      
+
       if (action == null) {
         // Error - log details for debugging
         LOG.warning(String.format(
@@ -81,7 +89,7 @@ public final class LRParser {
         tokenIndex++;
         continue;
       }
-      
+
       if (action.equals("acc")) {
         // Accept
         if (treeStack.size() != 1) {
@@ -92,17 +100,17 @@ public final class LRParser {
         // Shift
         int nextState = Integer.parseInt(action.substring(1));
         stateStack.push(nextState);
-        
+
         // Create leaf node for terminal
         ParseTree leaf = new ParseTree(token.type(), token.line(), token.lexicalUnit());
         treeStack.push(leaf);
-        
+
         tokenIndex++;
       } else if (action.startsWith("r")) {
         // Reduce
         int productionIndex = Integer.parseInt(action.substring(1));
         Production prod = grammar.getAllProductions().get(productionIndex);
-        
+
         // Pop RHS symbols (in reverse order)
         // Handle epsilon productions (empty RHS)
         List<ParseTree> children = new ArrayList<>();
@@ -113,58 +121,59 @@ public final class LRParser {
           }
         }
         // For epsilon productions, no nodes are popped
-        
+
         // Create parent node
         ParseTree parent = new ParseTree(prod.lhs());
         parent.addChildren(children);
         treeStack.push(parent);
-        
+
         // GOTO
         int gotoState = table.getGoto(stateStack.peek(), prod.lhs());
         if (gotoState < 0) {
           throw new ParseException("Parse error: invalid GOTO for " + prod.lhs());
         }
         stateStack.push(gotoState);
-        
+
         // Don't advance token index - reduce doesn't consume input
       } else {
         throw new ParseException("Parse error: unknown action " + action);
       }
     }
-    
+
     throw new ParseException("Parse error: end of input reached without accept");
   }
-  
+
   /**
    * Handles parse errors using panic mode recovery with synchronization tokens.
    * Generates detailed error message in Croatian.
    */
+
   private void handleError(Token token, int currentState, Stack<Integer> stateStack,
-                           Stack<ParseTree> treeStack) throws ParseException {
+      Stack<ParseTree> treeStack) throws ParseException {
     LOG.warning(String.format("Parse error at line %d, token %s", token.line(), token.type()));
-    
+
     // Get available actions for current state to determine expected tokens
     Map<String, String> availableActions = table.getAvailableActions(currentState);
     List<String> expectedTokens = new ArrayList<>();
-    
+
     // Collect expected terminals (those that have actions in current state)
     for (Map.Entry<String, String> entry : availableActions.entrySet()) {
       String symbol = entry.getKey();
       String action = entry.getValue();
-      
+
       // Only include terminals that have valid actions (SHIFT, REDUCE, ACCEPT)
       // Exclude non-terminals (which are in GOTO table, not ACTION table)
       if (action != null && !action.isEmpty() && grammar.isTerminal(symbol)) {
         expectedTokens.add(symbol);
       }
     }
-    
+
     // Build error message in Croatian
     StringBuilder errorMsg = new StringBuilder();
     errorMsg.append("Sintaksna greška na retku ");
     errorMsg.append(token.line());
     errorMsg.append(".\n");
-    
+
     errorMsg.append("Pročitan uniformni znak: ");
     errorMsg.append(token.type());
     if (token.lexicalUnit() != null && !token.lexicalUnit().isEmpty()) {
@@ -173,7 +182,7 @@ public final class LRParser {
       errorMsg.append(")");
     }
     errorMsg.append(".\n");
-    
+
     if (!expectedTokens.isEmpty()) {
       errorMsg.append("Očekivani uniformni znakovi: ");
       // Sort for consistent output
@@ -188,16 +197,27 @@ public final class LRParser {
     } else {
       errorMsg.append("Nema dostupnih očekivanih uniformnih znakova u trenutnom stanju.\n");
     }
-    
+
+    // Report to shared diagnostic reporter if available
+    // We construct a diagnostic BUT we still throw exception because the parser
+    // logic currently expects to stop.
+    // In a future refactor where recovery is implemented, we would report and
+    // continue.
+    if (this.reporter != null) {
+      this.reporter.error(hr.fer.ppj.common.diagnostic.Stage.PARSER,
+          new hr.fer.ppj.common.source.SourceLocation(token.line(), 0),
+          errorMsg.toString().trim());
+    }
+
     // Try to find a synchronization token
     List<String> syncTokens = grammar.getSyncTokens();
-    
+
     // Skip tokens until we find a sync token or end of input
     // For now, just throw an exception with detailed message
     // TODO: Implement proper error recovery
     throw new ParseException(errorMsg.toString());
   }
-  
+
   /**
    * Exception thrown when parsing fails.
    */
@@ -207,4 +227,3 @@ public final class LRParser {
     }
   }
 }
-

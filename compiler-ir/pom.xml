@@ -22,6 +22,11 @@
     <dependencies>
         <dependency>
             <groupId>hr.fer.ppj</groupId>
+            <artifactId>compiler-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>hr.fer.ppj</groupId>
             <artifactId>compiler-semantics</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -26,26 +26,35 @@ import java.util.List;
 /**
  * Command-line interface for the PPJ compiler.
  *
- * <p>This class provides a unified entry point for all compiler operations:
+ * <p>
+ * This class provides a unified entry point for all compiler operations:
  * lexical analysis, syntax analysis, semantic analysis, IR generation, and
  * FRISC program execution.
  *
- * <p><strong>Available Commands:</strong>
+ * <p>
+ * <strong>Available Commands:</strong>
  * <ul>
- *   <li>{@code lexer <file>} - Lexical analysis only (output to stdout)</li>
- *   <li>{@code syntax <file>} - Lexical and syntax analysis</li>
- *   <li>{@code semantic <file>} - Full compilation pipeline</li>
- *   <li>{@code ir --in <file> [--out <dir>]} - Generate IR for single file</li>
- *   <li>{@code ir-test --golden <dir> [--out <dir>]} - Run golden IR tests</li>
- *   <li>{@code run <frisc-file>} - Execute FRISC assembly</li>
- *   <li>{@code <file>} - Full compilation (default, same as semantic)</li>
+ * <li>{@code lexer <file>} - Lexical analysis only (output to stdout)</li>
+ * <li>{@code syntax <file>} - Lexical and syntax analysis</li>
+ * <li>{@code semantic <file>} - Full compilation pipeline</li>
+ * <li>{@code ir --in <file> [--out 
+ * <dir>
+ * ]} - Generate IR for single file</li>
+ * <li>{@code ir-test --golden 
+ * <dir>
+ *  [--out 
+ * <dir>
+ * ]} - Run golden IR tests</li>
+ * <li>{@code run <frisc-file>} - Execute FRISC assembly</li>
+ * <li>{@code <file>} - Full compilation (default, same as semantic)</li>
  * </ul>
  *
  * @author <a href="https://karloknezevic.github.io/">Karlo Knežević</a>
  */
 public final class Main {
 
-  private Main() {}
+  private Main() {
+  }
 
   public static void main(String[] args) {
     if (args.length == 0) {
@@ -70,6 +79,7 @@ public final class Main {
       case HELP -> new HelpCommand().execute(options);
       case IR -> new IrCommand().execute(options);
       case IR_TEST -> new IrTestCommand().execute(options);
+      case TEST -> new hr.fer.ppj.cli.commands.TestCommand().execute(options);
       case LEXER -> runLexer(options);
       case SYNTAX -> runSyntax(options);
       case SEMANTIC -> runSemantic(options);
@@ -155,8 +165,7 @@ public final class Main {
       // Semantic analysis with report
       SemanticAnalyzer analyzer = new SemanticAnalyzer();
       SemanticReport report = SemanticReport.forDirectory(outputDir.toString());
-      SemanticAnalyzer.SemanticAnalysisResult semantic =
-          analyzer.analyzeWithResults(parseTree, System.out, report);
+      SemanticAnalyzer.SemanticAnalysisResult semantic = analyzer.analyzeWithResults(parseTree, System.out, report);
       System.err.println("Semantic analysis completed.");
 
       // IR generation
