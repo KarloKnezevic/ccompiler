@@ -1,0 +1,91 @@
+; ===========================================================================
+; PPJ Compiler - Generated FRISC Assembly Code
+; Source: program.c
+; Generated: 2026-02-05 09:34:16
+; ===========================================================================
+; ===========================================================================
+; Program entry point and initialization
+; ===========================================================================
+        MOVE 40000, R7          ; Initialize stack pointer (SP)
+        CALL F_MAIN             ; Call main
+        HALT                    ; Program end
+; ===========================================================================
+; Function Definitions
+; ===========================================================================
+F_MAIN                          ; Function: main
+        PUSH R5                 ; Save old FP
+        MOVE R7, R5             ; Set FP
+        SUB R7, 3C, R7          ; Allocate locals/temps
+        MOVE 0F, R1             ; Zero words
+        MOVE R7, R0             ; Zero ptr
+        MOVE 0, R2              ; Zero
+L_ZERO_2
+        STORE R2, (R0)          ; Clear
+        ADD R0, 4, R0
+        SUB R1, 1, R1
+        JP_NE L_ZERO_2
+L_MAIN_L0
+        MOVE R5, R0
+        SUB R0, 8, R0           ; Local address
+        STORE R0, (R5-1C)       ; Store temp t0
+        LOAD R0, (R5-1C)        ; Load temp t0
+        STORE R0, (R5-20)       ; Store temp t1
+        LOAD R0, (R5-20)        ; Load temp t1
+        PUSH R0                 ; Save address
+        MOVE 1, R0
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE R5, R0
+        SUB R0, 10, R0          ; Local address
+        STORE R0, (R5-24)       ; Store temp t2
+        LOAD R0, (R5-24)        ; Load temp t2
+        STORE R0, (R5-28)       ; Store temp t3
+        LOAD R0, (R5-28)        ; Load temp t3
+        PUSH R0                 ; Save address
+        MOVE 2, R0
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE R5, R0
+        SUB R0, 18, R0          ; Local address
+        STORE R0, (R5-2C)       ; Store temp t4
+        LOAD R0, (R5-2C)        ; Load temp t4
+        STORE R0, (R5-30)       ; Store temp t5
+        LOAD R0, (R5-30)        ; Load temp t5
+        PUSH R0                 ; Save address
+        MOVE 3, R0
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-1C)        ; Load temp t0
+        ADD R0, 4, R0           ; Field offset
+        STORE R0, (R5-34)       ; Store temp t6
+        LOAD R0, (R5-34)        ; Load temp t6
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-24)        ; Load temp t2
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-24)        ; Load temp t2
+        ADD R0, 4, R0           ; Field offset
+        STORE R0, (R5-38)       ; Store temp t7
+        LOAD R0, (R5-38)        ; Load temp t7
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-2C)        ; Load temp t4
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-2C)        ; Load temp t4
+        ADD R0, 4, R0           ; Field offset
+        STORE R0, (R5-3C)       ; Store temp t8
+        LOAD R0, (R5-3C)        ; Load temp t8
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-1C)        ; Load temp t0
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE 0, R0
+        MOVE R0, R6             ; Set return value
+        JP L_EXIT_F_MAIN_1
+L_EXIT_F_MAIN_1                 ; Function epilogue
+        ADD R7, 3C, R7          ; Deallocate locals/temps
+        POP R5                  ; Restore FP
+        RET                     ; Return
+; ===========================================================================
+; Global Variables
+; ===========================================================================

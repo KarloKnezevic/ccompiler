@@ -1,0 +1,171 @@
+; ===========================================================================
+; PPJ Compiler - Generated FRISC Assembly Code
+; Source: program.c
+; Generated: 2026-02-05 09:34:13
+; ===========================================================================
+; ===========================================================================
+; Program entry point and initialization
+; ===========================================================================
+        MOVE 40000, R7          ; Initialize stack pointer (SP)
+        CALL F_MAIN             ; Call main
+        HALT                    ; Program end
+; ===========================================================================
+; Function Definitions
+; ===========================================================================
+F_INCREMENT_COUNTER             ; Function: increment_counter
+        PUSH R5                 ; Save old FP
+        MOVE R7, R5             ; Set FP
+        SUB R7, 20, R7          ; Allocate locals/temps
+        MOVE 8, R1              ; Zero words
+        MOVE R7, R0             ; Zero ptr
+        MOVE 0, R2              ; Zero
+L_ZERO_2
+        STORE R2, (R0)          ; Clear
+        ADD R0, 4, R0
+        SUB R1, 1, R1
+        JP_NE L_ZERO_2
+L_INCREMENT_COUNTER_L0
+        MOVE R5, R0
+        ADD R0, 8, R0           ; Param address
+        STORE R0, (R5-4)        ; Store temp t0
+        LOAD R0, (R5-4)         ; Load temp t0
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-8)        ; Store temp t1
+        LOAD R0, (R5-8)         ; Load temp t1
+        STORE R0, (R5-0C)       ; Store temp t2
+        LOAD R0, (R5-0C)        ; Load temp t2
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-10)       ; Store temp t3
+        LOAD R0, (R5-4)         ; Load temp t0
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-14)       ; Store temp t4
+        LOAD R0, (R5-14)        ; Load temp t4
+        ADD R0, 4, R0           ; Field offset
+        STORE R0, (R5-18)       ; Store temp t5
+        LOAD R0, (R5-18)        ; Load temp t5
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-1C)       ; Store temp t6
+        LOAD R0, (R5-10)        ; Load temp t3
+        PUSH R0                 ; Save left
+        LOAD R0, (R5-1C)        ; Load temp t6
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-20)       ; Store temp t7
+        LOAD R0, (R5-0C)        ; Load temp t2
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-20)        ; Load temp t7
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE 0, R6              ; Return 0 (void)
+        JP L_EXIT_F_INCREMENT_COUNTER_1
+L_EXIT_F_INCREMENT_COUNTER_1    ; Function epilogue
+        ADD R7, 20, R7          ; Deallocate locals/temps
+        POP R5                  ; Restore FP
+        RET                     ; Return
+F_GET_COUNT                     ; Function: get_count
+        PUSH R5                 ; Save old FP
+        MOVE R7, R5             ; Set FP
+        SUB R7, 10, R7          ; Allocate locals/temps
+        MOVE 4, R1              ; Zero words
+        MOVE R7, R0             ; Zero ptr
+        MOVE 0, R2              ; Zero
+L_ZERO_4
+        STORE R2, (R0)          ; Clear
+        ADD R0, 4, R0
+        SUB R1, 1, R1
+        JP_NE L_ZERO_4
+L_GET_COUNT_L0
+        MOVE R5, R0
+        ADD R0, 8, R0           ; Param address
+        STORE R0, (R5-4)        ; Store temp t0
+        LOAD R0, (R5-4)         ; Load temp t0
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-8)        ; Store temp t1
+        LOAD R0, (R5-8)         ; Load temp t1
+        STORE R0, (R5-0C)       ; Store temp t2
+        LOAD R0, (R5-0C)        ; Load temp t2
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-10)       ; Store temp t3
+        LOAD R0, (R5-10)        ; Load temp t3
+        MOVE R0, R6             ; Set return value
+        JP L_EXIT_F_GET_COUNT_3
+L_EXIT_F_GET_COUNT_3            ; Function epilogue
+        ADD R7, 10, R7          ; Deallocate locals/temps
+        POP R5                  ; Restore FP
+        RET                     ; Return
+F_MAIN                          ; Function: main
+        PUSH R5                 ; Save old FP
+        MOVE R7, R5             ; Set FP
+        SUB R7, 28, R7          ; Allocate locals/temps
+        MOVE 0A, R1             ; Zero words
+        MOVE R7, R0             ; Zero ptr
+        MOVE 0, R2              ; Zero
+L_ZERO_6
+        STORE R2, (R0)          ; Clear
+        ADD R0, 4, R0
+        SUB R1, 1, R1
+        JP_NE L_ZERO_6
+L_MAIN_L0
+        MOVE R5, R0
+        SUB R0, 8, R0           ; Local address
+        STORE R0, (R5-10)       ; Store temp t0
+        LOAD R0, (R5-10)        ; Load temp t0
+        STORE R0, (R5-14)       ; Store temp t1
+        LOAD R0, (R5-14)        ; Load temp t1
+        PUSH R0                 ; Save address
+        MOVE 0, R0
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-10)        ; Load temp t0
+        ADD R0, 4, R0           ; Field offset
+        STORE R0, (R5-18)       ; Store temp t2
+        LOAD R0, (R5-18)        ; Load temp t2
+        PUSH R0                 ; Save address
+        MOVE 5, R0
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-10)        ; Load temp t0
+        STORE R0, (R5-28)       ; Save arg
+        SUB R7, 4, R7           ; Allocate args
+        LOAD R0, (R5-28)        ; Load arg
+        STORE R0, (R7)          ; Store arg
+        CALL F_INCREMENT_COUNTER ; Call increment_counter
+        ADD R7, 4, R7           ; Clean args
+        LOAD R0, (R5-10)        ; Load temp t0
+        STORE R0, (R5-28)       ; Save arg
+        SUB R7, 4, R7           ; Allocate args
+        LOAD R0, (R5-28)        ; Load arg
+        STORE R0, (R7)          ; Store arg
+        CALL F_INCREMENT_COUNTER ; Call increment_counter
+        ADD R7, 4, R7           ; Clean args
+        LOAD R0, (R5-10)        ; Load temp t0
+        STORE R0, (R5-28)       ; Save arg
+        SUB R7, 4, R7           ; Allocate args
+        LOAD R0, (R5-28)        ; Load arg
+        STORE R0, (R7)          ; Store arg
+        CALL F_GET_COUNT        ; Call get_count
+        ADD R7, 4, R7           ; Clean args
+        MOVE R6, R0             ; Return value
+        STORE R0, (R5-1C)       ; Store temp t3
+        MOVE R5, R0
+        SUB R0, 0C, R0          ; Local address
+        STORE R0, (R5-20)       ; Store temp t4
+        LOAD R0, (R5-20)        ; Load temp t4
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-1C)        ; Load temp t3
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-20)        ; Load temp t4
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-24)       ; Store temp t5
+        LOAD R0, (R5-24)        ; Load temp t5
+        MOVE R0, R6             ; Set return value
+        JP L_EXIT_F_MAIN_5
+L_EXIT_F_MAIN_5                 ; Function epilogue
+        ADD R7, 28, R7          ; Deallocate locals/temps
+        POP R5                  ; Restore FP
+        RET                     ; Return
+; ===========================================================================
+; Global Variables
+; ===========================================================================

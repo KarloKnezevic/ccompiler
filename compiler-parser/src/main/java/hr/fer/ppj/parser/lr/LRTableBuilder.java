@@ -291,9 +291,15 @@ public final class LRTableBuilder {
     
     // SHIFT/REDUCE conflict: choose SHIFT
     if (shiftAction != null && !reduceActions.isEmpty()) {
-      LOG.warning(String.format(
+      String message = String.format(
           "SHIFT/REDUCE conflict in state %d for terminal %s: choosing SHIFT",
-          state, terminal));
+          state, terminal);
+      if ("KR_ELSE".equals(terminal)) {
+        // Classic dangling-else conflict: expected and resolved by shifting.
+        LOG.info(message);
+      } else {
+        LOG.warning(message);
+      }
       return shiftAction;
     }
     
@@ -383,4 +389,3 @@ public final class LRTableBuilder {
     return stateToItemSet.get(state);
   }
 }
-

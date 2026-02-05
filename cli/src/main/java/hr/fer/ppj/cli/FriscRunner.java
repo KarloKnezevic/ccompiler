@@ -17,7 +17,8 @@ import java.util.concurrent.TimeUnit;
  */
 public final class FriscRunner {
 
-  private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(5);
+  private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10);
+  private static final String DEFAULT_CPU_FREQ = "100000";
   private static final Path SIMULATOR_PATH = Paths.get("node_modules", "friscjs", "consoleapp", "frisc-console.js");
 
   private final Path workingDirectory;
@@ -45,7 +46,12 @@ public final class FriscRunner {
       return Result.failure("FRISC simulator not found at " + simulator);
     }
 
-    ProcessBuilder pb = new ProcessBuilder("node", simulator.toString(), absoluteFriscFile.toString());
+    ProcessBuilder pb = new ProcessBuilder(
+        "node",
+        simulator.toString(),
+        "-cpufreq",
+        DEFAULT_CPU_FREQ,
+        absoluteFriscFile.toString());
     pb.directory(workingDirectory.toFile());
     pb.redirectErrorStream(true);
 

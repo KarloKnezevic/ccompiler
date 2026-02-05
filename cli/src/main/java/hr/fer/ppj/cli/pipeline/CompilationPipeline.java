@@ -35,6 +35,7 @@ import java.util.List;
 public final class CompilationPipeline {
 
   private final Path lexerSpecPath;
+  private final IrPointerValidator irValidator = new IrPointerValidator();
 
   public CompilationPipeline() {
     this.lexerSpecPath = hr.fer.ppj.lexer.config.LexerConfig.getLexerDefinitionPath();
@@ -57,7 +58,34 @@ public final class CompilationPipeline {
     Lexer lexer = new Lexer(result);
     List<Token> tokens;
     try (Reader reader = new FileReader(sourceFile.toFile())) {
-      tokens = lexer.tokenize(reader);
+      hr.fer.ppj.common.diagnostic.DiagnosticReporter reporter = new hr.fer.ppj.common.diagnostic.DiagnosticReporter() {
+        private final List<hr.fer.ppj.common.diagnostic.Diagnostic> diagnostics = new ArrayList<>();
+        private boolean hasErrors;
+
+        @Override
+        public void report(hr.fer.ppj.common.diagnostic.Diagnostic diagnostic) {
+          diagnostics.add(diagnostic);
+          if (diagnostic.severity() == hr.fer.ppj.common.diagnostic.Severity.ERROR) {
+            hasErrors = true;
+          }
+          System.err.println("Leksička greška na retku " + diagnostic.location().line()
+              + ", stupcu " + diagnostic.location().column() + ": " + diagnostic.message());
+        }
+
+        @Override
+        public boolean hasErrors() {
+          return hasErrors;
+        }
+
+        @Override
+        public List<hr.fer.ppj.common.diagnostic.Diagnostic> getDiagnostics() {
+          return List.copyOf(diagnostics);
+        }
+      };
+      tokens = lexer.tokenize(reader, reporter);
+      if (reporter.hasErrors()) {
+        throw new Exception("Lexical analysis failed");
+      }
     }
 
     return new LexicalResult(List.copyOf(tokens), lexer.getSymbolTable());
@@ -140,6 +168,7 @@ public final class CompilationPipeline {
     SemanticAnalysisResult semantic = semanticAnalysis(parseTree);
     IrProgram irProgram = generateIr(semantic);
     String irString = printIr(irProgram);
+    irValidator.validate(irString);
     return new CompilationResult(lexical, parseTree, semantic, irProgram, irString);
   }
 

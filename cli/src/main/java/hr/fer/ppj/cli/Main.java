@@ -9,6 +9,7 @@ import hr.fer.ppj.cli.commands.IrCommand;
 import hr.fer.ppj.cli.commands.IrTestCommand;
 import hr.fer.ppj.cli.pipeline.CompilationPipeline;
 import hr.fer.ppj.cli.pipeline.CompilationPipeline.LexicalResult;
+import hr.fer.ppj.codegen.frisc.FriscCodeGenerator;
 import hr.fer.ppj.ir.IrPipeline;
 import hr.fer.ppj.lexer.io.Lexer.SymbolTableEntry;
 import hr.fer.ppj.lexer.io.Token;
@@ -149,6 +150,7 @@ public final class Main {
       Path inputFile = options.inputFile().orElseThrow();
       validateInputFile(inputFile);
       Path outputDir = ensureOutputDirectory(options.outputDir());
+      cleanOutputDirectory(outputDir);
 
       CompilationPipeline pipeline = new CompilationPipeline();
 
@@ -175,6 +177,12 @@ public final class Main {
       Path irOutputPath = outputDir.resolve("medukod.ir");
       Files.writeString(irOutputPath, irString);
       System.err.println("IR generation completed: " + irOutputPath);
+
+      // FRISC code generation
+      FriscCodeGenerator codegen = new FriscCodeGenerator();
+      Path friscOutputPath = outputDir.resolve("a.frisc");
+      codegen.generate(irString, friscOutputPath, inputFile.getFileName().toString());
+      System.err.println("FRISC code generation completed: " + friscOutputPath);
 
       return 0;
 
@@ -227,6 +235,20 @@ public final class Main {
       Files.createDirectories(outputDir);
     }
     return outputDir;
+  }
+
+  private static void cleanOutputDirectory(Path outputDir) throws IOException {
+    if (!Files.exists(outputDir)) {
+      return;
+    }
+    try (java.util.stream.Stream<Path> walk = Files.walk(outputDir)) {
+      List<Path> paths = walk.sorted(java.util.Comparator.reverseOrder()).toList();
+      for (Path path : paths) {
+        if (!path.equals(outputDir)) {
+          Files.deleteIfExists(path);
+        }
+      }
+    }
   }
 
   private static void writeLexerOutputFile(LexicalResult lexical, Path outputPath)

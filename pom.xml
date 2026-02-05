@@ -39,6 +39,7 @@
         <module>compiler-parser</module>
         <module>compiler-semantics</module>
         <module>compiler-ir</module>
+        <module>compiler-codegen-frisc</module>
         <module>cli</module>
     </modules>
 
@@ -231,4 +232,3 @@
         </plugins>
     </build>
 </project>
-
