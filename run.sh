@@ -8,21 +8,26 @@
 # and provides helpful error messages.
 #
 # Usage:
-#   ./run.sh <command> [arguments...]
+#   ./run.sh [flags] <source_file.c>
 #
-# Commands:
-#   lexer <file>           Run lexical analysis only
-#   syntax <file>          Run syntax analysis (includes lexical)
-#   semantic <file>        Run semantic analysis (includes all phases)
-#   run <file>             Execute FRISC assembly code
+# Flags:
+#   --lex                 Run lexical analysis only
+#   --parse               Run syntax analysis (includes lexical)
+#   --sem                 Run semantic analysis (includes lex + parse)
+#   --ir                  Generate IR (includes semantic)
+#   --frisc               Generate FRISC (includes IR)
+#   --run                 Execute FRISC output (includes FRISC generation)
+#   --all                 Run all compile stages
+#   --bin <dir>           Output directory (default: compiler-bin)
 #
 # Options:
 #   -h, --help             Show this help message and exit
 #   -v, --version          Show compiler version information
 #
 # Examples:
-#   ./run.sh semantic program.c
-#   ./run.sh run compiler-bin/a.frisc
+#   ./run.sh --lex program.c
+#   ./run.sh --frisc program.c
+#   ./run.sh --all --run program.c
 #   ./run.sh --help
 #
 # Exit Codes:
@@ -70,23 +75,27 @@ print_usage() {
 ${BOLD}PPJ Compiler Run Script${NC}
 
 ${BOLD}Usage:${NC}
-    ./run.sh <command> [arguments...]
+    ./run.sh [flags] <source_file.c>
     ./run.sh [OPTIONS]
 
-${BOLD}Commands:${NC}
-    lexer <file>           Run lexical analysis only
-    syntax <file>          Run syntax analysis (includes lexical)
-    semantic <file>        Run semantic analysis (includes all phases)
-    run <file>             Execute FRISC assembly code
+${BOLD}Flags:${NC}
+    --lex                 Run lexical analysis only
+    --parse               Run syntax analysis (includes lexical)
+    --sem                 Run semantic analysis (includes lex + parse)
+    --ir                  Generate IR (includes semantic)
+    --frisc               Generate FRISC (includes IR)
+    --run                 Execute FRISC output (includes FRISC generation)
+    --all                 Run all compile stages
+    --bin <dir>           Output directory (default: compiler-bin)
 
 ${BOLD}Options:${NC}
     -h, --help             Show this help message and exit
     -v, --version          Show compiler version information
 
 ${BOLD}Examples:${NC}
-    ./run.sh semantic program.c
-    ./run.sh run compiler-bin/a.frisc
-    ./run.sh syntax examples/valid/program1.c
+    ./run.sh --lex program.c
+    ./run.sh --frisc program.c
+    ./run.sh --all --run program.c
     ./run.sh --help
 
 ${BOLD}Note:${NC}
@@ -181,15 +190,19 @@ print_version() {
 parse_arguments() {
     # Handle help and version flags
     if [[ $# -eq 0 ]]; then
-        print_error "No command specified"
+        print_error "No arguments provided"
         echo ""
         print_usage
         exit 1
     fi
-    
+
     case "$1" in
         -h|--help)
-            print_usage
+            if [[ -f "$JAR_FILE" ]]; then
+                "$JAVA_CMD" -jar "$JAR_FILE" --help
+            else
+                print_usage
+            fi
             exit 0
             ;;
         -v|--version)
@@ -197,69 +210,17 @@ parse_arguments() {
             exit 0
             ;;
         *)
-            # Valid command, continue execution
             return 0
             ;;
     esac
 }
 
-validate_command() {
-    local command="$1"
-    local valid_commands=("lexer" "syntax" "semantic" "run")
-    
-    if [[ ! " ${valid_commands[*]} " =~ " ${command} " ]]; then
-        print_error "Invalid command: $command"
-        echo ""
-        echo "Valid commands are: ${valid_commands[*]}"
-        echo ""
-        print_usage
-        exit 1
-    fi
-}
-
-validate_file() {
-    local file="$1"
-    
-    if [[ -z "$file" ]]; then
-        print_error "No file specified for command"
-        echo ""
-        print_usage
-        exit 1
-    fi
-    
-    # For 'run' command, file might be a FRISC assembly file
-    # For other commands, it should be a C source file
-    if [[ ! -f "$file" ]] && [[ ! -f "$SCRIPT_DIR/$file" ]]; then
-        print_warning "File not found: $file"
-        echo ""
-        echo "Please ensure the file exists and the path is correct."
-        exit 1
-    fi
-}
-
 run_compiler() {
-    local command="$1"
-    shift
-    
-    # Validate command
-    validate_command "$command"
-    
-    # Validate file if command requires it
-    if [[ "$command" != "run" ]] || [[ $# -gt 0 ]]; then
-        if [[ $# -eq 0 ]]; then
-            print_error "No file specified for command: $command"
-            echo ""
-            print_usage
-            exit 1
-        fi
-        validate_file "$1"
-    fi
-    
-    # Execute compiler
-    print_info "Executing compiler command: $command"
+    # Execute compiler with provided flags and source file
+    print_info "Executing compiler"
     echo ""
-    
-    if "$JAVA_CMD" -jar "$JAR_FILE" "$command" "$@"; then
+
+    if "$JAVA_CMD" -jar "$JAR_FILE" "$@"; then
         echo ""
         print_success "Command completed successfully"
         return 0
