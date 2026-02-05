@@ -132,69 +132,23 @@ public final class FriscEmitter {
     return sb.toString();
   }
 
-  public void markMulNeeded() {
-    needsMul = true;
-  }
+  public void markMulNeeded() { needsMul = true; }
+  public void markDivNeeded() { needsDiv = true; }
+  public void markModNeeded() { needsMod = true; }
+  public void markFmulNeeded() { needsFmul = true; }
+  public void markFdivNeeded() { needsFdiv = true; }
+  public void markF2iNeeded() { needsF2i = true; }
+  public void markI2fNeeded() { needsI2f = true; }
+  public void markBoundsCheckNeeded() { needsBoundsCheck = true; }
 
-  public void markDivNeeded() {
-    needsDiv = true;
-  }
-
-  public void markModNeeded() {
-    needsMod = true;
-  }
-
-  public void markFmulNeeded() {
-    needsFmul = true;
-  }
-
-  public void markFdivNeeded() {
-    needsFdiv = true;
-  }
-
-  public void markF2iNeeded() {
-    needsF2i = true;
-  }
-
-  public void markI2fNeeded() {
-    needsI2f = true;
-  }
-
-  public void markBoundsCheckNeeded() {
-    needsBoundsCheck = true;
-  }
-
-  public boolean needsMul() {
-    return needsMul;
-  }
-
-  public boolean needsDiv() {
-    return needsDiv;
-  }
-
-  public boolean needsMod() {
-    return needsMod;
-  }
-
-  public boolean needsFmul() {
-    return needsFmul;
-  }
-
-  public boolean needsFdiv() {
-    return needsFdiv;
-  }
-
-  public boolean needsF2i() {
-    return needsF2i;
-  }
-
-  public boolean needsI2f() {
-    return needsI2f;
-  }
-
-  public boolean needsBoundsCheck() {
-    return needsBoundsCheck;
-  }
+  public boolean needsMul() { return needsMul; }
+  public boolean needsDiv() { return needsDiv; }
+  public boolean needsMod() { return needsMod; }
+  public boolean needsFmul() { return needsFmul; }
+  public boolean needsFdiv() { return needsFdiv; }
+  public boolean needsF2i() { return needsF2i; }
+  public boolean needsI2f() { return needsI2f; }
+  public boolean needsBoundsCheck() { return needsBoundsCheck; }
 
   public void writeToFile(Path path) {
     Objects.requireNonNull(path, "path must not be null");
