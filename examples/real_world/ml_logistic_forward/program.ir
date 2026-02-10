@@ -1,0 +1,126 @@
+.program
+
+.globals
+  global W:array<float,3> = { #0.5:float, #-0.25:float, #0.75:float } : array<float,3>
+  global X:array<float,3> = { #1.0:float, #2.0:float, #-1.0:float } : array<float,3>
+
+.func exp_approx(u:float):float
+  .frame locals=12 bytes align=4
+  .slots
+    local term@0:float
+    param u@0:float
+    local sum@4:float
+    local k@8:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:term
+    store t0, #1.0:float : float
+    t1 = addr_of_symbol local:sum
+    store t1, #1.0:float : float
+    t2 = addr_of_symbol local:k
+    store t2, #1:int32 : int32
+    jmp L1
+  L1:
+    t3 = addr_of_symbol local:k
+    t4 = load t3 : int32
+    t5 = cmp_le t4, #10:int32 : bool
+    br t5, L2, L3
+  L2:
+    t6 = addr_of_symbol local:term
+    t7 = load t6 : float
+    t8 = addr_of_symbol param:u
+    t9 = load t8 : float
+    t10 = mul t7, t9 : float
+
+    t11 = addr_of_symbol local:k
+    t12 = load t11 : int32
+    t13 = itof t12 : float
+    t14 = div t10, t13 : float
+    store t6, t14 : float
+
+    t15 = addr_of_symbol local:sum
+    t16 = load t15 : float
+    t17 = load t6 : float
+    t18 = add t16, t17 : float
+    store t15, t18 : float
+
+    t19 = load t11 : int32
+    t20 = add t19, #1:int32 : int32
+    store t11, t20 : int32
+    jmp L1
+  L3:
+    t21 = addr_of_symbol local:sum
+    t22 = load t21 : float
+    ret t22
+.endfunc
+
+.func sigmoid(t:float):float
+  .frame locals=0 bytes align=4
+  .slots
+    param t@0:float
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:t
+    t1 = load t0 : float
+    t2 = neg t1 : float
+    t3 = call func:exp_approx(t2) : float
+    t4 = add #1.0:float, t3 : float
+    t5 = div #1.0:float, t4 : float
+    ret t5
+.endfunc
+
+.func main():int32
+  .frame locals=12 bytes align=4
+  .slots
+    local z@0:float
+    local s@4:float
+    local pred@8:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol global:W
+    t1 = addr_index t0, #0:int32, 4
+    t2 = load t1 : float
+    t3 = addr_of_symbol global:X
+    t4 = addr_index t3, #0:int32, 4
+    t5 = load t4 : float
+    t6 = mul t2, t5 : float
+    t7 = addr_index t0, #1:int32, 4
+    t8 = load t7 : float
+    t9 = addr_index t3, #1:int32, 4
+    t10 = load t9 : float
+    t11 = mul t8, t10 : float
+    t12 = add t6, t11 : float
+    t13 = addr_index t0, #2:int32, 4
+    t14 = load t13 : float
+    t15 = addr_index t3, #2:int32, 4
+    t16 = load t15 : float
+    t17 = mul t14, t16 : float
+    t18 = add t12, t17 : float
+
+    t19 = add t18, #0.1:float : float
+
+    t20 = addr_of_symbol local:z
+    store t20, t19 : float
+
+    t21 = load t20 : float
+    t22 = call func:sigmoid(t21) : float
+    t23 = addr_of_symbol local:s
+    store t23, t22 : float
+    t24 = load t23 : float
+    t25 = cmp_ge t24, #0.5:float : bool
+    br t25, L1, L2
+  L1:
+    t26 = addr_of_symbol local:pred
+    store t26, #1:int32 : int32
+    jmp L3
+  L2:
+    t27 = addr_of_symbol local:pred
+    store t27, #0:int32 : int32
+    jmp L3
+  L3:
+    t28 = addr_of_symbol local:pred
+    t29 = load t28 : int32
+    ret t29
+.endfunc
+
+.endprogram

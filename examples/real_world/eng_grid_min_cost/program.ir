@@ -1,0 +1,169 @@
+.program
+
+.globals
+  global dp:array<int32,16>
+  global grid:array<int32,16> = { #1:int32, #3:int32, #1:int32, #2:int32, #2:int32, #1:int32, #8:int32, #1:int32, #4:int32, #2:int32, #1:int32, #3:int32, #5:int32, #2:int32, #1:int32, #1:int32 } : array<int32,16>
+
+.func min2(a:int32, b:int32):int32
+  .frame locals=0 bytes align=4
+  .slots
+    param a@0:int32
+    param b@4:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:a
+    t1 = load t0 : int32
+    t2 = addr_of_symbol param:b
+    t3 = load t2 : int32
+    t4 = cmp_lt t1, t3 : bool
+    br t4, L1, L2
+  L1:
+    t5 = addr_of_symbol param:a
+    t6 = load t5 : int32
+    ret t6
+  L2:
+    t7 = addr_of_symbol param:b
+    t8 = load t7 : int32
+    ret t8
+.endfunc
+
+.func main():int32
+  .frame locals=16 bytes align=4
+  .slots
+    local i@0:int32
+    local j@4:int32
+    local idx@8:int32
+    local val@12:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:i
+    store t0, #0:int32 : int32
+    jmp L1
+  L1:
+    t1 = addr_of_symbol local:i
+    t2 = load t1 : int32
+    t3 = cmp_lt t2, #4:int32 : bool
+    br t3, L2, L3
+  L10:
+    t73 = addr_of_symbol local:j
+    t74 = load t73 : int32
+    t75 = add t74, #1:int32 : int32
+    store t73, t75 : int32
+    jmp L4
+  L11:
+    t34 = addr_of_symbol global:dp
+    t35 = addr_of_symbol local:idx
+    t36 = load t35 : int32
+    t37 = addr_index t34, t36, 4
+    t38 = sub t36, #1:int32 : int32
+    t39 = addr_index t34, t38, 4
+    t40 = load t39 : int32
+    t41 = addr_of_symbol local:val
+    t42 = load t41 : int32
+    t43 = add t40, t42 : int32
+    store t37, t43 : int32
+    jmp L13
+  L12:
+    t44 = addr_of_symbol local:j
+    t45 = load t44 : int32
+    t46 = cmp_eq t45, #0:int32 : bool
+    br t46, L14, L15
+  L13:
+    jmp L10
+  L14:
+    t47 = addr_of_symbol global:dp
+    t48 = addr_of_symbol local:idx
+    t49 = load t48 : int32
+    t50 = addr_index t47, t49, 4
+    t51 = sub t49, #4:int32 : int32
+    t52 = addr_index t47, t51, 4
+    t53 = load t52 : int32
+    t54 = addr_of_symbol local:val
+    t55 = load t54 : int32
+    t56 = add t53, t55 : int32
+    store t50, t56 : int32
+    jmp L16
+  L15:
+    t57 = addr_of_symbol global:dp
+    t58 = addr_of_symbol local:idx
+    t59 = load t58 : int32
+    t60 = addr_index t57, t59, 4
+    t61 = addr_of_symbol local:val
+    t62 = load t61 : int32
+    t63 = load t58 : int32
+    t64 = sub t63, #4:int32 : int32
+    t65 = addr_index t57, t64, 4
+    t66 = load t65 : int32
+    t67 = load t58 : int32
+    t68 = sub t67, #1:int32 : int32
+    t69 = addr_index t57, t68, 4
+    t70 = load t69 : int32
+    t71 = call func:min2(t66, t70) : int32
+    t72 = add t71, t62 : int32
+    store t60, t72 : int32
+    jmp L16
+  L16:
+    jmp L13
+  L2:
+    t4 = addr_of_symbol local:j
+    store t4, #0:int32 : int32
+    jmp L4
+  L3:
+    t79 = addr_of_symbol global:dp
+    t80 = addr_index t79, #15:int32, 4
+    t81 = load t80 : int32
+    ret t81
+  L4:
+    t5 = addr_of_symbol local:j
+    t6 = load t5 : int32
+    t7 = cmp_lt t6, #4:int32 : bool
+    br t7, L5, L6
+  L5:
+    t8 = addr_of_symbol local:i
+    t9 = load t8 : int32
+    t10 = mul t9, #4:int32 : int32
+
+    t11 = addr_of_symbol local:j
+    t12 = load t11 : int32
+    t13 = add t10, t12 : int32
+
+    t14 = addr_of_symbol local:idx
+    store t14, t13 : int32
+
+    t15 = addr_of_symbol global:grid
+    t16 = load t14 : int32
+    t17 = addr_index t15, t16, 4
+    t18 = load t17 : int32
+    t19 = addr_of_symbol local:val
+    store t19, t18 : int32
+    t20 = load t8 : int32
+    t21 = cmp_eq t20, #0:int32 : bool
+    br t21, L7, L8
+  L6:
+    t76 = addr_of_symbol local:i
+    t77 = load t76 : int32
+    t78 = add t77, #1:int32 : int32
+    store t76, t78 : int32
+    jmp L1
+  L7:
+    t22 = addr_of_symbol local:j
+    t23 = load t22 : int32
+    t24 = cmp_eq t23, #0:int32 : bool
+    br t24, L9, L8
+  L8:
+    t31 = addr_of_symbol local:i
+    t32 = load t31 : int32
+    t33 = cmp_eq t32, #0:int32 : bool
+    br t33, L11, L12
+  L9:
+    t25 = addr_of_symbol global:dp
+    t26 = addr_of_symbol local:idx
+    t27 = load t26 : int32
+    t28 = addr_index t25, t27, 4
+    t29 = addr_of_symbol local:val
+    t30 = load t29 : int32
+    store t28, t30 : int32
+    jmp L10
+.endfunc
+
+.endprogram

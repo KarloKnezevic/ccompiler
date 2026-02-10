@@ -1,0 +1,68 @@
+.program
+
+.globals
+  global a:int32 = #1:int32
+  global b:int32 = #-2:int32
+  global c:int32 = #0:int32
+
+.func main():int32
+  .frame locals=16 bytes align=4
+  .slots
+    local x@0:float
+    local psi@4:float
+    local iter@8:int32
+    local grad@12:float
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:x
+    store t0, #0.0:float : float
+    t1 = addr_of_symbol local:psi
+    store t1, #0.5:float : float
+    t2 = addr_of_symbol local:iter
+    store t2, #0:int32 : int32
+    jmp L1
+  L1:
+    t3 = addr_of_symbol local:iter
+    t4 = load t3 : int32
+    t5 = cmp_lt t4, #20:int32 : bool
+    br t5, L2, L3
+  L2:
+    t6 = addr_of_symbol global:a
+    t7 = load t6 : int32
+    t8 = itof t7 : float
+    t9 = mul #2.0:float, t8 : float
+
+    t10 = addr_of_symbol local:x
+    t11 = load t10 : float
+    t12 = mul t9, t11 : float
+
+    t13 = addr_of_symbol global:b
+    t14 = load t13 : int32
+    t15 = itof t14 : float
+    t16 = add t12, t15 : float
+
+    t17 = addr_of_symbol local:grad
+    store t17, t16 : float
+
+    t18 = load t10 : float
+    t19 = addr_of_symbol local:psi
+    t20 = load t19 : float
+    t21 = load t17 : float
+    t22 = mul t20, t21 : float
+    t23 = sub t18, t22 : float
+    store t10, t23 : float
+
+    t24 = addr_of_symbol local:iter
+    t25 = load t24 : int32
+    t26 = add t25, #1:int32 : int32
+    store t24, t26 : int32
+    jmp L1
+  L3:
+    t27 = addr_of_symbol local:x
+    t28 = load t27 : float
+    t29 = mul t28, #10000.0:float : float
+    t30 = ftoi t29 : int32
+    ret t30
+.endfunc
+
+.endprogram

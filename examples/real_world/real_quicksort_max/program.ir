@@ -1,0 +1,165 @@
+.program
+
+.globals
+  global A:array<int32,20> = { #12:int32, #-3:int32, #45:int32, #7:int32, #7:int32, #0:int32, #-50:int32, #23:int32, #5:int32, #-1:int32, #45:int32, #9:int32, #16:int32, #-20:int32, #33:int32, #2:int32, #-8:int32, #50:int32, #-4:int32, #12:int32 } : array<int32,20>
+
+.func swap(i:int32, j:int32):void
+  .frame locals=4 bytes align=4
+  .slots
+    param i@0:int32
+    local t@0:int32
+    param j@4:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol global:A
+    t1 = addr_of_symbol param:i
+    t2 = load t1 : int32
+    t3 = addr_index t0, t2, 4
+    t4 = load t3 : int32
+    t5 = addr_of_symbol local:t
+    store t5, t4 : int32
+
+    t6 = load t1 : int32
+    t7 = addr_index t0, t6, 4
+    t8 = addr_of_symbol param:j
+    t9 = load t8 : int32
+    t10 = addr_index t0, t9, 4
+    t11 = load t10 : int32
+    store t7, t11 : int32
+
+    t12 = load t8 : int32
+    t13 = addr_index t0, t12, 4
+    t14 = load t5 : int32
+    store t13, t14 : int32
+    ret
+.endfunc
+
+.func partition(low:int32, high:int32):int32
+  .frame locals=12 bytes align=4
+  .slots
+    param low@0:int32
+    local pivot@0:int32
+    param high@4:int32
+    local i@4:int32
+    local j@8:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol global:A
+    t1 = addr_of_symbol param:high
+    t2 = load t1 : int32
+    t3 = addr_index t0, t2, 4
+    t4 = load t3 : int32
+    t5 = addr_of_symbol local:pivot
+    store t5, t4 : int32
+
+    t6 = addr_of_symbol param:low
+    t7 = load t6 : int32
+    t8 = sub t7, #1:int32 : int32
+
+    t9 = addr_of_symbol local:i
+    store t9, t8 : int32
+
+    t10 = load t6 : int32
+    t11 = addr_of_symbol local:j
+    store t11, t10 : int32
+    jmp L1
+  L1:
+    t12 = addr_of_symbol local:j
+    t13 = load t12 : int32
+    t14 = addr_of_symbol param:high
+    t15 = load t14 : int32
+    t16 = cmp_lt t13, t15 : bool
+    br t16, L2, L3
+  L2:
+    t17 = addr_of_symbol global:A
+    t18 = addr_of_symbol local:j
+    t19 = load t18 : int32
+    t20 = addr_index t17, t19, 4
+    t21 = load t20 : int32
+    t22 = addr_of_symbol local:pivot
+    t23 = load t22 : int32
+    t24 = cmp_le t21, t23 : bool
+    br t24, L4, L5
+  L3:
+    t34 = addr_of_symbol local:i
+    t35 = load t34 : int32
+    t36 = add t35, #1:int32 : int32
+
+    t37 = addr_of_symbol param:high
+    t38 = load t37 : int32
+    call func:swap(t36, t38) : void
+    t39 = load t34 : int32
+    t40 = add t39, #1:int32 : int32
+    ret t40
+  L4:
+    t25 = addr_of_symbol local:i
+    t26 = load t25 : int32
+    t27 = add t26, #1:int32 : int32
+    store t25, t27 : int32
+
+    t28 = load t25 : int32
+    t29 = addr_of_symbol local:j
+    t30 = load t29 : int32
+    call func:swap(t28, t30) : void
+    jmp L6
+  L5:
+    jmp L6
+  L6:
+    t31 = addr_of_symbol local:j
+    t32 = load t31 : int32
+    t33 = add t32, #1:int32 : int32
+    store t31, t33 : int32
+    jmp L1
+.endfunc
+
+.func quicksort(low:int32, high:int32):void
+  .frame locals=4 bytes align=4
+  .slots
+    param low@0:int32
+    local p@0:int32
+    param high@4:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:low
+    t1 = load t0 : int32
+    t2 = addr_of_symbol param:high
+    t3 = load t2 : int32
+    t4 = cmp_lt t1, t3 : bool
+    br t4, L1, L2
+  L1:
+    t5 = addr_of_symbol param:low
+    t6 = load t5 : int32
+    t7 = addr_of_symbol param:high
+    t8 = load t7 : int32
+    t9 = call func:partition(t6, t8) : int32
+    t10 = addr_of_symbol local:p
+    store t10, t9 : int32
+
+    t11 = load t5 : int32
+    t12 = load t10 : int32
+    t13 = sub t12, #1:int32 : int32
+    call func:quicksort(t11, t13) : void
+    t14 = load t10 : int32
+    t15 = add t14, #1:int32 : int32
+    t16 = load t7 : int32
+    call func:quicksort(t15, t16) : void
+    jmp L3
+  L2:
+    jmp L3
+  L3:
+    ret
+.endfunc
+
+.func main():int32
+  .frame locals=0 bytes align=4
+  .slots
+  .blocks
+  L0:
+    call func:quicksort(#0:int32, #19:int32) : void
+    t0 = addr_of_symbol global:A
+    t1 = addr_index t0, #19:int32, 4
+    t2 = load t1 : int32
+    ret t2
+.endfunc
+
+.endprogram

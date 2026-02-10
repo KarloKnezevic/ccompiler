@@ -1,0 +1,79 @@
+.program
+
+.func main():int32
+  .frame locals=28 bytes align=4
+  .slots
+    local x@0:float
+    local v@4:float
+    local k@8:float
+    local c@12:float
+    local dt@16:float
+    local a@20:float
+    local i@24:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:x
+    store t0, #1.0:float : float
+    t1 = addr_of_symbol local:v
+    store t1, #0.0:float : float
+    t2 = addr_of_symbol local:k
+    store t2, #1.0:float : float
+    t3 = addr_of_symbol local:c
+    store t3, #0.1:float : float
+    t4 = addr_of_symbol local:dt
+    store t4, #0.1:float : float
+    t5 = addr_of_symbol local:i
+    store t5, #0:int32 : int32
+    jmp L1
+  L1:
+    t6 = addr_of_symbol local:i
+    t7 = load t6 : int32
+    t8 = cmp_lt t7, #20:int32 : bool
+    br t8, L2, L3
+  L2:
+    t9 = addr_of_symbol local:k
+    t10 = load t9 : float
+    t11 = addr_of_symbol local:x
+    t12 = load t11 : float
+    t13 = mul t10, t12 : float
+    t14 = neg t13 : float
+    t15 = addr_of_symbol local:c
+    t16 = load t15 : float
+    t17 = addr_of_symbol local:v
+    t18 = load t17 : float
+    t19 = mul t16, t18 : float
+
+    t20 = sub t14, t19 : float
+
+    t21 = addr_of_symbol local:a
+    store t21, t20 : float
+
+    t22 = load t17 : float
+    t23 = load t21 : float
+    t24 = addr_of_symbol local:dt
+    t25 = load t24 : float
+    t26 = mul t23, t25 : float
+    t27 = add t22, t26 : float
+    store t17, t27 : float
+
+    t28 = load t11 : float
+    t29 = load t17 : float
+    t30 = load t24 : float
+    t31 = mul t29, t30 : float
+    t32 = add t28, t31 : float
+    store t11, t32 : float
+
+    t33 = addr_of_symbol local:i
+    t34 = load t33 : int32
+    t35 = add t34, #1:int32 : int32
+    store t33, t35 : int32
+    jmp L1
+  L3:
+    t36 = addr_of_symbol local:x
+    t37 = load t36 : float
+    t38 = mul t37, #10000.0:float : float
+    t39 = ftoi t38 : int32
+    ret t39
+.endfunc
+
+.endprogram

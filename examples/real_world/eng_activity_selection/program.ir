@@ -1,0 +1,65 @@
+.program
+
+.globals
+  global finish:array<int32,6> = { #2:int32, #4:int32, #6:int32, #7:int32, #9:int32, #9:int32 } : array<int32,6>
+  global start:array<int32,6> = { #1:int32, #3:int32, #0:int32, #5:int32, #8:int32, #5:int32 } : array<int32,6>
+
+.func main():int32
+  .frame locals=12 bytes align=4
+  .slots
+    local count@0:int32
+    local last@4:int32
+    local i@8:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:count
+    store t0, #1:int32 : int32
+    t1 = addr_of_symbol local:last
+    store t1, #0:int32 : int32
+    t2 = addr_of_symbol local:i
+    store t2, #1:int32 : int32
+    jmp L1
+  L1:
+    t3 = addr_of_symbol local:i
+    t4 = load t3 : int32
+    t5 = cmp_lt t4, #6:int32 : bool
+    br t5, L2, L3
+  L2:
+    t6 = addr_of_symbol global:start
+    t7 = addr_of_symbol local:i
+    t8 = load t7 : int32
+    t9 = addr_index t6, t8, 4
+    t10 = load t9 : int32
+    t11 = addr_of_symbol global:finish
+    t12 = addr_of_symbol local:last
+    t13 = load t12 : int32
+    t14 = addr_index t11, t13, 4
+    t15 = load t14 : int32
+    t16 = cmp_ge t10, t15 : bool
+    br t16, L4, L5
+  L3:
+    t26 = addr_of_symbol local:count
+    t27 = load t26 : int32
+    ret t27
+  L4:
+    t17 = addr_of_symbol local:count
+    t18 = load t17 : int32
+    t19 = add t18, #1:int32 : int32
+    store t17, t19 : int32
+
+    t20 = addr_of_symbol local:i
+    t21 = load t20 : int32
+    t22 = addr_of_symbol local:last
+    store t22, t21 : int32
+    jmp L6
+  L5:
+    jmp L6
+  L6:
+    t23 = addr_of_symbol local:i
+    t24 = load t23 : int32
+    t25 = add t24, #1:int32 : int32
+    store t23, t25 : int32
+    jmp L1
+.endfunc
+
+.endprogram

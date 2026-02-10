@@ -1,0 +1,133 @@
+.program
+
+.globals
+  global isPrime:array<char,201>
+
+.func main():int32
+  .frame locals=16 bytes align=4
+  .slots
+    local i@0:int32
+    local p@4:int32
+    local count@8:int32
+    local j@12:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:count
+    store t0, #0:int32 : int32
+    t1 = addr_of_symbol local:i
+    store t1, #0:int32 : int32
+    jmp L1
+  L1:
+    t2 = addr_of_symbol local:i
+    t3 = load t2 : int32
+    t4 = cmp_le t3, #200:int32 : bool
+    br t4, L2, L3
+  L10:
+    t32 = addr_of_symbol global:isPrime
+    t33 = addr_of_symbol local:j
+    t34 = load t33 : int32
+    t35 = addr_index t32, t34, 1
+    store t35, #0:int32 : char
+
+    t36 = load t33 : int32
+    t37 = addr_of_symbol local:p
+    t38 = load t37 : int32
+    t39 = add t36, t38 : int32
+    store t33, t39 : int32
+    jmp L9
+  L11:
+    jmp L12
+  L12:
+    t40 = addr_of_symbol local:p
+    t41 = load t40 : int32
+    t42 = add t41, #1:int32 : int32
+    store t40, t42 : int32
+    jmp L4
+  L13:
+    t44 = addr_of_symbol local:i
+    t45 = load t44 : int32
+    t46 = cmp_le t45, #200:int32 : bool
+    br t46, L14, L15
+  L14:
+    t47 = addr_of_symbol global:isPrime
+    t48 = addr_of_symbol local:i
+    t49 = load t48 : int32
+    t50 = addr_index t47, t49, 1
+    t51 = load t50 : char
+    t52 = cmp_ne t51, #0:char : bool
+    br t52, L16, L17
+  L15:
+    t59 = addr_of_symbol local:count
+    t60 = load t59 : int32
+    ret t60
+  L16:
+    t53 = addr_of_symbol local:count
+    t54 = load t53 : int32
+    t55 = add t54, #1:int32 : int32
+    store t53, t55 : int32
+    jmp L18
+  L17:
+    jmp L18
+  L18:
+    t56 = addr_of_symbol local:i
+    t57 = load t56 : int32
+    t58 = add t57, #1:int32 : int32
+    store t56, t58 : int32
+    jmp L13
+  L2:
+    t5 = addr_of_symbol global:isPrime
+    t6 = addr_of_symbol local:i
+    t7 = load t6 : int32
+    t8 = addr_index t5, t7, 1
+    store t8, #1:int32 : char
+
+    t9 = load t6 : int32
+    t10 = add t9, #1:int32 : int32
+    store t6, t10 : int32
+    jmp L1
+  L3:
+    t11 = addr_of_symbol global:isPrime
+    t12 = addr_index t11, #0:int32, 1
+    store t12, #0:int32 : char
+    t13 = addr_index t11, #1:int32, 1
+    store t13, #0:int32 : char
+    t14 = addr_of_symbol local:p
+    store t14, #2:int32 : int32
+    jmp L4
+  L4:
+    t15 = addr_of_symbol local:p
+    t16 = load t15 : int32
+    t17 = mul t16, t16 : int32
+
+    t18 = cmp_le t17, #200:int32 : bool
+    br t18, L5, L6
+  L5:
+    t19 = addr_of_symbol global:isPrime
+    t20 = addr_of_symbol local:p
+    t21 = load t20 : int32
+    t22 = addr_index t19, t21, 1
+    t23 = load t22 : char
+    t24 = cmp_ne t23, #0:char : bool
+    br t24, L7, L8
+  L6:
+    t43 = addr_of_symbol local:i
+    store t43, #2:int32 : int32
+    jmp L13
+  L7:
+    t25 = addr_of_symbol local:p
+    t26 = load t25 : int32
+    t27 = mul t26, t26 : int32
+
+    t28 = addr_of_symbol local:j
+    store t28, t27 : int32
+    jmp L9
+  L8:
+    jmp L12
+  L9:
+    t29 = addr_of_symbol local:j
+    t30 = load t29 : int32
+    t31 = cmp_le t30, #200:int32 : bool
+    br t31, L10, L11
+.endfunc
+
+.endprogram

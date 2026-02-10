@@ -1,0 +1,104 @@
+.program
+
+.globals
+  global M:array<int32,9> = { #2:int32, #0:int32, #-1:int32, #1:int32, #3:int32, #2:int32, #0:int32, #-2:int32, #4:int32 } : array<int32,9>
+  global V:array<int32,3> = { #3:int32, #-1:int32, #2:int32 } : array<int32,3>
+
+.func main():int32
+  .frame locals=16 bytes align=4
+  .slots
+    local r0@0:int32
+    local r1@4:int32
+    local r2@8:int32
+    local sum@12:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol global:M
+    t1 = addr_index t0, #0:int32, 4
+    t2 = load t1 : int32
+    t3 = addr_of_symbol global:V
+    t4 = addr_index t3, #0:int32, 4
+    t5 = load t4 : int32
+    t6 = mul t2, t5 : int32
+
+    t7 = addr_of_symbol local:r0
+    store t7, t6 : int32
+    t8 = addr_index t0, #1:int32, 4
+    t9 = load t8 : int32
+    t10 = addr_index t3, #1:int32, 4
+    t11 = load t10 : int32
+    t12 = mul t9, t11 : int32
+
+    t13 = load t7 : int32
+    t14 = add t13, t12 : int32
+    store t7, t14 : int32
+    t15 = addr_index t0, #2:int32, 4
+    t16 = load t15 : int32
+    t17 = addr_index t3, #2:int32, 4
+    t18 = load t17 : int32
+    t19 = mul t16, t18 : int32
+
+    t20 = load t7 : int32
+    t21 = add t20, t19 : int32
+    store t7, t21 : int32
+    t22 = addr_index t0, #3:int32, 4
+    t23 = load t22 : int32
+    t24 = load t4 : int32
+    t25 = mul t23, t24 : int32
+
+    t26 = addr_of_symbol local:r1
+    store t26, t25 : int32
+    t27 = addr_index t0, #4:int32, 4
+    t28 = load t27 : int32
+    t29 = load t10 : int32
+    t30 = mul t28, t29 : int32
+
+    t31 = load t26 : int32
+    t32 = add t31, t30 : int32
+    store t26, t32 : int32
+    t33 = addr_index t0, #5:int32, 4
+    t34 = load t33 : int32
+    t35 = load t17 : int32
+    t36 = mul t34, t35 : int32
+
+    t37 = load t26 : int32
+    t38 = add t37, t36 : int32
+    store t26, t38 : int32
+    t39 = addr_index t0, #6:int32, 4
+    t40 = load t39 : int32
+    t41 = load t4 : int32
+    t42 = mul t40, t41 : int32
+
+    t43 = addr_of_symbol local:r2
+    store t43, t42 : int32
+    t44 = addr_index t0, #7:int32, 4
+    t45 = load t44 : int32
+    t46 = load t10 : int32
+    t47 = mul t45, t46 : int32
+
+    t48 = load t43 : int32
+    t49 = add t48, t47 : int32
+    store t43, t49 : int32
+    t50 = addr_index t0, #8:int32, 4
+    t51 = load t50 : int32
+    t52 = load t17 : int32
+    t53 = mul t51, t52 : int32
+
+    t54 = load t43 : int32
+    t55 = add t54, t53 : int32
+    store t43, t55 : int32
+
+    t56 = load t7 : int32
+    t57 = load t26 : int32
+    t58 = add t56, t57 : int32
+
+    t59 = load t43 : int32
+    t60 = add t58, t59 : int32
+
+    t61 = addr_of_symbol local:sum
+    store t61, t60 : int32
+    t62 = load t61 : int32
+    ret t62
+.endfunc
+
+.endprogram

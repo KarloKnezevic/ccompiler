@@ -1,0 +1,167 @@
+.program
+
+.globals
+  global X:float = #0.5:float
+
+.func sin_taylor(x:float):float
+  .frame locals=16 bytes align=4
+  .slots
+    local term@0:float
+    param x@0:float
+    local sum@4:float
+    local k@8:int32
+    local denom@12:float
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:x
+    t1 = load t0 : float
+    t2 = addr_of_symbol local:term
+    store t2, t1 : float
+
+    t3 = load t0 : float
+    t4 = addr_of_symbol local:sum
+    store t4, t3 : float
+    t5 = addr_of_symbol local:k
+    store t5, #1:int32 : int32
+    jmp L1
+  L1:
+    t6 = addr_of_symbol local:k
+    t7 = load t6 : int32
+    t8 = cmp_le t7, #5:int32 : bool
+    br t8, L2, L3
+  L2:
+    t9 = addr_of_symbol local:k
+    t10 = load t9 : int32
+    t11 = mul #2:int32, t10 : int32
+
+    t12 = mul #2:int32, t10 : int32
+    t13 = add t12, #1:int32 : int32
+    t14 = mul t11, t13 : int32
+    t15 = itof t14 : float
+    t16 = addr_of_symbol local:denom
+    store t16, t15 : float
+
+    t17 = addr_of_symbol local:term
+    t18 = load t17 : float
+    t19 = addr_of_symbol param:x
+    t20 = load t19 : float
+    t21 = neg t20 : float
+    t22 = mul t21, t20 : float
+    t23 = mul t18, t22 : float
+
+    t24 = load t16 : float
+    t25 = div t23, t24 : float
+    store t17, t25 : float
+
+    t26 = addr_of_symbol local:sum
+    t27 = load t26 : float
+    t28 = load t17 : float
+    t29 = add t27, t28 : float
+    store t26, t29 : float
+
+    t30 = load t9 : int32
+    t31 = add t30, #1:int32 : int32
+    store t9, t31 : int32
+    jmp L1
+  L3:
+    t32 = addr_of_symbol local:sum
+    t33 = load t32 : float
+    ret t33
+.endfunc
+
+.func cos_taylor(x:float):float
+  .frame locals=16 bytes align=4
+  .slots
+    local term@0:float
+    param x@0:float
+    local sum@4:float
+    local k@8:int32
+    local denom@12:float
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:term
+    store t0, #1.0:float : float
+    t1 = addr_of_symbol local:sum
+    store t1, #1.0:float : float
+    t2 = addr_of_symbol local:k
+    store t2, #1:int32 : int32
+    jmp L1
+  L1:
+    t3 = addr_of_symbol local:k
+    t4 = load t3 : int32
+    t5 = cmp_le t4, #5:int32 : bool
+    br t5, L2, L3
+  L2:
+    t6 = addr_of_symbol local:k
+    t7 = load t6 : int32
+    t8 = mul #2:int32, t7 : int32
+    t9 = sub t8, #1:int32 : int32
+
+    t10 = load t6 : int32
+    t11 = mul #2:int32, t10 : int32
+    t12 = mul t9, t11 : int32
+    t13 = itof t12 : float
+    t14 = addr_of_symbol local:denom
+    store t14, t13 : float
+
+    t15 = addr_of_symbol local:term
+    t16 = load t15 : float
+    t17 = addr_of_symbol param:x
+    t18 = load t17 : float
+    t19 = neg t18 : float
+    t20 = mul t19, t18 : float
+    t21 = mul t16, t20 : float
+
+    t22 = load t14 : float
+    t23 = div t21, t22 : float
+    store t15, t23 : float
+
+    t24 = addr_of_symbol local:sum
+    t25 = load t24 : float
+    t26 = load t15 : float
+    t27 = add t25, t26 : float
+    store t24, t27 : float
+
+    t28 = load t6 : int32
+    t29 = add t28, #1:int32 : int32
+    store t6, t29 : int32
+    jmp L1
+  L3:
+    t30 = addr_of_symbol local:sum
+    t31 = load t30 : float
+    ret t31
+.endfunc
+
+.func main():int32
+  .frame locals=12 bytes align=4
+  .slots
+    local s@0:float
+    local c@4:float
+    local t@8:float
+  .blocks
+  L0:
+    t0 = addr_of_symbol global:X
+    t1 = load t0 : float
+    t2 = call func:sin_taylor(t1) : float
+    t3 = addr_of_symbol local:s
+    store t3, t2 : float
+
+    t4 = load t0 : float
+    t5 = call func:cos_taylor(t4) : float
+    t6 = addr_of_symbol local:c
+    store t6, t5 : float
+
+    t7 = load t3 : float
+    t8 = load t6 : float
+    t9 = div t7, t8 : float
+
+    t10 = addr_of_symbol local:t
+    store t10, t9 : float
+
+    t11 = load t10 : float
+    t12 = mul t11, #10000.0:float : float
+    t13 = ftoi t12 : int32
+    ret t13
+.endfunc
+
+.endprogram

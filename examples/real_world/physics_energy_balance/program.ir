@@ -1,0 +1,47 @@
+.program
+
+.func main():int32
+  .frame locals=20 bytes align=4
+  .slots
+    local m@0:float
+    local g@4:float
+    local h@8:float
+    local v@12:float
+    local energy@16:float
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:m
+    store t0, #2.0:float : float
+    t1 = addr_of_symbol local:g
+    store t1, #1.5:float : float
+    t2 = addr_of_symbol local:h
+    store t2, #3.0:float : float
+    t3 = addr_of_symbol local:v
+    store t3, #2.0:float : float
+
+    t4 = load t0 : float
+    t5 = load t1 : float
+    t6 = mul t4, t5 : float
+
+    t7 = load t2 : float
+    t8 = mul t6, t7 : float
+
+    t9 = load t0 : float
+    t10 = mul #0.5:float, t9 : float
+
+    t11 = load t3 : float
+    t12 = mul t10, t11 : float
+    t13 = mul t12, t11 : float
+
+    t14 = add t8, t13 : float
+
+    t15 = addr_of_symbol local:energy
+    store t15, t14 : float
+
+    t16 = load t15 : float
+    t17 = mul t16, #10000.0:float : float
+    t18 = ftoi t17 : int32
+    ret t18
+.endfunc
+
+.endprogram

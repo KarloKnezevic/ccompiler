@@ -1,0 +1,70 @@
+.program
+
+.globals
+  global a:int32 = #84:int32
+  global b:int32 = #30:int32
+
+.func gcd(x:int32, y:int32):int32
+  .frame locals=4 bytes align=4
+  .slots
+    local t@0:int32
+    param x@0:int32
+    param y@4:int32
+  .blocks
+  L0:
+    jmp L1
+  L1:
+    t0 = addr_of_symbol param:y
+    t1 = load t0 : int32
+    t2 = cmp_ne t1, #0:int32 : bool
+    br t2, L2, L3
+  L2:
+    t3 = addr_of_symbol param:x
+    t4 = load t3 : int32
+    t5 = addr_of_symbol param:y
+    t6 = load t5 : int32
+    t7 = mod t4, t6 : int32
+
+    t8 = addr_of_symbol local:t
+    store t8, t7 : int32
+
+    t9 = load t5 : int32
+    store t3, t9 : int32
+    t10 = load t8 : int32
+    store t5, t10 : int32
+    jmp L1
+  L3:
+    t11 = addr_of_symbol param:x
+    t12 = load t11 : int32
+    ret t12
+.endfunc
+
+.func main():int32
+  .frame locals=8 bytes align=4
+  .slots
+    local g@0:int32
+    local l@4:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol global:a
+    t1 = load t0 : int32
+    t2 = addr_of_symbol global:b
+    t3 = load t2 : int32
+    t4 = call func:gcd(t1, t3) : int32
+    t5 = addr_of_symbol local:g
+    store t5, t4 : int32
+
+    t6 = load t0 : int32
+    t7 = load t5 : int32
+    t8 = div t6, t7 : int32
+
+    t9 = load t2 : int32
+    t10 = mul t8, t9 : int32
+
+    t11 = addr_of_symbol local:l
+    store t11, t10 : int32
+    t12 = load t11 : int32
+    ret t12
+.endfunc
+
+.endprogram

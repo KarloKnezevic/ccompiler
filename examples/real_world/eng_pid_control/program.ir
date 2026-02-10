@@ -1,0 +1,99 @@
+.program
+
+.globals
+  global errors:array<int32,6> = { #5:int32, #4:int32, #3:int32, #2:int32, #1:int32, #0:int32 } : array<int32,6>
+
+.func main():int32
+  .frame locals=36 bytes align=4
+  .slots
+    local kp@0:int32
+    local ki@4:int32
+    local kd@8:int32
+    local prev@12:int32
+    local sum@16:int32
+    local total@20:int32
+    local i@24:int32
+    local e@28:int32
+    local u@32:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:kp
+    store t0, #2:int32 : int32
+    t1 = addr_of_symbol local:ki
+    store t1, #1:int32 : int32
+    t2 = addr_of_symbol local:kd
+    store t2, #1:int32 : int32
+    t3 = addr_of_symbol local:prev
+    store t3, #0:int32 : int32
+    t4 = addr_of_symbol local:sum
+    store t4, #0:int32 : int32
+    t5 = addr_of_symbol local:total
+    store t5, #0:int32 : int32
+    t6 = addr_of_symbol local:i
+    store t6, #0:int32 : int32
+    jmp L1
+  L1:
+    t7 = addr_of_symbol local:i
+    t8 = load t7 : int32
+    t9 = cmp_lt t8, #6:int32 : bool
+    br t9, L2, L3
+  L2:
+    t10 = addr_of_symbol global:errors
+    t11 = addr_of_symbol local:i
+    t12 = load t11 : int32
+    t13 = addr_index t10, t12, 4
+    t14 = load t13 : int32
+    t15 = addr_of_symbol local:e
+    store t15, t14 : int32
+
+    t16 = addr_of_symbol local:sum
+    t17 = load t16 : int32
+    t18 = load t15 : int32
+    t19 = add t17, t18 : int32
+    store t16, t19 : int32
+
+    t20 = addr_of_symbol local:kp
+    t21 = load t20 : int32
+    t22 = load t15 : int32
+    t23 = mul t21, t22 : int32
+
+    t24 = addr_of_symbol local:ki
+    t25 = load t24 : int32
+    t26 = load t16 : int32
+    t27 = mul t25, t26 : int32
+
+    t28 = add t23, t27 : int32
+
+    t29 = addr_of_symbol local:kd
+    t30 = load t29 : int32
+    t31 = load t15 : int32
+    t32 = addr_of_symbol local:prev
+    t33 = load t32 : int32
+    t34 = sub t31, t33 : int32
+    t35 = mul t30, t34 : int32
+
+    t36 = add t28, t35 : int32
+
+    t37 = addr_of_symbol local:u
+    store t37, t36 : int32
+
+    t38 = addr_of_symbol local:total
+    t39 = load t38 : int32
+    t40 = load t37 : int32
+    t41 = add t39, t40 : int32
+    store t38, t41 : int32
+
+    t42 = load t15 : int32
+    store t32, t42 : int32
+
+    t43 = load t11 : int32
+    t44 = add t43, #1:int32 : int32
+    store t11, t44 : int32
+    jmp L1
+  L3:
+    t45 = addr_of_symbol local:total
+    t46 = load t45 : int32
+    ret t46
+.endfunc
+
+.endprogram

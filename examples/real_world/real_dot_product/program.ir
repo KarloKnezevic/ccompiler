@@ -1,0 +1,50 @@
+.program
+
+.globals
+  global A:array<int32,8> = { #3:int32, #-1:int32, #4:int32, #1:int32, #5:int32, #-9:int32, #2:int32, #6:int32 } : array<int32,8>
+  global B:array<int32,8> = { #2:int32, #7:int32, #1:int32, #8:int32, #2:int32, #8:int32, #-1:int32, #8:int32 } : array<int32,8>
+
+.func main():int32
+  .frame locals=8 bytes align=4
+  .slots
+    local i@0:int32
+    local sum@4:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:sum
+    store t0, #0:int32 : int32
+    t1 = addr_of_symbol local:i
+    store t1, #0:int32 : int32
+    jmp L1
+  L1:
+    t2 = addr_of_symbol local:i
+    t3 = load t2 : int32
+    t4 = cmp_lt t3, #8:int32 : bool
+    br t4, L2, L3
+  L2:
+    t5 = addr_of_symbol global:A
+    t6 = addr_of_symbol local:i
+    t7 = load t6 : int32
+    t8 = addr_index t5, t7, 4
+    t9 = load t8 : int32
+    t10 = addr_of_symbol global:B
+    t11 = addr_index t10, t7, 4
+    t12 = load t11 : int32
+    t13 = mul t9, t12 : int32
+
+    t14 = addr_of_symbol local:sum
+    t15 = load t14 : int32
+    t16 = add t15, t13 : int32
+    store t14, t16 : int32
+
+    t17 = load t6 : int32
+    t18 = add t17, #1:int32 : int32
+    store t6, t18 : int32
+    jmp L1
+  L3:
+    t19 = addr_of_symbol local:sum
+    t20 = load t19 : int32
+    ret t20
+.endfunc
+
+.endprogram

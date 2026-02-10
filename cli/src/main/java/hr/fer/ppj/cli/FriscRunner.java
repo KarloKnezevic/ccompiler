@@ -17,8 +17,8 @@ import java.util.concurrent.TimeUnit;
  */
 public final class FriscRunner {
 
-  private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10);
-  private static final String DEFAULT_CPU_FREQ = "100000";
+  private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(120);
+  private static final String DEFAULT_CPU_FREQ = "100_000_000";
   private static final Path SIMULATOR_PATH = Paths.get("node_modules", "friscjs", "consoleapp", "frisc-console.js");
 
   private final Path workingDirectory;
