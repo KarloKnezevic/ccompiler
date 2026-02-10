@@ -3,6 +3,8 @@ package hr.fer.ppj.cli;
 import hr.fer.ppj.cli.pipeline.CompilationPipeline;
 import hr.fer.ppj.codegen.frisc.FriscCodeGenerator;
 import hr.fer.ppj.codegen.frisc.ir.IrTextParser;
+import hr.fer.ppj.cli.ir.IrInterpreter;
+import hr.fer.ppj.cli.ir.IrInterpreterOptions;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -89,8 +91,9 @@ public class FriscBasicsTest {
       String expected = expectedRaw;
       if (q16Expected) {
         IrTextParser parser = new IrTextParser();
-        IrInterpreter interpreter = new IrInterpreter(parser.parse(result.irString()));
-        expected = String.valueOf(interpreter.executeMain());
+        IrInterpreter interpreter =
+            new IrInterpreter(parser.parse(result.irString()), IrInterpreterOptions.defaults());
+        expected = String.valueOf(interpreter.executeMain().returnValue());
       }
       String actual = run.r6Value().trim();
       String comparedActual = actual;

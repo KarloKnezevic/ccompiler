@@ -5,7 +5,7 @@
   global b:int32 = #-2:int32
   global c:int32 = #0:int32
 
-.func main():int32
+.func main():float
   .frame locals=16 bytes align=4
   .slots
     local x@0:float
@@ -60,9 +60,7 @@
   L3:
     t27 = addr_of_symbol local:x
     t28 = load t27 : float
-    t29 = mul t28, #10000.0:float : float
-    t30 = ftoi t29 : int32
-    ret t30
+    ret t28
 .endfunc
 
 .endprogram

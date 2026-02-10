@@ -28,7 +28,7 @@ int main(void) {
   int epoch;
   int i;
 
-  for (epoch = 0; epoch < 8; epoch++) {
+  for (epoch = 0; epoch < 20; epoch++) {
     for (i = 0; i < 4; i++) {
       float z = w0 * X[i] + w1 * Y[i] + b;
       float s = sigmoid(z, a);

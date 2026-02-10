@@ -63,9 +63,9 @@ public final class ConstantEvaluator {
         if (termSymbol.equals("BROJ")) {
           if (constType == PrimitiveType.INT) {
             try {
-              int value = Integer.parseInt(lexeme);
+              int value = LiteralParser.parseIntegerLiteral(lexeme);
               return new IrConst.IntConst(value, irType);
-            } catch (NumberFormatException e) {
+            } catch (IllegalArgumentException e) {
               throw new IllegalArgumentException("Invalid integer literal: " + lexeme);
             }
           } else if (constType == PrimitiveType.FLOAT) {

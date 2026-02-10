@@ -309,7 +309,7 @@ Ident
   ::= Letter { Letter | Digit | "_" } ;
 
 Int
-  ::= ["-"] Digit { Digit } ;
+  ::= ["-"] Digit { Digit } ;   ; canonical IR integer format is decimal
 
 FloatLit
   ::= Digit { Digit } "." Digit { Digit } ;

@@ -1,6 +1,6 @@
 .program
 
-.func main():int32
+.func main():float
   .frame locals=28 bytes align=4
   .slots
     local x@0:float
@@ -68,9 +68,7 @@
   L3:
     t34 = addr_of_symbol local:y
     t35 = load t34 : float
-    t36 = mul t35, #10000.0:float : float
-    t37 = ftoi t36 : int32
-    ret t37
+    ret t35
 .endfunc
 
 .endprogram

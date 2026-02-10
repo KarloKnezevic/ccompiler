@@ -7,6 +7,7 @@ import hr.fer.ppj.ir.lowering.StatementGenerator;
 import hr.fer.ppj.ir.model.IrTemp;
 import hr.fer.ppj.ir.model.IrTerminator;
 import hr.fer.ppj.ir.model.IrValue;
+import hr.fer.ppj.ir.util.LiteralParser;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.TerminalNode;
@@ -398,8 +399,8 @@ public final class IfStatementGenerator {
         ParseNode child = children.get(0);
         if (child instanceof TerminalNode term && term.symbol().equals("BROJ")) {
           try {
-            return Integer.parseInt(term.lexeme());
-          } catch (NumberFormatException e) {
+            return LiteralParser.parseIntegerLiteral(term.lexeme());
+          } catch (IllegalArgumentException e) {
             return null;
           }
         } else if (child instanceof NonTerminalNode inner) {

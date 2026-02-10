@@ -19,6 +19,11 @@
 #   --run                 Execute FRISC output (includes FRISC generation)
 #   --all                 Run all compile stages
 #   --bin <dir>           Output directory (default: compiler-bin)
+#   run-ir <file.ir>      Execute IR directly with interpreter
+#   --trace-ir            (with run-ir) Print interpreter execution trace
+#   --ir-step-limit <n>   (with run-ir) Override interpreter step watchdog
+#   --run-ir-all-real-world [interpreter flags]
+#                         Execute interpreter for all IR files in examples/real_world
 #
 # Options:
 #   -h, --help             Show this help message and exit
@@ -28,6 +33,9 @@
 #   ./run.sh --lex program.c
 #   ./run.sh --frisc program.c
 #   ./run.sh --all --run program.c
+#   ./run.sh run-ir examples/real_world/real_bfs_shortest_path/program.ir
+#   ./run.sh run-ir --ir-step-limit 500000 examples/real_world/real_bfs_shortest_path/program.ir
+#   ./run.sh --run-ir-all-real-world --ir-step-limit 500000
 #   ./run.sh --help
 #
 # Exit Codes:
@@ -87,6 +95,11 @@ ${BOLD}Flags:${NC}
     --run                 Execute FRISC output (includes FRISC generation)
     --all                 Run all compile stages
     --bin <dir>           Output directory (default: compiler-bin)
+    run-ir <file.ir>      Execute IR directly with interpreter
+    --trace-ir            (with run-ir) Print interpreter execution trace
+    --ir-step-limit <n>   (with run-ir) Override interpreter step watchdog
+    --run-ir-all-real-world [interpreter flags]
+                          Execute interpreter for all IR files in examples/real_world
 
 ${BOLD}Options:${NC}
     -h, --help             Show this help message and exit
@@ -96,6 +109,9 @@ ${BOLD}Examples:${NC}
     ./run.sh --lex program.c
     ./run.sh --frisc program.c
     ./run.sh --all --run program.c
+    ./run.sh run-ir examples/real_world/real_bfs_shortest_path/program.ir
+    ./run.sh run-ir --ir-step-limit 500000 examples/real_world/real_bfs_shortest_path/program.ir
+    ./run.sh --run-ir-all-real-world --ir-step-limit 500000
     ./run.sh --help
 
 ${BOLD}Note:${NC}
@@ -198,10 +214,11 @@ parse_arguments() {
 
     case "$1" in
         -h|--help)
+            print_usage
             if [[ -f "$JAR_FILE" ]]; then
+                echo ""
+                echo "${BOLD}CLI help (${JAR_FILE}):${NC}"
                 "$JAVA_CMD" -jar "$JAR_FILE" --help
-            else
-                print_usage
             fi
             exit 0
             ;;
@@ -232,6 +249,57 @@ run_compiler() {
     fi
 }
 
+run_interpreter_all_real_world() {
+    local ir_root="examples/real_world"
+    local -a ir_args=("$@")
+    local -a ir_files
+    local total=0
+    local failed=0
+
+    if [[ ! -d "$ir_root" ]]; then
+        print_error "Directory not found: $ir_root"
+        return 1
+    fi
+
+    # Support both historical and reorganized naming conventions.
+    while IFS= read -r ir_file; do
+        ir_files+=("$ir_file")
+    done < <(find "$ir_root" -type f \( -name "program.ir" -o -name "main.ir" \) | sort)
+
+    if [[ ${#ir_files[@]} -eq 0 ]]; then
+        print_error "No IR files found under $ir_root"
+        return 1
+    fi
+
+    print_info "Running IR interpreter for ${#ir_files[@]} real_world program(s)"
+    echo ""
+
+    for ir_file in "${ir_files[@]}"; do
+        total=$((total + 1))
+        echo "[$total/${#ir_files[@]}] $ir_file"
+
+        local output
+        if output=$("$JAVA_CMD" -jar "$JAR_FILE" run-ir "${ir_args[@]}" "$ir_file" 2>&1); then
+            local ret
+            ret=$(printf '%s\n' "$output" | awk -F': ' '/Return value/{print $2}')
+            print_success "OK  return=${ret:-unknown}"
+        else
+            failed=$((failed + 1))
+            print_error "FAILED for $ir_file"
+            echo "$output"
+        fi
+        echo ""
+    done
+
+    if [[ $failed -gt 0 ]]; then
+        print_error "IR interpreter summary: $failed failed / $total total"
+        return 1
+    fi
+
+    print_success "IR interpreter summary: all $total programs passed"
+    return 0
+}
+
 ################################################################################
 # Main Execution
 ################################################################################
@@ -246,6 +314,13 @@ main() {
     # Check prerequisites
     check_java
     check_jar_exists
+
+    # Script-level batch interpreter command.
+    if [[ "${1:-}" == "--run-ir-all-real-world" ]]; then
+        shift
+        run_interpreter_all_real_world "$@"
+        return $?
+    fi
     
     # Run compiler with all arguments
     run_compiler "$@"

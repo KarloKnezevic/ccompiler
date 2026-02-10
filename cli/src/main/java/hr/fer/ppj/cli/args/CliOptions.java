@@ -13,12 +13,22 @@ public record CliOptions(
     Path outputDir,
     EnumSet<PipelineStage> requestedStages,
     boolean runAll,
-    boolean help
+    boolean help,
+    boolean runIrCommand,
+    Path irFile,
+    int irStepLimit,
+    boolean irTrace
 ) {
 
   public CliOptions {
     Objects.requireNonNull(outputDir, "outputDir must not be null");
     Objects.requireNonNull(requestedStages, "requestedStages must not be null");
+    if (runIrCommand && irFile == null) {
+      throw new IllegalArgumentException("irFile must be set when runIrCommand is true");
+    }
+    if (irStepLimit <= 0) {
+      throw new IllegalArgumentException("irStepLimit must be positive");
+    }
   }
 
   public boolean hasSourceFile() {

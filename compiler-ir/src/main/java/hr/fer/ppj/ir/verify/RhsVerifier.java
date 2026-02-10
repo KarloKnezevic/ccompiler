@@ -1,8 +1,11 @@
 package hr.fer.ppj.ir.verify;
 
+import hr.fer.ppj.ir.build.TypeSizeCalculator;
 import hr.fer.ppj.ir.model.IrRhs;
 import hr.fer.ppj.ir.model.IrValue;
+import hr.fer.ppj.ir.types.IrArrayType;
 import hr.fer.ppj.ir.types.IrPointerType;
+import hr.fer.ppj.ir.types.IrStructType;
 import java.util.Objects;
 import java.util.Set;
 
@@ -70,9 +73,12 @@ public final class RhsVerifier {
       case IrRhs.AddrIndex addr -> {
         verifyValue(functionName, blockLabel, instrIndex, addr.base(), definedTemps);
         verifyValue(functionName, blockLabel, instrIndex, addr.idx(), definedTemps);
-        if (!(addr.base().type() instanceof IrPointerType)) {
+        if (!(addr.base().type() instanceof IrPointerType ptrType)) {
           context.addInstructionError(functionName, blockLabel, instrIndex,
               "addr_index base must be pointer type, got " + addr.base().type().toIrString());
+        } else {
+          validateAddrIndexElementSize(
+              functionName, blockLabel, instrIndex, ptrType, addr.elemSize());
         }
       }
 
@@ -127,5 +133,44 @@ public final class RhsVerifier {
       String functionName, String blockLabel, int instrIndex,
       IrValue value, Set<Integer> definedTemps) {
     valueVerifier.verifyValue(functionName, blockLabel, instrIndex, value, definedTemps);
+  }
+
+  private void validateAddrIndexElementSize(
+      String functionName,
+      String blockLabel,
+      int instrIndex,
+      IrPointerType basePointerType,
+      int elemSize) {
+
+    if (basePointerType.baseType() instanceof IrStructType) {
+      // Struct element sizes require layout metadata not available in this verifier.
+      return;
+    }
+
+    try {
+      int expectedSize = TypeSizeCalculator.getTypeSize(basePointerType.baseType());
+      int decayedArrayElementSize = -1;
+      if (basePointerType.baseType() instanceof IrArrayType arrayType) {
+        decayedArrayElementSize = TypeSizeCalculator.getTypeSize(arrayType.elementType());
+      }
+
+      boolean matchesDirectPointerStride = expectedSize == elemSize;
+      boolean matchesDecayedArrayStride = decayedArrayElementSize == elemSize;
+      if (!matchesDirectPointerStride && !matchesDecayedArrayStride) {
+        String expectedDescription = String.valueOf(expectedSize);
+        if (decayedArrayElementSize >= 0 && decayedArrayElementSize != expectedSize) {
+          expectedDescription += " or " + decayedArrayElementSize;
+        }
+        context.addInstructionError(
+            functionName,
+            blockLabel,
+            instrIndex,
+            "addr_index elemSize mismatch: expected " + expectedDescription
+                + " for base type " + basePointerType.baseType().toIrString()
+                + ", got " + elemSize);
+      }
+    } catch (IllegalArgumentException | UnsupportedOperationException ignored) {
+      // Skip size verification when size cannot be determined statically.
+    }
   }
 }

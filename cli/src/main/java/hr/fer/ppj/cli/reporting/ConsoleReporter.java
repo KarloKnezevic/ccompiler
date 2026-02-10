@@ -83,6 +83,27 @@ public final class ConsoleReporter {
     }
   }
 
+  public void printIrExecutionResult(Path irFile, int returnValue, int steps, String traceOutput) {
+    out.println("IR Interpreter");
+    out.println("IR file: " + irFile.toAbsolutePath().normalize());
+    out.println("Return value: " + returnValue);
+    out.println("Executed steps: " + steps);
+    if (traceOutput != null && !traceOutput.isBlank()) {
+      out.println();
+      out.println("Execution trace:");
+      out.print(traceOutput);
+      if (!traceOutput.endsWith(System.lineSeparator())) {
+        out.println();
+      }
+    }
+  }
+
+  public void printIrExecutionFailure(Path irFile, String message) {
+    err.println("IR Interpreter FAILED");
+    err.println("IR file: " + irFile.toAbsolutePath().normalize());
+    err.println("Cause: " + message);
+  }
+
   private String formatDuration(Duration duration) {
     if (duration == null) {
       return "n/a";

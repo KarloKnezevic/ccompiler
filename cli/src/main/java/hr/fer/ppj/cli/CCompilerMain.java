@@ -2,6 +2,9 @@ package hr.fer.ppj.cli;
 
 import hr.fer.ppj.cli.args.ArgumentParser;
 import hr.fer.ppj.cli.args.CliOptions;
+import hr.fer.ppj.cli.ir.IrCommandRunner;
+import hr.fer.ppj.cli.ir.IrExecutionResult;
+import hr.fer.ppj.cli.ir.IrInterpreterOptions;
 import hr.fer.ppj.cli.pipeline.PipelinePlan;
 import hr.fer.ppj.cli.pipeline.PipelineRunner;
 import hr.fer.ppj.cli.reporting.ConsoleReporter;
@@ -33,12 +36,33 @@ public final class CCompilerMain {
       return;
     }
 
+    if (options.runIrCommand()) {
+      boolean success = runIrCommand(options, reporter);
+      if (!success) {
+        System.exit(1);
+      }
+      return;
+    }
+
     PipelinePlan plan = PipelinePlan.from(options);
     PipelineRunner runner = new PipelineRunner(reporter);
 
     boolean success = runner.run(plan, options.sourceFile(), options.outputDir());
     if (!success) {
       System.exit(1);
+    }
+  }
+
+  private static boolean runIrCommand(CliOptions options, ConsoleReporter reporter) {
+    try {
+      IrInterpreterOptions interpreterOptions =
+          new IrInterpreterOptions(options.irStepLimit(), options.irTrace());
+      IrExecutionResult result = new IrCommandRunner().run(options.irFile(), interpreterOptions);
+      reporter.printIrExecutionResult(options.irFile(), result.returnValue(), result.steps(), result.trace());
+      return true;
+    } catch (Exception ex) {
+      reporter.printIrExecutionFailure(options.irFile(), ex.getMessage());
+      return false;
     }
   }
 }

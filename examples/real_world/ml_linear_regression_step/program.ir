@@ -4,7 +4,7 @@
   global X:array<float,4> = { #1.0:float, #2.0:float, #3.0:float, #4.0:float } : array<float,4>
   global Y:array<float,4> = { #2.0:float, #4.0:float, #6.0:float, #8.0:float } : array<float,4>
 
-.func main():int32
+.func main():float
   .frame locals=32 bytes align=4
   .slots
     local w@0:float
@@ -110,11 +110,8 @@
     t59 = mul t57, t58 : float
     t60 = sub t56, t59 : float
     store t55, t60 : float
-
     t61 = load t48 : float
-    t62 = mul t61, #10000.0:float : float
-    t63 = ftoi t62 : int32
-    ret t63
+    ret t61
 .endfunc
 
 .endprogram

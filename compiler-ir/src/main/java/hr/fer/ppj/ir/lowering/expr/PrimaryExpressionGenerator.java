@@ -9,6 +9,7 @@ import hr.fer.ppj.ir.model.IrValue;
 import hr.fer.ppj.ir.types.IrType;
 import hr.fer.ppj.ir.build.TypeMapper;
 import hr.fer.ppj.ir.util.ConstantEvaluator;
+import hr.fer.ppj.ir.util.LiteralParser;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.SemanticAttributes;
@@ -141,9 +142,9 @@ public final class PrimaryExpressionGenerator {
 
         if (constType == PrimitiveType.INT) {
           try {
-            int value = Integer.parseInt(lexeme);
+            int value = LiteralParser.parseIntegerLiteral(lexeme);
             return new IrConst.IntConst(value, irType);
-          } catch (NumberFormatException e) {
+          } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid integer literal: " + lexeme);
           }
         } else if (constType == PrimitiveType.FLOAT) {
@@ -174,9 +175,9 @@ public final class PrimaryExpressionGenerator {
 
         if (constType == PrimitiveType.INT) {
           try {
-            int value = Integer.parseInt(lexeme);
+            int value = LiteralParser.parseIntegerLiteral(lexeme);
             return new IrConst.IntConst(value, irType);
-          } catch (NumberFormatException e) {
+          } catch (IllegalArgumentException e) {
             // Invalid integer literal
           }
         } else if (constType == PrimitiveType.CHAR) {

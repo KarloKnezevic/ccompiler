@@ -2,10 +2,12 @@ package hr.fer.ppj.ir.verify;
 
 import hr.fer.ppj.ir.diagnostic.DiagnosticCollector;
 import hr.fer.ppj.ir.diagnostic.IrCompilationException;
+import hr.fer.ppj.ir.build.TypeSizeCalculator;
 import hr.fer.ppj.ir.model.IrBlock;
 import hr.fer.ppj.ir.model.IrFunction;
 import hr.fer.ppj.ir.model.IrProgram;
 import hr.fer.ppj.ir.model.IrSlot;
+import hr.fer.ppj.ir.types.IrStructType;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -136,7 +138,44 @@ public final class IrVerifier {
     }
 
     slotVerifier.verifySlots(function.name(), function.slots());
+    verifyFrameConsistency(function);
     verifyBlocks(function);
+  }
+
+  private void verifyFrameConsistency(IrFunction function) {
+    if (function.alignBytes() <= 0) {
+      context.addFunctionError(function.name(),
+          "Frame alignment must be positive, got " + function.alignBytes());
+      return;
+    }
+
+    if (function.localsBytes() % function.alignBytes() != 0) {
+      context.addFunctionError(function.name(),
+          "Frame locals size must be aligned: locals=" + function.localsBytes()
+              + ", align=" + function.alignBytes());
+    }
+
+    int requiredLocalBytes = 0;
+    for (IrSlot slot : function.slots()) {
+      if (slot.kind() != IrSlot.Kind.LOCAL) {
+        continue;
+      }
+      if (slot.type() instanceof IrStructType) {
+        continue;
+      }
+      try {
+        int slotEnd = slot.offset() + TypeSizeCalculator.getTypeSize(slot.type());
+        requiredLocalBytes = Math.max(requiredLocalBytes, slotEnd);
+      } catch (IllegalArgumentException | UnsupportedOperationException ignored) {
+        // Skip slots whose size cannot be determined statically in this verifier.
+      }
+    }
+
+    if (requiredLocalBytes > function.localsBytes()) {
+      context.addFunctionError(function.name(),
+          "Frame locals too small: locals=" + function.localsBytes()
+              + ", requiredByLocalSlots=" + requiredLocalBytes);
+    }
   }
 
   private void verifyBlocks(IrFunction function) {

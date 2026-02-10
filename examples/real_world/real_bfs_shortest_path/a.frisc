@@ -1,0 +1,1649 @@
+; ===========================================================================
+; PPJ Compiler - Generated FRISC Assembly Code
+; Source: program.c
+; Generated: 2026-02-10 16:53:28
+; ===========================================================================
+; ===========================================================================
+; Program entry point and initialization
+; ===========================================================================
+        MOVE 40000, R7          ; Initialize stack pointer (SP)
+        CALL F_MAIN             ; Call main
+        HALT                    ; Program end
+; ===========================================================================
+; Function Definitions
+; ===========================================================================
+F_MAIN                          ; Function: main
+        PUSH R5                 ; Save old FP
+        MOVE R7, R5             ; Set FP
+        SUB R7, 3E8, R7         ; Allocate locals/temps
+        MOVE 0FA, R1            ; Zero words
+        MOVE R7, R0             ; Zero ptr
+        MOVE 0, R2              ; Zero
+L_ZERO_2
+        STORE R2, (R0)          ; Clear
+        ADD R0, 4, R0
+        SUB R1, 1, R1
+        JP_NE L_ZERO_2
+L_MAIN_L0
+        MOVE R5, R0
+        SUB R0, 8, R0           ; Local address
+        STORE R0, (R5-28)       ; Store temp t0
+        LOAD R0, (R5-28)        ; Load temp t0
+        PUSH R0                 ; Save address
+        MOVE 0, R0
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE R5, R0
+        SUB R0, 0C, R0          ; Local address
+        STORE R0, (R5-2C)       ; Store temp t1
+        LOAD R0, (R5-2C)        ; Load temp t1
+        PUSH R0                 ; Save address
+        MOVE 0, R0
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE R5, R0
+        SUB R0, 4, R0           ; Local address
+        STORE R0, (R5-30)       ; Store temp t2
+        LOAD R0, (R5-30)        ; Load temp t2
+        PUSH R0                 ; Save address
+        MOVE 0, R0
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        JP L_MAIN_L1
+L_MAIN_L1
+        MOVE R5, R0
+        SUB R0, 4, R0           ; Local address
+        STORE R0, (R5-34)       ; Store temp t3
+        LOAD R0, (R5-34)        ; Load temp t3
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-38)       ; Store temp t4
+        LOAD R0, (R5-38)        ; Load temp t4
+        PUSH R0                 ; Save left
+        MOVE 40, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_SLT L_CMP_TRUE_3
+        MOVE 0, R0              ; False
+        JP L_CMP_END_4
+L_CMP_TRUE_3
+        MOVE 1, R0              ; True
+L_CMP_END_4
+        STORE R0, (R5-3C)       ; Store temp t5
+        LOAD R0, (R5-3C)        ; Load temp t5
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L2
+        JP L_MAIN_L3
+L_MAIN_L10
+        MOVE R5, R0
+        SUB R0, 10, R0          ; Local address
+        STORE R0, (R5-104)      ; Store temp t55
+        LOAD R0, (R5-104)       ; Load temp t55
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-108)      ; Store temp t56
+        LOAD R0, (R5-108)       ; Load temp t56
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        SUB R0, R1, R0
+        STORE R0, (R5-10C)      ; Store temp t57
+        MOVE R5, R0
+        SUB R0, 1C, R0          ; Local address
+        STORE R0, (R5-110)      ; Store temp t58
+        LOAD R0, (R5-110)       ; Load temp t58
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-10C)       ; Load temp t57
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE R5, R0
+        SUB R0, 14, R0          ; Local address
+        STORE R0, (R5-114)      ; Store temp t59
+        LOAD R0, (R5-114)       ; Load temp t59
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-118)      ; Store temp t60
+        MOVE R5, R0
+        SUB R0, 20, R0          ; Local address
+        STORE R0, (R5-11C)      ; Store temp t61
+        LOAD R0, (R5-11C)       ; Load temp t61
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-118)       ; Load temp t60
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-110)       ; Load temp t58
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-120)      ; Store temp t62
+        LOAD R0, (R5-120)       ; Load temp t62
+        PUSH R0                 ; Save left
+        MOVE 8, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        MOVE R1, R2             ; Save right
+        PUSH R2                 ; Arg right
+        PUSH R0                 ; Arg left
+        CALL F_MUL
+        ADD R7, 8, R7           ; Clean args
+        MOVE R6, R0             ; Result
+        STORE R0, (R5-124)      ; Store temp t63
+        LOAD R0, (R5-11C)       ; Load temp t61
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-128)      ; Store temp t64
+        LOAD R0, (R5-124)       ; Load temp t63
+        PUSH R0                 ; Save left
+        LOAD R0, (R5-128)       ; Load temp t64
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-12C)      ; Store temp t65
+        MOVE R5, R0
+        SUB R0, 24, R0          ; Local address
+        STORE R0, (R5-130)      ; Store temp t66
+        LOAD R0, (R5-130)       ; Load temp t66
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-12C)       ; Load temp t65
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE G_GRID, R0         ; Address of global
+        STORE R0, (R5-134)      ; Store temp t67
+        LOAD R0, (R5-130)       ; Load temp t66
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-138)      ; Store temp t68
+        LOAD R0, (R5-134)       ; Load temp t67
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-138)       ; Load temp t68
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-13C)      ; Store temp t69
+        LOAD R0, (R5-13C)       ; Load temp t69
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-140)      ; Store temp t70
+        LOAD R0, (R5-140)       ; Load temp t70
+        PUSH R0                 ; Save left
+        MOVE 0, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_EQ L_CMP_TRUE_5
+        MOVE 0, R0              ; False
+        JP L_CMP_END_6
+L_CMP_TRUE_5
+        MOVE 1, R0              ; True
+L_CMP_END_6
+        STORE R0, (R5-144)      ; Store temp t71
+        LOAD R0, (R5-144)       ; Load temp t71
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L12
+        JP L_MAIN_L13
+L_MAIN_L11
+        JP L_MAIN_L16
+L_MAIN_L12
+        MOVE G_DIST, R0         ; Address of global
+        STORE R0, (R5-148)      ; Store temp t72
+        MOVE R5, R0
+        SUB R0, 24, R0          ; Local address
+        STORE R0, (R5-14C)      ; Store temp t73
+        LOAD R0, (R5-14C)       ; Load temp t73
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-150)      ; Store temp t74
+        LOAD R0, (R5-148)       ; Load temp t72
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-150)       ; Load temp t74
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-154)      ; Store temp t75
+        LOAD R0, (R5-154)       ; Load temp t75
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-158)      ; Store temp t76
+        LOAD R0, (R5-158)       ; Load temp t76
+        PUSH R0                 ; Save left
+        MOVE -1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_EQ L_CMP_TRUE_7
+        MOVE 0, R0              ; False
+        JP L_CMP_END_8
+L_CMP_TRUE_7
+        MOVE 1, R0              ; True
+L_CMP_END_8
+        STORE R0, (R5-15C)      ; Store temp t77
+        LOAD R0, (R5-15C)       ; Load temp t77
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L14
+        JP L_MAIN_L13
+L_MAIN_L13
+        JP L_MAIN_L15
+L_MAIN_L14
+        MOVE G_DIST, R0         ; Address of global
+        STORE R0, (R5-160)      ; Store temp t78
+        MOVE R5, R0
+        SUB R0, 24, R0          ; Local address
+        STORE R0, (R5-164)      ; Store temp t79
+        LOAD R0, (R5-164)       ; Load temp t79
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-168)      ; Store temp t80
+        LOAD R0, (R5-160)       ; Load temp t78
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-168)       ; Load temp t80
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-16C)      ; Store temp t81
+        MOVE R5, R0
+        SUB R0, 18, R0          ; Local address
+        STORE R0, (R5-170)      ; Store temp t82
+        LOAD R0, (R5-170)       ; Load temp t82
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-174)      ; Store temp t83
+        LOAD R0, (R5-174)       ; Load temp t83
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-178)      ; Store temp t84
+        LOAD R0, (R5-16C)       ; Load temp t81
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-178)       ; Load temp t84
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE G_QX, R0           ; Address of global
+        STORE R0, (R5-17C)      ; Store temp t85
+        MOVE R5, R0
+        SUB R0, 0C, R0          ; Local address
+        STORE R0, (R5-180)      ; Store temp t86
+        LOAD R0, (R5-180)       ; Load temp t86
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-184)      ; Store temp t87
+        LOAD R0, (R5-17C)       ; Load temp t85
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-184)       ; Load temp t87
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-188)      ; Store temp t88
+        MOVE R5, R0
+        SUB R0, 1C, R0          ; Local address
+        STORE R0, (R5-18C)      ; Store temp t89
+        LOAD R0, (R5-18C)       ; Load temp t89
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-190)      ; Store temp t90
+        LOAD R0, (R5-188)       ; Load temp t88
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-190)       ; Load temp t90
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE G_QY, R0           ; Address of global
+        STORE R0, (R5-194)      ; Store temp t91
+        LOAD R0, (R5-180)       ; Load temp t86
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-198)      ; Store temp t92
+        LOAD R0, (R5-194)       ; Load temp t91
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-198)       ; Load temp t92
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-19C)      ; Store temp t93
+        MOVE R5, R0
+        SUB R0, 20, R0          ; Local address
+        STORE R0, (R5-1A0)      ; Store temp t94
+        LOAD R0, (R5-1A0)       ; Load temp t94
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-1A4)      ; Store temp t95
+        LOAD R0, (R5-19C)       ; Load temp t93
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-1A4)       ; Load temp t95
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-180)       ; Load temp t86
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-1A8)      ; Store temp t96
+        LOAD R0, (R5-1A8)       ; Load temp t96
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-1AC)      ; Store temp t97
+        LOAD R0, (R5-180)       ; Load temp t86
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-1AC)       ; Load temp t97
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        JP L_MAIN_L15
+L_MAIN_L15
+        JP L_MAIN_L16
+L_MAIN_L16
+        MOVE R5, R0
+        SUB R0, 10, R0          ; Local address
+        STORE R0, (R5-1B0)      ; Store temp t98
+        LOAD R0, (R5-1B0)       ; Load temp t98
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-1B4)      ; Store temp t99
+        LOAD R0, (R5-1B4)       ; Load temp t99
+        PUSH R0                 ; Save left
+        MOVE 7, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_SLT L_CMP_TRUE_9
+        MOVE 0, R0              ; False
+        JP L_CMP_END_10
+L_CMP_TRUE_9
+        MOVE 1, R0              ; True
+L_CMP_END_10
+        STORE R0, (R5-1B8)      ; Store temp t100
+        LOAD R0, (R5-1B8)       ; Load temp t100
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L17
+        JP L_MAIN_L18
+L_MAIN_L17
+        MOVE R5, R0
+        SUB R0, 10, R0          ; Local address
+        STORE R0, (R5-1BC)      ; Store temp t101
+        LOAD R0, (R5-1BC)       ; Load temp t101
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-1C0)      ; Store temp t102
+        LOAD R0, (R5-1C0)       ; Load temp t102
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-1C4)      ; Store temp t103
+        MOVE R5, R0
+        SUB R0, 1C, R0          ; Local address
+        STORE R0, (R5-1C8)      ; Store temp t104
+        LOAD R0, (R5-1C8)       ; Load temp t104
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-1C4)       ; Load temp t103
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE R5, R0
+        SUB R0, 14, R0          ; Local address
+        STORE R0, (R5-1CC)      ; Store temp t105
+        LOAD R0, (R5-1CC)       ; Load temp t105
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-1D0)      ; Store temp t106
+        MOVE R5, R0
+        SUB R0, 20, R0          ; Local address
+        STORE R0, (R5-1D4)      ; Store temp t107
+        LOAD R0, (R5-1D4)       ; Load temp t107
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-1D0)       ; Load temp t106
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-1C8)       ; Load temp t104
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-1D8)      ; Store temp t108
+        LOAD R0, (R5-1D8)       ; Load temp t108
+        PUSH R0                 ; Save left
+        MOVE 8, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        MOVE R1, R2             ; Save right
+        PUSH R2                 ; Arg right
+        PUSH R0                 ; Arg left
+        CALL F_MUL
+        ADD R7, 8, R7           ; Clean args
+        MOVE R6, R0             ; Result
+        STORE R0, (R5-1DC)      ; Store temp t109
+        LOAD R0, (R5-1D4)       ; Load temp t107
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-1E0)      ; Store temp t110
+        LOAD R0, (R5-1DC)       ; Load temp t109
+        PUSH R0                 ; Save left
+        LOAD R0, (R5-1E0)       ; Load temp t110
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-1E4)      ; Store temp t111
+        MOVE R5, R0
+        SUB R0, 24, R0          ; Local address
+        STORE R0, (R5-1E8)      ; Store temp t112
+        LOAD R0, (R5-1E8)       ; Load temp t112
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-1E4)       ; Load temp t111
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE G_GRID, R0         ; Address of global
+        STORE R0, (R5-1EC)      ; Store temp t113
+        LOAD R0, (R5-1E8)       ; Load temp t112
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-1F0)      ; Store temp t114
+        LOAD R0, (R5-1EC)       ; Load temp t113
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-1F0)       ; Load temp t114
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-1F4)      ; Store temp t115
+        LOAD R0, (R5-1F4)       ; Load temp t115
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-1F8)      ; Store temp t116
+        LOAD R0, (R5-1F8)       ; Load temp t116
+        PUSH R0                 ; Save left
+        MOVE 0, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_EQ L_CMP_TRUE_11
+        MOVE 0, R0              ; False
+        JP L_CMP_END_12
+L_CMP_TRUE_11
+        MOVE 1, R0              ; True
+L_CMP_END_12
+        STORE R0, (R5-1FC)      ; Store temp t117
+        LOAD R0, (R5-1FC)       ; Load temp t117
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L19
+        JP L_MAIN_L20
+L_MAIN_L18
+        JP L_MAIN_L23
+L_MAIN_L19
+        MOVE G_DIST, R0         ; Address of global
+        STORE R0, (R5-200)      ; Store temp t118
+        MOVE R5, R0
+        SUB R0, 24, R0          ; Local address
+        STORE R0, (R5-204)      ; Store temp t119
+        LOAD R0, (R5-204)       ; Load temp t119
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-208)      ; Store temp t120
+        LOAD R0, (R5-200)       ; Load temp t118
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-208)       ; Load temp t120
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-20C)      ; Store temp t121
+        LOAD R0, (R5-20C)       ; Load temp t121
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-210)      ; Store temp t122
+        LOAD R0, (R5-210)       ; Load temp t122
+        PUSH R0                 ; Save left
+        MOVE -1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_EQ L_CMP_TRUE_13
+        MOVE 0, R0              ; False
+        JP L_CMP_END_14
+L_CMP_TRUE_13
+        MOVE 1, R0              ; True
+L_CMP_END_14
+        STORE R0, (R5-214)      ; Store temp t123
+        LOAD R0, (R5-214)       ; Load temp t123
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L21
+        JP L_MAIN_L20
+L_MAIN_L2
+        MOVE G_DIST, R0         ; Address of global
+        STORE R0, (R5-40)       ; Store temp t6
+        MOVE R5, R0
+        SUB R0, 4, R0           ; Local address
+        STORE R0, (R5-44)       ; Store temp t7
+        LOAD R0, (R5-44)        ; Load temp t7
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-48)       ; Store temp t8
+        LOAD R0, (R5-40)        ; Load temp t6
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-48)        ; Load temp t8
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-4C)       ; Store temp t9
+        LOAD R0, (R5-4C)        ; Load temp t9
+        PUSH R0                 ; Save address
+        MOVE -1, R0
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-44)        ; Load temp t7
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-50)       ; Store temp t10
+        LOAD R0, (R5-50)        ; Load temp t10
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-54)       ; Store temp t11
+        LOAD R0, (R5-44)        ; Load temp t7
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-54)        ; Load temp t11
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        JP L_MAIN_L1
+L_MAIN_L20
+        JP L_MAIN_L22
+L_MAIN_L21
+        MOVE G_DIST, R0         ; Address of global
+        STORE R0, (R5-218)      ; Store temp t124
+        MOVE R5, R0
+        SUB R0, 24, R0          ; Local address
+        STORE R0, (R5-21C)      ; Store temp t125
+        LOAD R0, (R5-21C)       ; Load temp t125
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-220)      ; Store temp t126
+        LOAD R0, (R5-218)       ; Load temp t124
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-220)       ; Load temp t126
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-224)      ; Store temp t127
+        MOVE R5, R0
+        SUB R0, 18, R0          ; Local address
+        STORE R0, (R5-228)      ; Store temp t128
+        LOAD R0, (R5-228)       ; Load temp t128
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-22C)      ; Store temp t129
+        LOAD R0, (R5-22C)       ; Load temp t129
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-230)      ; Store temp t130
+        LOAD R0, (R5-224)       ; Load temp t127
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-230)       ; Load temp t130
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE G_QX, R0           ; Address of global
+        STORE R0, (R5-234)      ; Store temp t131
+        MOVE R5, R0
+        SUB R0, 0C, R0          ; Local address
+        STORE R0, (R5-238)      ; Store temp t132
+        LOAD R0, (R5-238)       ; Load temp t132
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-23C)      ; Store temp t133
+        LOAD R0, (R5-234)       ; Load temp t131
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-23C)       ; Load temp t133
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-240)      ; Store temp t134
+        MOVE R5, R0
+        SUB R0, 1C, R0          ; Local address
+        STORE R0, (R5-244)      ; Store temp t135
+        LOAD R0, (R5-244)       ; Load temp t135
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-248)      ; Store temp t136
+        LOAD R0, (R5-240)       ; Load temp t134
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-248)       ; Load temp t136
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE G_QY, R0           ; Address of global
+        STORE R0, (R5-24C)      ; Store temp t137
+        LOAD R0, (R5-238)       ; Load temp t132
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-250)      ; Store temp t138
+        LOAD R0, (R5-24C)       ; Load temp t137
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-250)       ; Load temp t138
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-254)      ; Store temp t139
+        MOVE R5, R0
+        SUB R0, 20, R0          ; Local address
+        STORE R0, (R5-258)      ; Store temp t140
+        LOAD R0, (R5-258)       ; Load temp t140
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-25C)      ; Store temp t141
+        LOAD R0, (R5-254)       ; Load temp t139
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-25C)       ; Load temp t141
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-238)       ; Load temp t132
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-260)      ; Store temp t142
+        LOAD R0, (R5-260)       ; Load temp t142
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-264)      ; Store temp t143
+        LOAD R0, (R5-238)       ; Load temp t132
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-264)       ; Load temp t143
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        JP L_MAIN_L22
+L_MAIN_L22
+        JP L_MAIN_L23
+L_MAIN_L23
+        MOVE R5, R0
+        SUB R0, 14, R0          ; Local address
+        STORE R0, (R5-268)      ; Store temp t144
+        LOAD R0, (R5-268)       ; Load temp t144
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-26C)      ; Store temp t145
+        LOAD R0, (R5-26C)       ; Load temp t145
+        PUSH R0                 ; Save left
+        MOVE 0, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_SGT L_CMP_TRUE_15
+        MOVE 0, R0              ; False
+        JP L_CMP_END_16
+L_CMP_TRUE_15
+        MOVE 1, R0              ; True
+L_CMP_END_16
+        STORE R0, (R5-270)      ; Store temp t146
+        LOAD R0, (R5-270)       ; Load temp t146
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L24
+        JP L_MAIN_L25
+L_MAIN_L24
+        MOVE R5, R0
+        SUB R0, 10, R0          ; Local address
+        STORE R0, (R5-274)      ; Store temp t147
+        LOAD R0, (R5-274)       ; Load temp t147
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-278)      ; Store temp t148
+        MOVE R5, R0
+        SUB R0, 1C, R0          ; Local address
+        STORE R0, (R5-27C)      ; Store temp t149
+        LOAD R0, (R5-27C)       ; Load temp t149
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-278)       ; Load temp t148
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE R5, R0
+        SUB R0, 14, R0          ; Local address
+        STORE R0, (R5-280)      ; Store temp t150
+        LOAD R0, (R5-280)       ; Load temp t150
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-284)      ; Store temp t151
+        LOAD R0, (R5-284)       ; Load temp t151
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        SUB R0, R1, R0
+        STORE R0, (R5-288)      ; Store temp t152
+        MOVE R5, R0
+        SUB R0, 20, R0          ; Local address
+        STORE R0, (R5-28C)      ; Store temp t153
+        LOAD R0, (R5-28C)       ; Load temp t153
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-288)       ; Load temp t152
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-27C)       ; Load temp t149
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-290)      ; Store temp t154
+        LOAD R0, (R5-290)       ; Load temp t154
+        PUSH R0                 ; Save left
+        MOVE 8, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        MOVE R1, R2             ; Save right
+        PUSH R2                 ; Arg right
+        PUSH R0                 ; Arg left
+        CALL F_MUL
+        ADD R7, 8, R7           ; Clean args
+        MOVE R6, R0             ; Result
+        STORE R0, (R5-294)      ; Store temp t155
+        LOAD R0, (R5-28C)       ; Load temp t153
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-298)      ; Store temp t156
+        LOAD R0, (R5-294)       ; Load temp t155
+        PUSH R0                 ; Save left
+        LOAD R0, (R5-298)       ; Load temp t156
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-29C)      ; Store temp t157
+        MOVE R5, R0
+        SUB R0, 24, R0          ; Local address
+        STORE R0, (R5-2A0)      ; Store temp t158
+        LOAD R0, (R5-2A0)       ; Load temp t158
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-29C)       ; Load temp t157
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE G_GRID, R0         ; Address of global
+        STORE R0, (R5-2A4)      ; Store temp t159
+        LOAD R0, (R5-2A0)       ; Load temp t158
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-2A8)      ; Store temp t160
+        LOAD R0, (R5-2A4)       ; Load temp t159
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-2A8)       ; Load temp t160
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-2AC)      ; Store temp t161
+        LOAD R0, (R5-2AC)       ; Load temp t161
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-2B0)      ; Store temp t162
+        LOAD R0, (R5-2B0)       ; Load temp t162
+        PUSH R0                 ; Save left
+        MOVE 0, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_EQ L_CMP_TRUE_17
+        MOVE 0, R0              ; False
+        JP L_CMP_END_18
+L_CMP_TRUE_17
+        MOVE 1, R0              ; True
+L_CMP_END_18
+        STORE R0, (R5-2B4)      ; Store temp t163
+        LOAD R0, (R5-2B4)       ; Load temp t163
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L26
+        JP L_MAIN_L27
+L_MAIN_L25
+        JP L_MAIN_L30
+L_MAIN_L26
+        MOVE G_DIST, R0         ; Address of global
+        STORE R0, (R5-2B8)      ; Store temp t164
+        MOVE R5, R0
+        SUB R0, 24, R0          ; Local address
+        STORE R0, (R5-2BC)      ; Store temp t165
+        LOAD R0, (R5-2BC)       ; Load temp t165
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-2C0)      ; Store temp t166
+        LOAD R0, (R5-2B8)       ; Load temp t164
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-2C0)       ; Load temp t166
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-2C4)      ; Store temp t167
+        LOAD R0, (R5-2C4)       ; Load temp t167
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-2C8)      ; Store temp t168
+        LOAD R0, (R5-2C8)       ; Load temp t168
+        PUSH R0                 ; Save left
+        MOVE -1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_EQ L_CMP_TRUE_19
+        MOVE 0, R0              ; False
+        JP L_CMP_END_20
+L_CMP_TRUE_19
+        MOVE 1, R0              ; True
+L_CMP_END_20
+        STORE R0, (R5-2CC)      ; Store temp t169
+        LOAD R0, (R5-2CC)       ; Load temp t169
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L28
+        JP L_MAIN_L27
+L_MAIN_L27
+        JP L_MAIN_L29
+L_MAIN_L28
+        MOVE G_DIST, R0         ; Address of global
+        STORE R0, (R5-2D0)      ; Store temp t170
+        MOVE R5, R0
+        SUB R0, 24, R0          ; Local address
+        STORE R0, (R5-2D4)      ; Store temp t171
+        LOAD R0, (R5-2D4)       ; Load temp t171
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-2D8)      ; Store temp t172
+        LOAD R0, (R5-2D0)       ; Load temp t170
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-2D8)       ; Load temp t172
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-2DC)      ; Store temp t173
+        MOVE R5, R0
+        SUB R0, 18, R0          ; Local address
+        STORE R0, (R5-2E0)      ; Store temp t174
+        LOAD R0, (R5-2E0)       ; Load temp t174
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-2E4)      ; Store temp t175
+        LOAD R0, (R5-2E4)       ; Load temp t175
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-2E8)      ; Store temp t176
+        LOAD R0, (R5-2DC)       ; Load temp t173
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-2E8)       ; Load temp t176
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE G_QX, R0           ; Address of global
+        STORE R0, (R5-2EC)      ; Store temp t177
+        MOVE R5, R0
+        SUB R0, 0C, R0          ; Local address
+        STORE R0, (R5-2F0)      ; Store temp t178
+        LOAD R0, (R5-2F0)       ; Load temp t178
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-2F4)      ; Store temp t179
+        LOAD R0, (R5-2EC)       ; Load temp t177
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-2F4)       ; Load temp t179
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-2F8)      ; Store temp t180
+        MOVE R5, R0
+        SUB R0, 1C, R0          ; Local address
+        STORE R0, (R5-2FC)      ; Store temp t181
+        LOAD R0, (R5-2FC)       ; Load temp t181
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-300)      ; Store temp t182
+        LOAD R0, (R5-2F8)       ; Load temp t180
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-300)       ; Load temp t182
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE G_QY, R0           ; Address of global
+        STORE R0, (R5-304)      ; Store temp t183
+        LOAD R0, (R5-2F0)       ; Load temp t178
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-308)      ; Store temp t184
+        LOAD R0, (R5-304)       ; Load temp t183
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-308)       ; Load temp t184
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-30C)      ; Store temp t185
+        MOVE R5, R0
+        SUB R0, 20, R0          ; Local address
+        STORE R0, (R5-310)      ; Store temp t186
+        LOAD R0, (R5-310)       ; Load temp t186
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-314)      ; Store temp t187
+        LOAD R0, (R5-30C)       ; Load temp t185
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-314)       ; Load temp t187
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-2F0)       ; Load temp t178
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-318)      ; Store temp t188
+        LOAD R0, (R5-318)       ; Load temp t188
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-31C)      ; Store temp t189
+        LOAD R0, (R5-2F0)       ; Load temp t178
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-31C)       ; Load temp t189
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        JP L_MAIN_L29
+L_MAIN_L29
+        JP L_MAIN_L30
+L_MAIN_L3
+        MOVE G_GRID, R0         ; Address of global
+        STORE R0, (R5-58)       ; Store temp t12
+        LOAD R0, (R5-58)        ; Load temp t12
+        PUSH R0                 ; Save base address
+        MOVE 0, R0
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-5C)       ; Store temp t13
+        LOAD R0, (R5-5C)        ; Load temp t13
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-60)       ; Store temp t14
+        LOAD R0, (R5-60)        ; Load temp t14
+        PUSH R0                 ; Save left
+        MOVE 0, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_EQ L_CMP_TRUE_21
+        MOVE 0, R0              ; False
+        JP L_CMP_END_22
+L_CMP_TRUE_21
+        MOVE 1, R0              ; True
+L_CMP_END_22
+        STORE R0, (R5-64)       ; Store temp t15
+        LOAD R0, (R5-64)        ; Load temp t15
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L4
+        JP L_MAIN_L5
+L_MAIN_L30
+        MOVE R5, R0
+        SUB R0, 14, R0          ; Local address
+        STORE R0, (R5-320)      ; Store temp t190
+        LOAD R0, (R5-320)       ; Load temp t190
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-324)      ; Store temp t191
+        LOAD R0, (R5-324)       ; Load temp t191
+        PUSH R0                 ; Save left
+        MOVE 7, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_SLT L_CMP_TRUE_23
+        MOVE 0, R0              ; False
+        JP L_CMP_END_24
+L_CMP_TRUE_23
+        MOVE 1, R0              ; True
+L_CMP_END_24
+        STORE R0, (R5-328)      ; Store temp t192
+        LOAD R0, (R5-328)       ; Load temp t192
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L31
+        JP L_MAIN_L32
+L_MAIN_L31
+        MOVE R5, R0
+        SUB R0, 10, R0          ; Local address
+        STORE R0, (R5-32C)      ; Store temp t193
+        LOAD R0, (R5-32C)       ; Load temp t193
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-330)      ; Store temp t194
+        MOVE R5, R0
+        SUB R0, 1C, R0          ; Local address
+        STORE R0, (R5-334)      ; Store temp t195
+        LOAD R0, (R5-334)       ; Load temp t195
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-330)       ; Load temp t194
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE R5, R0
+        SUB R0, 14, R0          ; Local address
+        STORE R0, (R5-338)      ; Store temp t196
+        LOAD R0, (R5-338)       ; Load temp t196
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-33C)      ; Store temp t197
+        LOAD R0, (R5-33C)       ; Load temp t197
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-340)      ; Store temp t198
+        MOVE R5, R0
+        SUB R0, 20, R0          ; Local address
+        STORE R0, (R5-344)      ; Store temp t199
+        LOAD R0, (R5-344)       ; Load temp t199
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-340)       ; Load temp t198
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-334)       ; Load temp t195
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-348)      ; Store temp t200
+        LOAD R0, (R5-348)       ; Load temp t200
+        PUSH R0                 ; Save left
+        MOVE 8, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        MOVE R1, R2             ; Save right
+        PUSH R2                 ; Arg right
+        PUSH R0                 ; Arg left
+        CALL F_MUL
+        ADD R7, 8, R7           ; Clean args
+        MOVE R6, R0             ; Result
+        STORE R0, (R5-34C)      ; Store temp t201
+        LOAD R0, (R5-344)       ; Load temp t199
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-350)      ; Store temp t202
+        LOAD R0, (R5-34C)       ; Load temp t201
+        PUSH R0                 ; Save left
+        LOAD R0, (R5-350)       ; Load temp t202
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-354)      ; Store temp t203
+        MOVE R5, R0
+        SUB R0, 24, R0          ; Local address
+        STORE R0, (R5-358)      ; Store temp t204
+        LOAD R0, (R5-358)       ; Load temp t204
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-354)       ; Load temp t203
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE G_GRID, R0         ; Address of global
+        STORE R0, (R5-35C)      ; Store temp t205
+        LOAD R0, (R5-358)       ; Load temp t204
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-360)      ; Store temp t206
+        LOAD R0, (R5-35C)       ; Load temp t205
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-360)       ; Load temp t206
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-364)      ; Store temp t207
+        LOAD R0, (R5-364)       ; Load temp t207
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-368)      ; Store temp t208
+        LOAD R0, (R5-368)       ; Load temp t208
+        PUSH R0                 ; Save left
+        MOVE 0, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_EQ L_CMP_TRUE_25
+        MOVE 0, R0              ; False
+        JP L_CMP_END_26
+L_CMP_TRUE_25
+        MOVE 1, R0              ; True
+L_CMP_END_26
+        STORE R0, (R5-36C)      ; Store temp t209
+        LOAD R0, (R5-36C)       ; Load temp t209
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L33
+        JP L_MAIN_L34
+L_MAIN_L32
+        JP L_MAIN_L37
+L_MAIN_L33
+        MOVE G_DIST, R0         ; Address of global
+        STORE R0, (R5-370)      ; Store temp t210
+        MOVE R5, R0
+        SUB R0, 24, R0          ; Local address
+        STORE R0, (R5-374)      ; Store temp t211
+        LOAD R0, (R5-374)       ; Load temp t211
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-378)      ; Store temp t212
+        LOAD R0, (R5-370)       ; Load temp t210
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-378)       ; Load temp t212
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-37C)      ; Store temp t213
+        LOAD R0, (R5-37C)       ; Load temp t213
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-380)      ; Store temp t214
+        LOAD R0, (R5-380)       ; Load temp t214
+        PUSH R0                 ; Save left
+        MOVE -1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_EQ L_CMP_TRUE_27
+        MOVE 0, R0              ; False
+        JP L_CMP_END_28
+L_CMP_TRUE_27
+        MOVE 1, R0              ; True
+L_CMP_END_28
+        STORE R0, (R5-384)      ; Store temp t215
+        LOAD R0, (R5-384)       ; Load temp t215
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L35
+        JP L_MAIN_L34
+L_MAIN_L34
+        JP L_MAIN_L36
+L_MAIN_L35
+        MOVE G_DIST, R0         ; Address of global
+        STORE R0, (R5-388)      ; Store temp t216
+        MOVE R5, R0
+        SUB R0, 24, R0          ; Local address
+        STORE R0, (R5-38C)      ; Store temp t217
+        LOAD R0, (R5-38C)       ; Load temp t217
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-390)      ; Store temp t218
+        LOAD R0, (R5-388)       ; Load temp t216
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-390)       ; Load temp t218
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-394)      ; Store temp t219
+        MOVE R5, R0
+        SUB R0, 18, R0          ; Local address
+        STORE R0, (R5-398)      ; Store temp t220
+        LOAD R0, (R5-398)       ; Load temp t220
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-39C)      ; Store temp t221
+        LOAD R0, (R5-39C)       ; Load temp t221
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-3A0)      ; Store temp t222
+        LOAD R0, (R5-394)       ; Load temp t219
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-3A0)       ; Load temp t222
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE G_QX, R0           ; Address of global
+        STORE R0, (R5-3A4)      ; Store temp t223
+        MOVE R5, R0
+        SUB R0, 0C, R0          ; Local address
+        STORE R0, (R5-3A8)      ; Store temp t224
+        LOAD R0, (R5-3A8)       ; Load temp t224
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-3AC)      ; Store temp t225
+        LOAD R0, (R5-3A4)       ; Load temp t223
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-3AC)       ; Load temp t225
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-3B0)      ; Store temp t226
+        MOVE R5, R0
+        SUB R0, 1C, R0          ; Local address
+        STORE R0, (R5-3B4)      ; Store temp t227
+        LOAD R0, (R5-3B4)       ; Load temp t227
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-3B8)      ; Store temp t228
+        LOAD R0, (R5-3B0)       ; Load temp t226
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-3B8)       ; Load temp t228
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE G_QY, R0           ; Address of global
+        STORE R0, (R5-3BC)      ; Store temp t229
+        LOAD R0, (R5-3A8)       ; Load temp t224
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-3C0)      ; Store temp t230
+        LOAD R0, (R5-3BC)       ; Load temp t229
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-3C0)       ; Load temp t230
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-3C4)      ; Store temp t231
+        MOVE R5, R0
+        SUB R0, 20, R0          ; Local address
+        STORE R0, (R5-3C8)      ; Store temp t232
+        LOAD R0, (R5-3C8)       ; Load temp t232
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-3CC)      ; Store temp t233
+        LOAD R0, (R5-3C4)       ; Load temp t231
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-3CC)       ; Load temp t233
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-3A8)       ; Load temp t224
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-3D0)      ; Store temp t234
+        LOAD R0, (R5-3D0)       ; Load temp t234
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-3D4)      ; Store temp t235
+        LOAD R0, (R5-3A8)       ; Load temp t224
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-3D4)       ; Load temp t235
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        JP L_MAIN_L36
+L_MAIN_L36
+        JP L_MAIN_L37
+L_MAIN_L37
+        JP L_MAIN_L7
+L_MAIN_L4
+        MOVE G_DIST, R0         ; Address of global
+        STORE R0, (R5-68)       ; Store temp t16
+        LOAD R0, (R5-68)        ; Load temp t16
+        PUSH R0                 ; Save base address
+        MOVE 0, R0
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-6C)       ; Store temp t17
+        LOAD R0, (R5-6C)        ; Load temp t17
+        PUSH R0                 ; Save address
+        MOVE 0, R0
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE G_QX, R0           ; Address of global
+        STORE R0, (R5-70)       ; Store temp t18
+        MOVE R5, R0
+        SUB R0, 0C, R0          ; Local address
+        STORE R0, (R5-74)       ; Store temp t19
+        LOAD R0, (R5-74)        ; Load temp t19
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-78)       ; Store temp t20
+        LOAD R0, (R5-70)        ; Load temp t18
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-78)        ; Load temp t20
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-7C)       ; Store temp t21
+        LOAD R0, (R5-7C)        ; Load temp t21
+        PUSH R0                 ; Save address
+        MOVE 0, R0
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE G_QY, R0           ; Address of global
+        STORE R0, (R5-80)       ; Store temp t22
+        LOAD R0, (R5-74)        ; Load temp t19
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-84)       ; Store temp t23
+        LOAD R0, (R5-80)        ; Load temp t22
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-84)        ; Load temp t23
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-88)       ; Store temp t24
+        LOAD R0, (R5-88)        ; Load temp t24
+        PUSH R0                 ; Save address
+        MOVE 0, R0
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-74)        ; Load temp t19
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-8C)       ; Store temp t25
+        LOAD R0, (R5-8C)        ; Load temp t25
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-90)       ; Store temp t26
+        LOAD R0, (R5-74)        ; Load temp t19
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-90)        ; Load temp t26
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        JP L_MAIN_L6
+L_MAIN_L5
+        JP L_MAIN_L6
+L_MAIN_L6
+        JP L_MAIN_L7
+L_MAIN_L7
+        MOVE R5, R0
+        SUB R0, 8, R0           ; Local address
+        STORE R0, (R5-94)       ; Store temp t27
+        LOAD R0, (R5-94)        ; Load temp t27
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-98)       ; Store temp t28
+        MOVE R5, R0
+        SUB R0, 0C, R0          ; Local address
+        STORE R0, (R5-9C)       ; Store temp t29
+        LOAD R0, (R5-9C)        ; Load temp t29
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-0A0)      ; Store temp t30
+        LOAD R0, (R5-98)        ; Load temp t28
+        PUSH R0                 ; Save left
+        LOAD R0, (R5-0A0)       ; Load temp t30
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_SLT L_CMP_TRUE_29
+        MOVE 0, R0              ; False
+        JP L_CMP_END_30
+L_CMP_TRUE_29
+        MOVE 1, R0              ; True
+L_CMP_END_30
+        STORE R0, (R5-0A4)      ; Store temp t31
+        LOAD R0, (R5-0A4)       ; Load temp t31
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L8
+        JP L_MAIN_L9
+L_MAIN_L8
+        MOVE G_QX, R0           ; Address of global
+        STORE R0, (R5-0A8)      ; Store temp t32
+        MOVE R5, R0
+        SUB R0, 8, R0           ; Local address
+        STORE R0, (R5-0AC)      ; Store temp t33
+        LOAD R0, (R5-0AC)       ; Load temp t33
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-0B0)      ; Store temp t34
+        LOAD R0, (R5-0A8)       ; Load temp t32
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-0B0)       ; Load temp t34
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-0B4)      ; Store temp t35
+        LOAD R0, (R5-0B4)       ; Load temp t35
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-0B8)      ; Store temp t36
+        MOVE R5, R0
+        SUB R0, 10, R0          ; Local address
+        STORE R0, (R5-0BC)      ; Store temp t37
+        LOAD R0, (R5-0BC)       ; Load temp t37
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-0B8)       ; Load temp t36
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE G_QY, R0           ; Address of global
+        STORE R0, (R5-0C0)      ; Store temp t38
+        LOAD R0, (R5-0AC)       ; Load temp t33
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-0C4)      ; Store temp t39
+        LOAD R0, (R5-0C0)       ; Load temp t38
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-0C4)       ; Load temp t39
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-0C8)      ; Store temp t40
+        LOAD R0, (R5-0C8)       ; Load temp t40
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-0CC)      ; Store temp t41
+        MOVE R5, R0
+        SUB R0, 14, R0          ; Local address
+        STORE R0, (R5-0D0)      ; Store temp t42
+        LOAD R0, (R5-0D0)       ; Load temp t42
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-0CC)       ; Load temp t41
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE G_DIST, R0         ; Address of global
+        STORE R0, (R5-0D4)      ; Store temp t43
+        LOAD R0, (R5-0BC)       ; Load temp t37
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-0D8)      ; Store temp t44
+        LOAD R0, (R5-0D8)       ; Load temp t44
+        PUSH R0                 ; Save left
+        MOVE 8, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        MOVE R1, R2             ; Save right
+        PUSH R2                 ; Arg right
+        PUSH R0                 ; Arg left
+        CALL F_MUL
+        ADD R7, 8, R7           ; Clean args
+        MOVE R6, R0             ; Result
+        STORE R0, (R5-0DC)      ; Store temp t45
+        LOAD R0, (R5-0D0)       ; Load temp t42
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-0E0)      ; Store temp t46
+        LOAD R0, (R5-0DC)       ; Load temp t45
+        PUSH R0                 ; Save left
+        LOAD R0, (R5-0E0)       ; Load temp t46
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-0E4)      ; Store temp t47
+        LOAD R0, (R5-0D4)       ; Load temp t43
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-0E4)       ; Load temp t47
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-0E8)      ; Store temp t48
+        LOAD R0, (R5-0E8)       ; Load temp t48
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-0EC)      ; Store temp t49
+        MOVE R5, R0
+        SUB R0, 18, R0          ; Local address
+        STORE R0, (R5-0F0)      ; Store temp t50
+        LOAD R0, (R5-0F0)       ; Load temp t50
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-0EC)       ; Load temp t49
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-0AC)       ; Load temp t33
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-0F4)      ; Store temp t51
+        LOAD R0, (R5-0F4)       ; Load temp t51
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-0F8)      ; Store temp t52
+        LOAD R0, (R5-0AC)       ; Load temp t33
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-0F8)       ; Load temp t52
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-0BC)       ; Load temp t37
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-0FC)      ; Store temp t53
+        LOAD R0, (R5-0FC)       ; Load temp t53
+        PUSH R0                 ; Save left
+        MOVE 0, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_SGT L_CMP_TRUE_31
+        MOVE 0, R0              ; False
+        JP L_CMP_END_32
+L_CMP_TRUE_31
+        MOVE 1, R0              ; True
+L_CMP_END_32
+        STORE R0, (R5-100)      ; Store temp t54
+        LOAD R0, (R5-100)       ; Load temp t54
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L10
+        JP L_MAIN_L11
+L_MAIN_L9
+        MOVE G_DIST, R0         ; Address of global
+        STORE R0, (R5-3D8)      ; Store temp t236
+        MOVE 7, R0
+        PUSH R0                 ; Save left
+        MOVE 8, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        MOVE R1, R2             ; Save right
+        PUSH R2                 ; Arg right
+        PUSH R0                 ; Arg left
+        CALL F_MUL
+        ADD R7, 8, R7           ; Clean args
+        MOVE R6, R0             ; Result
+        STORE R0, (R5-3DC)      ; Store temp t237
+        LOAD R0, (R5-3DC)       ; Load temp t237
+        PUSH R0                 ; Save left
+        MOVE 7, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-3E0)      ; Store temp t238
+        LOAD R0, (R5-3D8)       ; Load temp t236
+        PUSH R0                 ; Save base address
+        LOAD R0, (R5-3E0)       ; Load temp t238
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 40
+        JP_SGE L_BOUNDS_ERROR
+        SHL R1, 2, R1           ; Index * 4
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-3E4)      ; Store temp t239
+        LOAD R0, (R5-3E4)       ; Load temp t239
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-3E8)      ; Store temp t240
+        LOAD R0, (R5-3E8)       ; Load temp t240
+        MOVE R0, R6             ; Set return value
+        JP L_EXIT_F_MAIN_1
+L_EXIT_F_MAIN_1                 ; Function epilogue
+        ADD R7, 3E8, R7         ; Deallocate locals/temps
+        POP R5                  ; Restore FP
+        RET                     ; Return
+F_MUL                           ; int32 multiplication
+        PUSH R5
+        MOVE R7, R5
+        LOAD R0, (R5+8)         ; a
+        LOAD R1, (R5+0C)        ; b
+        MOVE 0, R4              ; zero
+        MOVE 0, R2              ; sign
+        CMP R0, 0
+        JP_SGE L_MUL_A_POS_1
+        SUB R4, R0, R0
+        XOR R2, 1, R2
+L_MUL_A_POS_1
+        CMP R1, 0
+        JP_SGE L_MUL_B_POS_2
+        SUB R4, R1, R1
+        XOR R2, 1, R2
+L_MUL_B_POS_2
+        MOVE 0, R3              ; result
+L_MUL_LOOP_5
+        CMP R1, 0
+        JP_EQ L_MUL_DONE_3
+        AND R1, 1, R4
+        CMP R4, 0
+        JP_EQ L_MUL_SKIP_4
+        ADD R3, R0, R3
+L_MUL_SKIP_4
+        SHL R0, 1, R0
+        SHR R1, 1, R1
+        JP L_MUL_LOOP_5
+L_MUL_DONE_3
+        CMP R2, 0
+        JP_EQ L_MUL_SIGN_DONE_6
+        MOVE 0, R4              ; zero
+        SUB R4, R3, R3
+L_MUL_SIGN_DONE_6
+        MOVE R3, R6
+        POP R5
+        RET
+L_BOUNDS_ERROR                  ; array bounds error
+        MOVE -6, R6             ; Error code
+        HALT                    ; Abort
+; ===========================================================================
+; Global Variables
+; ===========================================================================
+G_DIST `DS 256                  ; uninitialized array
+G_GRID DW 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0 ; array
+G_QX `DS 256                    ; uninitialized array
+G_QY `DS 256                    ; uninitialized array
