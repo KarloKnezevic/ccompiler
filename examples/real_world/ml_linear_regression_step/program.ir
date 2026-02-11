@@ -34,7 +34,7 @@
     t6 = addr_of_symbol local:i
     t7 = load t6 : int32
     t8 = cmp_lt t7, #4:int32 : bool
-    br t8, L2, L3
+    br t8, L2, L4
   L2:
     t9 = addr_of_symbol global:X
     t10 = addr_of_symbol local:i
@@ -78,40 +78,42 @@
     t38 = load t37 : float
     t39 = add t38, t36 : float
     store t37, t39 : float
-
-    t40 = load t10 : int32
-    t41 = add t40, #1:int32 : int32
-    store t10, t41 : int32
-    jmp L1
+    jmp L3
   L3:
-    t42 = addr_of_symbol local:sum_err
-    t43 = load t42 : float
-    t44 = div t43, #4.0:float : float
-    store t42, t44 : float
+    t40 = addr_of_symbol local:i
+    t41 = load t40 : int32
+    t42 = add t41, #1:int32 : int32
+    store t40, t42 : int32
+    jmp L1
+  L4:
+    t43 = addr_of_symbol local:sum_err
+    t44 = load t43 : float
+    t45 = div t44, #4.0:float : float
+    store t43, t45 : float
 
-    t45 = addr_of_symbol local:sum_errx
-    t46 = load t45 : float
-    t47 = div t46, #4.0:float : float
-    store t45, t47 : float
+    t46 = addr_of_symbol local:sum_errx
+    t47 = load t46 : float
+    t48 = div t47, #4.0:float : float
+    store t46, t48 : float
 
-    t48 = addr_of_symbol local:w
-    t49 = load t48 : float
-    t50 = addr_of_symbol local:lr
-    t51 = load t50 : float
-    t52 = load t45 : float
-    t53 = mul t51, t52 : float
-    t54 = sub t49, t53 : float
-    store t48, t54 : float
+    t49 = addr_of_symbol local:w
+    t50 = load t49 : float
+    t51 = addr_of_symbol local:lr
+    t52 = load t51 : float
+    t53 = load t46 : float
+    t54 = mul t52, t53 : float
+    t55 = sub t50, t54 : float
+    store t49, t55 : float
 
-    t55 = addr_of_symbol local:b
-    t56 = load t55 : float
-    t57 = load t50 : float
-    t58 = load t42 : float
-    t59 = mul t57, t58 : float
-    t60 = sub t56, t59 : float
-    store t55, t60 : float
-    t61 = load t48 : float
-    ret t61
+    t56 = addr_of_symbol local:b
+    t57 = load t56 : float
+    t58 = load t51 : float
+    t59 = load t43 : float
+    t60 = mul t58, t59 : float
+    t61 = sub t57, t60 : float
+    store t56, t61 : float
+    t62 = load t49 : float
+    ret t62
 .endfunc
 
 .endprogram

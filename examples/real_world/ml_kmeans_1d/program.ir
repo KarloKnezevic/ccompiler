@@ -29,23 +29,30 @@
     t3 = addr_of_symbol local:iter
     t4 = load t3 : int32
     t5 = cmp_lt t4, #2:int32 : bool
-    br t5, L2, L3
+    br t5, L2, L4
   L10:
+    jmp L11
+  L11:
+    t35 = addr_of_symbol local:d2
+    t36 = load t35 : int32
+    t37 = cmp_lt t36, #0:int32 : bool
+    br t37, L12, L13
+  L12:
     t38 = addr_of_symbol local:d2
     t39 = load t38 : int32
     t40 = neg t39 : int32
     store t38, t40 : int32
-    jmp L12
-  L11:
-    jmp L12
-  L12:
+    jmp L14
+  L13:
+    jmp L14
+  L14:
     t41 = addr_of_symbol local:d1
     t42 = load t41 : int32
     t43 = addr_of_symbol local:d2
     t44 = load t43 : int32
     t45 = cmp_le t42, t44 : bool
-    br t45, L13, L14
-  L13:
+    br t45, L15, L16
+  L15:
     t46 = addr_of_symbol global:data
     t47 = addr_of_symbol local:i
     t48 = load t47 : int32
@@ -60,8 +67,8 @@
     t55 = load t54 : int32
     t56 = add t55, #1:int32 : int32
     store t54, t56 : int32
-    jmp L15
-  L14:
+    jmp L17
+  L16:
     t57 = addr_of_symbol global:data
     t58 = addr_of_symbol local:i
     t59 = load t58 : int32
@@ -76,14 +83,10 @@
     t66 = load t65 : int32
     t67 = add t66, #1:int32 : int32
     store t65, t67 : int32
-    jmp L15
-  L15:
-    t68 = addr_of_symbol local:i
-    t69 = load t68 : int32
-    t70 = add t69, #1:int32 : int32
-    store t68, t70 : int32
-    jmp L4
-  L16:
+    jmp L17
+  L17:
+    jmp L7
+  L18:
     t74 = addr_of_symbol local:sum1
     t75 = load t74 : int32
     t76 = addr_of_symbol local:count1
@@ -92,24 +95,9 @@
 
     t79 = addr_of_symbol local:c1
     store t79, t78 : int32
-    jmp L18
-  L17:
-    jmp L18
-  L18:
-    t80 = addr_of_symbol local:count2
-    t81 = load t80 : int32
-    t82 = cmp_gt t81, #0:int32 : bool
-    br t82, L19, L20
+    jmp L20
   L19:
-    t83 = addr_of_symbol local:sum2
-    t84 = load t83 : int32
-    t85 = addr_of_symbol local:count2
-    t86 = load t85 : int32
-    t87 = div t84, t86 : int32
-
-    t88 = addr_of_symbol local:c2
-    store t88, t87 : int32
-    jmp L21
+    jmp L20
   L2:
     t6 = addr_of_symbol local:sum1
     store t6, #0:int32 : int32
@@ -121,16 +109,33 @@
     store t9, #0:int32 : int32
     t10 = addr_of_symbol local:i
     store t10, #0:int32 : int32
-    jmp L4
+    jmp L5
   L20:
-    jmp L21
+    t80 = addr_of_symbol local:count2
+    t81 = load t80 : int32
+    t82 = cmp_gt t81, #0:int32 : bool
+    br t82, L21, L22
   L21:
+    t83 = addr_of_symbol local:sum2
+    t84 = load t83 : int32
+    t85 = addr_of_symbol local:count2
+    t86 = load t85 : int32
+    t87 = div t84, t86 : int32
+
+    t88 = addr_of_symbol local:c2
+    store t88, t87 : int32
+    jmp L23
+  L22:
+    jmp L23
+  L23:
+    jmp L3
+  L3:
     t89 = addr_of_symbol local:iter
     t90 = load t89 : int32
     t91 = add t90, #1:int32 : int32
     store t89, t91 : int32
     jmp L1
-  L3:
+  L4:
     t92 = addr_of_symbol local:c1
     t93 = load t92 : int32
     t94 = mul t93, #100:int32 : int32
@@ -139,12 +144,12 @@
     t96 = load t95 : int32
     t97 = add t94, t96 : int32
     ret t97
-  L4:
+  L5:
     t11 = addr_of_symbol local:i
     t12 = load t11 : int32
     t13 = cmp_lt t12, #4:int32 : bool
-    br t13, L5, L6
-  L5:
+    br t13, L6, L8
+  L6:
     t14 = addr_of_symbol global:data
     t15 = addr_of_symbol local:i
     t16 = load t15 : int32
@@ -168,25 +173,24 @@
     store t29, t28 : int32
     t30 = load t22 : int32
     t31 = cmp_lt t30, #0:int32 : bool
-    br t31, L7, L8
-  L6:
+    br t31, L9, L10
+  L7:
+    t68 = addr_of_symbol local:i
+    t69 = load t68 : int32
+    t70 = add t69, #1:int32 : int32
+    store t68, t70 : int32
+    jmp L5
+  L8:
     t71 = addr_of_symbol local:count1
     t72 = load t71 : int32
     t73 = cmp_gt t72, #0:int32 : bool
-    br t73, L16, L17
-  L7:
+    br t73, L18, L19
+  L9:
     t32 = addr_of_symbol local:d1
     t33 = load t32 : int32
     t34 = neg t33 : int32
     store t32, t34 : int32
-    jmp L9
-  L8:
-    jmp L9
-  L9:
-    t35 = addr_of_symbol local:d2
-    t36 = load t35 : int32
-    t37 = cmp_lt t36, #0:int32 : bool
-    br t37, L10, L11
+    jmp L11
 .endfunc
 
 .endprogram

@@ -38,6 +38,15 @@ public final class GlobalInitializerExtractor {
             return null;
           }
         }
+      } else if (initializerNode.children().size() == 1) {
+        ParseNode firstChild = initializerNode.children().get(0);
+        if (firstChild instanceof NonTerminalNode expr) {
+          try {
+            return ConstantEvaluator.extractConstantFromExpression(expr, arrayType);
+          } catch (UnsupportedOperationException | IllegalArgumentException e) {
+            return null;
+          }
+        }
       }
     } else {
       // Scalar global - can have constant initializer

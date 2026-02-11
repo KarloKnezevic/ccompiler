@@ -1,1 +1,5 @@
-error
+Status: FAILED (478 ms)
+Stage: Syntax Analysis
+Cause: Parsing failed
+Detail: Sintaksna greška na retku 9.
+Hint: Check syntax tree outputs for details

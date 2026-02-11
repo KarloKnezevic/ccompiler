@@ -1,0 +1,142 @@
+; ===========================================================================
+; PPJ Compiler - Generated FRISC Assembly Code
+; Source: program.c
+; Generated: 2026-02-10 23:40:59
+; ===========================================================================
+; ===========================================================================
+; Program entry point and initialization
+; ===========================================================================
+        MOVE 40000, R7          ; Initialize stack pointer (SP)
+        CALL F_MAIN             ; Call main
+        HALT                    ; Program end
+; ===========================================================================
+; Function Definitions
+; ===========================================================================
+F_MAIN                          ; Function: main
+        PUSH R5                 ; Save old FP
+        MOVE R7, R5             ; Set FP
+        SUB R7, 2C, R7          ; Allocate locals/temps
+        MOVE 0B, R1             ; Zero words
+        MOVE R7, R0             ; Zero ptr
+        MOVE 0, R2              ; Zero
+L_ZERO_2
+        STORE R2, (R0)          ; Clear
+        ADD R0, 4, R0
+        SUB R1, 1, R1
+        JP_NE L_ZERO_2
+L_MAIN_L0
+        MOVE R5, R0
+        SUB R0, 8, R0           ; Local address
+        STORE R0, (R5-0C)       ; Store temp t0
+        LOAD R0, (R5-0C)        ; Load temp t0
+        PUSH R0                 ; Save base address
+        MOVE 0, R0
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 5
+        JP_SGE L_BOUNDS_ERROR
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-10)       ; Store temp t1
+        LOAD R0, (R5-10)        ; Load temp t1
+        PUSH R0                 ; Save address
+        MOVE 61, R0
+        POP R1                  ; Restore address
+        STOREB R0, (R1)         ; Store byte
+        LOAD R0, (R5-0C)        ; Load temp t0
+        PUSH R0                 ; Save base address
+        MOVE 1, R0
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 5
+        JP_SGE L_BOUNDS_ERROR
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-14)       ; Store temp t2
+        LOAD R0, (R5-14)        ; Load temp t2
+        PUSH R0                 ; Save address
+        MOVE 62, R0
+        POP R1                  ; Restore address
+        STOREB R0, (R1)         ; Store byte
+        LOAD R0, (R5-0C)        ; Load temp t0
+        PUSH R0                 ; Save base address
+        MOVE 2, R0
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 5
+        JP_SGE L_BOUNDS_ERROR
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-18)       ; Store temp t3
+        LOAD R0, (R5-18)        ; Load temp t3
+        PUSH R0                 ; Save address
+        MOVE 63, R0
+        POP R1                  ; Restore address
+        STOREB R0, (R1)         ; Store byte
+        LOAD R0, (R5-0C)        ; Load temp t0
+        PUSH R0                 ; Save base address
+        MOVE 3, R0
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 5
+        JP_SGE L_BOUNDS_ERROR
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-1C)       ; Store temp t4
+        LOAD R0, (R5-1C)        ; Load temp t4
+        PUSH R0                 ; Save address
+        MOVE 64, R0
+        POP R1                  ; Restore address
+        STOREB R0, (R1)         ; Store byte
+        LOAD R0, (R5-0C)        ; Load temp t0
+        PUSH R0                 ; Save base address
+        MOVE 4, R0
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 5
+        JP_SGE L_BOUNDS_ERROR
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-20)       ; Store temp t5
+        LOAD R0, (R5-20)        ; Load temp t5
+        PUSH R0                 ; Save address
+        MOVE 0, R0
+        POP R1                  ; Restore address
+        STOREB R0, (R1)         ; Store byte
+        LOAD R0, (R5-0C)        ; Load temp t0
+        PUSH R0                 ; Save base address
+        MOVE 3, R0
+        MOVE R0, R1             ; Index
+        POP R0                  ; Restore base
+        CMP R1, 0               ; Bounds check
+        JP_SLT L_BOUNDS_ERROR
+        CMP R1, 5
+        JP_SGE L_BOUNDS_ERROR
+        ADD R0, R1, R0          ; Base + offset
+        STORE R0, (R5-24)       ; Store temp t6
+        LOAD R0, (R5-24)        ; Load temp t6
+        LOADB R0, (R0)          ; Load byte
+        STORE R0, (R5-28)       ; Store temp t7
+        LOAD R0, (R5-28)        ; Load temp t7
+        AND R0, 0FF, R0         ; Clamp char
+        SHL R0, 18, R0          ; Sign-extend (shift)
+        ASHR R0, 18, R0
+        STORE R0, (R5-2C)       ; Store temp t8
+        LOAD R0, (R5-2C)        ; Load temp t8
+        MOVE R0, R6             ; Set return value
+        JP L_EXIT_F_MAIN_1
+L_EXIT_F_MAIN_1                 ; Function epilogue
+        ADD R7, 2C, R7          ; Deallocate locals/temps
+        POP R5                  ; Restore FP
+        RET                     ; Return
+L_BOUNDS_ERROR                  ; array bounds error
+        MOVE -6, R6             ; Error code
+        HALT                    ; Abort
+; ===========================================================================
+; Global Variables
+; ===========================================================================

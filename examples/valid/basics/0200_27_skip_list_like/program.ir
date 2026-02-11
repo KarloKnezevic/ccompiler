@@ -37,7 +37,7 @@
     t7 = addr_of_symbol local:i
     t8 = load t7 : int32
     t9 = cmp_lt t8, #3:int32 : bool
-    br t9, L2, L3
+    br t9, L2, L4
   L2:
     t10 = addr_of_symbol local:node
     t11 = addr_field t10, SkipNode.next
@@ -45,12 +45,14 @@
     t13 = load t12 : int32
     t14 = addr_index t11, t13, 4
     store t14, null:ptr<struct SkipNode> : ptr<struct SkipNode>
-
-    t15 = load t12 : int32
-    t16 = add t15, #1:int32 : int32
-    store t12, t16 : int32
-    jmp L1
+    jmp L3
   L3:
+    t15 = addr_of_symbol local:i
+    t16 = load t15 : int32
+    t17 = add t16, #1:int32 : int32
+    store t15, t17 : int32
+    jmp L1
+  L4:
     ret #0:int32
 .endfunc
 

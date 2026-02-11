@@ -20,7 +20,7 @@
     t2 = addr_of_symbol local:i
     t3 = load t2 : int32
     t4 = cmp_lt t3, #8:int32 : bool
-    br t4, L2, L3
+    br t4, L2, L4
   L2:
     t5 = addr_of_symbol global:A
     t6 = addr_of_symbol local:i
@@ -36,15 +36,17 @@
     t15 = load t14 : int32
     t16 = add t15, t13 : int32
     store t14, t16 : int32
-
-    t17 = load t6 : int32
-    t18 = add t17, #1:int32 : int32
-    store t6, t18 : int32
-    jmp L1
+    jmp L3
   L3:
-    t19 = addr_of_symbol local:sum
-    t20 = load t19 : int32
-    ret t20
+    t17 = addr_of_symbol local:i
+    t18 = load t17 : int32
+    t19 = add t18, #1:int32 : int32
+    store t17, t19 : int32
+    jmp L1
+  L4:
+    t20 = addr_of_symbol local:sum
+    t21 = load t20 : int32
+    ret t21
 .endfunc
 
 .endprogram

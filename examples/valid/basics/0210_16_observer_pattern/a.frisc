@@ -1,7 +1,7 @@
 ; ===========================================================================
 ; PPJ Compiler - Generated FRISC Assembly Code
 ; Source: program.c
-; Generated: 2026-02-05 09:34:06
+; Generated: 2026-02-11 00:56:46
 ; ===========================================================================
 ; ===========================================================================
 ; Program entry point and initialization
@@ -69,7 +69,7 @@ L_CMP_END_4
         LOAD R0, (R5-24)        ; Load temp t7
         CMP R0, 0               ; Branch on condition
         JP_NE L_NOTIFY_OBSERVERS_L2
-        JP L_NOTIFY_OBSERVERS_L3
+        JP L_NOTIFY_OBSERVERS_L4
 L_NOTIFY_OBSERVERS_L2
         MOVE R5, R0
         ADD R0, 8, R0           ; Param address
@@ -111,12 +111,32 @@ L_CMP_END_6
         STORE R0, (R5-44)       ; Store temp t15
         LOAD R0, (R5-44)        ; Load temp t15
         CMP R0, 0               ; Branch on condition
-        JP_NE L_NOTIFY_OBSERVERS_L4
-        JP L_NOTIFY_OBSERVERS_L5
+        JP_NE L_NOTIFY_OBSERVERS_L5
+        JP L_NOTIFY_OBSERVERS_L6
 L_NOTIFY_OBSERVERS_L3
+        MOVE R5, R0
+        SUB R0, 4, R0           ; Local address
+        STORE R0, (R5-70)       ; Store temp t26
+        LOAD R0, (R5-70)        ; Load temp t26
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-74)       ; Store temp t27
+        LOAD R0, (R5-74)        ; Load temp t27
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-78)       ; Store temp t28
+        LOAD R0, (R5-70)        ; Load temp t26
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-78)        ; Load temp t28
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        JP L_NOTIFY_OBSERVERS_L1
+L_NOTIFY_OBSERVERS_L4
         MOVE 0, R6              ; Return 0 (void)
         JP L_EXIT_F_NOTIFY_OBSERVERS_1
-L_NOTIFY_OBSERVERS_L4
+L_NOTIFY_OBSERVERS_L5
         MOVE R5, R0
         ADD R0, 8, R0           ; Param address
         STORE R0, (R5-48)       ; Store temp t16
@@ -156,29 +176,11 @@ L_NOTIFY_OBSERVERS_L4
         LOAD R0, (R5-6C)        ; Load temp t25
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
-        JP L_NOTIFY_OBSERVERS_L6
-L_NOTIFY_OBSERVERS_L5
-        JP L_NOTIFY_OBSERVERS_L6
+        JP L_NOTIFY_OBSERVERS_L7
 L_NOTIFY_OBSERVERS_L6
-        MOVE R5, R0
-        SUB R0, 4, R0           ; Local address
-        STORE R0, (R5-70)       ; Store temp t26
-        LOAD R0, (R5-70)        ; Load temp t26
-        LOAD R0, (R0)           ; Load word
-        STORE R0, (R5-74)       ; Store temp t27
-        LOAD R0, (R5-74)        ; Load temp t27
-        PUSH R0                 ; Save left
-        MOVE 1, R0
-        MOVE R0, R1             ; Right
-        POP R0                  ; Left
-        ADD R0, R1, R0
-        STORE R0, (R5-78)       ; Store temp t28
-        LOAD R0, (R5-70)        ; Load temp t26
-        PUSH R0                 ; Save address
-        LOAD R0, (R5-78)        ; Load temp t28
-        POP R1                  ; Restore address
-        STORE R0, (R1)          ; Store word
-        JP L_NOTIFY_OBSERVERS_L1
+        JP L_NOTIFY_OBSERVERS_L7
+L_NOTIFY_OBSERVERS_L7
+        JP L_NOTIFY_OBSERVERS_L3
 L_EXIT_F_NOTIFY_OBSERVERS_1     ; Function epilogue
         ADD R7, 78, R7          ; Deallocate locals/temps
         POP R5                  ; Restore FP

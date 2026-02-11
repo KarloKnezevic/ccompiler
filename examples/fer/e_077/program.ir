@@ -1,0 +1,36 @@
+.program
+
+.func main():int32
+  .frame locals=8 bytes align=4
+  .slots
+    local x@0:int32
+    local __logical_result_0@4:bool
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:x
+    store t0, #1:int32 : int32
+
+    t1 = cmp_ne #1:int32, #0:int32 : bool
+    br t1, L1, L4
+  L1:
+    t2 = addr_of_symbol local:x
+    store t2, #3:int32 : int32
+
+    t3 = cmp_ne #3:int32, #0:int32 : bool
+    br t3, L3, L4
+  L2:
+    t6 = addr_of_symbol local:__logical_result_0
+    t7 = load t6 : bool
+    t8 = zext t7 : int32
+    ret t8
+  L3:
+    t4 = addr_of_symbol local:__logical_result_0
+    store t4, #1:bool : bool
+    jmp L2
+  L4:
+    t5 = addr_of_symbol local:__logical_result_0
+    store t5, #0:bool : bool
+    jmp L2
+.endfunc
+
+.endprogram

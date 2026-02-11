@@ -75,7 +75,7 @@
     t1 = addr_of_symbol local:i
     t2 = load t1 : int32
     t3 = cmp_lt t2, #5:int32 : bool
-    br t3, L2, L3
+    br t3, L2, L4
   L2:
     t4 = addr_of_symbol local:arr
     t5 = addr_of_symbol local:i
@@ -83,27 +83,29 @@
     t7 = addr_index t4, t6, 4
     t8 = add t6, #1:int32 : int32
     store t7, t8 : int32
-
-    t9 = load t5 : int32
-    t10 = add t9, #1:int32 : int32
-    store t5, t10 : int32
-    jmp L1
+    jmp L3
   L3:
-    t11 = addr_of_symbol local:iter
-    t12 = addr_field t11, Iterator.current
-    t13 = addr_of_symbol local:arr
-    t14 = addr_index t13, #0:int32, 4
-    store t12, t14 : ptr<int32>
-    t15 = addr_field t11, Iterator.end
-    t16 = addr_index t13, #5:int32, 4
-    store t15, t16 : ptr<int32>
-    t17 = addr_field t11, Iterator.step
-    store t17, #1:int32 : int32
-    t18 = call func:sum_range(t11) : int32
-    t19 = addr_of_symbol local:result
-    store t19, t18 : int32
-    t20 = load t19 : int32
-    ret t20
+    t9 = addr_of_symbol local:i
+    t10 = load t9 : int32
+    t11 = add t10, #1:int32 : int32
+    store t9, t11 : int32
+    jmp L1
+  L4:
+    t12 = addr_of_symbol local:iter
+    t13 = addr_field t12, Iterator.current
+    t14 = addr_of_symbol local:arr
+    t15 = addr_index t14, #0:int32, 4
+    store t13, t15 : ptr<int32>
+    t16 = addr_field t12, Iterator.end
+    t17 = addr_index t14, #5:int32, 4
+    store t16, t17 : ptr<int32>
+    t18 = addr_field t12, Iterator.step
+    store t18, #1:int32 : int32
+    t19 = call func:sum_range(t12) : int32
+    t20 = addr_of_symbol local:result
+    store t20, t19 : int32
+    t21 = load t20 : int32
+    ret t21
 .endfunc
 
 .endprogram

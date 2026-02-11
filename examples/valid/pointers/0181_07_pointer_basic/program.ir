@@ -12,8 +12,10 @@
     store t0, #5:int32 : int32
     t1 = addr_of_symbol local:p
     store t1, t0 : ptr<int32>
+
     t2 = load t1 : ptr<int32>
     store t2, #10:int32 : int32
+
     t3 = load t1 : ptr<int32>
     t4 = load t3 : int32
     t5 = addr_of_symbol local:y

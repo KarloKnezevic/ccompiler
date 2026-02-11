@@ -22,7 +22,7 @@
     t3 = addr_of_symbol local:i
     t4 = load t3 : int32
     t5 = cmp_lt t4, #26:int32 : bool
-    br t5, L2, L3
+    br t5, L2, L4
   L2:
     t6 = addr_of_symbol local:root
     t7 = addr_field t6, TrieNode.children
@@ -30,12 +30,14 @@
     t9 = load t8 : int32
     t10 = addr_index t7, t9, 4
     store t10, null:ptr<struct TrieNode> : ptr<struct TrieNode>
-
-    t11 = load t8 : int32
-    t12 = add t11, #1:int32 : int32
-    store t8, t12 : int32
-    jmp L1
+    jmp L3
   L3:
+    t11 = addr_of_symbol local:i
+    t12 = load t11 : int32
+    t13 = add t12, #1:int32 : int32
+    store t11, t13 : int32
+    jmp L1
+  L4:
     ret #0:int32
 .endfunc
 

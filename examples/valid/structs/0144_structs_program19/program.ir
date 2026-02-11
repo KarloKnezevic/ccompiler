@@ -19,8 +19,10 @@
     store t2, #2:int32 : int32
     t3 = addr_field t0, Triple.c
     store t3, #3:int32 : int32
+
     t4 = load t1 : int32
     t5 = mul t4, #100:int32 : int32
+
     t6 = load t2 : int32
     t7 = mul t6, #10:int32 : int32
     t8 = add t5, t7 : int32

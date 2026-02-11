@@ -1,7 +1,7 @@
 ; ===========================================================================
 ; PPJ Compiler - Generated FRISC Assembly Code
 ; Source: program.c
-; Generated: 2026-02-10 16:54:00
+; Generated: 2026-02-11 01:32:18
 ; ===========================================================================
 ; ===========================================================================
 ; Program entry point and initialization
@@ -232,7 +232,7 @@ L_CMP_END_6
         LOAD R0, (R5-50)        ; Load temp t16
         CMP R0, 0               ; Branch on condition
         JP_NE L_PARTITION_L2
-        JP L_PARTITION_L3
+        JP L_PARTITION_L4
 L_PARTITION_L2
         MOVE G_A, R0            ; Address of global
         STORE R0, (R5-54)       ; Store temp t17
@@ -278,9 +278,29 @@ L_CMP_END_8
         STORE R0, (R5-70)       ; Store temp t24
         LOAD R0, (R5-70)        ; Load temp t24
         CMP R0, 0               ; Branch on condition
-        JP_NE L_PARTITION_L4
-        JP L_PARTITION_L5
+        JP_NE L_PARTITION_L5
+        JP L_PARTITION_L6
 L_PARTITION_L3
+        MOVE R5, R0
+        SUB R0, 0C, R0          ; Local address
+        STORE R0, (R5-8C)       ; Store temp t31
+        LOAD R0, (R5-8C)        ; Load temp t31
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-90)       ; Store temp t32
+        LOAD R0, (R5-90)        ; Load temp t32
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-94)       ; Store temp t33
+        LOAD R0, (R5-8C)        ; Load temp t31
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-94)        ; Load temp t33
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        JP L_PARTITION_L1
+L_PARTITION_L4
         MOVE R5, R0
         SUB R0, 8, R0           ; Local address
         STORE R0, (R5-98)       ; Store temp t34
@@ -324,7 +344,7 @@ L_PARTITION_L3
         LOAD R0, (R5-0B0)       ; Load temp t40
         MOVE R0, R6             ; Set return value
         JP L_EXIT_F_PARTITION_3
-L_PARTITION_L4
+L_PARTITION_L5
         MOVE R5, R0
         SUB R0, 8, R0           ; Local address
         STORE R0, (R5-74)       ; Store temp t25
@@ -363,29 +383,11 @@ L_PARTITION_L4
         STORE R0, (R7+4)        ; Store arg
         CALL F_SWAP             ; Call swap
         ADD R7, 8, R7           ; Clean args
-        JP L_PARTITION_L6
-L_PARTITION_L5
-        JP L_PARTITION_L6
+        JP L_PARTITION_L7
 L_PARTITION_L6
-        MOVE R5, R0
-        SUB R0, 0C, R0          ; Local address
-        STORE R0, (R5-8C)       ; Store temp t31
-        LOAD R0, (R5-8C)        ; Load temp t31
-        LOAD R0, (R0)           ; Load word
-        STORE R0, (R5-90)       ; Store temp t32
-        LOAD R0, (R5-90)        ; Load temp t32
-        PUSH R0                 ; Save left
-        MOVE 1, R0
-        MOVE R0, R1             ; Right
-        POP R0                  ; Left
-        ADD R0, R1, R0
-        STORE R0, (R5-94)       ; Store temp t33
-        LOAD R0, (R5-8C)        ; Load temp t31
-        PUSH R0                 ; Save address
-        LOAD R0, (R5-94)        ; Load temp t33
-        POP R1                  ; Restore address
-        STORE R0, (R1)          ; Store word
-        JP L_PARTITION_L1
+        JP L_PARTITION_L7
+L_PARTITION_L7
+        JP L_PARTITION_L3
 L_EXIT_F_PARTITION_3            ; Function epilogue
         ADD R7, 0B8, R7         ; Deallocate locals/temps
         POP R5                  ; Restore FP

@@ -7,10 +7,8 @@
   L0:
     t0 = cmp_lt #1.0:float, #2.0:float : bool
     br t0, L1, L2
-
   L1:
     ret #1:int32
-
   L2:
     ret #0:int32
 .endfunc

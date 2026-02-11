@@ -43,14 +43,24 @@
     t1 = addr_of_symbol local:i
     t2 = load t1 : int32
     t3 = cmp_lt t2, #4:int32 : bool
-    br t3, L2, L3
+    br t3, L2, L4
   L10:
-    t73 = addr_of_symbol local:j
-    t74 = load t73 : int32
-    t75 = add t74, #1:int32 : int32
-    store t73, t75 : int32
-    jmp L4
+    t31 = addr_of_symbol local:i
+    t32 = load t31 : int32
+    t33 = cmp_eq t32, #0:int32 : bool
+    br t33, L13, L14
   L11:
+    t25 = addr_of_symbol global:dp
+    t26 = addr_of_symbol local:idx
+    t27 = load t26 : int32
+    t28 = addr_index t25, t27, 4
+    t29 = addr_of_symbol local:val
+    t30 = load t29 : int32
+    store t28, t30 : int32
+    jmp L12
+  L12:
+    jmp L7
+  L13:
     t34 = addr_of_symbol global:dp
     t35 = addr_of_symbol local:idx
     t36 = load t35 : int32
@@ -62,15 +72,15 @@
     t42 = load t41 : int32
     t43 = add t40, t42 : int32
     store t37, t43 : int32
-    jmp L13
-  L12:
+    jmp L15
+  L14:
     t44 = addr_of_symbol local:j
     t45 = load t44 : int32
     t46 = cmp_eq t45, #0:int32 : bool
-    br t46, L14, L15
-  L13:
-    jmp L10
-  L14:
+    br t46, L16, L17
+  L15:
+    jmp L12
+  L16:
     t47 = addr_of_symbol global:dp
     t48 = addr_of_symbol local:idx
     t49 = load t48 : int32
@@ -82,8 +92,8 @@
     t55 = load t54 : int32
     t56 = add t53, t55 : int32
     store t50, t56 : int32
-    jmp L16
-  L15:
+    jmp L18
+  L17:
     t57 = addr_of_symbol global:dp
     t58 = addr_of_symbol local:idx
     t59 = load t58 : int32
@@ -101,24 +111,30 @@
     t71 = call func:min2(t66, t70) : int32
     t72 = add t71, t62 : int32
     store t60, t72 : int32
-    jmp L16
-  L16:
-    jmp L13
+    jmp L18
+  L18:
+    jmp L15
   L2:
     t4 = addr_of_symbol local:j
     store t4, #0:int32 : int32
-    jmp L4
+    jmp L5
   L3:
+    t76 = addr_of_symbol local:i
+    t77 = load t76 : int32
+    t78 = add t77, #1:int32 : int32
+    store t76, t78 : int32
+    jmp L1
+  L4:
     t79 = addr_of_symbol global:dp
     t80 = addr_index t79, #15:int32, 4
     t81 = load t80 : int32
     ret t81
-  L4:
+  L5:
     t5 = addr_of_symbol local:j
     t6 = load t5 : int32
     t7 = cmp_lt t6, #4:int32 : bool
-    br t7, L5, L6
-  L5:
+    br t7, L6, L8
+  L6:
     t8 = addr_of_symbol local:i
     t9 = load t8 : int32
     t10 = mul t9, #4:int32 : int32
@@ -138,32 +154,20 @@
     store t19, t18 : int32
     t20 = load t8 : int32
     t21 = cmp_eq t20, #0:int32 : bool
-    br t21, L7, L8
-  L6:
-    t76 = addr_of_symbol local:i
-    t77 = load t76 : int32
-    t78 = add t77, #1:int32 : int32
-    store t76, t78 : int32
-    jmp L1
+    br t21, L9, L10
   L7:
+    t73 = addr_of_symbol local:j
+    t74 = load t73 : int32
+    t75 = add t74, #1:int32 : int32
+    store t73, t75 : int32
+    jmp L5
+  L8:
+    jmp L3
+  L9:
     t22 = addr_of_symbol local:j
     t23 = load t22 : int32
     t24 = cmp_eq t23, #0:int32 : bool
-    br t24, L9, L8
-  L8:
-    t31 = addr_of_symbol local:i
-    t32 = load t31 : int32
-    t33 = cmp_eq t32, #0:int32 : bool
-    br t33, L11, L12
-  L9:
-    t25 = addr_of_symbol global:dp
-    t26 = addr_of_symbol local:idx
-    t27 = load t26 : int32
-    t28 = addr_index t25, t27, 4
-    t29 = addr_of_symbol local:val
-    t30 = load t29 : int32
-    store t28, t30 : int32
-    jmp L10
+    br t24, L11, L10
 .endfunc
 
 .endprogram

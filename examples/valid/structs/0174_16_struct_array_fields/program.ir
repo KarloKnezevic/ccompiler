@@ -15,6 +15,7 @@
   L0:
     t0 = addr_of_symbol local:x
     store t0, #5:int32 : int32
+
     t1 = addr_of_symbol local:d
     t2 = addr_field t1, Data.arr
     t3 = addr_index t2, #0:int32, 4
@@ -23,6 +24,7 @@
     store t4, #2:int32 : int32
     t5 = addr_field t1, Data.ptr
     store t5, t0 : ptr<int32>
+
     t6 = load t5 : ptr<int32>
     t7 = load t6 : int32
     t8 = addr_of_symbol local:y

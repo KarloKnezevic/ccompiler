@@ -1,0 +1,53 @@
+; ===========================================================================
+; PPJ Compiler - Generated FRISC Assembly Code
+; Source: program.c
+; Generated: 2026-02-10 23:36:54
+; ===========================================================================
+; ===========================================================================
+; Program entry point and initialization
+; ===========================================================================
+        MOVE 40000, R7          ; Initialize stack pointer (SP)
+        CALL F_MAIN             ; Call main
+        HALT                    ; Program end
+; ===========================================================================
+; Function Definitions
+; ===========================================================================
+F_MAIN                          ; Function: main
+        PUSH R5                 ; Save old FP
+        MOVE R7, R5             ; Set FP
+        SUB R7, 8, R7           ; Allocate locals/temps
+        MOVE 2, R1              ; Zero words
+        MOVE R7, R0             ; Zero ptr
+        MOVE 0, R2              ; Zero
+L_ZERO_2
+        STORE R2, (R0)          ; Clear
+        ADD R0, 4, R0
+        SUB R1, 1, R1
+        JP_NE L_ZERO_2
+L_MAIN_L0
+        MOVE 1, R0
+        PUSH R0                 ; Save left
+        MOVE 2, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_SGE L_CMP_TRUE_3
+        MOVE 0, R0              ; False
+        JP L_CMP_END_4
+L_CMP_TRUE_3
+        MOVE 1, R0              ; True
+L_CMP_END_4
+        STORE R0, (R5-4)        ; Store temp t0
+        LOAD R0, (R5-4)         ; Load temp t0
+        AND R0, 0FF, R0         ; Zero-extend byte
+        STORE R0, (R5-8)        ; Store temp t1
+        LOAD R0, (R5-8)         ; Load temp t1
+        MOVE R0, R6             ; Set return value
+        JP L_EXIT_F_MAIN_1
+L_EXIT_F_MAIN_1                 ; Function epilogue
+        ADD R7, 8, R7           ; Deallocate locals/temps
+        POP R5                  ; Restore FP
+        RET                     ; Return
+; ===========================================================================
+; Global Variables
+; ===========================================================================

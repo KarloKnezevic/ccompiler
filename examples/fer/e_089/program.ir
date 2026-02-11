@@ -1,0 +1,39 @@
+.program
+
+.func main():int32
+  .frame locals=28 bytes align=4
+  .slots
+    local x@0:int32
+    local y@4:int32
+    local z@8:array<int32,5>
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:x
+    store t0, #1:int32 : int32
+    t1 = addr_of_symbol local:y
+    store t1, #2:int32 : int32
+
+    t2 = addr_of_symbol local:z
+    t3 = addr_index t2, #0:int32, 4
+    store t3, #1:int32 : int32
+    t4 = addr_index t2, #1:int32, 4
+    store t4, #2:int32 : int32
+    t5 = addr_index t2, #2:int32, 4
+    store t5, #3:int32 : int32
+    t6 = addr_index t2, #3:int32, 4
+    store t6, #4:int32 : int32
+    t7 = addr_index t2, #4:int32, 4
+    store t7, #5:int32 : int32
+    t8 = addr_index t2, #0:int32, 4
+    t9 = addr_index t2, #1:int32, 4
+    t10 = addr_index t2, #3:int32, 4
+    store t10, #12:int32 : int32
+    store t9, #12:int32 : int32
+    store t8, #12:int32 : int32
+    store t1, #12:int32 : int32
+    store t0, #12:int32 : int32
+    t11 = load t10 : int32
+    ret t11
+.endfunc
+
+.endprogram

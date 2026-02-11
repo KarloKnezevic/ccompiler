@@ -16,7 +16,7 @@
     t2 = addr_of_symbol local:i
     t3 = load t2 : int32
     t4 = cmp_le t3, #4:int32 : bool
-    br t4, L2, L3
+    br t4, L2, L4
   L2:
     t5 = addr_of_symbol local:sum
     t6 = load t5 : float
@@ -26,15 +26,17 @@
     t10 = div #12.0:float, t9 : float
     t11 = add t6, t10 : float
     store t5, t11 : float
-
-    t12 = load t7 : int32
-    t13 = add t12, #1:int32 : int32
-    store t7, t13 : int32
-    jmp L1
+    jmp L3
   L3:
-    t14 = addr_of_symbol local:sum
-    t15 = load t14 : float
-    ret t15
+    t12 = addr_of_symbol local:i
+    t13 = load t12 : int32
+    t14 = add t13, #1:int32 : int32
+    store t12, t14 : int32
+    jmp L1
+  L4:
+    t15 = addr_of_symbol local:sum
+    t16 = load t15 : float
+    ret t16
 .endfunc
 
 .endprogram

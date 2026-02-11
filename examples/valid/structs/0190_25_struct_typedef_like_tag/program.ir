@@ -13,6 +13,7 @@
   L0:
     t0 = addr_of_symbol local:S
     store t0, #5:int32 : int32
+
     t1 = addr_of_symbol local:s
     t2 = addr_field t1, S.x
     t3 = load t0 : int32

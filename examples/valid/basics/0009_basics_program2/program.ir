@@ -12,4 +12,5 @@
     t1 = load t0 : int32
     ret t1
 .endfunc
+
 .endprogram

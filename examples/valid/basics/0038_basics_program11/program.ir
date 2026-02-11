@@ -16,4 +16,5 @@
     t4 = and t1, t3 : int32
     ret t4
 .endfunc
+
 .endprogram

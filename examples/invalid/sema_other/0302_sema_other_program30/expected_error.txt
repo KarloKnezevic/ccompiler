@@ -1,1 +1,5 @@
-error
+Status: FAILED (98 ms)
+Stage: Semantic Analysis
+Cause: Semantic analysis failed
+Detail: semantic error
+Hint: Review semanticko_stablo.txt for context

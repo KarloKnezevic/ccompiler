@@ -1,7 +1,7 @@
 ; ===========================================================================
 ; PPJ Compiler - Generated FRISC Assembly Code
 ; Source: program.c
-; Generated: 2026-02-10 16:52:08
+; Generated: 2026-02-11 01:30:14
 ; ===========================================================================
 ; ===========================================================================
 ; Program entry point and initialization
@@ -73,7 +73,7 @@ L_CMP_END_4
         LOAD R0, (R5-24)        ; Load temp t5
         CMP R0, 0               ; Branch on condition
         JP_NE L_MAIN_L2
-        JP L_MAIN_L3
+        JP L_MAIN_L4
 L_MAIN_L2
         MOVE G_START, R0        ; Address of global
         STORE R0, (R5-28)       ; Store temp t6
@@ -136,9 +136,29 @@ L_CMP_END_6
         STORE R0, (R5-50)       ; Store temp t16
         LOAD R0, (R5-50)        ; Load temp t16
         CMP R0, 0               ; Branch on condition
-        JP_NE L_MAIN_L4
-        JP L_MAIN_L5
+        JP_NE L_MAIN_L5
+        JP L_MAIN_L6
 L_MAIN_L3
+        MOVE R5, R0
+        SUB R0, 0C, R0          ; Local address
+        STORE R0, (R5-6C)       ; Store temp t23
+        LOAD R0, (R5-6C)        ; Load temp t23
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-70)       ; Store temp t24
+        LOAD R0, (R5-70)        ; Load temp t24
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-74)       ; Store temp t25
+        LOAD R0, (R5-6C)        ; Load temp t23
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-74)        ; Load temp t25
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        JP L_MAIN_L1
+L_MAIN_L4
         MOVE R5, R0
         SUB R0, 4, R0           ; Local address
         STORE R0, (R5-78)       ; Store temp t26
@@ -148,7 +168,7 @@ L_MAIN_L3
         LOAD R0, (R5-7C)        ; Load temp t27
         MOVE R0, R6             ; Set return value
         JP L_EXIT_F_MAIN_1
-L_MAIN_L4
+L_MAIN_L5
         MOVE R5, R0
         SUB R0, 4, R0           ; Local address
         STORE R0, (R5-54)       ; Store temp t17
@@ -181,29 +201,11 @@ L_MAIN_L4
         LOAD R0, (R5-64)        ; Load temp t21
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
-        JP L_MAIN_L6
-L_MAIN_L5
-        JP L_MAIN_L6
+        JP L_MAIN_L7
 L_MAIN_L6
-        MOVE R5, R0
-        SUB R0, 0C, R0          ; Local address
-        STORE R0, (R5-6C)       ; Store temp t23
-        LOAD R0, (R5-6C)        ; Load temp t23
-        LOAD R0, (R0)           ; Load word
-        STORE R0, (R5-70)       ; Store temp t24
-        LOAD R0, (R5-70)        ; Load temp t24
-        PUSH R0                 ; Save left
-        MOVE 1, R0
-        MOVE R0, R1             ; Right
-        POP R0                  ; Left
-        ADD R0, R1, R0
-        STORE R0, (R5-74)       ; Store temp t25
-        LOAD R0, (R5-6C)        ; Load temp t23
-        PUSH R0                 ; Save address
-        LOAD R0, (R5-74)        ; Load temp t25
-        POP R1                  ; Restore address
-        STORE R0, (R1)          ; Store word
-        JP L_MAIN_L1
+        JP L_MAIN_L7
+L_MAIN_L7
+        JP L_MAIN_L3
 L_EXIT_F_MAIN_1                 ; Function epilogue
         ADD R7, 7C, R7          ; Deallocate locals/temps
         POP R5                  ; Restore FP

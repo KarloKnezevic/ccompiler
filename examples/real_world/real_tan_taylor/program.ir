@@ -28,7 +28,7 @@
     t6 = addr_of_symbol local:k
     t7 = load t6 : int32
     t8 = cmp_le t7, #5:int32 : bool
-    br t8, L2, L3
+    br t8, L2, L4
   L2:
     t9 = addr_of_symbol local:k
     t10 = load t9 : int32
@@ -58,15 +58,17 @@
     t28 = load t17 : float
     t29 = add t27, t28 : float
     store t26, t29 : float
-
-    t30 = load t9 : int32
-    t31 = add t30, #1:int32 : int32
-    store t9, t31 : int32
-    jmp L1
+    jmp L3
   L3:
-    t32 = addr_of_symbol local:sum
-    t33 = load t32 : float
-    ret t33
+    t30 = addr_of_symbol local:k
+    t31 = load t30 : int32
+    t32 = add t31, #1:int32 : int32
+    store t30, t32 : int32
+    jmp L1
+  L4:
+    t33 = addr_of_symbol local:sum
+    t34 = load t33 : float
+    ret t34
 .endfunc
 
 .func cos_taylor(x:float):float
@@ -90,7 +92,7 @@
     t3 = addr_of_symbol local:k
     t4 = load t3 : int32
     t5 = cmp_le t4, #5:int32 : bool
-    br t5, L2, L3
+    br t5, L2, L4
   L2:
     t6 = addr_of_symbol local:k
     t7 = load t6 : int32
@@ -121,15 +123,17 @@
     t26 = load t15 : float
     t27 = add t25, t26 : float
     store t24, t27 : float
-
-    t28 = load t6 : int32
-    t29 = add t28, #1:int32 : int32
-    store t6, t29 : int32
-    jmp L1
+    jmp L3
   L3:
-    t30 = addr_of_symbol local:sum
-    t31 = load t30 : float
-    ret t31
+    t28 = addr_of_symbol local:k
+    t29 = load t28 : int32
+    t30 = add t29, #1:int32 : int32
+    store t28, t30 : int32
+    jmp L1
+  L4:
+    t31 = addr_of_symbol local:sum
+    t32 = load t31 : float
+    ret t32
 .endfunc
 
 .func main():float

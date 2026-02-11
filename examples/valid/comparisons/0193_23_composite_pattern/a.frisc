@@ -1,7 +1,7 @@
 ; ===========================================================================
 ; PPJ Compiler - Generated FRISC Assembly Code
 ; Source: program.c
-; Generated: 2026-02-05 09:34:43
+; Generated: 2026-02-11 00:57:26
 ; ===========================================================================
 ; ===========================================================================
 ; Program entry point and initialization
@@ -88,7 +88,7 @@ L_CMP_END_4
         LOAD R0, (R5-3C)        ; Load temp t12
         CMP R0, 0               ; Branch on condition
         JP_NE L_SUM_COMPONENT_L2
-        JP L_SUM_COMPONENT_L3
+        JP L_SUM_COMPONENT_L4
 L_SUM_COMPONENT_L2
         MOVE R5, R0
         ADD R0, 8, R0           ; Param address
@@ -131,9 +131,29 @@ L_CMP_END_6
         STORE R0, (R5-5C)       ; Store temp t20
         LOAD R0, (R5-5C)        ; Load temp t20
         CMP R0, 0               ; Branch on condition
-        JP_NE L_SUM_COMPONENT_L4
-        JP L_SUM_COMPONENT_L5
+        JP_NE L_SUM_COMPONENT_L5
+        JP L_SUM_COMPONENT_L6
 L_SUM_COMPONENT_L3
+        MOVE R5, R0
+        SUB R0, 8, R0           ; Local address
+        STORE R0, (R5-8C)       ; Store temp t32
+        LOAD R0, (R5-8C)        ; Load temp t32
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-90)       ; Store temp t33
+        LOAD R0, (R5-90)        ; Load temp t33
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-94)       ; Store temp t34
+        LOAD R0, (R5-8C)        ; Load temp t32
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-94)        ; Load temp t34
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        JP L_SUM_COMPONENT_L1
+L_SUM_COMPONENT_L4
         MOVE R5, R0
         SUB R0, 4, R0           ; Local address
         STORE R0, (R5-98)       ; Store temp t35
@@ -143,7 +163,7 @@ L_SUM_COMPONENT_L3
         LOAD R0, (R5-9C)        ; Load temp t36
         MOVE R0, R6             ; Set return value
         JP L_EXIT_F_SUM_COMPONENT_1
-L_SUM_COMPONENT_L4
+L_SUM_COMPONENT_L5
         MOVE R5, R0
         SUB R0, 4, R0           ; Local address
         STORE R0, (R5-60)       ; Store temp t21
@@ -197,29 +217,11 @@ L_SUM_COMPONENT_L4
         LOAD R0, (R5-88)        ; Load temp t31
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
-        JP L_SUM_COMPONENT_L6
-L_SUM_COMPONENT_L5
-        JP L_SUM_COMPONENT_L6
+        JP L_SUM_COMPONENT_L7
 L_SUM_COMPONENT_L6
-        MOVE R5, R0
-        SUB R0, 8, R0           ; Local address
-        STORE R0, (R5-8C)       ; Store temp t32
-        LOAD R0, (R5-8C)        ; Load temp t32
-        LOAD R0, (R0)           ; Load word
-        STORE R0, (R5-90)       ; Store temp t33
-        LOAD R0, (R5-90)        ; Load temp t33
-        PUSH R0                 ; Save left
-        MOVE 1, R0
-        MOVE R0, R1             ; Right
-        POP R0                  ; Left
-        ADD R0, R1, R0
-        STORE R0, (R5-94)       ; Store temp t34
-        LOAD R0, (R5-8C)        ; Load temp t32
-        PUSH R0                 ; Save address
-        LOAD R0, (R5-94)        ; Load temp t34
-        POP R1                  ; Restore address
-        STORE R0, (R1)          ; Store word
-        JP L_SUM_COMPONENT_L1
+        JP L_SUM_COMPONENT_L7
+L_SUM_COMPONENT_L7
+        JP L_SUM_COMPONENT_L3
 L_EXIT_F_SUM_COMPONENT_1        ; Function epilogue
         ADD R7, 0A0, R7         ; Deallocate locals/temps
         POP R5                  ; Restore FP

@@ -1,7 +1,7 @@
 ; ===========================================================================
 ; PPJ Compiler - Generated FRISC Assembly Code
 ; Source: program.c
-; Generated: 2026-02-10 16:52:57
+; Generated: 2026-02-11 01:31:08
 ; ===========================================================================
 ; ===========================================================================
 ; Program entry point and initialization
@@ -15,8 +15,8 @@
 F_MAIN                          ; Function: main
         PUSH R5                 ; Save old FP
         MOVE R7, R5             ; Set FP
-        SUB R7, 118, R7         ; Allocate locals/temps
-        MOVE 46, R1             ; Zero words
+        SUB R7, 11C, R7         ; Allocate locals/temps
+        MOVE 47, R1             ; Zero words
         MOVE R7, R0             ; Zero ptr
         MOVE 0, R2              ; Zero
 L_ZERO_2
@@ -97,7 +97,7 @@ L_CMP_END_4
         LOAD R0, (R5-44)        ; Load temp t8
         CMP R0, 0               ; Branch on condition
         JP_NE L_MAIN_L2
-        JP L_MAIN_L3
+        JP L_MAIN_L4
 L_MAIN_L2
         MOVE G_X, R0            ; Address of global
         STORE R0, (R5-48)       ; Store temp t9
@@ -271,30 +271,35 @@ L_MAIN_L2
         LOAD R0, (R5-0C0)       ; Load temp t39
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
-        LOAD R0, (R5-4C)        ; Load temp t10
-        LOAD R0, (R0)           ; Load word
+        JP L_MAIN_L3
+L_MAIN_L3
+        MOVE R5, R0
+        SUB R0, 18, R0          ; Local address
         STORE R0, (R5-0C4)      ; Store temp t40
         LOAD R0, (R5-0C4)       ; Load temp t40
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-0C8)      ; Store temp t41
+        LOAD R0, (R5-0C8)       ; Load temp t41
         PUSH R0                 ; Save left
         MOVE 1, R0
         MOVE R0, R1             ; Right
         POP R0                  ; Left
         ADD R0, R1, R0
-        STORE R0, (R5-0C8)      ; Store temp t41
-        LOAD R0, (R5-4C)        ; Load temp t10
+        STORE R0, (R5-0CC)      ; Store temp t42
+        LOAD R0, (R5-0C4)       ; Load temp t40
         PUSH R0                 ; Save address
-        LOAD R0, (R5-0C8)       ; Load temp t41
+        LOAD R0, (R5-0CC)       ; Load temp t42
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
         JP L_MAIN_L1
-L_MAIN_L3
+L_MAIN_L4
         MOVE R5, R0
         SUB R0, 10, R0          ; Local address
-        STORE R0, (R5-0CC)      ; Store temp t42
-        LOAD R0, (R5-0CC)       ; Load temp t42
-        LOAD R0, (R0)           ; Load word
         STORE R0, (R5-0D0)      ; Store temp t43
         LOAD R0, (R5-0D0)       ; Load temp t43
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-0D4)      ; Store temp t44
+        LOAD R0, (R5-0D4)       ; Load temp t44
         PUSH R0                 ; Save left
         MOVE 40000, R0
         MOVE R0, R1             ; Right
@@ -305,19 +310,19 @@ L_MAIN_L3
         CALL F_FDIV
         ADD R7, 8, R7           ; Clean args
         MOVE R6, R0             ; Result
-        STORE R0, (R5-0D4)      ; Store temp t44
-        LOAD R0, (R5-0CC)       ; Load temp t42
+        STORE R0, (R5-0D8)      ; Store temp t45
+        LOAD R0, (R5-0D0)       ; Load temp t43
         PUSH R0                 ; Save address
-        LOAD R0, (R5-0D4)       ; Load temp t44
+        LOAD R0, (R5-0D8)       ; Load temp t45
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
         MOVE R5, R0
         SUB R0, 14, R0          ; Local address
-        STORE R0, (R5-0D8)      ; Store temp t45
-        LOAD R0, (R5-0D8)       ; Load temp t45
-        LOAD R0, (R0)           ; Load word
         STORE R0, (R5-0DC)      ; Store temp t46
         LOAD R0, (R5-0DC)       ; Load temp t46
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-0E0)      ; Store temp t47
+        LOAD R0, (R5-0E0)       ; Load temp t47
         PUSH R0                 ; Save left
         MOVE 40000, R0
         MOVE R0, R1             ; Right
@@ -328,66 +333,66 @@ L_MAIN_L3
         CALL F_FDIV
         ADD R7, 8, R7           ; Clean args
         MOVE R6, R0             ; Result
-        STORE R0, (R5-0E0)      ; Store temp t47
-        LOAD R0, (R5-0D8)       ; Load temp t45
+        STORE R0, (R5-0E4)      ; Store temp t48
+        LOAD R0, (R5-0DC)       ; Load temp t46
         PUSH R0                 ; Save address
-        LOAD R0, (R5-0E0)       ; Load temp t47
+        LOAD R0, (R5-0E4)       ; Load temp t48
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
         MOVE R5, R0
         SUB R0, 4, R0           ; Local address
-        STORE R0, (R5-0E4)      ; Store temp t48
-        LOAD R0, (R5-0E4)       ; Load temp t48
-        LOAD R0, (R0)           ; Load word
         STORE R0, (R5-0E8)      ; Store temp t49
+        LOAD R0, (R5-0E8)       ; Load temp t49
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-0EC)      ; Store temp t50
         MOVE R5, R0
         SUB R0, 0C, R0          ; Local address
-        STORE R0, (R5-0EC)      ; Store temp t50
-        LOAD R0, (R5-0EC)       ; Load temp t50
-        LOAD R0, (R0)           ; Load word
         STORE R0, (R5-0F0)      ; Store temp t51
-        LOAD R0, (R5-0D8)       ; Load temp t45
+        LOAD R0, (R5-0F0)       ; Load temp t51
         LOAD R0, (R0)           ; Load word
         STORE R0, (R5-0F4)      ; Store temp t52
-        LOAD R0, (R5-0F0)       ; Load temp t51
-        PUSH R0                 ; Save left
-        LOAD R0, (R5-0F4)       ; Load temp t52
-        MOVE R0, R1             ; Right
-        POP R0                  ; Left
-        MOVE R1, R2             ; Save right
-        PUSH R2                 ; Arg right
-        PUSH R0                 ; Arg left
-        CALL F_FMUL
-        ADD R7, 8, R7           ; Clean args
-        MOVE R6, R0             ; Result
+        LOAD R0, (R5-0DC)       ; Load temp t46
+        LOAD R0, (R0)           ; Load word
         STORE R0, (R5-0F8)      ; Store temp t53
-        LOAD R0, (R5-0E8)       ; Load temp t49
+        LOAD R0, (R5-0F4)       ; Load temp t52
         PUSH R0                 ; Save left
         LOAD R0, (R5-0F8)       ; Load temp t53
         MOVE R0, R1             ; Right
         POP R0                  ; Left
-        SUB R0, R1, R0          ; Float sub
+        MOVE R1, R2             ; Save right
+        PUSH R2                 ; Arg right
+        PUSH R0                 ; Arg left
+        CALL F_FMUL
+        ADD R7, 8, R7           ; Clean args
+        MOVE R6, R0             ; Result
         STORE R0, (R5-0FC)      ; Store temp t54
-        LOAD R0, (R5-0E4)       ; Load temp t48
-        PUSH R0                 ; Save address
+        LOAD R0, (R5-0EC)       ; Load temp t50
+        PUSH R0                 ; Save left
         LOAD R0, (R5-0FC)       ; Load temp t54
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        SUB R0, R1, R0          ; Float sub
+        STORE R0, (R5-100)      ; Store temp t55
+        LOAD R0, (R5-0E8)       ; Load temp t49
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-100)       ; Load temp t55
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
         MOVE R5, R0
         SUB R0, 8, R0           ; Local address
-        STORE R0, (R5-100)      ; Store temp t55
-        LOAD R0, (R5-100)       ; Load temp t55
-        LOAD R0, (R0)           ; Load word
         STORE R0, (R5-104)      ; Store temp t56
-        LOAD R0, (R5-0EC)       ; Load temp t50
+        LOAD R0, (R5-104)       ; Load temp t56
         LOAD R0, (R0)           ; Load word
         STORE R0, (R5-108)      ; Store temp t57
-        LOAD R0, (R5-0CC)       ; Load temp t42
+        LOAD R0, (R5-0F0)       ; Load temp t51
         LOAD R0, (R0)           ; Load word
         STORE R0, (R5-10C)      ; Store temp t58
-        LOAD R0, (R5-108)       ; Load temp t57
-        PUSH R0                 ; Save left
+        LOAD R0, (R5-0D0)       ; Load temp t43
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-110)      ; Store temp t59
         LOAD R0, (R5-10C)       ; Load temp t58
+        PUSH R0                 ; Save left
+        LOAD R0, (R5-110)       ; Load temp t59
         MOVE R0, R1             ; Right
         POP R0                  ; Left
         MOVE R1, R2             ; Save right
@@ -396,27 +401,27 @@ L_MAIN_L3
         CALL F_FMUL
         ADD R7, 8, R7           ; Clean args
         MOVE R6, R0             ; Result
-        STORE R0, (R5-110)      ; Store temp t59
-        LOAD R0, (R5-104)       ; Load temp t56
+        STORE R0, (R5-114)      ; Store temp t60
+        LOAD R0, (R5-108)       ; Load temp t57
         PUSH R0                 ; Save left
-        LOAD R0, (R5-110)       ; Load temp t59
+        LOAD R0, (R5-114)       ; Load temp t60
         MOVE R0, R1             ; Right
         POP R0                  ; Left
         SUB R0, R1, R0          ; Float sub
-        STORE R0, (R5-114)      ; Store temp t60
-        LOAD R0, (R5-100)       ; Load temp t55
+        STORE R0, (R5-118)      ; Store temp t61
+        LOAD R0, (R5-104)       ; Load temp t56
         PUSH R0                 ; Save address
-        LOAD R0, (R5-114)       ; Load temp t60
+        LOAD R0, (R5-118)       ; Load temp t61
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
-        LOAD R0, (R5-0E4)       ; Load temp t48
+        LOAD R0, (R5-0E8)       ; Load temp t49
         LOAD R0, (R0)           ; Load word
-        STORE R0, (R5-118)      ; Store temp t61
-        LOAD R0, (R5-118)       ; Load temp t61
+        STORE R0, (R5-11C)      ; Store temp t62
+        LOAD R0, (R5-11C)       ; Load temp t62
         MOVE R0, R6             ; Set return value
         JP L_EXIT_F_MAIN_1
 L_EXIT_F_MAIN_1                 ; Function epilogue
-        ADD R7, 118, R7         ; Deallocate locals/temps
+        ADD R7, 11C, R7         ; Deallocate locals/temps
         POP R5                  ; Restore FP
         RET                     ; Return
 F_FMUL                          ; Q16.16 float multiplication

@@ -23,7 +23,7 @@
     t3 = addr_of_symbol local:i
     t4 = load t3 : int32
     t5 = cmp_lt t4, #10:int32 : bool
-    br t5, L2, L3
+    br t5, L2, L4
   L2:
     t6 = addr_of_symbol global:data
     t7 = addr_of_symbol local:i
@@ -56,25 +56,27 @@
     t29 = add t26, t28 : int32
 
     t30 = cmp_gt t25, t29 : bool
-    br t30, L4, L5
+    br t30, L5, L6
   L3:
-    t37 = addr_of_symbol local:count
-    t38 = load t37 : int32
-    ret t38
-  L4:
-    t31 = addr_of_symbol local:count
-    t32 = load t31 : int32
-    t33 = add t32, #1:int32 : int32
-    store t31, t33 : int32
-    jmp L6
-  L5:
-    jmp L6
-  L6:
     t34 = addr_of_symbol local:i
     t35 = load t34 : int32
     t36 = add t35, #1:int32 : int32
     store t34, t36 : int32
     jmp L1
+  L4:
+    t37 = addr_of_symbol local:count
+    t38 = load t37 : int32
+    ret t38
+  L5:
+    t31 = addr_of_symbol local:count
+    t32 = load t31 : int32
+    t33 = add t32, #1:int32 : int32
+    store t31, t33 : int32
+    jmp L7
+  L6:
+    jmp L7
+  L7:
+    jmp L3
 .endfunc
 
 .endprogram

@@ -1,7 +1,7 @@
 ; ===========================================================================
 ; PPJ Compiler - Generated FRISC Assembly Code
 ; Source: program.c
-; Generated: 2026-02-10 16:52:53
+; Generated: 2026-02-11 01:31:05
 ; ===========================================================================
 ; ===========================================================================
 ; Program entry point and initialization
@@ -73,8 +73,34 @@ L_CMP_END_4
         LOAD R0, (R5-40)        ; Load temp t5
         CMP R0, 0               ; Branch on condition
         JP_NE L_MAIN_L2
-        JP L_MAIN_L3
+        JP L_MAIN_L4
 L_MAIN_L10
+        JP L_MAIN_L11
+L_MAIN_L11
+        MOVE R5, R0
+        SUB R0, 28, R0          ; Local address
+        STORE R0, (R5-0B8)      ; Store temp t35
+        LOAD R0, (R5-0B8)       ; Load temp t35
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-0BC)      ; Store temp t36
+        LOAD R0, (R5-0BC)       ; Load temp t36
+        PUSH R0                 ; Save left
+        MOVE 0, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_SLT L_CMP_TRUE_5
+        MOVE 0, R0              ; False
+        JP L_CMP_END_6
+L_CMP_TRUE_5
+        MOVE 1, R0              ; True
+L_CMP_END_6
+        STORE R0, (R5-0C0)      ; Store temp t37
+        LOAD R0, (R5-0C0)       ; Load temp t37
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L12
+        JP L_MAIN_L13
+L_MAIN_L12
         MOVE R5, R0
         SUB R0, 28, R0          ; Local address
         STORE R0, (R5-0C4)      ; Store temp t38
@@ -90,10 +116,10 @@ L_MAIN_L10
         LOAD R0, (R5-0CC)       ; Load temp t40
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
-        JP L_MAIN_L12
-L_MAIN_L11
-        JP L_MAIN_L12
-L_MAIN_L12
+        JP L_MAIN_L14
+L_MAIN_L13
+        JP L_MAIN_L14
+L_MAIN_L14
         MOVE R5, R0
         SUB R0, 24, R0          ; Local address
         STORE R0, (R5-0D0)      ; Store temp t41
@@ -112,18 +138,18 @@ L_MAIN_L12
         MOVE R0, R1             ; Right
         POP R0                  ; Left
         CMP R0, R1
-        JP_SLE L_CMP_TRUE_5
+        JP_SLE L_CMP_TRUE_7
         MOVE 0, R0              ; False
-        JP L_CMP_END_6
-L_CMP_TRUE_5
+        JP L_CMP_END_8
+L_CMP_TRUE_7
         MOVE 1, R0              ; True
-L_CMP_END_6
+L_CMP_END_8
         STORE R0, (R5-0E0)      ; Store temp t45
         LOAD R0, (R5-0E0)       ; Load temp t45
         CMP R0, 0               ; Branch on condition
-        JP_NE L_MAIN_L13
-        JP L_MAIN_L14
-L_MAIN_L13
+        JP_NE L_MAIN_L15
+        JP L_MAIN_L16
+L_MAIN_L15
         MOVE G_DATA, R0         ; Address of global
         STORE R0, (R5-0E4)      ; Store temp t46
         MOVE R5, R0
@@ -183,8 +209,8 @@ L_MAIN_L13
         LOAD R0, (R5-10C)       ; Load temp t56
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
-        JP L_MAIN_L15
-L_MAIN_L14
+        JP L_MAIN_L17
+L_MAIN_L16
         MOVE G_DATA, R0         ; Address of global
         STORE R0, (R5-110)      ; Store temp t57
         MOVE R5, R0
@@ -244,28 +270,10 @@ L_MAIN_L14
         LOAD R0, (R5-138)       ; Load temp t67
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
-        JP L_MAIN_L15
-L_MAIN_L15
-        MOVE R5, R0
-        SUB R0, 20, R0          ; Local address
-        STORE R0, (R5-13C)      ; Store temp t68
-        LOAD R0, (R5-13C)       ; Load temp t68
-        LOAD R0, (R0)           ; Load word
-        STORE R0, (R5-140)      ; Store temp t69
-        LOAD R0, (R5-140)       ; Load temp t69
-        PUSH R0                 ; Save left
-        MOVE 1, R0
-        MOVE R0, R1             ; Right
-        POP R0                  ; Left
-        ADD R0, R1, R0
-        STORE R0, (R5-144)      ; Store temp t70
-        LOAD R0, (R5-13C)       ; Load temp t68
-        PUSH R0                 ; Save address
-        LOAD R0, (R5-144)       ; Load temp t70
-        POP R1                  ; Restore address
-        STORE R0, (R1)          ; Store word
-        JP L_MAIN_L4
-L_MAIN_L16
+        JP L_MAIN_L17
+L_MAIN_L17
+        JP L_MAIN_L7
+L_MAIN_L18
         MOVE R5, R0
         SUB R0, 10, R0          ; Local address
         STORE R0, (R5-154)      ; Store temp t74
@@ -298,67 +306,9 @@ L_MAIN_L16
         LOAD R0, (R5-164)       ; Load temp t78
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
-        JP L_MAIN_L18
-L_MAIN_L17
-        JP L_MAIN_L18
-L_MAIN_L18
-        MOVE R5, R0
-        SUB R0, 1C, R0          ; Local address
-        STORE R0, (R5-16C)      ; Store temp t80
-        LOAD R0, (R5-16C)       ; Load temp t80
-        LOAD R0, (R0)           ; Load word
-        STORE R0, (R5-170)      ; Store temp t81
-        LOAD R0, (R5-170)       ; Load temp t81
-        PUSH R0                 ; Save left
-        MOVE 0, R0
-        MOVE R0, R1             ; Right
-        POP R0                  ; Left
-        CMP R0, R1
-        JP_SGT L_CMP_TRUE_7
-        MOVE 0, R0              ; False
-        JP L_CMP_END_8
-L_CMP_TRUE_7
-        MOVE 1, R0              ; True
-L_CMP_END_8
-        STORE R0, (R5-174)      ; Store temp t82
-        LOAD R0, (R5-174)       ; Load temp t82
-        CMP R0, 0               ; Branch on condition
-        JP_NE L_MAIN_L19
         JP L_MAIN_L20
 L_MAIN_L19
-        MOVE R5, R0
-        SUB R0, 14, R0          ; Local address
-        STORE R0, (R5-178)      ; Store temp t83
-        LOAD R0, (R5-178)       ; Load temp t83
-        LOAD R0, (R0)           ; Load word
-        STORE R0, (R5-17C)      ; Store temp t84
-        MOVE R5, R0
-        SUB R0, 1C, R0          ; Local address
-        STORE R0, (R5-180)      ; Store temp t85
-        LOAD R0, (R5-180)       ; Load temp t85
-        LOAD R0, (R0)           ; Load word
-        STORE R0, (R5-184)      ; Store temp t86
-        LOAD R0, (R5-17C)       ; Load temp t84
-        PUSH R0                 ; Save left
-        LOAD R0, (R5-184)       ; Load temp t86
-        MOVE R0, R1             ; Right
-        POP R0                  ; Left
-        MOVE R1, R2             ; Save right
-        PUSH R2                 ; Arg right
-        PUSH R0                 ; Arg left
-        CALL F_DIV
-        ADD R7, 8, R7           ; Clean args
-        MOVE R6, R0             ; Result
-        STORE R0, (R5-188)      ; Store temp t87
-        MOVE R5, R0
-        SUB R0, 8, R0           ; Local address
-        STORE R0, (R5-18C)      ; Store temp t88
-        LOAD R0, (R5-18C)       ; Load temp t88
-        PUSH R0                 ; Save address
-        LOAD R0, (R5-188)       ; Load temp t87
-        POP R1                  ; Restore address
-        STORE R0, (R1)          ; Store word
-        JP L_MAIN_L21
+        JP L_MAIN_L20
 L_MAIN_L2
         MOVE R5, R0
         SUB R0, 10, R0          ; Local address
@@ -400,10 +350,70 @@ L_MAIN_L2
         MOVE 0, R0
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
-        JP L_MAIN_L4
+        JP L_MAIN_L5
 L_MAIN_L20
-        JP L_MAIN_L21
+        MOVE R5, R0
+        SUB R0, 1C, R0          ; Local address
+        STORE R0, (R5-16C)      ; Store temp t80
+        LOAD R0, (R5-16C)       ; Load temp t80
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-170)      ; Store temp t81
+        LOAD R0, (R5-170)       ; Load temp t81
+        PUSH R0                 ; Save left
+        MOVE 0, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_SGT L_CMP_TRUE_9
+        MOVE 0, R0              ; False
+        JP L_CMP_END_10
+L_CMP_TRUE_9
+        MOVE 1, R0              ; True
+L_CMP_END_10
+        STORE R0, (R5-174)      ; Store temp t82
+        LOAD R0, (R5-174)       ; Load temp t82
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L21
+        JP L_MAIN_L22
 L_MAIN_L21
+        MOVE R5, R0
+        SUB R0, 14, R0          ; Local address
+        STORE R0, (R5-178)      ; Store temp t83
+        LOAD R0, (R5-178)       ; Load temp t83
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-17C)      ; Store temp t84
+        MOVE R5, R0
+        SUB R0, 1C, R0          ; Local address
+        STORE R0, (R5-180)      ; Store temp t85
+        LOAD R0, (R5-180)       ; Load temp t85
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-184)      ; Store temp t86
+        LOAD R0, (R5-17C)       ; Load temp t84
+        PUSH R0                 ; Save left
+        LOAD R0, (R5-184)       ; Load temp t86
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        MOVE R1, R2             ; Save right
+        PUSH R2                 ; Arg right
+        PUSH R0                 ; Arg left
+        CALL F_DIV
+        ADD R7, 8, R7           ; Clean args
+        MOVE R6, R0             ; Result
+        STORE R0, (R5-188)      ; Store temp t87
+        MOVE R5, R0
+        SUB R0, 8, R0           ; Local address
+        STORE R0, (R5-18C)      ; Store temp t88
+        LOAD R0, (R5-18C)       ; Load temp t88
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-188)       ; Load temp t87
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        JP L_MAIN_L23
+L_MAIN_L22
+        JP L_MAIN_L23
+L_MAIN_L23
+        JP L_MAIN_L3
+L_MAIN_L3
         MOVE R5, R0
         SUB R0, 0C, R0          ; Local address
         STORE R0, (R5-190)      ; Store temp t89
@@ -423,7 +433,7 @@ L_MAIN_L21
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
         JP L_MAIN_L1
-L_MAIN_L3
+L_MAIN_L4
         MOVE R5, R0
         SUB R0, 4, R0           ; Local address
         STORE R0, (R5-19C)      ; Store temp t92
@@ -458,7 +468,7 @@ L_MAIN_L3
         LOAD R0, (R5-1B0)       ; Load temp t97
         MOVE R0, R6             ; Set return value
         JP L_EXIT_F_MAIN_1
-L_MAIN_L4
+L_MAIN_L5
         MOVE R5, R0
         SUB R0, 20, R0          ; Local address
         STORE R0, (R5-58)       ; Store temp t11
@@ -471,18 +481,18 @@ L_MAIN_L4
         MOVE R0, R1             ; Right
         POP R0                  ; Left
         CMP R0, R1
-        JP_SLT L_CMP_TRUE_9
+        JP_SLT L_CMP_TRUE_11
         MOVE 0, R0              ; False
-        JP L_CMP_END_10
-L_CMP_TRUE_9
+        JP L_CMP_END_12
+L_CMP_TRUE_11
         MOVE 1, R0              ; True
-L_CMP_END_10
+L_CMP_END_12
         STORE R0, (R5-60)       ; Store temp t13
         LOAD R0, (R5-60)        ; Load temp t13
         CMP R0, 0               ; Branch on condition
-        JP_NE L_MAIN_L5
-        JP L_MAIN_L6
-L_MAIN_L5
+        JP_NE L_MAIN_L6
+        JP L_MAIN_L8
+L_MAIN_L6
         MOVE G_DATA, R0         ; Address of global
         STORE R0, (R5-64)       ; Store temp t14
         MOVE R5, R0
@@ -575,18 +585,38 @@ L_MAIN_L5
         MOVE R0, R1             ; Right
         POP R0                  ; Left
         CMP R0, R1
-        JP_SLT L_CMP_TRUE_11
+        JP_SLT L_CMP_TRUE_13
         MOVE 0, R0              ; False
-        JP L_CMP_END_12
-L_CMP_TRUE_11
+        JP L_CMP_END_14
+L_CMP_TRUE_13
         MOVE 1, R0              ; True
-L_CMP_END_12
+L_CMP_END_14
         STORE R0, (R5-0A8)      ; Store temp t31
         LOAD R0, (R5-0A8)       ; Load temp t31
         CMP R0, 0               ; Branch on condition
-        JP_NE L_MAIN_L7
-        JP L_MAIN_L8
-L_MAIN_L6
+        JP_NE L_MAIN_L9
+        JP L_MAIN_L10
+L_MAIN_L7
+        MOVE R5, R0
+        SUB R0, 20, R0          ; Local address
+        STORE R0, (R5-13C)      ; Store temp t68
+        LOAD R0, (R5-13C)       ; Load temp t68
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-140)      ; Store temp t69
+        LOAD R0, (R5-140)       ; Load temp t69
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-144)      ; Store temp t70
+        LOAD R0, (R5-13C)       ; Load temp t68
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-144)       ; Load temp t70
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        JP L_MAIN_L5
+L_MAIN_L8
         MOVE R5, R0
         SUB R0, 18, R0          ; Local address
         STORE R0, (R5-148)      ; Store temp t71
@@ -599,18 +629,18 @@ L_MAIN_L6
         MOVE R0, R1             ; Right
         POP R0                  ; Left
         CMP R0, R1
-        JP_SGT L_CMP_TRUE_13
+        JP_SGT L_CMP_TRUE_15
         MOVE 0, R0              ; False
-        JP L_CMP_END_14
-L_CMP_TRUE_13
+        JP L_CMP_END_16
+L_CMP_TRUE_15
         MOVE 1, R0              ; True
-L_CMP_END_14
+L_CMP_END_16
         STORE R0, (R5-150)      ; Store temp t73
         LOAD R0, (R5-150)       ; Load temp t73
         CMP R0, 0               ; Branch on condition
-        JP_NE L_MAIN_L16
-        JP L_MAIN_L17
-L_MAIN_L7
+        JP_NE L_MAIN_L18
+        JP L_MAIN_L19
+L_MAIN_L9
         MOVE R5, R0
         SUB R0, 24, R0          ; Local address
         STORE R0, (R5-0AC)      ; Store temp t32
@@ -626,32 +656,6 @@ L_MAIN_L7
         LOAD R0, (R5-0B4)       ; Load temp t34
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
-        JP L_MAIN_L9
-L_MAIN_L8
-        JP L_MAIN_L9
-L_MAIN_L9
-        MOVE R5, R0
-        SUB R0, 28, R0          ; Local address
-        STORE R0, (R5-0B8)      ; Store temp t35
-        LOAD R0, (R5-0B8)       ; Load temp t35
-        LOAD R0, (R0)           ; Load word
-        STORE R0, (R5-0BC)      ; Store temp t36
-        LOAD R0, (R5-0BC)       ; Load temp t36
-        PUSH R0                 ; Save left
-        MOVE 0, R0
-        MOVE R0, R1             ; Right
-        POP R0                  ; Left
-        CMP R0, R1
-        JP_SLT L_CMP_TRUE_15
-        MOVE 0, R0              ; False
-        JP L_CMP_END_16
-L_CMP_TRUE_15
-        MOVE 1, R0              ; True
-L_CMP_END_16
-        STORE R0, (R5-0C0)      ; Store temp t37
-        LOAD R0, (R5-0C0)       ; Load temp t37
-        CMP R0, 0               ; Branch on condition
-        JP_NE L_MAIN_L10
         JP L_MAIN_L11
 L_EXIT_F_MAIN_1                 ; Function epilogue
         ADD R7, 1B0, R7         ; Deallocate locals/temps

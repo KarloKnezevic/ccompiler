@@ -22,7 +22,7 @@
     t4 = addr_of_symbol local:i
     t5 = load t4 : int32
     t6 = cmp_lt t5, #5:int32 : bool
-    br t6, L2, L3
+    br t6, L2, L4
   L2:
     t7 = addr_of_symbol local:v
     t8 = load t7 : float
@@ -33,13 +33,14 @@
     t13 = mul t10, t12 : float
     t14 = add t8, t13 : float
     store t7, t14 : float
-
+    jmp L3
+  L3:
     t15 = addr_of_symbol local:i
     t16 = load t15 : int32
     t17 = add t16, #1:int32 : int32
     store t15, t17 : int32
     jmp L1
-  L3:
+  L4:
     t18 = addr_of_symbol local:v
     t19 = load t18 : float
     ret t19

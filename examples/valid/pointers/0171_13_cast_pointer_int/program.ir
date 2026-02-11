@@ -13,10 +13,12 @@
     store t0, #5:int32 : int32
     t1 = addr_of_symbol local:p
     store t1, t0 : ptr<int32>
+
     t2 = load t1 : ptr<int32>
     t3 = ptrcast t2 : int32
     t4 = addr_of_symbol local:addr
     store t4, t3 : int32
+
     t5 = load t4 : int32
     t6 = ptrcast t5 : ptr<int32>
     t7 = addr_of_symbol local:q

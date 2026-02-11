@@ -132,6 +132,8 @@ final class GlobalsEmitter {
     for (IrConst element : arrayConst.elements()) {
       if (element instanceof IrConst.IntConst intConst) {
         words.add(LoweringSupport.formatImmediate(intConst.value()));
+      } else if (element instanceof IrConst.CharConst charConst) {
+        words.add(LoweringSupport.formatImmediate(charConst.value()));
       } else if (element instanceof IrConst.NullConst) {
         words.add("0");
       } else if (element instanceof IrConst.FloatConst floatConst) {

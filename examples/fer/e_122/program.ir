@@ -1,0 +1,18 @@
+.program
+
+.globals
+  global c:array<char,5> = { #'1':char, #'2':char, #'a':char, #'g':char, #'m':char } : array<char,5>
+
+.func main():int32
+  .frame locals=0 bytes align=4
+  .slots
+  .blocks
+  L0:
+    t0 = addr_of_symbol global:c
+    t1 = addr_index t0, #1:int32, 1
+    t2 = load t1 : char
+    t3 = sext t2 : int32
+    ret t3
+.endfunc
+
+.endprogram

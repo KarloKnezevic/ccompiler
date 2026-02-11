@@ -11,6 +11,7 @@ import hr.fer.ppj.semantics.symbols.SymbolTable;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.types.ArrayType;
+import hr.fer.ppj.semantics.types.FunctionType;
 import hr.fer.ppj.semantics.types.StructType;
 import hr.fer.ppj.semantics.types.Type;
 import hr.fer.ppj.semantics.types.TypeSystem;
@@ -121,6 +122,12 @@ public final class LocalDeclarationGenerator {
       return;
     }
 
+    // Block-scope function declarations (prototypes) do not allocate local storage.
+    Type strippedVarType = TypeSystem.stripConst(varType);
+    if (strippedVarType instanceof FunctionType) {
+      return;
+    }
+
     IrFunctionBuilder builder = functionContext.functionBuilder();
     if (builder == null) {
       return;
@@ -133,7 +140,6 @@ public final class LocalDeclarationGenerator {
     VariableSlotManager.declareInScope(varName, varType, functionContext.functionScope());
 
     // Ensure struct types are registered and their definitions emitted
-    Type strippedVarType = TypeSystem.stripConst(varType);
     StructLayoutRegistry structRegistry = functionContext.structLayoutRegistry();
     if (structRegistry != null) {
       ensureStructTypeReady(strippedVarType, structRegistry);

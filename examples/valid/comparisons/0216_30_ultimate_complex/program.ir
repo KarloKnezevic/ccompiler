@@ -33,7 +33,7 @@
     t6 = addr_field t5, Graph.node_count
     t7 = load t6 : int32
     t8 = cmp_lt t3, t7 : bool
-    br t8, L2, L3
+    br t8, L2, L4
   L2:
     t9 = addr_of_symbol param:g
     t10 = load t9 : ptr<struct Graph>
@@ -43,13 +43,19 @@
     t14 = addr_index t11, t13, 4
     t15 = load t14 : ptr<struct Node>
     t16 = cmp_ne t15, null:ptr<struct Node> : bool
-    br t16, L4, L5
+    br t16, L5, L6
   L3:
+    t29 = addr_of_symbol local:i
+    t30 = load t29 : int32
+    t31 = add t30, #1:int32 : int32
+    store t29, t31 : int32
+    jmp L1
+  L4:
     t32 = addr_of_symbol local:total
     t33 = load t32 : float
     t34 = ftoi t33 : int32
     ret t34
-  L4:
+  L5:
     t17 = addr_of_symbol param:g
     t18 = load t17 : ptr<struct Graph>
     t19 = addr_field t18, Graph.nodes
@@ -63,15 +69,11 @@
     t27 = load t26 : float
     t28 = add t27, t25 : float
     store t26, t28 : float
-    jmp L6
-  L5:
-    jmp L6
+    jmp L7
   L6:
-    t29 = addr_of_symbol local:i
-    t30 = load t29 : int32
-    t31 = add t30, #1:int32 : int32
-    store t29, t31 : int32
-    jmp L1
+    jmp L7
+  L7:
+    jmp L3
 .endfunc
 
 .func main():int32
@@ -110,7 +112,7 @@
     t11 = addr_of_symbol local:i
     t12 = load t11 : int32
     t13 = cmp_lt t12, #5:int32 : bool
-    br t13, L2, L3
+    br t13, L2, L4
   L2:
     t14 = addr_of_symbol local:n1
     t15 = addr_field t14, Node.connections
@@ -124,29 +126,31 @@
     t21 = load t16 : int32
     t22 = addr_index t20, t21, 4
     store t22, null:ptr<struct Node> : ptr<struct Node>
-
-    t23 = load t16 : int32
-    t24 = add t23, #1:int32 : int32
-    store t16, t24 : int32
-    jmp L1
+    jmp L3
   L3:
-    t25 = addr_of_symbol local:n1
-    t26 = addr_field t25, Node.connections
-    t27 = addr_index t26, #0:int32, 4
-    t28 = addr_of_symbol local:n2
-    store t27, t28 : ptr<struct Node>
+    t23 = addr_of_symbol local:i
+    t24 = load t23 : int32
+    t25 = add t24, #1:int32 : int32
+    store t23, t25 : int32
+    jmp L1
+  L4:
+    t26 = addr_of_symbol local:n1
+    t27 = addr_field t26, Node.connections
+    t28 = addr_index t27, #0:int32, 4
+    t29 = addr_of_symbol local:n2
+    store t28, t29 : ptr<struct Node>
 
-    t29 = addr_of_symbol local:g
-    t30 = addr_field t29, Graph.nodes
-    t31 = addr_index t30, #0:int32, 4
-    store t31, t25 : ptr<struct Node>
-    t32 = addr_index t30, #1:int32, 4
-    store t32, t28 : ptr<struct Node>
-    t33 = call func:calculate_total_weight(t29) : int32
-    t34 = addr_of_symbol local:result
-    store t34, t33 : int32
-    t35 = load t34 : int32
-    ret t35
+    t30 = addr_of_symbol local:g
+    t31 = addr_field t30, Graph.nodes
+    t32 = addr_index t31, #0:int32, 4
+    store t32, t26 : ptr<struct Node>
+    t33 = addr_index t31, #1:int32, 4
+    store t33, t29 : ptr<struct Node>
+    t34 = call func:calculate_total_weight(t30) : int32
+    t35 = addr_of_symbol local:result
+    store t35, t34 : int32
+    t36 = load t35 : int32
+    ret t36
 .endfunc
 
 .endprogram

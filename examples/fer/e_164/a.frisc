@@ -1,0 +1,100 @@
+; ===========================================================================
+; PPJ Compiler - Generated FRISC Assembly Code
+; Source: program.c
+; Generated: 2026-02-10 23:43:36
+; ===========================================================================
+; ===========================================================================
+; Program entry point and initialization
+; ===========================================================================
+        MOVE 40000, R7          ; Initialize stack pointer (SP)
+        CALL F_MAIN             ; Call main
+        HALT                    ; Program end
+; ===========================================================================
+; Function Definitions
+; ===========================================================================
+F_F                             ; Function: f
+        PUSH R5                 ; Save old FP
+        MOVE R7, R5             ; Set FP
+        SUB R7, 14, R7          ; Allocate locals/temps
+        MOVE 5, R1              ; Zero words
+        MOVE R7, R0             ; Zero ptr
+        MOVE 0, R2              ; Zero
+L_ZERO_2
+        STORE R2, (R0)          ; Clear
+        ADD R0, 4, R0
+        SUB R1, 1, R1
+        JP_NE L_ZERO_2
+L_F_L0
+        MOVE R5, R0
+        ADD R0, 8, R0           ; Param address
+        STORE R0, (R5-4)        ; Store temp t0
+        LOAD R0, (R5-4)         ; Load temp t0
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-8)        ; Store temp t1
+        MOVE R5, R0
+        ADD R0, 0C, R0          ; Param address
+        STORE R0, (R5-0C)       ; Store temp t2
+        LOAD R0, (R5-0C)        ; Load temp t2
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-10)       ; Store temp t3
+        LOAD R0, (R5-8)         ; Load temp t1
+        PUSH R0                 ; Save left
+        LOAD R0, (R5-10)        ; Load temp t3
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-14)       ; Store temp t4
+        LOAD R0, (R5-14)        ; Load temp t4
+        MOVE R0, R6             ; Set return value
+        JP L_EXIT_F_F_1
+L_EXIT_F_F_1                    ; Function epilogue
+        ADD R7, 14, R7          ; Deallocate locals/temps
+        POP R5                  ; Restore FP
+        RET                     ; Return
+F_MAIN                          ; Function: main
+        PUSH R5                 ; Save old FP
+        MOVE R7, R5             ; Set FP
+        SUB R7, 18, R7          ; Allocate locals/temps
+        MOVE 6, R1              ; Zero words
+        MOVE R7, R0             ; Zero ptr
+        MOVE 0, R2              ; Zero
+L_ZERO_4
+        STORE R2, (R0)          ; Clear
+        ADD R0, 4, R0
+        SUB R1, 1, R1
+        JP_NE L_ZERO_4
+L_MAIN_L0
+        MOVE 0A, R0
+        STORE R0, (R5-14)       ; Save arg
+        MOVE 14, R0
+        STORE R0, (R5-18)       ; Save arg
+        SUB R7, 8, R7           ; Allocate args
+        LOAD R0, (R5-14)        ; Load arg
+        STORE R0, (R7)          ; Store arg
+        LOAD R0, (R5-18)        ; Load arg
+        STORE R0, (R7+4)        ; Store arg
+        CALL F_F                ; Call f
+        ADD R7, 8, R7           ; Clean args
+        MOVE R6, R0             ; Return value
+        STORE R0, (R5-8)        ; Store temp t0
+        MOVE R5, R0
+        SUB R0, 4, R0           ; Local address
+        STORE R0, (R5-0C)       ; Store temp t1
+        LOAD R0, (R5-0C)        ; Load temp t1
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-8)         ; Load temp t0
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-0C)        ; Load temp t1
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-10)       ; Store temp t2
+        LOAD R0, (R5-10)        ; Load temp t2
+        MOVE R0, R6             ; Set return value
+        JP L_EXIT_F_MAIN_3
+L_EXIT_F_MAIN_3                 ; Function epilogue
+        ADD R7, 18, R7          ; Deallocate locals/temps
+        POP R5                  ; Restore FP
+        RET                     ; Return
+; ===========================================================================
+; Global Variables
+; ===========================================================================

@@ -14,4 +14,5 @@
     t3 = sext t2 : int32
     ret t3
 .endfunc
+
 .endprogram

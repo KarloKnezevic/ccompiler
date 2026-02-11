@@ -186,8 +186,10 @@ public final class DeclarationRules {
     if (baseType == null) {
       checker.fail(node);
     }
-    // Variables cannot have void type (void is only for function return types and parameters)
-    if (TypeSystem.stripConst(baseType) == PrimitiveType.VOID) {
+    // A bare declaration with void type is invalid (e.g., "void;").
+    // For declarations with declarators, we defer validation to declarator processing,
+    // where function prototypes are handled and non-function void declarations are rejected.
+    if (children.size() == 2 && TypeSystem.stripConst(baseType) == PrimitiveType.VOID) {
       checker.fail(node);
     }
     // Process declarator list: <lista_init_deklaratora>

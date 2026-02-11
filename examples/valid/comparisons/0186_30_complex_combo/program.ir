@@ -88,7 +88,7 @@
     t14 = addr_of_symbol local:count
     t15 = load t14 : int32
     t16 = cmp_lt t13, t15 : bool
-    br t16, L2, L3
+    br t16, L2, L4
   L2:
     t17 = addr_of_symbol local:arr
     t18 = addr_of_symbol local:i
@@ -105,17 +105,19 @@
     t27 = addr_index t17, t26, 4
     t28 = load t27 : int32
     t29 = cmp_gt t28, #100:int32 : bool
-    br t29, L4, L5
+    br t29, L5, L6
   L3:
-    ret #0:int32
-  L4:
-    jmp L3
-  L5:
     t30 = addr_of_symbol local:i
     t31 = load t30 : int32
     t32 = add t31, #1:int32 : int32
     store t30, t32 : int32
     jmp L1
+  L4:
+    ret #0:int32
+  L5:
+    jmp L4
+  L6:
+    jmp L3
 .endfunc
 
 .endprogram

@@ -13,14 +13,16 @@
     t1 = addr_of_symbol local:i
     t2 = load t1 : int32
     t3 = cmp_lt t2, #10:int32 : bool
-    br t3, L2, L3
+    br t3, L2, L4
   L2:
     t4 = addr_of_symbol local:i
     t5 = load t4 : int32
     t6 = add t5, #1:int32 : int32
     store t4, t6 : int32
-    jmp L1
+    jmp L3
   L3:
+    jmp L1
+  L4:
     t7 = addr_of_symbol local:i
     t8 = load t7 : int32
     ret t8

@@ -3,7 +3,9 @@ import hr.fer.ppj.semantics.analysis.SemanticChecker;
 
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.types.ArrayType;
+import hr.fer.ppj.semantics.types.PrimitiveType;
 import hr.fer.ppj.semantics.types.Type;
+import hr.fer.ppj.semantics.types.TypeSystem;
 import hr.fer.ppj.semantics.util.NodeUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +36,17 @@ final class InitializerRules {
     if (children.size() == 1) {
       NonTerminalNode expr = NodeUtils.asNonTerminal(children.get(0));
       checker.visitNonTerminal(expr);
+      if (isStringLiteralForCharArray(node, expr)) {
+        ArrayType literalType = (ArrayType) TypeSystem.stripConst(expr.attributes().type());
+        int elementCount = expr.attributes().stringLiteralLength();
+        List<Type> elements = new ArrayList<>(elementCount);
+        for (int i = 0; i < elementCount; i++) {
+          elements.add(literalType.elementType());
+        }
+        node.attributes().initializerElementTypes(elements);
+        node.attributes().initializerElementCount(elementCount);
+        return;
+      }
       node.attributes().initializerElementTypes(List.of(expr.attributes().type()));
       node.attributes().initializerElementCount(1);
       return;
@@ -42,6 +55,18 @@ final class InitializerRules {
     checker.visitNonTerminal(list);
     node.attributes().initializerElementTypes(list.attributes().parameterTypes());
     node.attributes().initializerElementCount(list.attributes().parameterTypes().size());
+  }
+
+  private boolean isStringLiteralForCharArray(NonTerminalNode initializer, NonTerminalNode expr) {
+    if (!expr.attributes().isStringLiteral()) {
+      return false;
+    }
+    Type targetType = initializer.attributes().inheritedType();
+    if (!(TypeSystem.stripConst(targetType) instanceof ArrayType targetArray)) {
+      return false;
+    }
+    Type targetElement = TypeSystem.stripConst(targetArray.elementType());
+    return targetElement == PrimitiveType.CHAR;
   }
   
   private void visitListaIzrazaPridruzivanja(NonTerminalNode node) {
@@ -113,4 +138,3 @@ final class InitializerRules {
     }
   }
 }
-

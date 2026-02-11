@@ -15,12 +15,15 @@ import hr.fer.ppj.ir.types.IrType;
 import hr.fer.ppj.ir.build.TypeMapper;
 import hr.fer.ppj.ir.build.TypeSizeCalculator;
 import hr.fer.ppj.ir.util.ArrayInitializerEvaluator;
+import hr.fer.ppj.ir.util.ConstantEvaluator;
 import hr.fer.ppj.semantics.symbols.SymbolTable;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.TerminalNode;
 import hr.fer.ppj.semantics.types.ArrayType;
+import hr.fer.ppj.semantics.types.PrimitiveType;
 import hr.fer.ppj.semantics.types.Type;
+import hr.fer.ppj.semantics.types.TypeSystem;
 import hr.fer.ppj.semantics.util.NodeUtils;
 import java.util.List;
 import java.util.Objects;
@@ -80,6 +83,10 @@ public final class LocalInitializerGenerator {
         return;
       }
     }
+    if (varType instanceof ArrayType arrayType && isStringLiteralInitializer(initializer, arrayType)) {
+      generateStringLiteralInitializer(initializer, varName, arrayType, functionContext);
+      return;
+    }
 
     generateScalarInitializer(initializer, varName, varType, irType, functionContext);
   }
@@ -118,6 +125,35 @@ public final class LocalInitializerGenerator {
     }
   }
 
+  private void generateStringLiteralInitializer(
+      NonTerminalNode initializer,
+      String varName,
+      ArrayType arrayType,
+      FunctionContext functionContext) {
+    IrFunctionBuilder builder = functionContext.functionBuilder();
+    NonTerminalNode expr = NodeUtils.asNonTerminal(initializer.children().get(0));
+    IrConst constant = ConstantEvaluator.extractConstantFromExpression(expr, arrayType);
+    if (!(constant instanceof IrConst.ArrayConst arrayConst)) {
+      throw new IllegalArgumentException("String literal initializer did not produce array constant");
+    }
+
+    LValueGenerator lValueGenerator = createLValueGenerator(functionContext);
+    IrTemp varAddr = lValueGenerator.emitLValueForVariable(varName, arrayType, functionContext);
+    Type elementType = arrayType.elementType();
+    IrType irElementType = TypeMapper.toIrType(elementType);
+    int elemSize = TypeSizeCalculator.getTypeSize(irElementType);
+
+    List<IrConst> elements = arrayConst.elements();
+    for (int i = 0; i < elements.size(); i++) {
+      IrConst indexConst = new IrConst.IntConst(i, IrPrimitiveType.INT32);
+      IrRhs.AddrIndex elemAddr =
+          new IrRhs.AddrIndex(varAddr, indexConst, elemSize, new IrPointerType(irElementType));
+      IrTemp elemAddrTemp = builder.tempFactory().newTemp(elemAddr.resultType());
+      builder.addInstruction(new IrInstruction.IrAssignInstr(elemAddrTemp, elemAddr));
+      builder.addInstruction(new IrInstruction.IrStoreInstr(elemAddrTemp, elements.get(i), irElementType));
+    }
+  }
+
   private void generateScalarInitializer(
       NonTerminalNode initializer,
       String varName,
@@ -144,5 +180,19 @@ public final class LocalInitializerGenerator {
         functionContext.variableNameManager(),
         functionContext.addressReuseContext(),
         structNameRegistry);
+  }
+
+  private boolean isStringLiteralInitializer(NonTerminalNode initializer, ArrayType arrayType) {
+    if (initializer.children().size() != 1) {
+      return false;
+    }
+    if (!(TypeSystem.stripConst(arrayType.elementType()) == PrimitiveType.CHAR)) {
+      return false;
+    }
+    ParseNode first = initializer.children().get(0);
+    if (!(first instanceof NonTerminalNode expr)) {
+      return false;
+    }
+    return expr.attributes().isStringLiteral();
   }
 }

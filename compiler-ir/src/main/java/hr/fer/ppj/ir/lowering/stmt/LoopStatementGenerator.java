@@ -123,13 +123,11 @@ public final class LoopStatementGenerator {
     // Canonical for loop CFG: init -> condLabel -> (bodyLabel -> stepLabel -> condLabel, afterLabel)
     String condLabel = builder.labelFactory().newLabel();
     String bodyLabel = builder.labelFactory().newLabel();
+    String stepLabel = builder.labelFactory().newLabel();
     String afterLabel = builder.labelFactory().newLabel();
-    // stepLabel will be created only if needed (when body terminates and continue is possible)
-    String stepLabel = null;
 
     LoopContext previousLoopContext = functionContext.loopContext();
-    // For continue, we'll set stepLabel later if needed
-    functionContext.setLoopContext(new LoopContext(afterLabel, null));
+    functionContext.setLoopContext(new LoopContext(afterLabel, stepLabel));
 
     try {
       // Find init, cond, step, body nodes by searching for nonterminal symbols
@@ -185,26 +183,16 @@ public final class LoopStatementGenerator {
       if (bodyNode != null) {
         statementGenerator.generateStatement(bodyNode, functionContext);
       }
-      boolean bodyTerminated = currentBlockHasTerminator(builder);
-      
-      if (!bodyTerminated) {
-        // Body doesn't terminate - append step code to body block, then jump back to condition
-        if (stepNode != null) {
-          expressionGenerator.emitRValue(stepNode, functionContext);
-        }
-        builder.setTerminator(new IrTerminator.IrJmpTerm(condLabel));
-      } else {
-        // Body terminated (return/break/continue) - need separate step block for continue
-        // Create stepLabel now (after bodyLabel, before afterLabel) for correct ordering
-        if (stepLabel == null) {
-          stepLabel = builder.labelFactory().newLabel();
-          // Update loop context with stepLabel for continue statements
-          functionContext.setLoopContext(new LoopContext(afterLabel, stepLabel));
-        }
-        builder.startBlock(stepLabel);
-        if (stepNode != null) {
-          expressionGenerator.emitRValue(stepNode, functionContext);
-        }
+      if (!currentBlockHasTerminator(builder)) {
+        builder.setTerminator(new IrTerminator.IrJmpTerm(stepLabel));
+      }
+
+      // Step block (explicitly present so continue always has a stable target)
+      builder.startBlock(stepLabel);
+      if (stepNode != null) {
+        expressionGenerator.emitRValue(stepNode, functionContext);
+      }
+      if (!currentBlockHasTerminator(builder)) {
         builder.setTerminator(new IrTerminator.IrJmpTerm(condLabel));
       }
 

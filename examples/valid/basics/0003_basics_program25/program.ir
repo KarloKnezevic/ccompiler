@@ -20,4 +20,5 @@
   L2:
     ret #21:int32
 .endfunc
+
 .endprogram

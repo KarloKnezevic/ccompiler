@@ -16,4 +16,5 @@
     t4 = sub t1, t3 : int32
     ret t4
 .endfunc
+
 .endprogram

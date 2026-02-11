@@ -1,0 +1,60 @@
+.program
+
+.func g(g:ptr<int32>):void
+  .frame locals=0 bytes align=4
+  .slots
+    param g@0:ptr<int32>
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:g
+    t1 = load t0 : ptr<int32>
+    t2 = addr_index t1, #1:int32, 4
+    t3 = load t0 : ptr<int32>
+    t4 = addr_index t3, #1:int32, 4
+    t5 = load t4 : int32
+    t6 = add t5, #10:int32 : int32
+    store t2, t6 : int32
+    ret
+.endfunc
+
+.func f(a:ptr<int32>, b:int32):void
+  .frame locals=0 bytes align=4
+  .slots
+    param a@0:ptr<int32>
+    param b@4:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:a
+    t1 = load t0 : ptr<int32>
+    t2 = addr_index t1, #1:int32, 4
+    t3 = addr_of_symbol param:b
+    t4 = load t3 : int32
+    store t2, t4 : int32
+    t5 = load t0 : ptr<int32>
+    call func:g(t5) : void
+    ret
+.endfunc
+
+.func main():int32
+  .frame locals=44 bytes align=4
+  .slots
+    local a@0:array<int32,10>
+    local b@40:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:a
+    t1 = addr_index t0, #0:int32, 4
+    store t1, #10:int32 : int32
+    t2 = addr_index t0, #1:int32, 4
+    store t2, #10:int32 : int32
+    t3 = addr_of_symbol local:b
+    store t3, #7:int32 : int32
+
+    t4 = load t3 : int32
+    call func:f(t0, t4) : void
+    t5 = addr_index t0, #1:int32, 4
+    t6 = load t5 : int32
+    ret t6
+.endfunc
+
+.endprogram

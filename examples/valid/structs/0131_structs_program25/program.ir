@@ -19,9 +19,11 @@
     store t2, #3:int32 : int32
     t3 = addr_field t0, Math.c
     store t3, #4:int32 : int32
+
     t4 = load t1 : int32
     t5 = load t2 : int32
     t6 = mul t4, t5 : int32
+
     t7 = load t3 : int32
     t8 = load t1 : int32
     t9 = mul t7, t8 : int32

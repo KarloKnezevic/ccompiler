@@ -261,8 +261,9 @@ public final class UnaryExpressionGenerator {
     IrValue operand = emitter.emitRValue(operandNode, functionContext);
     Type opType = operandNode.attributes().type();
     IrType irType = TypeMapper.toIrType(opType);
-    IrRhs.UnaryOp bitnot =
-        new IrRhs.UnaryOp(IrRhs.UnaryOp.UnaryOpName.BITNOT, operand, irType);
+    IrConst allBitsSet = new IrConst.IntConst(-1, irType);
+    IrRhs.BinOp bitnot =
+        new IrRhs.BinOp(IrRhs.BinOp.BinOpName.XOR, operand, allBitsSet, irType);
     IrTemp result = builder.tempFactory().newTemp(irType);
     builder.addInstruction(new IrInstruction.IrAssignInstr(result, bitnot));
     return result;

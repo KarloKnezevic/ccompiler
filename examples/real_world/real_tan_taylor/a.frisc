@@ -1,7 +1,7 @@
 ; ===========================================================================
 ; PPJ Compiler - Generated FRISC Assembly Code
 ; Source: program.c
-; Generated: 2026-02-10 16:54:04
+; Generated: 2026-02-11 01:32:29
 ; ===========================================================================
 ; ===========================================================================
 ; Program entry point and initialization
@@ -15,8 +15,8 @@
 F_SIN_TAYLOR                    ; Function: sin_taylor
         PUSH R5                 ; Save old FP
         MOVE R7, R5             ; Set FP
-        SUB R7, 98, R7          ; Allocate locals/temps
-        MOVE 26, R1             ; Zero words
+        SUB R7, 9C, R7          ; Allocate locals/temps
+        MOVE 27, R1             ; Zero words
         MOVE R7, R0             ; Zero ptr
         MOVE 0, R2              ; Zero
 L_ZERO_2
@@ -82,7 +82,7 @@ L_CMP_END_4
         LOAD R0, (R5-34)        ; Load temp t8
         CMP R0, 0               ; Branch on condition
         JP_NE L_SIN_TAYLOR_L2
-        JP L_SIN_TAYLOR_L3
+        JP L_SIN_TAYLOR_L4
 L_SIN_TAYLOR_L2
         MOVE R5, R0
         SUB R0, 0C, R0          ; Local address
@@ -228,41 +228,46 @@ L_SIN_TAYLOR_L2
         LOAD R0, (R5-88)        ; Load temp t29
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
-        LOAD R0, (R5-38)        ; Load temp t9
-        LOAD R0, (R0)           ; Load word
+        JP L_SIN_TAYLOR_L3
+L_SIN_TAYLOR_L3
+        MOVE R5, R0
+        SUB R0, 0C, R0          ; Local address
         STORE R0, (R5-8C)       ; Store temp t30
         LOAD R0, (R5-8C)        ; Load temp t30
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-90)       ; Store temp t31
+        LOAD R0, (R5-90)        ; Load temp t31
         PUSH R0                 ; Save left
         MOVE 1, R0
         MOVE R0, R1             ; Right
         POP R0                  ; Left
         ADD R0, R1, R0
-        STORE R0, (R5-90)       ; Store temp t31
-        LOAD R0, (R5-38)        ; Load temp t9
+        STORE R0, (R5-94)       ; Store temp t32
+        LOAD R0, (R5-8C)        ; Load temp t30
         PUSH R0                 ; Save address
-        LOAD R0, (R5-90)        ; Load temp t31
+        LOAD R0, (R5-94)        ; Load temp t32
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
         JP L_SIN_TAYLOR_L1
-L_SIN_TAYLOR_L3
+L_SIN_TAYLOR_L4
         MOVE R5, R0
         SUB R0, 8, R0           ; Local address
-        STORE R0, (R5-94)       ; Store temp t32
-        LOAD R0, (R5-94)        ; Load temp t32
-        LOAD R0, (R0)           ; Load word
         STORE R0, (R5-98)       ; Store temp t33
         LOAD R0, (R5-98)        ; Load temp t33
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-9C)       ; Store temp t34
+        LOAD R0, (R5-9C)        ; Load temp t34
         MOVE R0, R6             ; Set return value
         JP L_EXIT_F_SIN_TAYLOR_1
 L_EXIT_F_SIN_TAYLOR_1           ; Function epilogue
-        ADD R7, 98, R7          ; Deallocate locals/temps
+        ADD R7, 9C, R7          ; Deallocate locals/temps
         POP R5                  ; Restore FP
         RET                     ; Return
 F_COS_TAYLOR                    ; Function: cos_taylor
         PUSH R5                 ; Save old FP
         MOVE R7, R5             ; Set FP
-        SUB R7, 90, R7          ; Allocate locals/temps
-        MOVE 24, R1             ; Zero words
+        SUB R7, 94, R7          ; Allocate locals/temps
+        MOVE 25, R1             ; Zero words
         MOVE R7, R0             ; Zero ptr
         MOVE 0, R2              ; Zero
 L_ZERO_6
@@ -319,7 +324,7 @@ L_CMP_END_8
         LOAD R0, (R5-28)        ; Load temp t5
         CMP R0, 0               ; Branch on condition
         JP_NE L_COS_TAYLOR_L2
-        JP L_COS_TAYLOR_L3
+        JP L_COS_TAYLOR_L4
 L_COS_TAYLOR_L2
         MOVE R5, R0
         SUB R0, 0C, R0          ; Local address
@@ -468,34 +473,39 @@ L_COS_TAYLOR_L2
         LOAD R0, (R5-80)        ; Load temp t27
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
-        LOAD R0, (R5-2C)        ; Load temp t6
-        LOAD R0, (R0)           ; Load word
+        JP L_COS_TAYLOR_L3
+L_COS_TAYLOR_L3
+        MOVE R5, R0
+        SUB R0, 0C, R0          ; Local address
         STORE R0, (R5-84)       ; Store temp t28
         LOAD R0, (R5-84)        ; Load temp t28
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-88)       ; Store temp t29
+        LOAD R0, (R5-88)        ; Load temp t29
         PUSH R0                 ; Save left
         MOVE 1, R0
         MOVE R0, R1             ; Right
         POP R0                  ; Left
         ADD R0, R1, R0
-        STORE R0, (R5-88)       ; Store temp t29
-        LOAD R0, (R5-2C)        ; Load temp t6
+        STORE R0, (R5-8C)       ; Store temp t30
+        LOAD R0, (R5-84)        ; Load temp t28
         PUSH R0                 ; Save address
-        LOAD R0, (R5-88)        ; Load temp t29
+        LOAD R0, (R5-8C)        ; Load temp t30
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
         JP L_COS_TAYLOR_L1
-L_COS_TAYLOR_L3
+L_COS_TAYLOR_L4
         MOVE R5, R0
         SUB R0, 8, R0           ; Local address
-        STORE R0, (R5-8C)       ; Store temp t30
-        LOAD R0, (R5-8C)        ; Load temp t30
-        LOAD R0, (R0)           ; Load word
         STORE R0, (R5-90)       ; Store temp t31
         LOAD R0, (R5-90)        ; Load temp t31
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-94)       ; Store temp t32
+        LOAD R0, (R5-94)        ; Load temp t32
         MOVE R0, R6             ; Set return value
         JP L_EXIT_F_COS_TAYLOR_5
 L_EXIT_F_COS_TAYLOR_5           ; Function epilogue
-        ADD R7, 90, R7          ; Deallocate locals/temps
+        ADD R7, 94, R7          ; Deallocate locals/temps
         POP R5                  ; Restore FP
         RET                     ; Return
 F_MAIN                          ; Function: main

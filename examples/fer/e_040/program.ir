@@ -1,0 +1,13 @@
+.program
+
+.func main():int32
+  .frame locals=0 bytes align=4
+  .slots
+  .blocks
+  L0:
+    t0 = cmp_gt #1:int32, #2:int32 : bool
+    t1 = zext t0 : int32
+    ret t1
+.endfunc
+
+.endprogram

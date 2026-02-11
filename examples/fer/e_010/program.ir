@@ -1,0 +1,11 @@
+.program
+
+.func main():int32
+  .frame locals=0 bytes align=4
+  .slots
+  .blocks
+  L0:
+    ret #5:int32
+.endfunc
+
+.endprogram

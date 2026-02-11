@@ -1,0 +1,26 @@
+.program
+
+.func main():int32
+  .frame locals=4 bytes align=4
+  .slots
+    local x@0:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:x
+    store t0, #1:int32 : int32
+
+    t1 = cmp_ne #1:int32, #0:int32 : bool
+    br t1, L1, L2
+  L1:
+    jmp L3
+  L2:
+    t2 = addr_of_symbol local:x
+    store t2, #3:int32 : int32
+    jmp L3
+  L3:
+    t3 = addr_of_symbol local:x
+    t4 = load t3 : int32
+    ret t4
+.endfunc
+
+.endprogram

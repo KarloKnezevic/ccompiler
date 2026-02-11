@@ -24,7 +24,7 @@
     t3 = addr_of_symbol local:k
     t4 = load t3 : int32
     t5 = cmp_le t4, #10:int32 : bool
-    br t5, L2, L3
+    br t5, L2, L4
   L2:
     t6 = addr_of_symbol local:term
     t7 = load t6 : float
@@ -43,15 +43,17 @@
     t17 = load t6 : float
     t18 = add t16, t17 : float
     store t15, t18 : float
-
-    t19 = load t11 : int32
-    t20 = add t19, #1:int32 : int32
-    store t11, t20 : int32
-    jmp L1
+    jmp L3
   L3:
-    t21 = addr_of_symbol local:sum
-    t22 = load t21 : float
-    ret t22
+    t19 = addr_of_symbol local:k
+    t20 = load t19 : int32
+    t21 = add t20, #1:int32 : int32
+    store t19, t21 : int32
+    jmp L1
+  L4:
+    t22 = addr_of_symbol local:sum
+    t23 = load t22 : float
+    ret t23
 .endfunc
 
 .func sigmoid(t:float):float

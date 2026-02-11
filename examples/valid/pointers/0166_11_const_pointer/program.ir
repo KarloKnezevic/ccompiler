@@ -20,6 +20,7 @@
     store t3, t0 : ptr<int32>
     t4 = addr_of_symbol local:p3
     store t4, t0 : ptr<int32>
+
     t5 = load t2 : ptr<int32>
     store t5, #6:int32 : int32
     store t3, t1 : ptr<int32>

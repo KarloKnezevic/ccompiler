@@ -25,7 +25,7 @@
     t3 = addr_of_symbol local:k
     t4 = load t3 : int32
     t5 = cmp_le t4, #10:int32 : bool
-    br t5, L2, L3
+    br t5, L2, L4
   L2:
     t6 = addr_of_symbol local:term
     t7 = load t6 : float
@@ -44,15 +44,17 @@
     t17 = load t6 : float
     t18 = add t16, t17 : float
     store t15, t18 : float
-
-    t19 = load t11 : int32
-    t20 = add t19, #1:int32 : int32
-    store t11, t20 : int32
-    jmp L1
+    jmp L3
   L3:
-    t21 = addr_of_symbol local:sum
-    t22 = load t21 : float
-    ret t22
+    t19 = addr_of_symbol local:k
+    t20 = load t19 : int32
+    t21 = add t20, #1:int32 : int32
+    store t19, t21 : int32
+    jmp L1
+  L4:
+    t22 = addr_of_symbol local:sum
+    t23 = load t22 : float
+    ret t23
 .endfunc
 
 .func sigmoid(t:float, a:float):float
@@ -111,61 +113,78 @@
   L1:
     t6 = addr_of_symbol local:epoch
     t7 = load t6 : int32
-    t8 = cmp_lt t7, #8:int32 : bool
-    br t8, L2, L3
+    t8 = cmp_lt t7, #20:int32 : bool
+    br t8, L2, L4
   L10:
-    ret #1:int32
+    t102 = addr_of_symbol local:predicted
+    store t102, #0:int32 : int32
+    jmp L11
   L11:
+    t103 = addr_of_symbol local:predicted
+    t104 = load t103 : int32
+    t105 = addr_of_symbol local:true_label
+    t106 = load t105 : int32
+    t107 = cmp_eq t104, t106 : bool
+    br t107, L12, L13
+  L12:
+    ret #1:int32
+  L13:
     ret #0:int32
   L2:
     t9 = addr_of_symbol local:i
     store t9, #0:int32 : int32
-    jmp L4
+    jmp L5
   L3:
-    t75 = addr_of_symbol local:xt
-    store t75, #1.0:float : float
-    t76 = addr_of_symbol local:yt
-    store t76, #0.5:float : float
-    t77 = addr_of_symbol local:true_label
-    store t77, #1:int32 : int32
-
-    t78 = addr_of_symbol local:w0
-    t79 = load t78 : float
-    t80 = load t75 : float
-    t81 = mul t79, t80 : float
-
-    t82 = addr_of_symbol local:w1
-    t83 = load t82 : float
-    t84 = load t76 : float
-    t85 = mul t83, t84 : float
-
-    t86 = add t81, t85 : float
-
-    t87 = addr_of_symbol local:b
-    t88 = load t87 : float
-    t89 = add t86, t88 : float
-
-    t90 = addr_of_symbol local:z_1
-    store t90, t89 : float
-
-    t91 = addr_of_symbol local:z
-    t92 = load t91 : float
-    t93 = addr_of_symbol local:a
-    t94 = load t93 : float
-    t95 = call func:sigmoid(t92, t94) : float
-    t96 = addr_of_symbol local:s_1
-    store t96, t95 : float
-
-    t97 = addr_of_symbol local:s
-    t98 = load t97 : float
-    t99 = cmp_ge t98, #0.5:float : bool
-    br t99, L7, L8
+    t73 = addr_of_symbol local:epoch
+    t74 = load t73 : int32
+    t75 = add t74, #1:int32 : int32
+    store t73, t75 : int32
+    jmp L1
   L4:
+    t76 = addr_of_symbol local:xt
+    store t76, #1.0:float : float
+    t77 = addr_of_symbol local:yt
+    store t77, #0.5:float : float
+    t78 = addr_of_symbol local:true_label
+    store t78, #1:int32 : int32
+
+    t79 = addr_of_symbol local:w0
+    t80 = load t79 : float
+    t81 = load t76 : float
+    t82 = mul t80, t81 : float
+
+    t83 = addr_of_symbol local:w1
+    t84 = load t83 : float
+    t85 = load t77 : float
+    t86 = mul t84, t85 : float
+
+    t87 = add t82, t86 : float
+
+    t88 = addr_of_symbol local:b
+    t89 = load t88 : float
+    t90 = add t87, t89 : float
+
+    t91 = addr_of_symbol local:z_1
+    store t91, t90 : float
+
+    t92 = addr_of_symbol local:z
+    t93 = load t92 : float
+    t94 = addr_of_symbol local:a
+    t95 = load t94 : float
+    t96 = call func:sigmoid(t93, t95) : float
+    t97 = addr_of_symbol local:s_1
+    store t97, t96 : float
+
+    t98 = addr_of_symbol local:s
+    t99 = load t98 : float
+    t100 = cmp_ge t99, #0.5:float : bool
+    br t100, L9, L10
+  L5:
     t10 = addr_of_symbol local:i
     t11 = load t10 : int32
     t12 = cmp_lt t11, #4:int32 : bool
-    br t12, L5, L6
-  L5:
+    br t12, L6, L8
+  L6:
     t13 = addr_of_symbol global:X
     t14 = addr_of_symbol local:i
     t15 = load t14 : int32
@@ -243,32 +262,19 @@
     t68 = mul t66, t67 : float
     t69 = add t65, t68 : float
     store t29, t69 : float
-
-    t70 = load t14 : int32
-    t71 = add t70, #1:int32 : int32
-    store t14, t71 : int32
-    jmp L4
-  L6:
-    t72 = addr_of_symbol local:epoch
-    t73 = load t72 : int32
-    t74 = add t73, #1:int32 : int32
-    store t72, t74 : int32
-    jmp L1
+    jmp L7
   L7:
-    t100 = addr_of_symbol local:predicted
-    store t100, #1:int32 : int32
-    jmp L9
+    t70 = addr_of_symbol local:i
+    t71 = load t70 : int32
+    t72 = add t71, #1:int32 : int32
+    store t70, t72 : int32
+    jmp L5
   L8:
-    t101 = addr_of_symbol local:predicted
-    store t101, #0:int32 : int32
-    jmp L9
+    jmp L3
   L9:
-    t102 = addr_of_symbol local:predicted
-    t103 = load t102 : int32
-    t104 = addr_of_symbol local:true_label
-    t105 = load t104 : int32
-    t106 = cmp_eq t103, t105 : bool
-    br t106, L10, L11
+    t101 = addr_of_symbol local:predicted
+    store t101, #1:int32 : int32
+    jmp L11
 .endfunc
 
 .endprogram

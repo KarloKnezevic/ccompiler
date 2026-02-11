@@ -1,0 +1,152 @@
+; ===========================================================================
+; PPJ Compiler - Generated FRISC Assembly Code
+; Source: program.c
+; Generated: 2026-02-10 23:44:17
+; ===========================================================================
+; ===========================================================================
+; Program entry point and initialization
+; ===========================================================================
+        MOVE 40000, R7          ; Initialize stack pointer (SP)
+        CALL F_MAIN             ; Call main
+        HALT                    ; Program end
+; ===========================================================================
+; Function Definitions
+; ===========================================================================
+F_MAIN                          ; Function: main
+        PUSH R5                 ; Save old FP
+        MOVE R7, R5             ; Set FP
+        SUB R7, 4C, R7          ; Allocate locals/temps
+        MOVE 13, R1             ; Zero words
+        MOVE R7, R0             ; Zero ptr
+        MOVE 0, R2              ; Zero
+L_ZERO_2
+        STORE R2, (R0)          ; Clear
+        ADD R0, 4, R0
+        SUB R1, 1, R1
+        JP_NE L_ZERO_2
+L_MAIN_L0
+        MOVE R5, R0
+        SUB R0, 4, R0           ; Local address
+        STORE R0, (R5-0C)       ; Store temp t0
+        LOAD R0, (R5-0C)        ; Load temp t0
+        PUSH R0                 ; Save address
+        MOVE 0A, R0
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        MOVE R5, R0
+        SUB R0, 8, R0           ; Local address
+        STORE R0, (R5-10)       ; Store temp t1
+        LOAD R0, (R5-10)        ; Load temp t1
+        PUSH R0                 ; Save address
+        MOVE 0, R0
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        JP L_MAIN_L1
+L_MAIN_L1
+        MOVE R5, R0
+        SUB R0, 4, R0           ; Local address
+        STORE R0, (R5-14)       ; Store temp t2
+        LOAD R0, (R5-14)        ; Load temp t2
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-18)       ; Store temp t3
+        LOAD R0, (R5-18)        ; Load temp t3
+        PUSH R0                 ; Save left
+        MOVE 0, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_SGE L_CMP_TRUE_3
+        MOVE 0, R0              ; False
+        JP L_CMP_END_4
+L_CMP_TRUE_3
+        MOVE 1, R0              ; True
+L_CMP_END_4
+        STORE R0, (R5-1C)       ; Store temp t4
+        LOAD R0, (R5-1C)        ; Load temp t4
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L2
+        JP L_MAIN_L3
+L_MAIN_L2
+        MOVE R5, R0
+        SUB R0, 4, R0           ; Local address
+        STORE R0, (R5-20)       ; Store temp t5
+        LOAD R0, (R5-20)        ; Load temp t5
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-24)       ; Store temp t6
+        LOAD R0, (R5-24)        ; Load temp t6
+        PUSH R0                 ; Save left
+        MOVE 5, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_SLE L_CMP_TRUE_5
+        MOVE 0, R0              ; False
+        JP L_CMP_END_6
+L_CMP_TRUE_5
+        MOVE 1, R0              ; True
+L_CMP_END_6
+        STORE R0, (R5-28)       ; Store temp t7
+        LOAD R0, (R5-28)        ; Load temp t7
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_MAIN_L4
+        JP L_MAIN_L5
+L_MAIN_L3
+        MOVE R5, R0
+        SUB R0, 8, R0           ; Local address
+        STORE R0, (R5-48)       ; Store temp t15
+        LOAD R0, (R5-48)        ; Load temp t15
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-4C)       ; Store temp t16
+        LOAD R0, (R5-4C)        ; Load temp t16
+        MOVE R0, R6             ; Set return value
+        JP L_EXIT_F_MAIN_1
+L_MAIN_L4
+        JP L_MAIN_L3
+L_MAIN_L5
+        MOVE R5, R0
+        SUB R0, 8, R0           ; Local address
+        STORE R0, (R5-2C)       ; Store temp t8
+        LOAD R0, (R5-2C)        ; Load temp t8
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-30)       ; Store temp t9
+        MOVE R5, R0
+        SUB R0, 4, R0           ; Local address
+        STORE R0, (R5-34)       ; Store temp t10
+        LOAD R0, (R5-34)        ; Load temp t10
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-38)       ; Store temp t11
+        LOAD R0, (R5-30)        ; Load temp t9
+        PUSH R0                 ; Save left
+        LOAD R0, (R5-38)        ; Load temp t11
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-3C)       ; Store temp t12
+        LOAD R0, (R5-2C)        ; Load temp t8
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-3C)        ; Load temp t12
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        LOAD R0, (R5-34)        ; Load temp t10
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-40)       ; Store temp t13
+        LOAD R0, (R5-40)        ; Load temp t13
+        PUSH R0                 ; Save left
+        MOVE -1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-44)       ; Store temp t14
+        LOAD R0, (R5-34)        ; Load temp t10
+        PUSH R0                 ; Save address
+        LOAD R0, (R5-44)        ; Load temp t14
+        POP R1                  ; Restore address
+        STORE R0, (R1)          ; Store word
+        JP L_MAIN_L1
+L_EXIT_F_MAIN_1                 ; Function epilogue
+        ADD R7, 4C, R7          ; Deallocate locals/temps
+        POP R5                  ; Restore FP
+        RET                     ; Return
+; ===========================================================================
+; Global Variables
+; ===========================================================================

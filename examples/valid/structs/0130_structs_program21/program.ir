@@ -16,11 +16,11 @@
     store t1, #5:int32 : int32
     t2 = addr_field t0, Point.y
     store t2, #10:int32 : int32
+
     t3 = load t1 : int32
     t4 = load t2 : int32
     t5 = cmp_lt t3, t4 : bool
     br t5, L1, L2
-
   L1:
     t6 = addr_of_symbol local:p
     t7 = addr_field t6, Point.y
@@ -29,7 +29,6 @@
     t10 = load t9 : int32
     t11 = sub t8, t10 : int32
     ret t11
-
   L2:
     ret #0:int32
 .endfunc

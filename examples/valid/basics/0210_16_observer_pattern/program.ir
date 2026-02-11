@@ -30,7 +30,7 @@
     t5 = addr_field t4, Subject.observer_count
     t6 = load t5 : int32
     t7 = cmp_lt t2, t6 : bool
-    br t7, L2, L3
+    br t7, L2, L4
   L2:
     t8 = addr_of_symbol param:subj
     t9 = load t8 : ptr<struct Subject>
@@ -40,10 +40,16 @@
     t13 = addr_index t10, t12, 4
     t14 = load t13 : ptr<struct Observer>
     t15 = cmp_ne t14, null:ptr<struct Observer> : bool
-    br t15, L4, L5
+    br t15, L5, L6
   L3:
-    ret
+    t26 = addr_of_symbol local:i
+    t27 = load t26 : int32
+    t28 = add t27, #1:int32 : int32
+    store t26, t28 : int32
+    jmp L1
   L4:
+    ret
+  L5:
     t16 = addr_of_symbol param:subj
     t17 = load t16 : ptr<struct Subject>
     t18 = addr_field t17, Subject.observers
@@ -55,15 +61,11 @@
     t24 = addr_of_symbol param:value
     t25 = load t24 : int32
     store t23, t25 : int32
-    jmp L6
-  L5:
-    jmp L6
+    jmp L7
   L6:
-    t26 = addr_of_symbol local:i
-    t27 = load t26 : int32
-    t28 = add t27, #1:int32 : int32
-    store t26, t28 : int32
-    jmp L1
+    jmp L7
+  L7:
+    jmp L3
 .endfunc
 
 .func main():int32

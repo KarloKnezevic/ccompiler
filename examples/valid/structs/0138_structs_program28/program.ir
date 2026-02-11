@@ -31,6 +31,7 @@
     store t1, #15:int32 : int32
     t2 = addr_field t0, Point.y
     store t2, #25:int32 : int32
+
     t3 = load t1 : int32
     t4 = load t2 : int32
     t5 = call func:add(t3, t4) : int32

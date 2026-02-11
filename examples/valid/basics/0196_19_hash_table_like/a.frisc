@@ -1,7 +1,7 @@
 ; ===========================================================================
 ; PPJ Compiler - Generated FRISC Assembly Code
 ; Source: program.c
-; Generated: 2026-02-05 09:33:24
+; Generated: 2026-02-11 00:56:01
 ; ===========================================================================
 ; ===========================================================================
 ; Program entry point and initialization
@@ -155,8 +155,8 @@ L_EXIT_F_INSERT_1               ; Function epilogue
 F_MAIN                          ; Function: main
         PUSH R5                 ; Save old FP
         MOVE R7, R5             ; Set FP
-        SUB R7, 68, R7          ; Allocate locals/temps
-        MOVE 1A, R1             ; Zero words
+        SUB R7, 6C, R7          ; Allocate locals/temps
+        MOVE 1B, R1             ; Zero words
         MOVE R7, R0             ; Zero ptr
         MOVE 0, R2              ; Zero
 L_ZERO_4
@@ -197,7 +197,7 @@ L_CMP_END_6
         LOAD R0, (R5-3C)        ; Load temp t3
         CMP R0, 0               ; Branch on condition
         JP_NE L_MAIN_L2
-        JP L_MAIN_L3
+        JP L_MAIN_L4
 L_MAIN_L2
         MOVE R5, R0
         SUB R0, 28, R0          ; Local address
@@ -223,38 +223,43 @@ L_MAIN_L2
         MOVE 0, R0
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
-        LOAD R0, (R5-48)        ; Load temp t6
-        LOAD R0, (R0)           ; Load word
+        JP L_MAIN_L3
+L_MAIN_L3
+        MOVE R5, R0
+        SUB R0, 2C, R0          ; Local address
         STORE R0, (R5-54)       ; Store temp t9
         LOAD R0, (R5-54)        ; Load temp t9
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-58)       ; Store temp t10
+        LOAD R0, (R5-58)        ; Load temp t10
         PUSH R0                 ; Save left
         MOVE 1, R0
         MOVE R0, R1             ; Right
         POP R0                  ; Left
         ADD R0, R1, R0
-        STORE R0, (R5-58)       ; Store temp t10
-        LOAD R0, (R5-48)        ; Load temp t6
+        STORE R0, (R5-5C)       ; Store temp t11
+        LOAD R0, (R5-54)        ; Load temp t9
         PUSH R0                 ; Save address
-        LOAD R0, (R5-58)        ; Load temp t10
+        LOAD R0, (R5-5C)        ; Load temp t11
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
         JP L_MAIN_L1
-L_MAIN_L3
+L_MAIN_L4
         MOVE R5, R0
         SUB R0, 28, R0          ; Local address
-        STORE R0, (R5-5C)       ; Store temp t11
-        LOAD R0, (R5-5C)        ; Load temp t11
-        STORE R0, (R5-60)       ; Save arg
-        MOVE 2A, R0
+        STORE R0, (R5-60)       ; Store temp t12
+        LOAD R0, (R5-60)        ; Load temp t12
         STORE R0, (R5-64)       ; Save arg
-        MOVE 64, R0
+        MOVE 2A, R0
         STORE R0, (R5-68)       ; Save arg
+        MOVE 64, R0
+        STORE R0, (R5-6C)       ; Save arg
         SUB R7, 0C, R7          ; Allocate args
-        LOAD R0, (R5-60)        ; Load arg
-        STORE R0, (R7)          ; Store arg
         LOAD R0, (R5-64)        ; Load arg
-        STORE R0, (R7+4)        ; Store arg
+        STORE R0, (R7)          ; Store arg
         LOAD R0, (R5-68)        ; Load arg
+        STORE R0, (R7+4)        ; Store arg
+        LOAD R0, (R5-6C)        ; Load arg
         STORE R0, (R7+8)        ; Store arg
         CALL F_INSERT           ; Call insert
         ADD R7, 0C, R7          ; Clean args
@@ -262,7 +267,7 @@ L_MAIN_L3
         MOVE R0, R6             ; Set return value
         JP L_EXIT_F_MAIN_3
 L_EXIT_F_MAIN_3                 ; Function epilogue
-        ADD R7, 68, R7          ; Deallocate locals/temps
+        ADD R7, 6C, R7          ; Deallocate locals/temps
         POP R5                  ; Restore FP
         RET                     ; Return
 F_MOD                           ; int32 modulo

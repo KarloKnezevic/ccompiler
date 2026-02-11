@@ -4,6 +4,7 @@ import hr.fer.ppj.ir.model.IrConst;
 import hr.fer.ppj.ir.types.IrArrayType;
 import hr.fer.ppj.ir.types.IrPrimitiveType;
 import hr.fer.ppj.ir.types.IrType;
+import hr.fer.ppj.ir.build.TypeMapper;
 import hr.fer.ppj.semantics.tree.NonTerminalNode;
 import hr.fer.ppj.semantics.tree.ParseNode;
 import hr.fer.ppj.semantics.tree.SemanticAttributes;
@@ -11,6 +12,7 @@ import hr.fer.ppj.semantics.tree.TerminalNode;
 import hr.fer.ppj.semantics.types.ArrayType;
 import hr.fer.ppj.semantics.types.PrimitiveType;
 import hr.fer.ppj.semantics.types.Type;
+import hr.fer.ppj.semantics.types.TypeSystem;
 import hr.fer.ppj.semantics.util.NodeUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,6 +81,28 @@ public final class ConstantEvaluator {
         } else if (termSymbol.equals("ZNAK")) {
           char value = LiteralParser.parseCharLiteral(lexeme);
           return new IrConst.CharConst(value);
+        } else if (termSymbol.equals("NIZ_ZNAKOVA")) {
+          Type strippedTarget = TypeSystem.stripConst(targetType);
+          if (strippedTarget instanceof ArrayType arrayType
+              && TypeSystem.stripConst(arrayType.elementType()) == PrimitiveType.CHAR) {
+            List<Character> parsedChars = LiteralParser.parseStringLiteral(lexeme);
+            int declaredSize =
+                arrayType.dimensions().isEmpty() ? parsedChars.size() : arrayType.dimensions().get(0);
+            if (declaredSize <= 0) {
+              declaredSize = parsedChars.size();
+            }
+
+            List<IrConst> elements = new ArrayList<>(declaredSize);
+            for (int i = 0; i < declaredSize; i++) {
+              char value = i < parsedChars.size() ? parsedChars.get(i) : '\0';
+              elements.add(new IrConst.CharConst(value));
+            }
+
+            IrArrayType irArrayType = (IrArrayType) TypeMapper.toIrType(arrayType);
+            return new IrConst.ArrayConst(elements, irArrayType);
+          }
+          throw new UnsupportedOperationException(
+              "String literal constant requires char array target type");
         }
       }
     }

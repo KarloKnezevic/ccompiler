@@ -1,1 +1,5 @@
-error
+Status: FAILED (104 ms)
+Stage: IR Generation
+Cause: IR generation failed
+Detail: Type promotion from IrPointerType[baseType=INT32] to INT32 not yet supported
+Hint: Verify semantic analysis output and IR generation rules

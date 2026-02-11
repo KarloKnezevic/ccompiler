@@ -17,14 +17,17 @@
     store t1, #10:int32 : int32
     t2 = addr_field t0, Point.y
     store t2, #20:int32 : int32
+
     t3 = addr_of_symbol local:q
     t4 = addr_field t3, Point.x
     store t4, #30:int32 : int32
     t5 = addr_field t3, Point.y
     store t5, #40:int32 : int32
+
     t6 = load t1 : int32
     t7 = load t2 : int32
     t8 = add t6, t7 : int32
+
     t9 = load t4 : int32
     t10 = add t8, t9 : int32
     t11 = load t5 : int32

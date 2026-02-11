@@ -21,6 +21,7 @@
     store t2, #42:int32 : int32
     t3 = addr_field t0, Outer.y
     store t3, #10:int32 : int32
+
     t4 = load t2 : int32
     t5 = load t3 : int32
     t6 = add t4, t5 : int32

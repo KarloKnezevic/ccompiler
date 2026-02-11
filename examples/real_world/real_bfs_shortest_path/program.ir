@@ -31,396 +31,398 @@
     t3 = addr_of_symbol local:i
     t4 = load t3 : int32
     t5 = cmp_lt t4, #64:int32 : bool
-    br t5, L2, L3
+    br t5, L2, L4
   L10:
-    t55 = addr_of_symbol local:x
-    t56 = load t55 : int32
-    t57 = sub t56, #1:int32 : int32
-
-    t58 = addr_of_symbol local:nx
-    store t58, t57 : int32
-
-    t59 = addr_of_symbol local:y
-    t60 = load t59 : int32
-    t61 = addr_of_symbol local:ny
-    store t61, t60 : int32
-
-    t62 = load t58 : int32
-    t63 = mul t62, #8:int32 : int32
-
-    t64 = load t61 : int32
-    t65 = add t63, t64 : int32
-
-    t66 = addr_of_symbol local:idx
-    store t66, t65 : int32
-
-    t67 = addr_of_symbol global:grid
-    t68 = load t66 : int32
-    t69 = addr_index t67, t68, 4
-    t70 = load t69 : int32
-    t71 = cmp_eq t70, #0:int32 : bool
-    br t71, L12, L13
+    t237 = addr_of_symbol global:dist
+    t238 = mul #7:int32, #8:int32 : int32
+    t239 = add t238, #7:int32 : int32
+    t240 = addr_index t237, t239, 4
+    t241 = load t240 : int32
+    ret t241
   L11:
-    jmp L16
+    t56 = addr_of_symbol local:x
+    t57 = load t56 : int32
+    t58 = sub t57, #1:int32 : int32
+
+    t59 = addr_of_symbol local:nx
+    store t59, t58 : int32
+
+    t60 = addr_of_symbol local:y
+    t61 = load t60 : int32
+    t62 = addr_of_symbol local:ny
+    store t62, t61 : int32
+
+    t63 = load t59 : int32
+    t64 = mul t63, #8:int32 : int32
+
+    t65 = load t62 : int32
+    t66 = add t64, t65 : int32
+
+    t67 = addr_of_symbol local:idx
+    store t67, t66 : int32
+
+    t68 = addr_of_symbol global:grid
+    t69 = load t67 : int32
+    t70 = addr_index t68, t69, 4
+    t71 = load t70 : int32
+    t72 = cmp_eq t71, #0:int32 : bool
+    br t72, L13, L14
   L12:
-    t72 = addr_of_symbol global:dist
-    t73 = addr_of_symbol local:idx
-    t74 = load t73 : int32
-    t75 = addr_index t72, t74, 4
-    t76 = load t75 : int32
-    t77 = cmp_eq t76, #-1:int32 : bool
-    br t77, L14, L13
+    jmp L17
   L13:
-    jmp L15
+    t73 = addr_of_symbol global:dist
+    t74 = addr_of_symbol local:idx
+    t75 = load t74 : int32
+    t76 = addr_index t73, t75, 4
+    t77 = load t76 : int32
+    t78 = cmp_eq t77, #-1:int32 : bool
+    br t78, L15, L14
   L14:
-    t78 = addr_of_symbol global:dist
-    t79 = addr_of_symbol local:idx
-    t80 = load t79 : int32
-    t81 = addr_index t78, t80, 4
-    t82 = addr_of_symbol local:d
-    t83 = load t82 : int32
-    t84 = add t83, #1:int32 : int32
-    store t81, t84 : int32
-
-    t85 = addr_of_symbol global:qx
-    t86 = addr_of_symbol local:tail
-    t87 = load t86 : int32
-    t88 = addr_index t85, t87, 4
-    t89 = addr_of_symbol local:nx
-    t90 = load t89 : int32
-    store t88, t90 : int32
-
-    t91 = addr_of_symbol global:qy
-    t92 = load t86 : int32
-    t93 = addr_index t91, t92, 4
-    t94 = addr_of_symbol local:ny
-    t95 = load t94 : int32
-    store t93, t95 : int32
-
-    t96 = load t86 : int32
-    t97 = add t96, #1:int32 : int32
-    store t86, t97 : int32
-    jmp L15
+    jmp L16
   L15:
+    t79 = addr_of_symbol global:dist
+    t80 = addr_of_symbol local:idx
+    t81 = load t80 : int32
+    t82 = addr_index t79, t81, 4
+    t83 = addr_of_symbol local:d
+    t84 = load t83 : int32
+    t85 = add t84, #1:int32 : int32
+    store t82, t85 : int32
+
+    t86 = addr_of_symbol global:qx
+    t87 = addr_of_symbol local:tail
+    t88 = load t87 : int32
+    t89 = addr_index t86, t88, 4
+    t90 = addr_of_symbol local:nx
+    t91 = load t90 : int32
+    store t89, t91 : int32
+
+    t92 = addr_of_symbol global:qy
+    t93 = load t87 : int32
+    t94 = addr_index t92, t93, 4
+    t95 = addr_of_symbol local:ny
+    t96 = load t95 : int32
+    store t94, t96 : int32
+
+    t97 = load t87 : int32
+    t98 = add t97, #1:int32 : int32
+    store t87, t98 : int32
     jmp L16
   L16:
-    t98 = addr_of_symbol local:x
-    t99 = load t98 : int32
-    t100 = cmp_lt t99, #7:int32 : bool
-    br t100, L17, L18
+    jmp L17
   L17:
-    t101 = addr_of_symbol local:x
-    t102 = load t101 : int32
-    t103 = add t102, #1:int32 : int32
-
-    t104 = addr_of_symbol local:nx
-    store t104, t103 : int32
-
-    t105 = addr_of_symbol local:y
-    t106 = load t105 : int32
-    t107 = addr_of_symbol local:ny
-    store t107, t106 : int32
-
-    t108 = load t104 : int32
-    t109 = mul t108, #8:int32 : int32
-
-    t110 = load t107 : int32
-    t111 = add t109, t110 : int32
-
-    t112 = addr_of_symbol local:idx
-    store t112, t111 : int32
-
-    t113 = addr_of_symbol global:grid
-    t114 = load t112 : int32
-    t115 = addr_index t113, t114, 4
-    t116 = load t115 : int32
-    t117 = cmp_eq t116, #0:int32 : bool
-    br t117, L19, L20
+    t99 = addr_of_symbol local:x
+    t100 = load t99 : int32
+    t101 = cmp_lt t100, #7:int32 : bool
+    br t101, L18, L19
   L18:
-    jmp L23
+    t102 = addr_of_symbol local:x
+    t103 = load t102 : int32
+    t104 = add t103, #1:int32 : int32
+
+    t105 = addr_of_symbol local:nx
+    store t105, t104 : int32
+
+    t106 = addr_of_symbol local:y
+    t107 = load t106 : int32
+    t108 = addr_of_symbol local:ny
+    store t108, t107 : int32
+
+    t109 = load t105 : int32
+    t110 = mul t109, #8:int32 : int32
+
+    t111 = load t108 : int32
+    t112 = add t110, t111 : int32
+
+    t113 = addr_of_symbol local:idx
+    store t113, t112 : int32
+
+    t114 = addr_of_symbol global:grid
+    t115 = load t113 : int32
+    t116 = addr_index t114, t115, 4
+    t117 = load t116 : int32
+    t118 = cmp_eq t117, #0:int32 : bool
+    br t118, L20, L21
   L19:
-    t118 = addr_of_symbol global:dist
-    t119 = addr_of_symbol local:idx
-    t120 = load t119 : int32
-    t121 = addr_index t118, t120, 4
-    t122 = load t121 : int32
-    t123 = cmp_eq t122, #-1:int32 : bool
-    br t123, L21, L20
+    jmp L24
   L2:
     t6 = addr_of_symbol global:dist
     t7 = addr_of_symbol local:i
     t8 = load t7 : int32
     t9 = addr_index t6, t8, 4
     store t9, #-1:int32 : int32
-
-    t10 = load t7 : int32
-    t11 = add t10, #1:int32 : int32
-    store t7, t11 : int32
-    jmp L1
+    jmp L3
   L20:
-    jmp L22
+    t119 = addr_of_symbol global:dist
+    t120 = addr_of_symbol local:idx
+    t121 = load t120 : int32
+    t122 = addr_index t119, t121, 4
+    t123 = load t122 : int32
+    t124 = cmp_eq t123, #-1:int32 : bool
+    br t124, L22, L21
   L21:
-    t124 = addr_of_symbol global:dist
-    t125 = addr_of_symbol local:idx
-    t126 = load t125 : int32
-    t127 = addr_index t124, t126, 4
-    t128 = addr_of_symbol local:d
-    t129 = load t128 : int32
-    t130 = add t129, #1:int32 : int32
-    store t127, t130 : int32
-
-    t131 = addr_of_symbol global:qx
-    t132 = addr_of_symbol local:tail
-    t133 = load t132 : int32
-    t134 = addr_index t131, t133, 4
-    t135 = addr_of_symbol local:nx
-    t136 = load t135 : int32
-    store t134, t136 : int32
-
-    t137 = addr_of_symbol global:qy
-    t138 = load t132 : int32
-    t139 = addr_index t137, t138, 4
-    t140 = addr_of_symbol local:ny
-    t141 = load t140 : int32
-    store t139, t141 : int32
-
-    t142 = load t132 : int32
-    t143 = add t142, #1:int32 : int32
-    store t132, t143 : int32
-    jmp L22
+    jmp L23
   L22:
+    t125 = addr_of_symbol global:dist
+    t126 = addr_of_symbol local:idx
+    t127 = load t126 : int32
+    t128 = addr_index t125, t127, 4
+    t129 = addr_of_symbol local:d
+    t130 = load t129 : int32
+    t131 = add t130, #1:int32 : int32
+    store t128, t131 : int32
+
+    t132 = addr_of_symbol global:qx
+    t133 = addr_of_symbol local:tail
+    t134 = load t133 : int32
+    t135 = addr_index t132, t134, 4
+    t136 = addr_of_symbol local:nx
+    t137 = load t136 : int32
+    store t135, t137 : int32
+
+    t138 = addr_of_symbol global:qy
+    t139 = load t133 : int32
+    t140 = addr_index t138, t139, 4
+    t141 = addr_of_symbol local:ny
+    t142 = load t141 : int32
+    store t140, t142 : int32
+
+    t143 = load t133 : int32
+    t144 = add t143, #1:int32 : int32
+    store t133, t144 : int32
     jmp L23
   L23:
-    t144 = addr_of_symbol local:y
-    t145 = load t144 : int32
-    t146 = cmp_gt t145, #0:int32 : bool
-    br t146, L24, L25
+    jmp L24
   L24:
-    t147 = addr_of_symbol local:x
-    t148 = load t147 : int32
-    t149 = addr_of_symbol local:nx
-    store t149, t148 : int32
-
-    t150 = addr_of_symbol local:y
-    t151 = load t150 : int32
-    t152 = sub t151, #1:int32 : int32
-
-    t153 = addr_of_symbol local:ny
-    store t153, t152 : int32
-
-    t154 = load t149 : int32
-    t155 = mul t154, #8:int32 : int32
-
-    t156 = load t153 : int32
-    t157 = add t155, t156 : int32
-
-    t158 = addr_of_symbol local:idx
-    store t158, t157 : int32
-
-    t159 = addr_of_symbol global:grid
-    t160 = load t158 : int32
-    t161 = addr_index t159, t160, 4
-    t162 = load t161 : int32
-    t163 = cmp_eq t162, #0:int32 : bool
-    br t163, L26, L27
+    t145 = addr_of_symbol local:y
+    t146 = load t145 : int32
+    t147 = cmp_gt t146, #0:int32 : bool
+    br t147, L25, L26
   L25:
-    jmp L30
+    t148 = addr_of_symbol local:x
+    t149 = load t148 : int32
+    t150 = addr_of_symbol local:nx
+    store t150, t149 : int32
+
+    t151 = addr_of_symbol local:y
+    t152 = load t151 : int32
+    t153 = sub t152, #1:int32 : int32
+
+    t154 = addr_of_symbol local:ny
+    store t154, t153 : int32
+
+    t155 = load t150 : int32
+    t156 = mul t155, #8:int32 : int32
+
+    t157 = load t154 : int32
+    t158 = add t156, t157 : int32
+
+    t159 = addr_of_symbol local:idx
+    store t159, t158 : int32
+
+    t160 = addr_of_symbol global:grid
+    t161 = load t159 : int32
+    t162 = addr_index t160, t161, 4
+    t163 = load t162 : int32
+    t164 = cmp_eq t163, #0:int32 : bool
+    br t164, L27, L28
   L26:
-    t164 = addr_of_symbol global:dist
-    t165 = addr_of_symbol local:idx
-    t166 = load t165 : int32
-    t167 = addr_index t164, t166, 4
-    t168 = load t167 : int32
-    t169 = cmp_eq t168, #-1:int32 : bool
-    br t169, L28, L27
+    jmp L31
   L27:
-    jmp L29
+    t165 = addr_of_symbol global:dist
+    t166 = addr_of_symbol local:idx
+    t167 = load t166 : int32
+    t168 = addr_index t165, t167, 4
+    t169 = load t168 : int32
+    t170 = cmp_eq t169, #-1:int32 : bool
+    br t170, L29, L28
   L28:
-    t170 = addr_of_symbol global:dist
-    t171 = addr_of_symbol local:idx
-    t172 = load t171 : int32
-    t173 = addr_index t170, t172, 4
-    t174 = addr_of_symbol local:d
-    t175 = load t174 : int32
-    t176 = add t175, #1:int32 : int32
-    store t173, t176 : int32
-
-    t177 = addr_of_symbol global:qx
-    t178 = addr_of_symbol local:tail
-    t179 = load t178 : int32
-    t180 = addr_index t177, t179, 4
-    t181 = addr_of_symbol local:nx
-    t182 = load t181 : int32
-    store t180, t182 : int32
-
-    t183 = addr_of_symbol global:qy
-    t184 = load t178 : int32
-    t185 = addr_index t183, t184, 4
-    t186 = addr_of_symbol local:ny
-    t187 = load t186 : int32
-    store t185, t187 : int32
-
-    t188 = load t178 : int32
-    t189 = add t188, #1:int32 : int32
-    store t178, t189 : int32
-    jmp L29
+    jmp L30
   L29:
+    t171 = addr_of_symbol global:dist
+    t172 = addr_of_symbol local:idx
+    t173 = load t172 : int32
+    t174 = addr_index t171, t173, 4
+    t175 = addr_of_symbol local:d
+    t176 = load t175 : int32
+    t177 = add t176, #1:int32 : int32
+    store t174, t177 : int32
+
+    t178 = addr_of_symbol global:qx
+    t179 = addr_of_symbol local:tail
+    t180 = load t179 : int32
+    t181 = addr_index t178, t180, 4
+    t182 = addr_of_symbol local:nx
+    t183 = load t182 : int32
+    store t181, t183 : int32
+
+    t184 = addr_of_symbol global:qy
+    t185 = load t179 : int32
+    t186 = addr_index t184, t185, 4
+    t187 = addr_of_symbol local:ny
+    t188 = load t187 : int32
+    store t186, t188 : int32
+
+    t189 = load t179 : int32
+    t190 = add t189, #1:int32 : int32
+    store t179, t190 : int32
     jmp L30
   L3:
-    t12 = addr_of_symbol global:grid
-    t13 = addr_index t12, #0:int32, 4
-    t14 = load t13 : int32
-    t15 = cmp_eq t14, #0:int32 : bool
-    br t15, L4, L5
+    t10 = addr_of_symbol local:i
+    t11 = load t10 : int32
+    t12 = add t11, #1:int32 : int32
+    store t10, t12 : int32
+    jmp L1
   L30:
-    t190 = addr_of_symbol local:y
-    t191 = load t190 : int32
-    t192 = cmp_lt t191, #7:int32 : bool
-    br t192, L31, L32
+    jmp L31
   L31:
-    t193 = addr_of_symbol local:x
-    t194 = load t193 : int32
-    t195 = addr_of_symbol local:nx
-    store t195, t194 : int32
-
-    t196 = addr_of_symbol local:y
-    t197 = load t196 : int32
-    t198 = add t197, #1:int32 : int32
-
-    t199 = addr_of_symbol local:ny
-    store t199, t198 : int32
-
-    t200 = load t195 : int32
-    t201 = mul t200, #8:int32 : int32
-
-    t202 = load t199 : int32
-    t203 = add t201, t202 : int32
-
-    t204 = addr_of_symbol local:idx
-    store t204, t203 : int32
-
-    t205 = addr_of_symbol global:grid
-    t206 = load t204 : int32
-    t207 = addr_index t205, t206, 4
-    t208 = load t207 : int32
-    t209 = cmp_eq t208, #0:int32 : bool
-    br t209, L33, L34
+    t191 = addr_of_symbol local:y
+    t192 = load t191 : int32
+    t193 = cmp_lt t192, #7:int32 : bool
+    br t193, L32, L33
   L32:
-    jmp L37
+    t194 = addr_of_symbol local:x
+    t195 = load t194 : int32
+    t196 = addr_of_symbol local:nx
+    store t196, t195 : int32
+
+    t197 = addr_of_symbol local:y
+    t198 = load t197 : int32
+    t199 = add t198, #1:int32 : int32
+
+    t200 = addr_of_symbol local:ny
+    store t200, t199 : int32
+
+    t201 = load t196 : int32
+    t202 = mul t201, #8:int32 : int32
+
+    t203 = load t200 : int32
+    t204 = add t202, t203 : int32
+
+    t205 = addr_of_symbol local:idx
+    store t205, t204 : int32
+
+    t206 = addr_of_symbol global:grid
+    t207 = load t205 : int32
+    t208 = addr_index t206, t207, 4
+    t209 = load t208 : int32
+    t210 = cmp_eq t209, #0:int32 : bool
+    br t210, L34, L35
   L33:
-    t210 = addr_of_symbol global:dist
-    t211 = addr_of_symbol local:idx
-    t212 = load t211 : int32
-    t213 = addr_index t210, t212, 4
-    t214 = load t213 : int32
-    t215 = cmp_eq t214, #-1:int32 : bool
-    br t215, L35, L34
+    jmp L38
   L34:
-    jmp L36
+    t211 = addr_of_symbol global:dist
+    t212 = addr_of_symbol local:idx
+    t213 = load t212 : int32
+    t214 = addr_index t211, t213, 4
+    t215 = load t214 : int32
+    t216 = cmp_eq t215, #-1:int32 : bool
+    br t216, L36, L35
   L35:
-    t216 = addr_of_symbol global:dist
-    t217 = addr_of_symbol local:idx
-    t218 = load t217 : int32
-    t219 = addr_index t216, t218, 4
-    t220 = addr_of_symbol local:d
-    t221 = load t220 : int32
-    t222 = add t221, #1:int32 : int32
-    store t219, t222 : int32
-
-    t223 = addr_of_symbol global:qx
-    t224 = addr_of_symbol local:tail
-    t225 = load t224 : int32
-    t226 = addr_index t223, t225, 4
-    t227 = addr_of_symbol local:nx
-    t228 = load t227 : int32
-    store t226, t228 : int32
-
-    t229 = addr_of_symbol global:qy
-    t230 = load t224 : int32
-    t231 = addr_index t229, t230, 4
-    t232 = addr_of_symbol local:ny
-    t233 = load t232 : int32
-    store t231, t233 : int32
-
-    t234 = load t224 : int32
-    t235 = add t234, #1:int32 : int32
-    store t224, t235 : int32
-    jmp L36
+    jmp L37
   L36:
+    t217 = addr_of_symbol global:dist
+    t218 = addr_of_symbol local:idx
+    t219 = load t218 : int32
+    t220 = addr_index t217, t219, 4
+    t221 = addr_of_symbol local:d
+    t222 = load t221 : int32
+    t223 = add t222, #1:int32 : int32
+    store t220, t223 : int32
+
+    t224 = addr_of_symbol global:qx
+    t225 = addr_of_symbol local:tail
+    t226 = load t225 : int32
+    t227 = addr_index t224, t226, 4
+    t228 = addr_of_symbol local:nx
+    t229 = load t228 : int32
+    store t227, t229 : int32
+
+    t230 = addr_of_symbol global:qy
+    t231 = load t225 : int32
+    t232 = addr_index t230, t231, 4
+    t233 = addr_of_symbol local:ny
+    t234 = load t233 : int32
+    store t232, t234 : int32
+
+    t235 = load t225 : int32
+    t236 = add t235, #1:int32 : int32
+    store t225, t236 : int32
     jmp L37
   L37:
-    jmp L7
+    jmp L38
+  L38:
+    jmp L8
   L4:
-    t16 = addr_of_symbol global:dist
-    t17 = addr_index t16, #0:int32, 4
-    store t17, #0:int32 : int32
-
-    t18 = addr_of_symbol global:qx
-    t19 = addr_of_symbol local:tail
-    t20 = load t19 : int32
-    t21 = addr_index t18, t20, 4
-    store t21, #0:int32 : int32
-
-    t22 = addr_of_symbol global:qy
-    t23 = load t19 : int32
-    t24 = addr_index t22, t23, 4
-    store t24, #0:int32 : int32
-
-    t25 = load t19 : int32
-    t26 = add t25, #1:int32 : int32
-    store t19, t26 : int32
-    jmp L6
+    t13 = addr_of_symbol global:grid
+    t14 = addr_index t13, #0:int32, 4
+    t15 = load t14 : int32
+    t16 = cmp_eq t15, #0:int32 : bool
+    br t16, L5, L6
   L5:
-    jmp L6
+    t17 = addr_of_symbol global:dist
+    t18 = addr_index t17, #0:int32, 4
+    store t18, #0:int32 : int32
+
+    t19 = addr_of_symbol global:qx
+    t20 = addr_of_symbol local:tail
+    t21 = load t20 : int32
+    t22 = addr_index t19, t21, 4
+    store t22, #0:int32 : int32
+
+    t23 = addr_of_symbol global:qy
+    t24 = load t20 : int32
+    t25 = addr_index t23, t24, 4
+    store t25, #0:int32 : int32
+
+    t26 = load t20 : int32
+    t27 = add t26, #1:int32 : int32
+    store t20, t27 : int32
+    jmp L7
   L6:
     jmp L7
   L7:
-    t27 = addr_of_symbol local:head
-    t28 = load t27 : int32
-    t29 = addr_of_symbol local:tail
-    t30 = load t29 : int32
-    t31 = cmp_lt t28, t30 : bool
-    br t31, L8, L9
+    jmp L8
   L8:
-    t32 = addr_of_symbol global:qx
-    t33 = addr_of_symbol local:head
-    t34 = load t33 : int32
-    t35 = addr_index t32, t34, 4
-    t36 = load t35 : int32
-    t37 = addr_of_symbol local:x
-    store t37, t36 : int32
-
-    t38 = addr_of_symbol global:qy
-    t39 = load t33 : int32
-    t40 = addr_index t38, t39, 4
-    t41 = load t40 : int32
-    t42 = addr_of_symbol local:y
-    store t42, t41 : int32
-
-    t43 = addr_of_symbol global:dist
-    t44 = load t37 : int32
-    t45 = mul t44, #8:int32 : int32
-
-    t46 = load t42 : int32
-    t47 = add t45, t46 : int32
-    t48 = addr_index t43, t47, 4
-    t49 = load t48 : int32
-    t50 = addr_of_symbol local:d
-    store t50, t49 : int32
-
-    t51 = load t33 : int32
-    t52 = add t51, #1:int32 : int32
-    store t33, t52 : int32
-    t53 = load t37 : int32
-    t54 = cmp_gt t53, #0:int32 : bool
-    br t54, L10, L11
+    t28 = addr_of_symbol local:head
+    t29 = load t28 : int32
+    t30 = addr_of_symbol local:tail
+    t31 = load t30 : int32
+    t32 = cmp_lt t29, t31 : bool
+    br t32, L9, L10
   L9:
-    t236 = addr_of_symbol global:dist
-    t237 = mul #7:int32, #8:int32 : int32
-    t238 = add t237, #7:int32 : int32
-    t239 = addr_index t236, t238, 4
-    t240 = load t239 : int32
-    ret t240
+    t33 = addr_of_symbol global:qx
+    t34 = addr_of_symbol local:head
+    t35 = load t34 : int32
+    t36 = addr_index t33, t35, 4
+    t37 = load t36 : int32
+    t38 = addr_of_symbol local:x
+    store t38, t37 : int32
+
+    t39 = addr_of_symbol global:qy
+    t40 = load t34 : int32
+    t41 = addr_index t39, t40, 4
+    t42 = load t41 : int32
+    t43 = addr_of_symbol local:y
+    store t43, t42 : int32
+
+    t44 = addr_of_symbol global:dist
+    t45 = load t38 : int32
+    t46 = mul t45, #8:int32 : int32
+
+    t47 = load t43 : int32
+    t48 = add t46, t47 : int32
+    t49 = addr_index t44, t48, 4
+    t50 = load t49 : int32
+    t51 = addr_of_symbol local:d
+    store t51, t50 : int32
+
+    t52 = load t34 : int32
+    t53 = add t52, #1:int32 : int32
+    store t34, t53 : int32
+    t54 = load t38 : int32
+    t55 = cmp_gt t54, #0:int32 : bool
+    br t55, L11, L12
 .endfunc
 
 .endprogram

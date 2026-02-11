@@ -31,7 +31,7 @@
     t10 = addr_field t9, Component.child_count
     t11 = load t10 : int32
     t12 = cmp_lt t7, t11 : bool
-    br t12, L2, L3
+    br t12, L2, L4
   L2:
     t13 = addr_of_symbol param:c
     t14 = load t13 : ptr<struct Component>
@@ -41,12 +41,18 @@
     t18 = addr_index t15, t17, 4
     t19 = load t18 : ptr<struct Component>
     t20 = cmp_ne t19, null:ptr<struct Component> : bool
-    br t20, L4, L5
+    br t20, L5, L6
   L3:
+    t32 = addr_of_symbol local:i
+    t33 = load t32 : int32
+    t34 = add t33, #1:int32 : int32
+    store t32, t34 : int32
+    jmp L1
+  L4:
     t35 = addr_of_symbol local:total
     t36 = load t35 : int32
     ret t36
-  L4:
+  L5:
     t21 = addr_of_symbol local:total
     t22 = load t21 : int32
     t23 = addr_of_symbol param:c
@@ -59,15 +65,11 @@
     t30 = call func:sum_component(t29) : int32
     t31 = add t22, t30 : int32
     store t21, t31 : int32
-    jmp L6
-  L5:
-    jmp L6
+    jmp L7
   L6:
-    t32 = addr_of_symbol local:i
-    t33 = load t32 : int32
-    t34 = add t33, #1:int32 : int32
-    store t32, t34 : int32
-    jmp L1
+    jmp L7
+  L7:
+    jmp L3
 .endfunc
 
 .func main():int32

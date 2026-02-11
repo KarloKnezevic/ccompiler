@@ -27,6 +27,7 @@
     store t8, #5:int32 : int32
     t9 = addr_field t7, Point.y
     store t9, #6:int32 : int32
+
     t10 = load t2 : int32
     t11 = load t6 : int32
     t12 = add t10, t11 : int32

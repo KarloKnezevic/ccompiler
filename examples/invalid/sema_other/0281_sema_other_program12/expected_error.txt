@@ -1,0 +1,5 @@
+Status: FAILED (2.67 s)
+Stage: Lexical Analysis
+Cause: Lexical analysis failed
+Detail: line 2, column 10: neprepoznat znak '@' (0x40)
+Hint: Check leksicke_jedinke.txt for token stream details

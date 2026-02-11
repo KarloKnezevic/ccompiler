@@ -1,7 +1,7 @@
 ; ===========================================================================
 ; PPJ Compiler - Generated FRISC Assembly Code
 ; Source: program.c
-; Generated: 2026-02-10 16:53:24
+; Generated: 2026-02-11 01:31:33
 ; ===========================================================================
 ; ===========================================================================
 ; Program entry point and initialization
@@ -81,7 +81,7 @@ L_CMP_END_4
         LOAD R0, (R5-2C)        ; Load temp t6
         CMP R0, 0               ; Branch on condition
         JP_NE L_MAIN_L2
-        JP L_MAIN_L3
+        JP L_MAIN_L4
 L_MAIN_L2
         MOVE R5, R0
         SUB R0, 4, R0           ; Local address
@@ -125,6 +125,8 @@ L_MAIN_L2
         LOAD R0, (R5-4C)        ; Load temp t14
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
+        JP L_MAIN_L3
+L_MAIN_L3
         MOVE R5, R0
         SUB R0, 10, R0          ; Local address
         STORE R0, (R5-50)       ; Store temp t15
@@ -144,7 +146,7 @@ L_MAIN_L2
         POP R1                  ; Restore address
         STORE R0, (R1)          ; Store word
         JP L_MAIN_L1
-L_MAIN_L3
+L_MAIN_L4
         MOVE R5, R0
         SUB R0, 4, R0           ; Local address
         STORE R0, (R5-5C)       ; Store temp t18

@@ -21,7 +21,19 @@
     t2 = addr_of_symbol local:i
     t3 = load t2 : int32
     t4 = cmp_lt t3, #12:int32 : bool
-    br t4, L2, L3
+    br t4, L2, L4
+  L10:
+    t27 = addr_of_symbol local:crc
+    t28 = load t27 : int32
+    t29 = div t28, #2:int32 : int32
+    store t27, t29 : int32
+    jmp L11
+  L11:
+    t30 = addr_of_symbol local:crc
+    t31 = load t30 : int32
+    t32 = mod t31, #256:int32 : int32
+    store t30, t32 : int32
+    jmp L7
   L2:
     t5 = addr_of_symbol global:data
     t6 = addr_of_symbol local:i
@@ -38,53 +50,44 @@
     store t11, t14 : int32
     t15 = addr_of_symbol local:bit
     store t15, #0:int32 : int32
-    jmp L4
+    jmp L5
   L3:
-    t39 = addr_of_symbol local:crc
-    t40 = load t39 : int32
-    ret t40
-  L4:
-    t16 = addr_of_symbol local:bit
-    t17 = load t16 : int32
-    t18 = cmp_lt t17, #8:int32 : bool
-    br t18, L5, L6
-  L5:
-    t19 = addr_of_symbol local:crc
-    t20 = load t19 : int32
-    t21 = mod t20, #2:int32 : int32
-
-    t22 = cmp_eq t21, #1:int32 : bool
-    br t22, L7, L8
-  L6:
     t36 = addr_of_symbol local:i
     t37 = load t36 : int32
     t38 = add t37, #1:int32 : int32
     store t36, t38 : int32
     jmp L1
+  L4:
+    t39 = addr_of_symbol local:crc
+    t40 = load t39 : int32
+    ret t40
+  L5:
+    t16 = addr_of_symbol local:bit
+    t17 = load t16 : int32
+    t18 = cmp_lt t17, #8:int32 : bool
+    br t18, L6, L8
+  L6:
+    t19 = addr_of_symbol local:crc
+    t20 = load t19 : int32
+    t21 = mod t20, #2:int32 : int32
+
+    t22 = cmp_eq t21, #1:int32 : bool
+    br t22, L9, L10
   L7:
+    t33 = addr_of_symbol local:bit
+    t34 = load t33 : int32
+    t35 = add t34, #1:int32 : int32
+    store t33, t35 : int32
+    jmp L5
+  L8:
+    jmp L3
+  L9:
     t23 = addr_of_symbol local:crc
     t24 = load t23 : int32
     t25 = div t24, #2:int32 : int32
     t26 = xor t25, #140:int32 : int32
     store t23, t26 : int32
-    jmp L9
-  L8:
-    t27 = addr_of_symbol local:crc
-    t28 = load t27 : int32
-    t29 = div t28, #2:int32 : int32
-    store t27, t29 : int32
-    jmp L9
-  L9:
-    t30 = addr_of_symbol local:crc
-    t31 = load t30 : int32
-    t32 = mod t31, #256:int32 : int32
-    store t30, t32 : int32
-
-    t33 = addr_of_symbol local:bit
-    t34 = load t33 : int32
-    t35 = add t34, #1:int32 : int32
-    store t33, t35 : int32
-    jmp L4
+    jmp L11
 .endfunc
 
 .endprogram

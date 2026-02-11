@@ -1,4 +1,5 @@
 .program
+
 .func main():int32
   .frame locals=0 bytes align=4
   .slots
@@ -8,8 +9,8 @@
     br t0, L1, L2
   L1:
     ret #123:int32
-
   L2:
     ret #21:int32
 .endfunc
+
 .endprogram

@@ -1,0 +1,31 @@
+.program
+
+.func f(z:int32, w:int32):int32
+  .frame locals=0 bytes align=4
+  .slots
+    param z@0:int32
+    param w@4:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:z
+    t1 = load t0 : int32
+    t2 = addr_of_symbol param:w
+    t3 = load t2 : int32
+    t4 = add t1, t3 : int32
+    ret t4
+.endfunc
+
+.func main():int32
+  .frame locals=4 bytes align=4
+  .slots
+    local x@0:int32
+  .blocks
+  L0:
+    t0 = call func:f(#10:int32, #20:int32) : int32
+    t1 = addr_of_symbol local:x
+    store t1, t0 : int32
+    t2 = load t1 : int32
+    ret t2
+.endfunc
+
+.endprogram

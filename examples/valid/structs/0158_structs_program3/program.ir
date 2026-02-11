@@ -22,11 +22,14 @@
     store t5, #4:int32 : int32
     t6 = addr_index t1, #4:int32, 4
     store t6, #5:int32 : int32
+
     t7 = load t2 : int32
     t8 = load t3 : int32
     t9 = add t7, t8 : int32
+
     t10 = load t4 : int32
     t11 = add t9, t10 : int32
+
     t12 = load t5 : int32
     t13 = add t11, t12 : int32
     t14 = load t6 : int32

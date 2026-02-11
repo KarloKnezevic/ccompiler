@@ -1,5 +1,7 @@
 package hr.fer.ppj.ir.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -41,6 +43,47 @@ public final class LiteralParser {
       }
     }
     return '\0';
+  }
+
+  /**
+   * Parses a string literal and returns its character sequence including
+   * the implicit trailing {@code '\0'} terminator.
+   *
+   * @param lexeme source string literal lexeme including quotes
+   * @return parsed characters with trailing null terminator
+   * @throws IllegalArgumentException when the literal is malformed
+   */
+  public static List<Character> parseStringLiteral(String lexeme) {
+    Objects.requireNonNull(lexeme, "lexeme must not be null");
+    if (lexeme.length() < 2 || !lexeme.startsWith("\"") || !lexeme.endsWith("\"")) {
+      throw new IllegalArgumentException("Invalid string literal: " + lexeme);
+    }
+
+    String content = lexeme.substring(1, lexeme.length() - 1);
+    List<Character> chars = new ArrayList<>();
+    for (int i = 0; i < content.length(); i++) {
+      char ch = content.charAt(i);
+      if (ch != '\\') {
+        chars.add(ch);
+        continue;
+      }
+      if (i + 1 >= content.length()) {
+        throw new IllegalArgumentException("Invalid escape sequence in string literal: " + lexeme);
+      }
+      i++;
+      char esc = content.charAt(i);
+      chars.add(switch (esc) {
+        case 'n' -> '\n';
+        case 't' -> '\t';
+        case '\\' -> '\\';
+        case '\'' -> '\'';
+        case '"' -> '"';
+        default -> throw new IllegalArgumentException(
+            "Unsupported escape sequence \\" + esc + " in string literal: " + lexeme);
+      });
+    }
+    chars.add('\0');
+    return chars;
   }
 
   /**
