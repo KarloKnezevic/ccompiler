@@ -139,17 +139,49 @@ print_warning() {
 
 check_jar_exists() {
     if [[ ! -f "$JAR_FILE" ]]; then
-        print_error "Compiler JAR file not found: $JAR_FILE"
+        print_warning "Compiler JAR not found: $JAR_FILE"
+        build_compiler_jar
+    fi
+}
+
+build_compiler_jar() {
+    print_info "Building compiler JAR (this may take a moment)..."
+    if ./build.sh; then
+        print_success "Compiler JAR is ready: $JAR_FILE"
+    else
+        print_error "Automatic build failed."
         echo ""
-        echo "The compiler must be built before it can be executed."
-        echo ""
-        echo "To build the compiler, run:"
+        echo "Run this command manually and retry:"
         echo -e "  ${CYAN}./build.sh${NC}"
         echo ""
-        echo "Or manually:"
-        echo -e "  ${CYAN}mvn clean package -DskipTests${NC}"
-        echo ""
         exit 2
+    fi
+}
+
+jar_is_stale() {
+    if [[ ! -f "$JAR_FILE" ]]; then
+        return 1
+    fi
+
+    local stale_source
+    stale_source=$(find \
+        cli compiler-lexer compiler-parser compiler-semantics compiler-ir compiler-codegen-frisc config \
+        -path "*/target/*" -prune -o \
+        -type f \( -name "*.java" -o -name "*.txt" -o -name "pom.xml" \) \
+        -newer "$JAR_FILE" -print -quit 2>/dev/null || true)
+
+    if [[ -n "$stale_source" ]]; then
+        print_info "Detected newer source/config file: $stale_source"
+        return 0
+    fi
+    return 1
+}
+
+ensure_jar_is_fresh() {
+    check_jar_exists
+    if jar_is_stale; then
+        print_info "Rebuilding compiler JAR because sources are newer than the current binary."
+        build_compiler_jar
     fi
 }
 
@@ -313,7 +345,7 @@ main() {
     
     # Check prerequisites
     check_java
-    check_jar_exists
+    ensure_jar_is_fresh
 
     # Script-level batch interpreter command.
     if [[ "${1:-}" == "--run-ir-all-real-world" ]]; then

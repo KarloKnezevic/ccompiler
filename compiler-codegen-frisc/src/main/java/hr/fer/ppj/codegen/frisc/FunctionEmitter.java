@@ -70,9 +70,15 @@ final class FunctionEmitter {
     int tempCount = analysis.tempAnalysis().maxTempIndex() + 1;
     int argScratchCount = analysis.tempAnalysis().maxCallArgs();
 
+    int localsAreaSize = function.localsBytes();
+    if (tempCount > 0 || argScratchCount > 0) {
+      // Word temps/arg-scratch must start below the byte-oriented local zone.
+      // Without this padding, byte stores into trailing locals can clobber temp words.
+      localsAreaSize = LoweringSupport.alignTo(function.localsBytes() + 3, 4);
+    }
     int tempAreaSize = tempCount * 4;
     int argScratchSize = argScratchCount * 4;
-    int frameSize = LoweringSupport.alignTo(function.localsBytes() + tempAreaSize + argScratchSize, 4);
+    int frameSize = LoweringSupport.alignTo(localsAreaSize + tempAreaSize + argScratchSize, 4);
 
     FunctionContext ctx = new FunctionContext(
         function,
@@ -86,7 +92,7 @@ final class FunctionEmitter {
         addrIndexNeedsCheck,
         analysis.tempAnalysis().tempTypes(),
         frameSize,
-        function.localsBytes(),
+        localsAreaSize,
         tempCount,
         argScratchCount,
         exitLabel,

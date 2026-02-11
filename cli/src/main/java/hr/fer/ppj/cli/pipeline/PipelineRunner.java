@@ -3,7 +3,9 @@ package hr.fer.ppj.cli.pipeline;
 import hr.fer.ppj.cli.FriscRunner;
 import hr.fer.ppj.cli.io.BinDirectoryManager;
 import hr.fer.ppj.cli.io.CompilerBinLayout;
+import hr.fer.ppj.cli.io.IrOutputWriter;
 import hr.fer.ppj.cli.io.LexerOutputWriter;
+import hr.fer.ppj.cli.io.SemanticOutputWriter;
 import hr.fer.ppj.cli.reporting.CollectingReporter;
 import hr.fer.ppj.cli.reporting.ConsoleReporter;
 import hr.fer.ppj.codegen.frisc.FriscCodeGenerator;
@@ -21,14 +23,14 @@ import hr.fer.ppj.parser.io.TokenReader;
 import hr.fer.ppj.parser.tree.ParseTree;
 import hr.fer.ppj.semantics.analysis.SemanticAnalyzer;
 import hr.fer.ppj.semantics.errors.SemanticException;
-import hr.fer.ppj.semantics.io.SemanticReport;
 import java.io.FileReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,23 +39,37 @@ import java.util.List;
  */
 public final class PipelineRunner {
 
+  private static final DateTimeFormatter TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
   private final ConsoleReporter reporter;
   private final BinDirectoryManager binManager;
   private final LexerOutputWriter lexerOutputWriter;
+  private final SemanticOutputWriter semanticOutputWriter;
+  private final IrOutputWriter irOutputWriter;
   private final IrPointerValidator pointerValidator;
 
   public PipelineRunner(ConsoleReporter reporter) {
-    this(reporter, new BinDirectoryManager(), new LexerOutputWriter(), new IrPointerValidator());
+    this(
+        reporter,
+        new BinDirectoryManager(),
+        new LexerOutputWriter(),
+        new SemanticOutputWriter(),
+        new IrOutputWriter(),
+        new IrPointerValidator());
   }
 
   PipelineRunner(
       ConsoleReporter reporter,
       BinDirectoryManager binManager,
       LexerOutputWriter lexerOutputWriter,
+      SemanticOutputWriter semanticOutputWriter,
+      IrOutputWriter irOutputWriter,
       IrPointerValidator pointerValidator) {
     this.reporter = reporter;
     this.binManager = binManager;
     this.lexerOutputWriter = lexerOutputWriter;
+    this.semanticOutputWriter = semanticOutputWriter;
+    this.irOutputWriter = irOutputWriter;
     this.pointerValidator = pointerValidator;
   }
 
@@ -64,8 +80,15 @@ public final class PipelineRunner {
     try {
       binManager.prepare(outputDir);
     } catch (Exception ex) {
-      reporter.stageFailed(PipelineStage.LEX, Duration.ZERO, "Failed to prepare output directory",
-          List.of(ex.getMessage()), "Check output directory permissions");
+      reporter.stageFailed(
+          PipelineStage.LEX,
+          Duration.ZERO,
+          "Failed to prepare output directory",
+          List.of(ex.getMessage()),
+          "Expected a writable output directory.");
+      writeErrorsFile(layout, sourceFile, PipelineStage.LEX,
+          new StageFailure("Failed to prepare output directory", ex, List.of(ex.getMessage()),
+              "Expected a writable output directory."));
       return false;
     }
 
@@ -86,6 +109,8 @@ public final class PipelineRunner {
       } catch (StageFailure failure) {
         Duration elapsed = Duration.between(start, Instant.now());
         reporter.stageFailed(stage, elapsed, failure.getMessage(), failure.details(), failure.hint());
+        writeErrorsFile(layout, sourceFile, stage, failure);
+        reporter.printErrorArtifact(layout.errorsFile());
         return false;
       }
       index++;
@@ -114,19 +139,21 @@ public final class PipelineRunner {
       }
 
       Lexer lexer = new Lexer(result);
-      CollectingReporter reporter = new CollectingReporter();
+      CollectingReporter diagnosticReporter = new CollectingReporter();
       List<Token> tokens;
-      try (Reader reader = Files.newBufferedReader(context.sourceFile(), StandardCharsets.UTF_8)) {
-        tokens = lexer.tokenize(reader, reporter);
+      try (Reader reader = java.nio.file.Files.newBufferedReader(context.sourceFile(), StandardCharsets.UTF_8)) {
+        tokens = lexer.tokenize(reader, diagnosticReporter);
       }
 
-      if (reporter.hasErrors()) {
-        throw new StageFailure("Lexical analysis failed", formatDiagnostics(reporter.getDiagnostics()),
-            "Check leksicke_jedinke.txt for token stream details");
+      if (diagnosticReporter.hasErrors()) {
+        throw new StageFailure(
+            "Lexical analysis failed",
+            formatDiagnostics(diagnosticReporter.getDiagnostics()),
+            "Expected a source file that conforms to lexer token definitions.");
       }
 
       List<Lexer.SymbolTableEntry> symbolTable = lexer.getSymbolTable();
-      lexerOutputWriter.write(context.layout().lexerOutput(), symbolTable, tokens);
+      lexerOutputWriter.write(context.layout().tokensFile(), symbolTable, tokens);
 
       context.tokens(tokens);
       context.symbolTable(symbolTable);
@@ -135,8 +162,11 @@ public final class PipelineRunner {
     } catch (StageFailure failure) {
       throw failure;
     } catch (Exception ex) {
-      throw new StageFailure("Lexical analysis failed", ex, List.of(ex.getMessage()),
-          "Verify the lexer definition and input file");
+      throw new StageFailure(
+          "Lexical analysis failed",
+          ex,
+          List.of(ex.getMessage()),
+          "Expected valid lexer configuration and readable source input.");
     }
   }
 
@@ -147,55 +177,68 @@ public final class PipelineRunner {
         parserTokens.add(new TokenReader.Token(token.type(), token.line(), token.value()));
       }
 
-      CollectingReporter reporter = new CollectingReporter();
+      CollectingReporter diagnosticReporter = new CollectingReporter();
       Parser parser = new Parser();
-      ParseTree parseTree = parser.parseTokens(parserTokens, reporter);
+      ParseTree parseTree = parser.parseTokens(parserTokens, diagnosticReporter);
 
-      if (reporter.hasErrors()) {
-        throw new StageFailure("Parsing failed", formatDiagnostics(reporter.getDiagnostics()),
-            "See sintaksno_stablo.txt for parser output");
+      if (diagnosticReporter.hasErrors()) {
+        throw new StageFailure(
+            "Parsing failed",
+            formatDiagnostics(diagnosticReporter.getDiagnostics()),
+            "Expected token sequence that matches parser grammar.");
       }
 
-      Files.writeString(context.layout().generativeTree(), parseTree.toGenerativeTreeString(), StandardCharsets.UTF_8);
-      Files.writeString(context.layout().syntaxTree(), parseTree.toSyntaxTreeString(), StandardCharsets.UTF_8);
-
+      java.nio.file.Files.writeString(context.layout().astFile(), parseTree.toSyntaxTreeString(), StandardCharsets.UTF_8);
       context.parseTree(parseTree);
       return StageArtifacts.of(context.layout().artifactsForStage(PipelineStage.PARSE));
     } catch (StageFailure failure) {
-      writeParseError(context);
       throw failure;
     } catch (Parser.ParserException ex) {
-      writeParseError(context, ex.getMessage());
-      throw new StageFailure("Parsing failed", ex, List.of(ex.getMessage()),
-          "Check syntax tree outputs for details");
+      throw new StageFailure(
+          "Parsing failed",
+          ex,
+          List.of(ex.getMessage()),
+          "Expected source syntax compatible with parser grammar.");
     } catch (Exception ex) {
-      writeParseError(context, ex.getMessage());
-      throw new StageFailure("Parsing failed", ex, List.of(ex.getMessage()),
-          "Verify the parser definition and token stream");
+      throw new StageFailure(
+          "Parsing failed",
+          ex,
+          List.of(ex.getMessage()),
+          "Expected source syntax compatible with parser grammar.");
     }
   }
 
   private StageArtifacts runSemantic(PipelineContext context) throws StageFailure {
     try {
-      CollectingReporter reporter = new CollectingReporter();
+      CollectingReporter diagnosticReporter = new CollectingReporter();
       SemanticAnalyzer analyzer = new SemanticAnalyzer();
-      SemanticReport report = new SemanticReport(context.layout().outputDir());
       SemanticAnalyzer.SemanticAnalysisResult result =
-          analyzer.analyzeWithResults(context.parseTree(), reporter, report);
+          analyzer.analyzeWithResults(context.parseTree(), diagnosticReporter, null);
 
-      if (reporter.hasErrors()) {
-        throw new StageFailure("Semantic analysis failed", formatDiagnostics(reporter.getDiagnostics()),
-            "Review tablica_simbola.txt and semanticko_stablo.txt");
+      if (diagnosticReporter.hasErrors()) {
+        throw new StageFailure(
+            "Semantic analysis failed",
+            formatDiagnostics(diagnosticReporter.getDiagnostics()),
+            "Expected type-correct program according to semantic rules.");
       }
 
+      semanticOutputWriter.write(context.layout().semanticFile(), result.globalScope(), result.parseTree());
       context.semanticResult(result);
       return StageArtifacts.of(context.layout().artifactsForStage(PipelineStage.SEMANTIC));
+    } catch (StageFailure failure) {
+      throw failure;
     } catch (SemanticException ex) {
-      throw new StageFailure("Semantic analysis failed", ex, List.of(ex.getMessage()),
-          "Review semanticko_stablo.txt for context");
+      throw new StageFailure(
+          "Semantic analysis failed",
+          ex,
+          List.of(ex.getMessage()),
+          "Expected declarations, types, and expressions to satisfy semantic constraints.");
     } catch (Exception ex) {
-      throw new StageFailure("Semantic analysis failed", ex, List.of(ex.getMessage()),
-          "Check semantic rules and input program");
+      throw new StageFailure(
+          "Semantic analysis failed",
+          ex,
+          List.of(ex.getMessage()),
+          "Expected declarations, types, and expressions to satisfy semantic constraints.");
     }
   }
 
@@ -206,18 +249,23 @@ public final class PipelineRunner {
           context.semanticResult().parseTree());
       String irText = IrPipeline.print(program);
       pointerValidator.validate(irText);
-      Files.writeString(context.layout().irFile(), irText, StandardCharsets.UTF_8);
+      irOutputWriter.write(context.layout().irFile(), irText, context.sourceFile());
 
       context.irProgram(program);
       context.irText(irText);
 
       return StageArtifacts.of(context.layout().artifactsForStage(PipelineStage.IR));
     } catch (IrCompilationException ex) {
-      throw new StageFailure("IR generation failed", formatIrDiagnostics(ex),
-          "Check medukod.ir for partial output if available");
+      throw new StageFailure(
+          "IR generation failed",
+          formatIrDiagnostics(ex),
+          "Expected semantically valid program to lower into typed IR.");
     } catch (Exception ex) {
-      throw new StageFailure("IR generation failed", ex, List.of(ex.getMessage()),
-          "Verify semantic analysis output and IR generation rules");
+      throw new StageFailure(
+          "IR generation failed",
+          ex,
+          List.of(ex.getMessage()),
+          "Expected semantically valid program to lower into typed IR.");
     }
   }
 
@@ -229,8 +277,11 @@ public final class PipelineRunner {
       context.friscFile(friscFile);
       return StageArtifacts.of(context.layout().artifactsForStage(PipelineStage.FRISC));
     } catch (Exception ex) {
-      throw new StageFailure("FRISC code generation failed", ex, List.of(ex.getMessage()),
-          "Review IR input and code generator diagnostics");
+      throw new StageFailure(
+          "FRISC code generation failed",
+          ex,
+          List.of(ex.getMessage()),
+          "Expected typed IR compatible with FRISC backend lowering rules.");
     }
   }
 
@@ -242,30 +293,70 @@ public final class PipelineRunner {
         List<String> details = new ArrayList<>();
         details.add("Simulator output:");
         details.addAll(splitLines(result.output()));
-        throw new StageFailure("FRISC execution failed: " + result.errorMessage(), details,
-            "Ensure a.frisc is valid and the simulator is available");
+        throw new StageFailure(
+            "FRISC execution failed: " + result.errorMessage(),
+            details,
+            "Expected executable FRISC program in a.out and available simulator runtime.");
       }
       return StageArtifacts.withOutput(List.of(), result.output());
     } catch (StageFailure failure) {
       throw failure;
     } catch (Exception ex) {
-      throw new StageFailure("FRISC execution failed", ex, List.of(ex.getMessage()),
-          "Ensure the FRISC simulator is installed in node_modules");
+      throw new StageFailure(
+          "FRISC execution failed",
+          ex,
+          List.of(ex.getMessage()),
+          "Expected available FRISC simulator runtime in node_modules.");
     }
   }
 
-  private void writeParseError(PipelineContext context) {
-    writeParseError(context, "Unknown parse error");
-  }
-
-  private void writeParseError(PipelineContext context, String message) {
+  private void writeErrorsFile(
+      CompilerBinLayout layout,
+      Path sourceFile,
+      PipelineStage stage,
+      StageFailure failure) {
+    String report = formatErrorReport(sourceFile, stage, failure);
     try {
-      String output = "Parse error: " + message;
-      Files.writeString(context.layout().generativeTree(), output, StandardCharsets.UTF_8);
-      Files.writeString(context.layout().syntaxTree(), output, StandardCharsets.UTF_8);
-    } catch (Exception ignored) {
-      // Ignore secondary failures
+      binManager.replaceWithSingleFile(layout.outputDir(), layout.errorsFile(), report);
+    } catch (Exception ex) {
+      System.err.println("Failed to write " + layout.errorsFile().toAbsolutePath().normalize() + ": " + ex.getMessage());
     }
+  }
+
+  private String formatErrorReport(Path sourceFile, PipelineStage stage, StageFailure failure) {
+    StringBuilder sb = new StringBuilder(4096);
+    sb.append("COMPILATION FAILURE REPORT\n");
+    sb.append("==========================\n\n");
+    sb.append("Timestamp\n");
+    sb.append("- ").append(LocalDateTime.now().format(TIMESTAMP_FORMAT)).append('\n');
+    sb.append("Source File\n");
+    sb.append("- ").append(sourceFile.toAbsolutePath().normalize()).append('\n');
+    sb.append("Failure Phase\n");
+    sb.append("- ").append(stage.displayName()).append('\n');
+    sb.append("What Broke\n");
+    sb.append("- ").append(failure.getMessage()).append("\n\n");
+
+    if (!failure.details().isEmpty()) {
+      sb.append("Diagnostics\n");
+      for (String detail : failure.details()) {
+        sb.append("- ").append(detail).append('\n');
+      }
+      sb.append('\n');
+    }
+
+    if (failure.hint() != null && !failure.hint().isBlank()) {
+      sb.append("Expected\n");
+      sb.append("- ").append(failure.hint()).append('\n');
+    }
+
+    Throwable cause = failure.getCause();
+    if (cause != null && cause.getMessage() != null && !cause.getMessage().isBlank()) {
+      sb.append('\n');
+      sb.append("Root Cause\n");
+      sb.append("- ").append(cause.getMessage()).append('\n');
+    }
+
+    return sb.toString();
   }
 
   private List<String> formatDiagnostics(List<Diagnostic> diagnostics) {

@@ -23,7 +23,7 @@ final class IrLineCursor {
     int i = index;
     while (i < lines.size()) {
       String line = lines.get(i).trim();
-      if (!line.isEmpty()) {
+      if (!line.isEmpty() && !isComment(line)) {
         return line;
       }
       i++;
@@ -34,11 +34,15 @@ final class IrLineCursor {
   String nextNonEmptyLine() {
     while (index < lines.size()) {
       String line = lines.get(index++).trim();
-      if (!line.isEmpty()) {
+      if (!line.isEmpty() && !isComment(line)) {
         return line;
       }
     }
     return null;
+  }
+
+  private static boolean isComment(String line) {
+    return line.startsWith(";");
   }
 
   private static List<String> readLines(String text) {

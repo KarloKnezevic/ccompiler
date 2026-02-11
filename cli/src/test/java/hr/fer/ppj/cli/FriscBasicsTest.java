@@ -1,6 +1,6 @@
 package hr.fer.ppj.cli;
 
-import hr.fer.ppj.cli.pipeline.CompilationPipeline;
+import hr.fer.ppj.cli.support.TestCompilationPipeline;
 import hr.fer.ppj.codegen.frisc.FriscCodeGenerator;
 import hr.fer.ppj.codegen.frisc.ir.IrTextParser;
 import hr.fer.ppj.cli.ir.IrInterpreter;
@@ -44,7 +44,7 @@ public class FriscBasicsTest {
           .collect(Collectors.toList());
     }
 
-    CompilationPipeline pipeline = new CompilationPipeline();
+    TestCompilationPipeline pipeline = new TestCompilationPipeline();
     FriscCodeGenerator codegen = new FriscCodeGenerator();
     FriscRunner runner = new FriscRunner(root);
 
@@ -73,16 +73,16 @@ public class FriscBasicsTest {
         continue;
       }
 
-      CompilationPipeline.CompilationResult result = pipeline.compile(sourceFile);
-      Files.writeString(outputDir.resolve("medukod.ir"), result.irString(), StandardCharsets.UTF_8);
+      TestCompilationPipeline.CompilationResult result = pipeline.compile(sourceFile);
+      Files.writeString(outputDir.resolve("intermediate.ir"), result.irString(), StandardCharsets.UTF_8);
 
-      Path friscFile = outputDir.resolve("a.frisc");
+      Path friscFile = outputDir.resolve("a.out");
       codegen.generate(result.irString(), friscFile, sourceFile.getFileName().toString());
 
       FriscRunner.Result run = runner.run(friscFile);
       if (!run.success()) {
         System.err.println("FRISC simulator failed for " + dir.getFileName());
-        System.err.println("a.frisc: " + friscFile.toAbsolutePath());
+        System.err.println("a.out: " + friscFile.toAbsolutePath());
         System.err.println("Simulator output:\n" + run.output());
         fail("Simulator failed: " + run.errorMessage());
       }

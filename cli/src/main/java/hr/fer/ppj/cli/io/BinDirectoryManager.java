@@ -1,6 +1,7 @@
 package hr.fer.ppj.cli.io;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -10,7 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Manages compiler-bin cleanup and creation.
+ * Manages output directory cleanup and creation.
  */
 public final class BinDirectoryManager {
 
@@ -18,6 +19,16 @@ public final class BinDirectoryManager {
     Objects.requireNonNull(outputDir, "outputDir must not be null");
     clearDirectory(outputDir);
     Files.createDirectories(outputDir);
+  }
+
+  public void replaceWithSingleFile(Path outputDir, Path outputFile, String content) throws IOException {
+    Objects.requireNonNull(outputDir, "outputDir must not be null");
+    Objects.requireNonNull(outputFile, "outputFile must not be null");
+    Objects.requireNonNull(content, "content must not be null");
+
+    clearDirectory(outputDir);
+    Files.createDirectories(outputDir);
+    Files.writeString(outputFile, content, StandardCharsets.UTF_8);
   }
 
   private void clearDirectory(Path outputDir) throws IOException {

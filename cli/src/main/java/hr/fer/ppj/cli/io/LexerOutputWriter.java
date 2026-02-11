@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Writes lexer output in the expected compiler-bin format.
+ * Writes lexical analysis output in a stable, human-readable format.
  */
 public final class LexerOutputWriter {
 
@@ -18,18 +18,23 @@ public final class LexerOutputWriter {
     Objects.requireNonNull(symbolTable, "symbolTable must not be null");
     Objects.requireNonNull(tokens, "tokens must not be null");
 
-    StringBuilder sb = new StringBuilder();
-    sb.append("tablica znakova:\n");
-    sb.append("indeks   uniformni znak   izvorni tekst\n");
+    StringBuilder sb = new StringBuilder(4096);
+    sb.append("LEXER OUTPUT\n");
+    sb.append("============\n\n");
+
+    sb.append("Token Table\n");
+    sb.append("-----------\n");
+    sb.append(String.format("%-8s %-24s %s%n", "Index", "Token Name", "Token Value"));
     for (int i = 0; i < symbolTable.size(); i++) {
       Lexer.SymbolTableEntry entry = symbolTable.get(i);
-      sb.append(String.format("     %d   %-18s %s%n", i, entry.token(), entry.text()));
+      sb.append(String.format("%-8d %-24s %s%n", i, entry.token(), entry.text()));
     }
 
-    sb.append("\nniz uniformnih znakova:\n");
-    sb.append("uniformni znak    redak    indeks u tablicu znakova\n");
+    sb.append("\nUniform Token Stream\n");
+    sb.append("--------------------\n");
+    sb.append(String.format("%-24s %-12s %s%n", "Token Name", "Source Row", "Token Table Index"));
     for (Token token : tokens) {
-      sb.append(String.format("%-18s %5d       %d%n",
+      sb.append(String.format("%-24s %-12d %d%n",
           token.type(),
           token.line(),
           token.symbolTableIndex()));

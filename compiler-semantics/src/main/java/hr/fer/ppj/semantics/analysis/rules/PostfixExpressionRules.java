@@ -147,13 +147,18 @@ final class PostfixExpressionRules {
     
     // Process argument list if present
     List<Type> arguments = List.of();
+    List<NonTerminalNode> argumentExprs = List.of();
     if (children.size() == 4) {
       // Arguments present: <postfiks_izraz> L_ZAGRADA <lista_argumenata> D_ZAGRADA
       NonTerminalNode list = NodeUtils.asNonTerminal(children.get(2));
       checker.visitNonTerminal(list);
       arguments = list.attributes().parameterTypes();
+      argumentExprs = collectArgumentExpressions(list);
     }
     // Otherwise: <postfiks_izraz> L_ZAGRADA D_ZAGRADA (no arguments)
+    else {
+      argumentExprs = List.of();
+    }
     
     // Validate argument count matches parameter count
     List<Type> params = functionType.parameterTypes();
@@ -163,6 +168,11 @@ final class PostfixExpressionRules {
     // Validate each argument type is assignable to corresponding parameter type
     // This allows implicit conversions (e.g., char -> int, int -> float)
     for (int i = 0; i < params.size(); i++) {
+      if (isIntegerToPointerAssignment(arguments.get(i), params.get(i))
+          && (i >= argumentExprs.size() || !isNullPointerConstantExpression(argumentExprs.get(i)))) {
+        checker.fail(node);
+        return;
+      }
       checker.ensureAssignable(arguments.get(i), params.get(i), node);
     }
     
@@ -172,6 +182,140 @@ final class PostfixExpressionRules {
     node.attributes().lValue(false);
     node.attributes().stringLiteral(false);
     node.attributes().stringLiteralLength(0);
+  }
+
+  private List<NonTerminalNode> collectArgumentExpressions(NonTerminalNode listNode) {
+    var children = listNode.children();
+    if (children.size() == 1) {
+      return List.of(NodeUtils.asNonTerminal(children.get(0)));
+    }
+    if (children.size() == 3) {
+      List<NonTerminalNode> result = new java.util.ArrayList<>(collectArgumentExpressions(
+          NodeUtils.asNonTerminal(children.get(0))));
+      result.add(NodeUtils.asNonTerminal(children.get(2)));
+      return result;
+    }
+    return List.of();
+  }
+
+  private boolean isIntegerToPointerAssignment(Type source, Type target) {
+    Type sourceStripped = TypeSystem.stripConst(source);
+    Type targetStripped = TypeSystem.stripConst(target);
+    return sourceStripped == hr.fer.ppj.semantics.types.PrimitiveType.INT
+        && targetStripped instanceof PointerType;
+  }
+
+  private boolean isNullPointerConstantExpression(NonTerminalNode expr) {
+    Integer value = evaluateIntegerConstant(expr);
+    return value != null && value == 0;
+  }
+
+  private Integer evaluateIntegerConstant(NonTerminalNode node) {
+    var children = node.children();
+    String symbol = node.symbol();
+
+    if ("<primarni_izraz>".equals(symbol)) {
+      if (children.size() == 1 && children.get(0) instanceof TerminalNode term) {
+        if ("BROJ".equals(term.symbol())) {
+          try {
+            return (int) checker.parseIntegerLiteral(term.lexeme(), node);
+          } catch (RuntimeException ex) {
+            return null;
+          }
+        }
+        return null;
+      }
+      if (children.size() == 3 && children.get(1) instanceof NonTerminalNode nested) {
+        return evaluateIntegerConstant(nested);
+      }
+      return null;
+    }
+
+    if ("<cast_izraz>".equals(symbol)) {
+      if (children.size() == 1 && children.get(0) instanceof NonTerminalNode child) {
+        return evaluateIntegerConstant(child);
+      }
+      if (children.size() == 4 && children.get(3) instanceof NonTerminalNode castExpr) {
+        return evaluateIntegerConstant(castExpr);
+      }
+      return null;
+    }
+
+    if ("<unarni_izraz>".equals(symbol)) {
+      if (children.size() == 1 && children.get(0) instanceof NonTerminalNode child) {
+        return evaluateIntegerConstant(child);
+      }
+      if (children.size() == 2 && children.get(0) instanceof TerminalNode opTerm
+          && children.get(1) instanceof NonTerminalNode operand) {
+        Integer operandValue = evaluateIntegerConstant(operand);
+        if (operandValue == null) {
+          return null;
+        }
+        return switch (opTerm.symbol()) {
+          case "PLUS" -> operandValue;
+          case "MINUS" -> -operandValue;
+          default -> null;
+        };
+      }
+      return null;
+    }
+
+    if (children.size() == 1 && children.get(0) instanceof NonTerminalNode child) {
+      return evaluateIntegerConstant(child);
+    }
+
+    if (children.size() == 3
+        && children.get(0) instanceof NonTerminalNode leftNode
+        && children.get(1) instanceof TerminalNode op
+        && children.get(2) instanceof NonTerminalNode rightNode) {
+      Integer left = evaluateIntegerConstant(leftNode);
+      Integer right = evaluateIntegerConstant(rightNode);
+      if (left == null || right == null) {
+        return null;
+      }
+      return applyIntegerOperator(left, right, op.symbol(), op.lexeme());
+    }
+    return null;
+  }
+
+  private Integer applyIntegerOperator(int left, int right, String opSymbol, String opLexeme) {
+    return switch (opLexeme) {
+      case "+" -> left + right;
+      case "-" -> left - right;
+      case "*" -> left * right;
+      case "/" -> right == 0 ? null : left / right;
+      case "%" -> right == 0 ? null : left % right;
+      case "==" -> left == right ? 1 : 0;
+      case "!=" -> left != right ? 1 : 0;
+      case "<" -> left < right ? 1 : 0;
+      case "<=" -> left <= right ? 1 : 0;
+      case ">" -> left > right ? 1 : 0;
+      case ">=" -> left >= right ? 1 : 0;
+      case "&" -> left & right;
+      case "|" -> left | right;
+      case "^" -> left ^ right;
+      case "&&" -> (left != 0 && right != 0) ? 1 : 0;
+      case "||" -> (left != 0 || right != 0) ? 1 : 0;
+      default -> switch (opSymbol) {
+        case "PLUS" -> left + right;
+        case "MINUS" -> left - right;
+        case "ASTERISK" -> left * right;
+        case "OP_DIJELI" -> right == 0 ? null : left / right;
+        case "OP_MOD" -> right == 0 ? null : left % right;
+        case "OP_EQ" -> left == right ? 1 : 0;
+        case "OP_NEQ" -> left != right ? 1 : 0;
+        case "OP_LT" -> left < right ? 1 : 0;
+        case "OP_LTE" -> left <= right ? 1 : 0;
+        case "OP_GT" -> left > right ? 1 : 0;
+        case "OP_GTE" -> left >= right ? 1 : 0;
+        case "OP_BIN_I" -> left & right;
+        case "OP_BIN_ILI" -> left | right;
+        case "OP_BIN_XILI" -> left ^ right;
+        case "OP_I" -> (left != 0 && right != 0) ? 1 : 0;
+        case "OP_ILI" -> (left != 0 || right != 0) ? 1 : 0;
+        default -> null;
+      };
+    };
   }
   
   /**
@@ -252,4 +396,3 @@ final class PostfixExpressionRules {
     node.attributes().stringLiteralLength(0);
   }
 }
-

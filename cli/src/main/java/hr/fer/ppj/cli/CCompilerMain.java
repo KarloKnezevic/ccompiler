@@ -7,6 +7,7 @@ import hr.fer.ppj.cli.ir.IrExecutionResult;
 import hr.fer.ppj.cli.ir.IrInterpreterOptions;
 import hr.fer.ppj.cli.pipeline.PipelinePlan;
 import hr.fer.ppj.cli.pipeline.PipelineRunner;
+import hr.fer.ppj.cli.reporting.CliLoggingConfigurer;
 import hr.fer.ppj.cli.reporting.ConsoleReporter;
 import hr.fer.ppj.cli.reporting.HelpPrinter;
 
@@ -19,6 +20,7 @@ public final class CCompilerMain {
   }
 
   public static void main(String[] args) {
+    CliLoggingConfigurer.configure();
     ConsoleReporter reporter = new ConsoleReporter();
     ArgumentParser parser = new ArgumentParser();
     ArgumentParser.ParseResult parseResult = parser.parse(args);

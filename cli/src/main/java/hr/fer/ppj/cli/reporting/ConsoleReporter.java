@@ -71,6 +71,11 @@ public final class ConsoleReporter {
     err.println();
   }
 
+  public void printErrorArtifact(Path errorFile) {
+    err.println("Error report: " + errorFile.toAbsolutePath().normalize());
+    err.println();
+  }
+
   public void printRuntimeOutput(String output) {
     out.println("Program output:");
     if (output == null || output.isBlank()) {

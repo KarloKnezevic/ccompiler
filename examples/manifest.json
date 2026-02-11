@@ -3047,13 +3047,17 @@
   },
   {
     "id": "0249",
-    "path": "valid/control_flow/0249_sema_other_program85",
-    "valid": true,
-    "category": "control_flow",
+    "path": "invalid/sema_other/0249_sema_other_program85",
+    "valid": false,
+    "category": "sema_other",
     "tags": [
       "sema_other"
     ],
-    "expected": {}
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
   },
   {
     "id": "0250",
@@ -3167,13 +3171,17 @@
   },
   {
     "id": "0258",
-    "path": "valid/control_flow/0258_sema_other_program76",
-    "valid": true,
-    "category": "control_flow",
+    "path": "invalid/sema_other/0258_sema_other_program76",
+    "valid": false,
+    "category": "sema_other",
     "tags": [
       "sema_other"
     ],
-    "expected": {}
+    "expected": {
+      "error": {
+        "pattern": "error"
+      }
+    }
   },
   {
     "id": "0259",

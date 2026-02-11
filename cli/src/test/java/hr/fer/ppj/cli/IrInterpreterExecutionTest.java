@@ -2,7 +2,7 @@ package hr.fer.ppj.cli;
 
 import hr.fer.ppj.cli.ir.IrInterpreter;
 import hr.fer.ppj.cli.ir.IrInterpreterOptions;
-import hr.fer.ppj.cli.pipeline.CompilationPipeline;
+import hr.fer.ppj.cli.support.TestCompilationPipeline;
 import hr.fer.ppj.codegen.frisc.FriscCodeGenerator;
 import hr.fer.ppj.codegen.frisc.ir.IrTextParser;
 import hr.fer.ppj.ir.IrPipeline;
@@ -56,13 +56,13 @@ class IrInterpreterExecutionTest {
         "");
     Files.writeString(sourceFile, source, StandardCharsets.UTF_8);
 
-    CompilationPipeline pipeline = new CompilationPipeline();
-    CompilationPipeline.CompilationResult result = pipeline.compile(sourceFile);
+    TestCompilationPipeline pipeline = new TestCompilationPipeline();
+    TestCompilationPipeline.CompilationResult result = pipeline.compile(sourceFile);
 
     IrPipeline.verify(result.irProgram());
     assertTrue(result.irString().contains("#42:int32"), "IR should canonicalize hex literal to decimal");
 
-    Path friscFile = tempDir.resolve("a.frisc");
+    Path friscFile = tempDir.resolve("a.out");
     new FriscCodeGenerator().generate(result.irString(), friscFile, sourceFile.getFileName().toString());
 
     FriscRunner.Result runResult = new FriscRunner(root).run(friscFile);
