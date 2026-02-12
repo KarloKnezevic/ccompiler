@@ -1,6 +1,7 @@
 package hr.fer.ppj.cli.pipeline;
 
 import hr.fer.ppj.cli.args.CliOptions;
+import hr.fer.ppj.opt.api.OptimizationLevel;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -9,10 +10,14 @@ import java.util.Objects;
 /**
  * Resolved pipeline plan based on requested stages.
  */
-public record PipelinePlan(List<PipelineStage> stages) {
+public record PipelinePlan(
+    List<PipelineStage> stages,
+    OptimizationLevel optimizationLevel,
+    boolean dumpIr) {
 
   public PipelinePlan {
     Objects.requireNonNull(stages, "stages must not be null");
+    Objects.requireNonNull(optimizationLevel, "optimizationLevel must not be null");
   }
 
   public static PipelinePlan from(CliOptions options) {
@@ -48,6 +53,6 @@ public record PipelinePlan(List<PipelineStage> stages) {
       planStages.add(PipelineStage.RUN);
     }
 
-    return new PipelinePlan(List.copyOf(planStages));
+    return new PipelinePlan(List.copyOf(planStages), options.optimizationLevel(), options.dumpIr());
   }
 }

@@ -2,6 +2,7 @@ package hr.fer.ppj.cli.args;
 
 import hr.fer.ppj.cli.pipeline.PipelineStage;
 import hr.fer.ppj.cli.ir.IrInterpreterOptions;
+import hr.fer.ppj.opt.api.OptimizationLevel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.EnumSet;
@@ -34,6 +35,8 @@ public final class ArgumentParser {
     Path sourceFile = null;
     boolean help = false;
     boolean runAll = false;
+    boolean dumpIr = false;
+    OptimizationLevel optimizationLevel = OptimizationLevel.O0;
 
     for (int i = 0; i < args.length; i++) {
       String arg = args[i];
@@ -50,6 +53,9 @@ public final class ArgumentParser {
         case "--frisc" -> stages.add(PipelineStage.FRISC);
         case "--run" -> stages.add(PipelineStage.RUN);
         case "--all" -> runAll = true;
+        case "--O0" -> optimizationLevel = OptimizationLevel.O0;
+        case "--O1" -> optimizationLevel = OptimizationLevel.O1;
+        case "--dump-ir" -> dumpIr = true;
         case "--bin" -> {
           if (i + 1 >= args.length) {
             return new ParseResult(null, "--bin requires a directory argument");
@@ -77,7 +83,9 @@ public final class ArgumentParser {
         false,
         null,
         IrInterpreterOptions.DEFAULT_STEP_LIMIT,
-        false);
+        false,
+        optimizationLevel,
+        dumpIr);
 
     if (help) {
       return new ParseResult(options, null);
@@ -145,7 +153,9 @@ public final class ArgumentParser {
         true,
         irFile,
         stepLimit,
-        trace);
+        trace,
+        OptimizationLevel.O0,
+        false);
     return new ParseResult(options, null);
   }
 }

@@ -3,6 +3,7 @@ package hr.fer.ppj.cli;
 import hr.fer.ppj.cli.args.ArgumentParser;
 import hr.fer.ppj.cli.args.CliOptions;
 import hr.fer.ppj.cli.pipeline.PipelineStage;
+import hr.fer.ppj.opt.api.OptimizationLevel;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,7 +31,8 @@ class ArgumentParserTest {
   @Test
   void parsesCompilationFlags() {
     ArgumentParser parser = new ArgumentParser();
-    ArgumentParser.ParseResult result = parser.parse(new String[] {"--frisc", "program.c"});
+    ArgumentParser.ParseResult result =
+        parser.parse(new String[] {"--frisc", "--O1", "--dump-ir", "program.c"});
 
     assertTrue(result.success());
     CliOptions options = result.options();
@@ -38,5 +40,7 @@ class ArgumentParserTest {
     assertFalse(options.runIrCommand());
     assertTrue(options.requestedStages().contains(PipelineStage.FRISC));
     assertEquals("program.c", options.sourceFile().toString());
+    assertEquals(OptimizationLevel.O1, options.optimizationLevel());
+    assertTrue(options.dumpIr());
   }
 }

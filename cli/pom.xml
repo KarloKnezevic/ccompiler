@@ -40,13 +40,13 @@
         </dependency>
         <dependency>
             <groupId>hr.fer.ppj</groupId>
-            <artifactId>compiler-codegen-frisc</artifactId>
+            <artifactId>compiler-opt</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20231013</version>
+            <groupId>hr.fer.ppj</groupId>
+            <artifactId>compiler-codegen-frisc</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

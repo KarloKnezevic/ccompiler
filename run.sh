@@ -18,6 +18,9 @@
 #   --frisc               Generate FRISC (includes IR)
 #   --run                 Execute FRISC output (includes FRISC generation)
 #   --all                 Run all compile stages
+#   --O0                  Disable IR optimization (default)
+#   --O1                  Enable O1 IR optimization
+#   --dump-ir             Dump IR before/after optimization into compiler-bin/ir-dumps
 #   --bin <dir>           Output directory (default: compiler-bin)
 #   run-ir <file.ir>      Execute IR directly with interpreter
 #   --trace-ir            (with run-ir) Print interpreter execution trace
@@ -32,6 +35,7 @@
 # Examples:
 #   ./run.sh --lex program.c
 #   ./run.sh --frisc program.c
+#   ./run.sh --frisc --O1 --dump-ir program.c
 #   ./run.sh --all --run program.c
 #   ./run.sh run-ir examples/real_world/real_bfs_shortest_path/program.ir
 #   ./run.sh run-ir --ir-step-limit 500000 examples/real_world/real_bfs_shortest_path/program.ir
@@ -94,6 +98,9 @@ ${BOLD}Flags:${NC}
     --frisc               Generate FRISC (includes IR)
     --run                 Execute FRISC output (includes FRISC generation)
     --all                 Run all compile stages
+    --O0                  Disable IR optimization (default)
+    --O1                  Enable O1 IR optimization
+    --dump-ir             Dump IR before/after optimization into compiler-bin/ir-dumps
     --bin <dir>           Output directory (default: compiler-bin)
     run-ir <file.ir>      Execute IR directly with interpreter
     --trace-ir            (with run-ir) Print interpreter execution trace
@@ -108,6 +115,7 @@ ${BOLD}Options:${NC}
 ${BOLD}Examples:${NC}
     ./run.sh --lex program.c
     ./run.sh --frisc program.c
+    ./run.sh --frisc --O1 --dump-ir program.c
     ./run.sh --all --run program.c
     ./run.sh run-ir examples/real_world/real_bfs_shortest_path/program.ir
     ./run.sh run-ir --ir-step-limit 500000 examples/real_world/real_bfs_shortest_path/program.ir
@@ -165,7 +173,7 @@ jar_is_stale() {
 
     local stale_source
     stale_source=$(find \
-        cli compiler-lexer compiler-parser compiler-semantics compiler-ir compiler-codegen-frisc config \
+        cli compiler-lexer compiler-parser compiler-semantics compiler-ir compiler-opt compiler-codegen-frisc config \
         -path "*/target/*" -prune -o \
         -type f \( -name "*.java" -o -name "*.txt" -o -name "pom.xml" \) \
         -newer "$JAR_FILE" -print -quit 2>/dev/null || true)

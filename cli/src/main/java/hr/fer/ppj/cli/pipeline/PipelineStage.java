@@ -10,6 +10,7 @@ public enum PipelineStage {
   PARSE("Syntax Analysis"),
   SEMANTIC("Semantic Analysis"),
   IR("IR Generation"),
+  OPT("IR Optimization"),
   FRISC("FRISC Code Generation"),
   RUN("FRISC Execution");
 
@@ -24,6 +25,6 @@ public enum PipelineStage {
   }
 
   public static List<PipelineStage> orderedCompileStages() {
-    return List.of(LEX, PARSE, SEMANTIC, IR, FRISC);
+    return List.of(LEX, PARSE, SEMANTIC, IR, OPT, FRISC);
   }
 }

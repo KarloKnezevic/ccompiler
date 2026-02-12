@@ -3,6 +3,7 @@ package hr.fer.ppj.cli.pipeline;
 import hr.fer.ppj.cli.FriscRunner;
 import hr.fer.ppj.cli.io.BinDirectoryManager;
 import hr.fer.ppj.cli.io.CompilerBinLayout;
+import hr.fer.ppj.cli.io.IrDumpWriter;
 import hr.fer.ppj.cli.io.IrOutputWriter;
 import hr.fer.ppj.cli.io.LexerOutputWriter;
 import hr.fer.ppj.cli.io.SemanticOutputWriter;
@@ -21,6 +22,9 @@ import hr.fer.ppj.lexer.io.Token;
 import hr.fer.ppj.parser.Parser;
 import hr.fer.ppj.parser.io.TokenReader;
 import hr.fer.ppj.parser.tree.ParseTree;
+import hr.fer.ppj.opt.api.IrOptimizer;
+import hr.fer.ppj.opt.api.OptimizationLevel;
+import hr.fer.ppj.opt.api.OptimizationOptions;
 import hr.fer.ppj.semantics.analysis.SemanticAnalyzer;
 import hr.fer.ppj.semantics.errors.SemanticException;
 import java.io.FileReader;
@@ -46,7 +50,9 @@ public final class PipelineRunner {
   private final LexerOutputWriter lexerOutputWriter;
   private final SemanticOutputWriter semanticOutputWriter;
   private final IrOutputWriter irOutputWriter;
+  private final IrDumpWriter irDumpWriter;
   private final IrPointerValidator pointerValidator;
+  private final IrOptimizer irOptimizer;
 
   public PipelineRunner(ConsoleReporter reporter) {
     this(
@@ -55,7 +61,9 @@ public final class PipelineRunner {
         new LexerOutputWriter(),
         new SemanticOutputWriter(),
         new IrOutputWriter(),
-        new IrPointerValidator());
+        new IrDumpWriter(),
+        new IrPointerValidator(),
+        new IrOptimizer());
   }
 
   PipelineRunner(
@@ -64,13 +72,17 @@ public final class PipelineRunner {
       LexerOutputWriter lexerOutputWriter,
       SemanticOutputWriter semanticOutputWriter,
       IrOutputWriter irOutputWriter,
-      IrPointerValidator pointerValidator) {
+      IrDumpWriter irDumpWriter,
+      IrPointerValidator pointerValidator,
+      IrOptimizer irOptimizer) {
     this.reporter = reporter;
     this.binManager = binManager;
     this.lexerOutputWriter = lexerOutputWriter;
     this.semanticOutputWriter = semanticOutputWriter;
     this.irOutputWriter = irOutputWriter;
+    this.irDumpWriter = irDumpWriter;
     this.pointerValidator = pointerValidator;
+    this.irOptimizer = irOptimizer;
   }
 
   public boolean run(PipelinePlan plan, Path sourceFile, Path outputDir) {
@@ -100,7 +112,7 @@ public final class PipelineRunner {
       reporter.stageStarted(stage, index, total);
       Instant start = Instant.now();
       try {
-        StageArtifacts artifacts = executeStage(stage, context);
+        StageArtifacts artifacts = executeStage(stage, context, plan);
         Duration elapsed = Duration.between(start, Instant.now());
         reporter.stageSucceeded(stage, elapsed, artifacts.artifacts());
         if (artifacts.runtimeOutput() != null) {
@@ -119,12 +131,13 @@ public final class PipelineRunner {
     return true;
   }
 
-  private StageArtifacts executeStage(PipelineStage stage, PipelineContext context) throws StageFailure {
+  private StageArtifacts executeStage(PipelineStage stage, PipelineContext context, PipelinePlan plan) throws StageFailure {
     return switch (stage) {
       case LEX -> runLex(context);
       case PARSE -> runParse(context);
       case SEMANTIC -> runSemantic(context);
       case IR -> runIr(context);
+      case OPT -> runOptimization(context, plan);
       case FRISC -> runFrisc(context);
       case RUN -> runFriscExecution(context);
     };
@@ -266,6 +279,39 @@ public final class PipelineRunner {
           ex,
           List.of(ex.getMessage()),
           "Expected semantically valid program to lower into typed IR.");
+    }
+  }
+
+  private StageArtifacts runOptimization(PipelineContext context, PipelinePlan plan) throws StageFailure {
+    try {
+      String preOptimizationIr = context.irText();
+      OptimizationOptions options =
+          plan.optimizationLevel() == OptimizationLevel.O1 ? OptimizationOptions.O1 : OptimizationOptions.O0;
+
+      IrProgram optimizedProgram = irOptimizer.optimize(context.irProgram(), options);
+      String optimizedIr = IrPipeline.print(optimizedProgram);
+      pointerValidator.validate(optimizedIr);
+      irOutputWriter.write(context.layout().irFile(), optimizedIr, context.sourceFile());
+
+      context.irProgram(optimizedProgram);
+      context.irText(optimizedIr);
+
+      List<Path> artifacts = new ArrayList<>(context.layout().artifactsForStage(PipelineStage.OPT));
+      if (plan.dumpIr()) {
+        artifacts.addAll(irDumpWriter.write(
+            context.layout().outputDir(),
+            context.sourceFile(),
+            preOptimizationIr,
+            optimizedIr));
+      }
+
+      return StageArtifacts.of(artifacts);
+    } catch (Exception ex) {
+      throw new StageFailure(
+          "IR optimization failed",
+          ex,
+          List.of(ex.getMessage()),
+          "Expected valid canonical IR and compatible optimization options.");
     }
   }
 

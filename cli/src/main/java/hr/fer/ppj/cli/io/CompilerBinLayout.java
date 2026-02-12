@@ -44,6 +44,7 @@ public record CompilerBinLayout(Path outputDir) {
       case PARSE -> List.of(astFile());
       case SEMANTIC -> List.of(semanticFile());
       case IR -> List.of(irFile());
+      case OPT -> List.of(irFile());
       case FRISC -> List.of(friscFile());
       case RUN -> List.of();
     };
