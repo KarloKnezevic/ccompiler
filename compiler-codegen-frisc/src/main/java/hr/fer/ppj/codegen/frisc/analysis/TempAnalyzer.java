@@ -35,7 +35,8 @@ public final class TempAnalyzer {
       Map<String, IrProgramModel.Slot> paramSlots,
       Map<String, IrType> globalTypes) {
     TempAnalysis tempAnalysis = tempUsageAnalyzer.analyze(function, localSlots, paramSlots, globalTypes);
-    Set<Integer> addrIndexNeedsCheck = addrIndexAnalyzer.analyze(function);
+    Set<Integer> addrIndexNeedsCheck =
+        addrIndexAnalyzer.analyze(function, tempAnalysis.tempTypes());
     return new TempAnalysisResult(tempAnalysis, addrIndexNeedsCheck);
   }
 }

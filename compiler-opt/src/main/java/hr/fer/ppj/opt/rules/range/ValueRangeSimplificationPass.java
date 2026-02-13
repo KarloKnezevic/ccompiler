@@ -161,6 +161,15 @@ public final class ValueRangeSimplificationPass implements IrPass {
           if (range != null && range.isExact()) {
             tempRanges.put(assign.dest().index(), IntRange.exact(-range.min()));
           }
+        } else if (rhs instanceof IrRhs.AddrIndex addrIndex) {
+          IntRange indexRange = intRange(addrIndex.idx(), tempRanges);
+          if (indexRange != null && indexRange.isExact() && rewrite) {
+            rhs = new IrRhs.AddrIndex(
+                addrIndex.base(),
+                new IrConst.IntConst(indexRange.min(), IrPrimitiveType.INT32),
+                addrIndex.elemSize(),
+                addrIndex.resultType());
+          }
         } else if (rhs instanceof IrRhs.BinOp binOp && binOp.resultType() == IrPrimitiveType.INT32) {
           IntRange evaluated = evaluateBinOpRange(binOp, tempRanges);
           if (evaluated != null) {

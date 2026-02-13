@@ -88,6 +88,10 @@ public final class LoweringSupport {
     if (value == 0) {
       return "0";
     }
+    if (value == Integer.MIN_VALUE) {
+      // Keep raw 32-bit pattern for INT_MIN to avoid parser overflow on negation.
+      return "80000000";
+    }
     if (value < 0) {
       return "-" + formatHexMagnitude(-value);
     }

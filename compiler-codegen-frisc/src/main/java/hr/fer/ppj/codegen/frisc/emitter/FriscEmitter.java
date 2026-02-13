@@ -14,6 +14,7 @@ public final class FriscEmitter {
   private static final int COMMENT_COLUMN = 32;
 
   private final List<String> lines = new ArrayList<>();
+  private final FriscPeepholeOptimizer peepholeOptimizer = new FriscPeepholeOptimizer();
   private boolean inDataSection = false;
   private int dataOffset = 0;
 
@@ -154,13 +155,17 @@ public final class FriscEmitter {
     Objects.requireNonNull(path, "path must not be null");
     try {
       Files.createDirectories(path.getParent());
-      Files.write(path, lines);
+      Files.write(path, outputLines());
     } catch (IOException e) {
       throw new CodeGenerationException("Failed to write FRISC output to " + path, e);
     }
   }
 
   public List<String> lines() {
-    return List.copyOf(lines);
+    return outputLines();
+  }
+
+  private List<String> outputLines() {
+    return peepholeOptimizer.optimize(lines);
   }
 }

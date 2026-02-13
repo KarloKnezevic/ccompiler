@@ -103,10 +103,15 @@ final class FunctionEmitter {
     emitter.emitInstruction("MOVE", List.of("R7", "R5"), "Set FP");
     if (frameSize > 0) {
       emitter.emitInstruction("SUB", List.of("R7", LoweringSupport.formatImmediate(frameSize), "R7"), "Allocate locals/temps");
-      int wordCount = frameSize / 4;
+      int localZeroBytes = LoweringSupport.alignTo(localsAreaSize, 4);
+      int wordCount = localZeroBytes / 4;
       if (wordCount > 0) {
-        immediateEmitter.emitLoadImmediate(wordCount, ctx, "R1", "Zero words");
-        ctx.emitter().emitInstruction("MOVE", List.of("R7", "R0"), "Zero ptr");
+        immediateEmitter.emitLoadImmediate(wordCount, ctx, "R1", "Zero local words");
+        ctx.emitter().emitInstruction("MOVE", List.of("R5", "R0"), "Local zero base");
+        ctx.emitter().emitInstruction(
+            "SUB",
+            List.of("R0", LoweringSupport.formatImmediate(localZeroBytes), "R0"),
+            "Local zero ptr");
         immediateEmitter.emitLoadImmediate(0, ctx, "R2", "Zero");
         String zeroLoop = labelGenerator.newLabel("L_ZERO");
         ctx.emitter().emitLabel(zeroLoop, null);

@@ -4,12 +4,19 @@ import hr.fer.ppj.ir.model.IrProgram;
 import hr.fer.ppj.opt.pipeline.PassContext;
 import hr.fer.ppj.opt.pipeline.PassPipeline;
 import hr.fer.ppj.opt.rules.arith.Int32ArithmeticPass;
+import hr.fer.ppj.opt.rules.arith.TypedConstantFoldingPass;
+import hr.fer.ppj.opt.rules.cast.CastSimplificationPass;
 import hr.fer.ppj.opt.rules.controlflow.ControlFlowSimplificationPass;
 import hr.fer.ppj.opt.rules.controlflow.UnreachableBlockEliminationPass;
 import hr.fer.ppj.opt.rules.flow.GlobalValuePropagationPass;
+import hr.fer.ppj.opt.rules.inline.TinyFunctionInliningPass;
 import hr.fer.ppj.opt.rules.loop.InductionStrengthReductionPass;
+import hr.fer.ppj.opt.rules.loop.LoopInvariantCodeMotionPass;
+import hr.fer.ppj.opt.rules.memory.DeadSlotStoreEliminationPass;
+import hr.fer.ppj.opt.rules.memory.LoadForwardingPass;
 import hr.fer.ppj.opt.rules.range.ValueRangeSimplificationPass;
 import hr.fer.ppj.opt.rules.shift.Int32ShiftPass;
+import hr.fer.ppj.opt.rules.temps.CommonSubexpressionEliminationPass;
 import hr.fer.ppj.opt.rules.temps.CopyPropagationPass;
 import hr.fer.ppj.opt.rules.temps.DeadTempEliminationPass;
 import hr.fer.ppj.opt.validation.IrOptimizationValidator;
@@ -50,8 +57,15 @@ public final class IrOptimizer {
 
     PassPipeline pipeline = new PassPipeline(List.of(
         new Int32ArithmeticPass(),
+        new TypedConstantFoldingPass(),
+        new CastSimplificationPass(),
         new Int32ShiftPass(),
+        new CommonSubexpressionEliminationPass(),
+        new LoopInvariantCodeMotionPass(),
         new GlobalValuePropagationPass(),
+        new TinyFunctionInliningPass(),
+        new LoadForwardingPass(),
+        new DeadSlotStoreEliminationPass(),
         new ValueRangeSimplificationPass(),
         new CopyPropagationPass(),
         new DeadTempEliminationPass(),

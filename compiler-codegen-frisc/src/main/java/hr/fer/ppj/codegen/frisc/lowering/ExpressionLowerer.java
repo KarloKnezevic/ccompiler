@@ -31,7 +31,7 @@ public final class ExpressionLowerer {
     this.addressLowerer = addressLowerer;
     this.immediateEmitter = immediateEmitter;
     ValueEmitter valueEmitter = this::emitValue;
-    this.binaryLowerer = new BinaryLowerer(valueEmitter);
+    this.binaryLowerer = new BinaryLowerer(valueEmitter, immediateEmitter);
     this.compareLowerer = new CompareLowerer(labelGenerator, valueEmitter);
     this.unaryLowerer = new UnaryLowerer(labelGenerator, valueEmitter);
     this.callLowerer = new CallLowerer(frameAccess, addressLowerer, functionLabelProvider, valueEmitter);

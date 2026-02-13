@@ -48,23 +48,44 @@ public final class AddressLowerer {
     int elemSize = addrIndex.elemSize();
     if (elemSize == 1) {
       // no-op
-    } else if (elemSize == 2) {
-      ctx.emitter().emitInstruction("SHL", List.of("R1", "1", "R1"), "Index * 2");
-    } else if (elemSize == 4) {
-      ctx.emitter().emitInstruction("SHL", List.of("R1", "2", "R1"), "Index * 4");
+    } else if (isPositivePowerOfTwo(elemSize)) {
+      int shift = Integer.numberOfTrailingZeros(elemSize);
+      ctx.emitter().emitInstruction(
+          "SHL",
+          List.of("R1", LoweringSupport.formatImmediate(shift), "R1"),
+          "Index * " + elemSize);
     } else {
-      ctx.emitter().emitInstruction("PUSH", List.of("R0"), "Save base");
-      ctx.emitter().emitInstruction("PUSH", List.of("R1"), "Save index");
-      ctx.emitter().emitInstruction("MOVE", List.of(LoweringSupport.formatImmediate(elemSize), "R0"), "Elem size");
-      ctx.emitter().emitInstruction("PUSH", List.of("R0"), "Arg (size)");
-      ctx.emitter().emitInstruction("CALL", List.of("F_MUL"), "Index * size");
-      ctx.emitter().emitInstruction("ADD", List.of("R7", "8", "R7"), "Clean args");
-      ctx.emitter().emitInstruction("POP", List.of("R0"), "Restore base");
-      ctx.emitter().emitInstruction("MOVE", List.of("R6", "R1"), "Result");
-      ctx.emitter().markMulNeeded();
+      emitScaleByConstant(elemSize, ctx);
     }
 
     ctx.emitter().emitInstruction("ADD", List.of("R0", "R1", "R0"), "Base + offset");
+  }
+
+  private boolean isPositivePowerOfTwo(int value) {
+    return value > 0 && (value & (value - 1)) == 0;
+  }
+
+  private void emitScaleByConstant(int scale, FunctionContext ctx) {
+    int absScale = Math.abs(scale);
+    ctx.emitter().emitInstruction("MOVE", List.of("0", "R2"), "Scale acc");
+    ctx.emitter().emitInstruction("MOVE", List.of("R1", "R3"), "Scale term");
+
+    while (absScale != 0) {
+      if ((absScale & 1) != 0) {
+        ctx.emitter().emitInstruction("ADD", List.of("R2", "R3", "R2"), "Acc += term");
+      }
+      absScale >>>= 1;
+      if (absScale != 0) {
+        ctx.emitter().emitInstruction("SHL", List.of("R3", "1", "R3"), "Next term");
+      }
+    }
+
+    if (scale < 0) {
+      ctx.emitter().emitInstruction("MOVE", List.of("0", "R1"), "Zero");
+      ctx.emitter().emitInstruction("SUB", List.of("R1", "R2", "R1"), "Negate scaled index");
+      return;
+    }
+    ctx.emitter().emitInstruction("MOVE", List.of("R2", "R1"), "Scaled index");
   }
 
   public void emitAddrField(IrProgramModel.AddrField addrField, FunctionContext ctx) {
