@@ -18,9 +18,48 @@ import java.util.concurrent.TimeUnit;
 public final class FriscRunner {
 
   private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(120);
-  private static final String DEFAULT_CPU_FREQ = "100_000_000";
   private static final String DEFAULT_MEM_SIZE_KB = "1000";
-  private static final Path SIMULATOR_PATH = Paths.get("node_modules", "friscjs", "consoleapp", "frisc-console.js");
+  private static final String DEFAULT_STEP_LIMIT = "200000000";
+  private static final Path SIMULATOR_LIB_PATH = Paths.get("node_modules", "friscjs", "lib", "index.js");
+  private static final String STEP_RUNNER_SCRIPT = """
+      const fs = require('fs');
+      const friscLib = require(process.argv[1]);
+      const asm = friscLib.assembler;
+      const Simulator = friscLib.simulator;
+
+      const friscPath = process.argv[2];
+      const memSizeKb = Number.parseInt(process.argv[3], 10);
+      const stepLimit = Number.parseInt(process.argv[4], 10);
+
+      try {
+        const source = fs.readFileSync(friscPath, 'utf8');
+        const parsed = asm.parse(source);
+        const simulator = new Simulator();
+        simulator.MEM._size = memSizeKb * 1024;
+        simulator.MEM.loadBinaryString(parsed.mem);
+
+        let halted = false;
+        simulator.CPU.onStop = function() {
+          halted = true;
+        };
+
+        let steps = 0;
+        while (!halted && steps < stepLimit) {
+          simulator.CPU.performCycle();
+          steps += 1;
+        }
+
+        if (!halted) {
+          console.error('Execution step limit exceeded: ' + stepLimit);
+          process.exit(124);
+        }
+
+        console.log(String(simulator.CPU._r.r6));
+      } catch (error) {
+        console.error('FRISC runner failed: ' + error.message);
+        process.exit(1);
+      }
+      """;
 
   private final Path workingDirectory;
 
@@ -38,23 +77,23 @@ public final class FriscRunner {
 
   public Result run(Path friscFile, Duration timeout) throws IOException, InterruptedException {
     Path absoluteFriscFile = workingDirectory.resolve(friscFile).normalize();
-    Path simulator = workingDirectory.resolve(SIMULATOR_PATH).normalize();
+    Path simulatorLib = workingDirectory.resolve(SIMULATOR_LIB_PATH).normalize();
 
     if (!Files.exists(absoluteFriscFile)) {
       return Result.failure("FRISC file not found: " + absoluteFriscFile);
     }
-    if (!Files.exists(simulator)) {
-      return Result.failure("FRISC simulator not found at " + simulator);
+    if (!Files.exists(simulatorLib)) {
+      return Result.failure("FRISC simulator library not found at " + simulatorLib);
     }
 
     ProcessBuilder pb = new ProcessBuilder(
         "node",
-        simulator.toString(),
-        "-cpufreq",
-        DEFAULT_CPU_FREQ,
-        "-memsize",
+        "-e",
+        STEP_RUNNER_SCRIPT,
+        simulatorLib.toString(),
+        absoluteFriscFile.toString(),
         DEFAULT_MEM_SIZE_KB,
-        absoluteFriscFile.toString());
+        DEFAULT_STEP_LIMIT);
     pb.directory(workingDirectory.toFile());
     pb.redirectErrorStream(true);
 
