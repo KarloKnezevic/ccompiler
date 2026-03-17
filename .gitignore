@@ -1,5 +1,6 @@
 # Data directory
 data/
+theory/
 
 # Build artifacts
 compiler-bin/
@@ -49,4 +50,7 @@ test_*.java
 
 # Logs
 *.log
+
+#AI
+.claude/
 
