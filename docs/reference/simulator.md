@@ -162,6 +162,92 @@ The simulator is a synchronous, single-threaded JavaScript execution engine: no 
 
 ---
 
+## Using friscjs directly (standalone)
+
+`friscjs` is an independent open-source project by Ivan Žužak — the FRISC
+assembler and simulator written in JavaScript
+([izuzak/FRISCjs](https://github.com/izuzak/FRISCjs)). FRISCcc bundles a copy
+under `node_modules/friscjs/` so the compiler works out of the box, but the
+package can also be installed and used on its own — for example to assemble and
+run FRISC programs from your own Node.js scripts, or to inspect registers and
+memory after execution.
+
+### Installation
+
+```bash
+npm install friscjs
+```
+
+```javascript
+var friscjs = require("friscjs");
+var asm = friscjs.assembler;   // FRISC assembler
+var sim = friscjs.simulator;   // Simulator constructor
+```
+
+In the browser, include `lib/friscjs-browser.js` and use the same
+`friscjs.assembler` / `friscjs.simulator` objects; the API is identical.
+
+### Assembler
+
+`asm.parse(friscSource)` assembles FRISC source text and returns an object with:
+
+- `result.ast` — the parsed instructions (useful for debugging);
+- `result.mem` — the binary image as an array of 8-character byte strings,
+  ready to load into simulator memory.
+
+On a syntax error it throws an exception carrying `line` and `column`
+properties pointing at the offending location.
+
+### Simulator
+
+`new sim()` creates a simulator exposing two components, `MEM` and `CPU`:
+
+| Component | Selected members |
+|-----------|------------------|
+| `MEM` | `_size` (capacity, default 256K), `_memory` (byte array), `reset()`, `loadBinaryString(image)`, `readb/readw/read(addr)`, `writeb/writew/write(addr, val)` |
+| `CPU` | `_r` (register map: `r0`–`r7`, `pc`, `sr`, `iif`), `_frequency` (Hz, default 1), `run()`, `pause()`, `stop()`, `performCycle()`, `reset()`, `_decode(instruction)` |
+
+The CPU exposes lifecycle callbacks you can assign to observe or step
+execution: `onBeforeRun()`, `onBeforeCycle()`, `onBeforeExecute(instruction)`,
+`onAfterCycle()`, and `onStop()`.
+
+### Assemble-and-run example
+
+```javascript
+var friscjs = require("friscjs");
+var asm = friscjs.assembler;
+var sim = friscjs.simulator;
+
+var program = [
+  "    MOVE %D 40000, R7",   // set the stack pointer
+  "    MOVE %D 7, R1",
+  "    MOVE %D 35, R2",
+  "    ADD  R1, R2, R6",     // R6 = 42 (FRISCcc returns results in R6)
+  "    HALT"
+].join("\n");
+
+var result = asm.parse(program);
+
+var simulator = new sim();
+simulator.MEM.loadBinaryString(result.mem);
+simulator.CPU.onStop = function () {
+  console.log("R6 =", simulator.CPU._r.r6);   // → R6 = 42
+};
+simulator.CPU.run();
+```
+
+This mirrors what FRISCcc's `FriscRunner` does internally, except `FriscRunner`
+drives `CPU.performCycle()` in a bounded loop (rather than `CPU.run()`) and
+reads `CPU._r.r6` as the program's return value. For the full upstream API see
+[`API.markdown`](https://github.com/izuzak/FRISCjs/blob/master/API.markdown) in
+the FRISCjs repository.
+
+> FRISCcc pins `friscjs@^0.0.1`. A direct `npm install friscjs` fetches the same
+> package; the vendored copy under `node_modules/friscjs/` exists only so the
+> compiler runs without a separate install step.
+
+---
+
 ## Working Directory Requirement
 
 `FriscRunner` resolves `node_modules/friscjs/lib/index.js` relative to its configured working directory (default: `Paths.get("").toAbsolutePath()`). If the process working directory is not the repo root, the library path check will fail and `run()` returns:

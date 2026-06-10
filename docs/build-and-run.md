@@ -15,6 +15,8 @@ see [CLI](reference/cli.md); for the quickstart, see the repository
 The FRISC simulator (`friscjs`) is vendored under `node_modules/`, so no
 `npm install` is required. Always invoke the compiler **from the repository
 root** so it can locate `node_modules/friscjs` and the `examples/` tree.
+(`friscjs` is also an independent package, installable on its own with
+`npm install friscjs` — see [Using friscjs directly](reference/simulator.md#using-friscjs-directly-standalone).)
 
 ## Build
 

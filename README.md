@@ -89,7 +89,9 @@ node --version   # 18+
 ```
 
 The FRISC simulator (`friscjs`) is vendored under `node_modules/`, so no `npm
-install` is required.
+install` is required. It is also an independent package — you can install it on
+its own with `npm install friscjs` and use its assembler/simulator API directly;
+see [Using friscjs directly](docs/reference/simulator.md#using-friscjs-directly-standalone).
 
 ---
 
