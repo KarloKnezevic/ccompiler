@@ -179,20 +179,20 @@ classDiagram
     }
     class ArrayType {
         +elementType() Type
-        +dimensions() List~Integer~
+        +dimensions() List&lt;Integer&gt;
         +totalElements() int
         +isScalar() boolean
     }
     class StructType {
         +tag() String
-        +fields() Map~String,Type~
+        +fields() Map&lt;String,Type&gt;
         +hasField(String) boolean
         +getFieldType(String) Type
         +isScalar() boolean
     }
     class FunctionType {
         +returnType() Type
-        +parameterTypes() List~Type~
+        +parameterTypes() List&lt;Type&gt;
         +isVoidReturn() boolean
         +isScalar() boolean
     }
@@ -203,11 +203,6 @@ classDiagram
     Type <|-- ArrayType
     Type <|-- StructType
     Type <|-- FunctionType
-    ConstType --> Type : baseType
-    PointerType --> Type : baseType
-    ArrayType --> Type : elementType
-    FunctionType --> Type : returnType
-    FunctionType --> Type : parameterTypes
 ```
 
 All `Type` implementations are immutable value objects and can be freely shared between tree nodes.

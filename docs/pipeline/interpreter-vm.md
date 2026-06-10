@@ -148,7 +148,7 @@ stateDiagram-v2
     MutateStack : Arithmetic / memory / cast / compare — pop operands, push result
     MutateTemps : LOAD_TEMP / STORE_TEMP — read or write frame temps
     CallEnter : CALL / CALL_VOID — pop args, push new CallFrame
-    CallReturn : RET / RET_VOID — pop frame; push return value if CALL
+    CallReturn : RET / RET_VOID — pop frame, push return value if CALL
     Branch : JMP / BR — set frame.pc to target offset
     Watchdog : dispatched exceeds dispatchLimit? — throw IllegalStateException
 

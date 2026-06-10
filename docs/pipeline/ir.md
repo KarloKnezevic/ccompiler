@@ -212,7 +212,7 @@ classDiagram
     }
     class IrVoidCallInstr {
         funcName: String
-        args: List~IrValue~
+        args: List&lt;IrValue&gt;
     }
     class IrTerminator {
         <<sealed interface>>

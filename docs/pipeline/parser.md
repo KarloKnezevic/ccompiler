@@ -311,7 +311,7 @@ classDiagram
         <<sealed interface>>
     }
     class Program {
-        +List~Declaration~ declarations
+        +List&lt;Declaration&gt; declarations
     }
     class BinaryExpression {
         +Expression left
@@ -336,8 +336,8 @@ classDiagram
         +Statement elseBranch
     }
     class BlockStatement {
-        +List~Declaration~ declarations
-        +List~Statement~ statements
+        +List&lt;Declaration&gt; declarations
+        +List&lt;Statement&gt; statements
     }
     class ReturnStatement
     class BreakStatement
@@ -348,7 +348,7 @@ classDiagram
     class FunctionDeclaration {
         +Type returnType
         +String name
-        +List~VariableDeclaration~ parameters
+        +List&lt;VariableDeclaration&gt; parameters
         +BlockStatement body
     }
     class VariableDeclaration {
