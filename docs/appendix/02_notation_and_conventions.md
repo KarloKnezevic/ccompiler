@@ -1,5 +1,8 @@
 # Appendix B. Notation and Conventions
 
+> **📖 From the book.** This chapter accompanies *Building a C-Subset Compiler for the FRISC Architecture: From Formal Languages to Executable Code* by Dr. Karlo Knežević (Zenodo, 2026). For the complete treatment — formal development, proofs, and figures — read the book: [📄 PDF](../book/Building-a-C-Subset-Compiler-for-the-FRISC-Architecture.pdf) · DOI [10.5281/zenodo.20511073](https://doi.org/10.5281/zenodo.20511073) · ISBN 978-953-47198-0-0.
+
+
 This appendix catalogues the notation systems and typographic conventions used
 throughout the book. Consistent notation reduces ambiguity when the same concept
 appears in formal grammars, IR listings, assembly code, and prose.

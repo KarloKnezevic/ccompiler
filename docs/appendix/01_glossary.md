@@ -1,5 +1,8 @@
 # Appendix A. Glossary
 
+> **📖 From the book.** This chapter accompanies *Building a C-Subset Compiler for the FRISC Architecture: From Formal Languages to Executable Code* by Dr. Karlo Knežević (Zenodo, 2026). For the complete treatment — formal development, proofs, and figures — read the book: [📄 PDF](../book/Building-a-C-Subset-Compiler-for-the-FRISC-Architecture.pdf) · DOI [10.5281/zenodo.20511073](https://doi.org/10.5281/zenodo.20511073) · ISBN 978-953-47198-0-0.
+
+
 This glossary defines the principal terms used throughout this book. Entries are
 organized alphabetically. Where a term has both a general meaning and a
 project-specific meaning, the project-specific usage is noted explicitly.

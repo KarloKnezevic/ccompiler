@@ -1,3 +1,5 @@
+> **📖 From the book.** This chapter accompanies *Building a C-Subset Compiler for the FRISC Architecture: From Formal Languages to Executable Code* by Dr. Karlo Knežević (Zenodo, 2026). For the complete treatment — formal development, proofs, and figures — read the book: [📄 PDF](../book/Building-a-C-Subset-Compiler-for-the-FRISC-Architecture.pdf) · DOI [10.5281/zenodo.20511073](https://doi.org/10.5281/zenodo.20511073) · ISBN 978-953-47198-0-0.
+
 ## The Role of Lexical Analysis
 
 Lexical analysis \index{lexical analysis} is the first phase of compilation. It transforms an unstructured stream of characters -- the raw source text as typed by the programmer -- into a structured stream of *tokens* \index{token}. Each token is a meaningful unit of the language: a keyword, an identifier, a numeric literal, an operator, or a punctuation mark. Formally, the lexer implements a function:

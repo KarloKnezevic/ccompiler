@@ -1,83 +1,209 @@
-# FRISCcc: A C-Subset Compiler for FRISC
+<div align="center">
 
-FRISCcc is a modular compiler project that translates a deterministic C subset into FRISC assembly through a fully typed intermediate representation. The project is designed for rigorous education, reproducible experiments, and backend engineering work.
+# FRISCcc
 
-## Why This Project
+### A C-Subset Compiler for the FRISC Architecture
 
-Most educational compilers stop at parsing or semantic checks. FRISCcc delivers the full chain:
+**From formal languages to executable code — a complete, runnable compiler in Java.**
 
-- source analysis,
-- typed IR generation,
-- IR optimization,
-- deterministic FRISC backend lowering,
-- simulation and runtime diagnostics.
+[![License: MIT](https://img.shields.io/badge/License-MIT-1B3A6B.svg)](LICENSE)
+[![Java](https://img.shields.io/badge/Java-21%2B-C7253E.svg)](#prerequisites)
+[![Book DOI](https://img.shields.io/badge/Book-10.5281%2Fzenodo.20511073-2E8B57.svg)](https://doi.org/10.5281/zenodo.20511073)
+[![Release](https://img.shields.io/badge/release-v1.0.0-1B3A6B.svg)](https://github.com/KarloKnezevic/ccompiler/releases)
 
-The result is a complete environment for studying how correctness and performance constraints propagate across compiler phases.
+</div>
 
-## Compiler Pipeline
+FRISCcc compiles a deterministic subset of C all the way down to **FRISC**
+assembly (the educational instruction-set architecture used at the University of
+Zagreb), runs it on a bundled simulator, and can also execute its typed
+intermediate representation on a **tree-walking interpreter** and a **bytecode
+virtual machine**. It is a *complete* teaching compiler: nothing is hand-waved,
+every phase is real, and every example in this repository compiles and runs.
 
-```mermaid
-flowchart LR
-  C[Source C] --> L[Lexer]
-  L --> P[Parser]
-  P --> S[Semantic Analysis]
-  S --> IR[IR Generation]
-  IR --> OPT[Optimization Passes]
-  OPT --> CG[FRISC Codegen]
-  CG --> ASM[FRISC Assembly]
+```
+C source → Lexer → Parser → Semantic analysis → Typed IR
+         → Optimization (IR→IR passes) → FRISC codegen → Simulation
+                                       ↘ IR interpreter
+                                       ↘ Bytecode VM
 ```
 
-## Module Architecture
+---
 
-- `compiler-lexer`: lexical analysis and token artifact generation.
-- `compiler-parser`: grammar-based syntax analysis.
-- `compiler-semantics`: symbol table, typing, semantic legality.
-- `compiler-ir`: strict typed IR generation.
-- `compiler-opt`: IR-to-IR optimization pipeline.
-- `compiler-codegen-frisc`: typed IR to FRISC lowering.
-- `cli`: orchestration, IR interpreter, FRISC runner integration.
+## 📖 The book
 
-## Supported C Subset
+This compiler is the running example dissected, line by line, throughout the book:
 
-The supported subset is intentionally constrained and deterministic:
+> **Building a C-Subset Compiler for the FRISC Architecture: From Formal Languages to Executable Code**
+> Dr. Karlo Knežević · Self-published, Zagreb, 2026
+> **ISBN** 978-953-47198-0-0 · **DOI** [10.5281/zenodo.20511073](https://doi.org/10.5281/zenodo.20511073)
+> 📕 Read it here: [doi.org/10.5281/zenodo.20511073](https://doi.org/10.5281/zenodo.20511073) · 📄 [Local PDF](docs/book/Building-a-C-Subset-Compiler-for-the-FRISC-Architecture.pdf)
 
-- scalar types: `int`, `char`, `float`
-- arrays and selected struct usage
-- control flow: `if`, `if/else`, `while`, `for`, `return`
-- functions, globals, locals, and recursion where semantically valid
-- deterministic, self-contained programs without standard-library dependence
+The book is a narrative monograph: it builds this exact compiler from first
+principles — automata and formal languages, LR(1) parsing, type systems, a
+typed IR, an optimizer with semantic-preservation proofs, a FRISC back end, and
+two alternative execution engines. The in-repo documentation under
+[`docs/`](docs/) mirrors the book chapter by chapter; the book is the
+authoritative, full-length treatment. See [Citing this work](#citing-this-work).
 
-## IR Design Philosophy
+---
 
-The typed IR is the semantic backbone of the project.
+## Quickstart (under a minute)
 
-- explicit types on every value and operation,
-- explicit control flow (`br`, `jmp`, `ret`) through basic blocks,
-- explicit frame and slot metadata for backend ABI stability,
-- deterministic textual form suitable for golden tests.
+You don't even need to build — a ready-to-run JAR ships in [`dist/`](dist/).
 
-Canonical grammar definition: `config/ir_definition.txt`.
+```bash
+git clone https://github.com/KarloKnezevic/ccompiler.git
+cd ccompiler
 
-## Optimization Pipeline
+# Compile a C program to FRISC and run it on the simulator:
+java -jar dist/ccompiler.jar --all --run examples/real_world/math_fibonacci_iter/program.c
+# → Program output: 6765
+```
 
-The optimizer (`compiler-opt`) runs IR-to-IR passes under semantic-preservation rules. Current pass families include:
+> Run commands **from the repository root** so the compiler can find the bundled
+> FRISC simulator (`node_modules/friscjs`) and the `examples/` tree.
 
-- constant folding and algebraic simplification,
-- control-flow simplification and unreachable block removal,
-- copy/value propagation and dead temp elimination,
-- memory-level simplifications (dead stores, load forwarding),
-- loop-oriented simplifications and strength reduction.
+The convenience wrapper [`run.sh`](run.sh) does the same and prints a tidy
+per-phase report:
 
-## Code Generation Target: FRISC
+```bash
+./run.sh --all --run examples/real_world/math_fibonacci_iter/program.c
+```
 
-Backend lowering follows fixed conventions:
+---
 
-- `R7` = stack pointer
-- `R5` = frame pointer
-- `R6` = function return register
-- `R0` = primary expression result register
+## Prerequisites
 
-Entry sequence:
+| Tool | Version | Used for |
+|------|---------|----------|
+| **JDK** | 21 or newer | building and running the compiler |
+| **Maven** | 3.9 or newer | building from source (not needed to run `dist/ccompiler.jar`) |
+| **Node.js** | 18 or newer | the bundled FRISC simulator (only for `--run`) |
+
+Check your toolchain:
+
+```bash
+java -version    # 21+
+mvn -version     # 3.9+
+node --version   # 18+
+```
+
+The FRISC simulator (`friscjs`) is vendored under `node_modules/`, so no `npm
+install` is required.
+
+---
+
+## Build from source
+
+```bash
+./build.sh           # build all modules, produce cli/target/ccompiler.jar (tests skipped)
+./build.sh -t        # build and run the full test suite
+./build.sh -c        # clean build
+```
+
+Equivalently, with Maven directly:
+
+```bash
+mvn clean package            # builds the fat JAR at cli/target/ccompiler.jar
+mvn test                     # runs the test suite (89 tests across the modules)
+```
+
+The build produces a single self-contained executable JAR via the Maven Shade
+plugin. After building, copy it over the shipped one if you like:
+`cp cli/target/ccompiler.jar dist/ccompiler.jar`.
+
+---
+
+## Using the compiler
+
+Invoke either through `./run.sh <flags> <file>` or `java -jar dist/ccompiler.jar
+<flags> <file>`. Later-stage flags automatically imply the earlier phases.
+
+### Compilation stages
+
+| Flag | Stops after | Output (in `compiler-bin/`) |
+|------|-------------|------------------------------|
+| `--lex` | lexical analysis | `tokens.txt` |
+| `--parse` | parsing | `ast.txt` |
+| `--sem` | semantic analysis | typed tree |
+| `--ir` | IR generation | `intermediate.ir` |
+| `--frisc` | code generation | `a.out` (FRISC assembly) |
+| `--all` | full pipeline | all of the above |
+| `--run` | + simulation | program output on stdout |
+
+### Optimization
+
+| Flag | Meaning |
+|------|---------|
+| `--O0` | no optimization — IR passes straight to the back end (default) |
+| `--O1` | baseline optimizing pipeline (constant folding, copy/value propagation, dead-code elimination, CSE, LICM, strength reduction, …) |
+| `--dump-ir` | also dump pre- and post-optimization IR into `compiler-bin/ir-dumps` |
+
+### Running the IR directly
+
+Skip code generation entirely and execute the typed IR:
+
+```bash
+# Tree-walking interpreter:
+java -jar dist/ccompiler.jar run-ir examples/real_world/math_fibonacci_iter/program.ir
+#   → Return value: 6765   (Executed steps: 478)
+
+# Bytecode virtual machine (lowers IR → bytecode, runs on a stack VM):
+java -jar dist/ccompiler.jar run-vm examples/real_world/math_fibonacci_iter/program.ir
+#   → Return value: 6765   (Dispatched instructions: 1264)
+
+# Inspect the lowered bytecode:
+java -jar dist/ccompiler.jar run-vm --dump-bytecode examples/real_world/math_fibonacci_iter/program.ir
+```
+
+All three back ends — native FRISC, interpreter, and VM — agree on every result;
+this equivalence is enforced by the test suite across all example IR files.
+
+Run `./run.sh --help` for the complete flag reference (tracing, step/dispatch
+watchdogs, custom output directories, and batch IR execution).
+
+---
+
+## What the compiler accepts
+
+A deliberately constrained, deterministic subset of C:
+
+- scalar types `int`, `char`, `float`; arrays; selected `struct` usage;
+- control flow: `if` / `else`, `while`, `for`, `return`;
+- functions, globals, locals, and recursion;
+- self-contained programs with no standard-library dependence.
+
+Floating-point and 32-bit integer arithmetic that the FRISC ISA lacks in
+hardware is lowered to software helper routines (`F_MUL`, `F_DIV`, `F_MOD`,
+`F_FMUL`, `F_FDIV`, `F_I2F`, `F_F2I`).
+
+---
+
+## Architecture
+
+FRISCcc is a Maven multi-module project. Each phase is its own module with a
+clean boundary:
+
+| Module | Responsibility |
+|--------|----------------|
+| `compiler-common` | shared diagnostics, source locations |
+| `compiler-lexer` | tokenization via ε-NFA → DFA with maximal munch |
+| `compiler-parser` | LR(1) table construction and parsing |
+| `compiler-semantics` | symbol tables, typing, semantic legality |
+| `compiler-ir` | lowering the typed tree to a typed three-address IR |
+| `compiler-opt` | the IR-to-IR optimization passes |
+| `compiler-codegen-frisc` | typed IR → FRISC assembly |
+| `cli` | orchestration, IR interpreter, bytecode VM, simulator driver |
+
+The **typed IR** is the backbone: every value and operation carries a type,
+control flow is explicit through basic blocks (`br`, `jmp`, `ret`), and frame
+and slot metadata make the back-end ABI stable. Its canonical grammar lives in
+[`config/ir_definition.txt`](config/ir_definition.txt).
+
+### FRISC ABI at a glance
+
+`R0` result · `R1`–`R4` scratch/arguments · `R5` frame pointer · `R6` return
+value · `R7` stack pointer (grows down from `40000`). Entry sequence:
 
 ```asm
 MOVE 40000, R7
@@ -85,102 +211,58 @@ CALL F_MAIN
 HALT
 ```
 
-## Build
+---
 
-```bash
-./build.sh
-```
+## Examples
 
-This builds all Maven modules and produces the CLI artifact in `cli/target/`.
+523 ready-to-compile programs live under [`examples/`](examples/):
 
-## Run
+| Category | Count | What it holds |
+|----------|------:|---------------|
+| `valid/` | 218 | small, focused programs grouped by feature |
+| `real_world/` | 31 | larger end-to-end programs with `expected.txt` golden output |
+| `fer/` | 186 | course-style test programs |
+| `invalid/` | 88 | programs that must be *rejected* (diagnostics tests) |
 
-### Scripted run
+Every `real_world` example carries its expected output, its generated IR, and
+its FRISC assembly, so you can diff against a known-good result.
 
-```bash
-./run.sh --all --run examples/valid/basics/0001_basics_main_int/program.c
-```
+---
 
-### Direct JAR run
+## Documentation
 
-```bash
-java -jar cli/target/ccompiler.jar --all --run path/to/program.c
-```
+- [`docs/`](docs/) — the in-repo technical documentation, organized to mirror the
+  book chapter by chapter (lexer, parser, semantics, IR, optimization, codegen,
+  runtime, simulator, performance).
+- [`docs/book/`](docs/book/) — the full book PDF.
+- The book itself, [doi.org/10.5281/zenodo.20511073](https://doi.org/10.5281/zenodo.20511073),
+  is the complete, authoritative narrative.
 
-## CLI Usage Contract
+---
 
-Representative commands:
+## Citing this work
 
-- `--lex`
-- `--parse`
-- `--sem`
-- `--ir`
-- `--frisc`
-- `--run`
-- `--all`
-- `--dump-ir`
+If FRISCcc or its book helped your work, please cite the book (a
+[`CITATION.cff`](CITATION.cff) is included for automatic citation):
 
-Later-stage flags imply prerequisite stages automatically.
+> Knežević, K. (2026). *Building a C-Subset Compiler for the FRISC Architecture:
+> From Formal Languages to Executable Code.* Zenodo.
+> https://doi.org/10.5281/zenodo.20511073 — ISBN 978-953-47198-0-0.
 
-## Optimization Levels
+The concept DOI `10.5281/zenodo.20511073` always resolves to the latest version;
+the v1 release is `10.5281/zenodo.20511074`.
 
-- `--O0`: bypass optimizer (IR passthrough to backend)
-- `--O1`: enabled baseline optimization pipeline
-- `--O2`: advanced profile target documented in `docs/07_optimizations/` (enablement depends on current implementation state)
+---
 
-## Example Workflow
+## License
 
-```bash
-# 1) Full compile with optimization
-./run.sh --O1 --all examples/real_world/real_bfs_shortest_path/program.c
+The FRISCcc compiler source and its in-repo documentation are released under the
+[MIT License](LICENSE), © 2026 Karlo Knežević. The accompanying **book** is a
+separate work under CC BY-NC-ND 4.0. The bundled FRISC simulator
+(`node_modules/friscjs`) is distributed under its own license.
 
-# 2) Compile and execute generated FRISC
-./run.sh --O1 --all --run examples/real_world/real_bfs_shortest_path/program.c
+---
 
-# 3) Validate IR semantics directly
-./run.sh run-ir examples/real_world/real_bfs_shortest_path/program.ir
-```
-
-## Output Artifacts
-
-Each run produces one coherent artifact set in `compiler-bin/` for exactly one program at a time. Outputs are overwritten on each run to prevent artifact contamination.
-
-## Performance Comparison (Representative)
-
-| Configuration | Expected behavior | Typical use |
-|---|---|---|
-| `O0` | Maximum transparency, minimal transformation | debugging IR/codegen correctness |
-| `O1` | Lower instruction count on most loops | default compile/run path |
-| `O2` | Aggressive optimization profile (project roadmap) | benchmark and research experiments |
-
-## Book and Documentation
-
-The project documentation is organized as a technical book in `docs/`.
-
-Generate the book:
-
-```bash
-python3 generate_book.py
-```
-
-Primary outputs:
-
-- `book/main.tex`
-- `book/main.pdf` (if LaTeX toolchain is installed)
-- `book/res/` (rendered diagram assets)
-
-## Contribution Guidelines
-
-1. Keep changes phase-local whenever possible.
-2. Preserve deterministic outputs and golden-test behavior.
-3. Document every non-trivial transformation in the relevant chapter under `docs/`.
-4. Add tests for correctness and regressions (IR and FRISC paths when applicable).
-5. Validate end-to-end equivalence on representative examples before submitting.
-
-Recommended pre-PR checks:
-
-```bash
-mvn test
-./run.sh --O1 --all --run examples/real_world/real_prime_sieve/program.c
-./run.sh run-ir examples/real_world/real_prime_sieve/program.ir
-```
+<div align="center">
+<sub>Built by Dr. Karlo Knežević · Zagreb, 2026</sub>
+</div>

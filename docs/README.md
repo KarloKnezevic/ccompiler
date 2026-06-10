@@ -1,66 +1,62 @@
-# FRISCcc Compiler Book -- Documentation Map
+# FRISCcc — Documentation
 
-This directory contains the canonical Markdown source for the FRISCcc technical
-monograph. Each subdirectory corresponds to a chapter or appendix. Files within
-each directory are ordered numerically and processed by `generate_book.py` to
-produce the final LaTeX/PDF book.
+> **📖 Companion to the book.** This documentation accompanies
+> **_Building a C-Subset Compiler for the FRISC Architecture: From Formal
+> Languages to Executable Code_** by Dr. Karlo Knežević (Zenodo, 2026) —
+> **ISBN** 978-953-47198-0-0 · **DOI**
+> [10.5281/zenodo.20511073](https://doi.org/10.5281/zenodo.20511073).
+> The book is the complete, authoritative narrative; the full PDF is here:
+> [📄 Building-a-C-Subset-Compiler-for-the-FRISC-Architecture.pdf](book/Building-a-C-Subset-Compiler-for-the-FRISC-Architecture.pdf).
 
-## Chapter Structure
+This directory holds the in-repo technical documentation for the FRISCcc
+compiler, organized to mirror the book. Each subdirectory corresponds to a
+chapter or appendix; for the full-length treatment of any topic — with the
+formal development, proofs, and figures — read the corresponding chapter of the
+book.
 
-| # | Directory | Title | Files |
-|---|-----------|-------|-------|
-| 0 | `00_frontmatter/` | Title, Copyright, Dedication, Preface, Acknowledgments, How to Read | 6 |
-| 1 | `01_introduction/` | Introduction and System Overview | 1 |
-| 2 | `02_compiler_theory/` | System Architecture and Module Topology | 1 |
-| 3 | `03_lexer/` | Lexical Analysis | 1 |
-| 4 | `04_parser/` | Syntax Analysis | 1 |
-| 5 | `05_semantic_analysis/` | Semantic Analysis | 1 |
-| 6 | `06_ir/` | Intermediate Representation | 2 |
-| 7 | `07_optimizations/` | Optimization Theory and Practice | 1 |
-| 8 | `08_codegen_frisc/` | FRISC Code Generation | 1 |
-| 9 | `09_runtime/` | Runtime Model and Helper Algorithms | 1 |
-| 10 | `10_simulator/` | Simulator Architecture and Integration | 1 |
-| 11 | `11_real_world_programs/` | Example Suites and Validation Workflows | 1 |
-| 12 | `12_performance/` | Performance Analysis | 1 |
-| 13 | `13_future_work/` | Future Work and Research Directions | 1 |
-| A | `appendix/` | Glossary, Notation, Build Workflow, Config References, FRISC/Simulator References | 9 |
+## How the documentation maps to the book
 
-## Appendix Files
+| Directory | Topic | Read in the book |
+|-----------|-------|------------------|
+| `01_introduction/` | Introduction and system overview | Ch. 1 — *The shape of a compiler* |
+| `02_compiler_theory/` | System architecture and module topology | Ch. 2 — *A tour of the machine* |
+| `03_lexer/` | Lexical analysis (ε-NFA → DFA, maximal munch) | Ch. 3 — *Words* |
+| `04_parser/` | Syntax analysis (LR(1)) | Ch. 4 — *Grammar* |
+| `05_semantic_analysis/` | Symbol tables, typing, semantic legality | Ch. 5 — *Meaning* |
+| `06_ir/` | The typed intermediate representation | Ch. 6 — *A language in the middle* |
+| `07_optimizations/` | Optimization theory and practice | Ch. 7 — *Making it smaller* |
+| `08_codegen_frisc/` | FRISC code generation | Ch. 8–10 — *Down to the metal* |
+| `09_runtime/` | Runtime model and helper algorithms | Ch. 9 — *The runtime* |
+| `10_simulator/` | Simulator architecture and integration | Ch. 10 — *Running it* |
+| `11_real_world_programs/` | Example suites and validation workflows | Ch. 13 — *Case studies* |
+| `12_performance/` | Performance analysis | Ch. 14 — *Performance* |
+| `13_future_work/` | Future work and research directions | Ch. 15 — *Where to take it next* |
+| `appendix/` | Glossary, notation, config and ISA references | Appendices A–L |
+
+(The book also adds Part IV — an IR tree-walking interpreter (Ch. 11) and a
+bytecode virtual machine (Ch. 12) — both implemented in this compiler under
+`cli/`.)
+
+## Appendix files
 
 | File | Title |
 |------|-------|
-| `01_glossary.md` | Appendix A. Glossary |
-| `02_notation_and_conventions.md` | Appendix B. Notation and Conventions |
-| `03_book_generation_workflow.md` | Appendix C. Book Generation Workflow |
-| `04_config_lexer_definition.md` | Appendix D. Lexer Definition Reference |
-| `05_config_parser_definition.md` | Appendix E. Parser Definition Reference |
-| `06_config_semantics_definition.md` | Appendix F. Semantics Definition Reference |
-| `07_config_ir_definition.md` | Appendix G. IR Definition Reference |
-| `08_frisc_theory_reference.md` | Appendix H. FRISC Architecture Reference |
-| `09_simulator_theory_reference.md` | Appendix I. FRISC Simulator Reference |
+| `01_glossary.md` | Glossary |
+| `02_notation_and_conventions.md` | Notation and conventions |
+| `03_book_generation_workflow.md` | The book and how it was produced |
+| `04_config_lexer_definition.md` | Lexer definition reference |
+| `05_config_parser_definition.md` | Parser definition reference |
+| `06_config_semantics_definition.md` | Semantics definition reference |
+| `07_config_ir_definition.md` | IR definition reference |
+| `08_frisc_theory_reference.md` | FRISC architecture reference |
+| `09_simulator_theory_reference.md` | FRISC simulator reference |
 
-## Authoring Rules
+## Conventions used throughout
 
-- Keep chapter-local files ordered numerically.
-- Put formal definitions before implementation excerpts.
-- For any major concept, include: theory, pseudocode, one diagram, and code mapping.
-- Keep terminology consistent across chapters (`typed IR`, `slot`, `frame`, `FRISC helper`, `semantic equivalence`).
-- All IR and FRISC listings must be reproduced from actual compiler output unless explicitly marked as simplified.
-- Croatian nonterminal names from the grammar are always accompanied by English translations.
-
-## Build
-
-Generate the LaTeX/PDF book with:
-
-```bash
-python3 generate_book.py          # Full build: examples + LaTeX + PDF
-python3 generate_book.py --tex    # Generate .tex only; skip PDF
-python3 generate_book.py --quick  # Skip compiler examples; faster iteration
-```
-
-Generated artifacts are placed in:
-
-- `book/chapters/` -- per-chapter LaTeX files
-- `book/res/` -- rendered diagrams and figures
-- `book/main.tex` -- assembled master document
-- `book/main.pdf` -- final PDF (if LaTeX toolchain is present)
+- Terminology is kept consistent across chapters (`typed IR`, `slot`, `frame`,
+  `FRISC helper`, `semantic equivalence`).
+- Formal definitions come before implementation excerpts.
+- All IR and FRISC listings are reproduced from actual compiler output unless
+  explicitly marked as simplified.
+- Croatian nonterminal names from the grammar are always paired with English
+  translations.

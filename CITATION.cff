@@ -1,0 +1,48 @@
+cff-version: 1.2.0
+message: "If you use this compiler or its accompanying book, please cite the book below."
+title: "FRISCcc — A C-Subset Compiler for the FRISC Architecture"
+abstract: >-
+  FRISCcc is a complete, executable Java compiler for a deterministic subset of
+  C, targeting the FRISC educational instruction-set architecture. It implements
+  the full pipeline — lexer, LR(1) parser, semantic analysis, typed intermediate
+  representation, an optimizing IR-to-IR pass pipeline, FRISC code generation,
+  plus an IR tree-walking interpreter and a bytecode virtual machine. It is the
+  running example dissected throughout the book listed in the references.
+type: software
+authors:
+  - family-names: "Knežević"
+    given-names: "Karlo"
+    name-suffix: "Dr."
+repository-code: "https://github.com/KarloKnezevic/ccompiler"
+license: MIT
+version: "1.0.0"
+date-released: "2026-06-10"
+keywords:
+  - compiler
+  - "C subset"
+  - FRISC
+  - "intermediate representation"
+  - "code generation"
+  - "LR(1) parsing"
+  - "bytecode virtual machine"
+  - "compiler optimization"
+preferred-citation:
+  type: book
+  title: "Building a C-Subset Compiler for the FRISC Architecture: From Formal Languages to Executable Code"
+  authors:
+    - family-names: "Knežević"
+      given-names: "Karlo"
+      name-suffix: "Dr."
+  year: 2026
+  publisher:
+    name: "Self-published by the author"
+  isbn: "978-953-47198-0-0"
+  doi: "10.5281/zenodo.20511073"
+  url: "https://doi.org/10.5281/zenodo.20511073"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.20511073"
+    description: "Concept DOI (all versions) of the accompanying book"
+  - type: doi
+    value: "10.5281/zenodo.20511074"
+    description: "Version DOI (v1) of the accompanying book"

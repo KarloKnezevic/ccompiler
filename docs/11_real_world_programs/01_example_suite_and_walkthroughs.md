@@ -1,3 +1,5 @@
+> **📖 From the book.** This chapter accompanies *Building a C-Subset Compiler for the FRISC Architecture: From Formal Languages to Executable Code* by Dr. Karlo Knežević (Zenodo, 2026). For the complete treatment — formal development, proofs, and figures — read the book: [📄 PDF](../book/Building-a-C-Subset-Compiler-for-the-FRISC-Architecture.pdf) · DOI [10.5281/zenodo.20511073](https://doi.org/10.5281/zenodo.20511073) · ISBN 978-953-47198-0-0.
+
 ## Why Example Suites Matter
 
 A compiler is only as trustworthy as the behaviors it can reproduce across diverse programs. Unit tests on minimal expressions verify individual transformations, but they cannot expose the interaction effects that arise when multiple language features, optimization passes, and runtime helpers operate simultaneously on realistic code. This project uses structured example suites to validate both correctness and regression resilience. The suites are not random program collections; they are curated by language feature, complexity, and expected outcome category, forming a systematic validation framework.

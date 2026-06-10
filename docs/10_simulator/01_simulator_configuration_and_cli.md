@@ -1,3 +1,5 @@
+> **📖 From the book.** This chapter accompanies *Building a C-Subset Compiler for the FRISC Architecture: From Formal Languages to Executable Code* by Dr. Karlo Knežević (Zenodo, 2026). For the complete treatment — formal development, proofs, and figures — read the book: [📄 PDF](../book/Building-a-C-Subset-Compiler-for-the-FRISC-Architecture.pdf) · DOI [10.5281/zenodo.20511073](https://doi.org/10.5281/zenodo.20511073) · ISBN 978-953-47198-0-0.
+
 ## Scope and Source Grounding
 
 This chapter provides a detailed guide to the FRISC simulator as used in this compiler project, written for compiler engineers who need to understand and debug end-to-end behavior from generated assembly to final register state. The focus is implementation-level: what the simulator actually does in code, not what an abstract ISA reference might specify.

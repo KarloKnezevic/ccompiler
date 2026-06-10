@@ -1,3 +1,5 @@
+> **📖 From the book.** This chapter accompanies *Building a C-Subset Compiler for the FRISC Architecture: From Formal Languages to Executable Code* by Dr. Karlo Knežević (Zenodo, 2026). For the complete treatment — formal development, proofs, and figures — read the book: [📄 PDF](../book/Building-a-C-Subset-Compiler-for-the-FRISC-Architecture.pdf) · DOI [10.5281/zenodo.20511073](https://doi.org/10.5281/zenodo.20511073) · ISBN 978-953-47198-0-0.
+
 ## 1.1 Purpose and Scope
 
 FRISCcc is a self-contained compiler that translates a deterministic subset of the C programming language into assembly code for the FRISC processor, a 32-bit RISC architecture designed at the Faculty of Electrical Engineering and Computing (FER), University of Zagreb. The compiler is implemented in Java 21 as a Maven multi-module project under the package hierarchy `hr.fer.ppj`, and it encompasses every phase of a classical compilation pipeline: lexical analysis, syntax analysis, semantic analysis, intermediate representation generation, optimisation, and target code generation. \index{FRISCcc} \index{FRISC} \index{compilation pipeline}

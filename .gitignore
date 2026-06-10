@@ -1,12 +1,9 @@
-# Data directory
-data/
-theory/
+# --- Local-only authoring files (never published) -------------------
+CLAUDE.md
+.claude/
+.vscode/
 
-# Build artifacts
-compiler-bin/
-book/
-
-# Maven
+# --- Maven build output ----------------------------------------------
 target/
 pom.xml.tag
 pom.xml.releaseBackup
@@ -18,10 +15,15 @@ buildNumber.properties
 .mvn/timing.properties
 .mvn/wrapper/maven-wrapper.jar
 
-# IDE
+# --- Compiler run artifacts (regenerated per run) --------------------
+compiler-bin/
+
+# --- Compiled classes ------------------------------------------------
+*.class
+
+# --- IDE -------------------------------------------------------------
 .idea/
 *.iml
-.vscode/
 .classpath
 .project
 .settings/
@@ -29,28 +31,17 @@ buildNumber.properties
 *.swo
 *~
 
-# OS
+# --- OS --------------------------------------------------------------
 .DS_Store
 Thumbs.db
 
-# Compiled classes
-*.class
-
-# Python
+# --- Python ----------------------------------------------------------
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
-.Python
 
-# Test/debug files
-test_*.java
-*_debug.java
-*_test.java
-
-# Logs
+# --- Logs ------------------------------------------------------------
 *.log
 
-#AI
-.claude/
-
+# Note: dist/ (the prebuilt ccompiler.jar) and docs/book/ (the book PDF)
+# are intentionally tracked and shipped with the repository.

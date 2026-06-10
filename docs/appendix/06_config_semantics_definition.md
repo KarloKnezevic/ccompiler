@@ -1,5 +1,8 @@
 # Appendix F. Semantics Definition Reference
 
+> **📖 From the book.** This chapter accompanies *Building a C-Subset Compiler for the FRISC Architecture: From Formal Languages to Executable Code* by Dr. Karlo Knežević (Zenodo, 2026). For the complete treatment — formal development, proofs, and figures — read the book: [📄 PDF](../book/Building-a-C-Subset-Compiler-for-the-FRISC-Architecture.pdf) · DOI [10.5281/zenodo.20511073](https://doi.org/10.5281/zenodo.20511073) · ISBN 978-953-47198-0-0.
+
+
 This appendix provides an annotated reference for the FRISCcc semantic checking
 grammar (`config/semantics_definition.txt`). The semantics definition specifies
 the production rules against which the semantic analysis phase operates. Each

@@ -1,29 +1,28 @@
 # Copyright and License
 
-Copyright (c) 2024--2026 Karlo Knezevic. All rights reserved.
+Copyright © 2026 Karlo Knežević.
 
-All rights reserved for original textual content, generated diagrams, and implementation-specific explanatory material in this monograph, except where third-party components are explicitly identified. The project includes external dependencies (for example FRISCjs) that remain governed by their own licenses.
+This `docs/` tree is the in-repo technical documentation that accompanies the
+FRISCcc compiler. It is a companion to the book **_Building a C-Subset Compiler
+for the FRISC Architecture: From Formal Languages to Executable Code_**
+(Dr. Karlo Knežević, Zenodo, 2026 — ISBN 978-953-47198-0-0, DOI
+[10.5281/zenodo.20511073](https://doi.org/10.5281/zenodo.20511073)).
 
-## Use and Distribution
+## Licensing
 
-This text may be used for educational and research purposes inside institutions and private study contexts. For redistribution, derivative publication, or commercial use, follow the repository license terms and retain attribution to the project and contributors.
-
-## Third-Party Components
-
-The compiler stack interacts with external tools and libraries, including but not limited to:
-
-- FRISCjs simulator and assembler runtime (JavaScript)
-- Maven ecosystem dependencies (Java 21)
-- Pandoc and LaTeX toolchains for book rendering
-- Mermaid rendering toolchain for diagrams
-
-Users must verify compatibility and licensing obligations for their own distribution and publication pipelines.
+- The **FRISCcc compiler source code** and this in-repo documentation are
+  released under the **MIT License** (see [`LICENSE`](../../LICENSE) at the
+  repository root).
+- The **book** is a separate work, © 2026 Karlo Knežević, licensed under
+  **Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International**
+  (CC BY-NC-ND 4.0).
+- The bundled **FRISC simulator** (`friscjs`, under `node_modules/`) remains
+  governed by its own license.
 
 ## Warranty Disclaimer
 
-The software and documentation are provided on an "as is" basis, without warranty of any kind, express or implied, including but not limited to merchantability, fitness for a particular purpose, and non-infringement. In no event shall authors or contributors be liable for any claim, damages, or other liability arising from use of the software or this documentation.
-
----
-
-*First edition: 2025. Current revision: 2026.*
-*Typeset from Markdown sources in `docs/` using `generate_book.py`.*
+The software and documentation are provided on an "as is" basis, without
+warranty of any kind, express or implied, including but not limited to
+merchantability, fitness for a particular purpose, and non-infringement. In no
+event shall the author be liable for any claim, damages, or other liability
+arising from use of the software or this documentation.
