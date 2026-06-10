@@ -1,62 +1,49 @@
-# FRISCcc — Documentation
+# FRISCcc — Technical Documentation
 
-> **📖 Companion to the book.** This documentation accompanies
-> **_Building a C-Subset Compiler for the FRISC Architecture: From Formal
-> Languages to Executable Code_** by Dr. Karlo Knežević (Zenodo, 2026) —
-> **ISBN** 978-953-47198-0-0 · **DOI**
-> [10.5281/zenodo.20511073](https://doi.org/10.5281/zenodo.20511073).
-> The book is the complete, authoritative narrative; the full PDF is here:
-> [📄 Building-a-C-Subset-Compiler-for-the-FRISC-Architecture.pdf](book/Building-a-C-Subset-Compiler-for-the-FRISC-Architecture.pdf).
+Engineering documentation for the **FRISCcc** compiler: a Maven/Java 21 compiler
+that translates a deterministic subset of C into FRISC assembly through a typed
+intermediate representation, and also executes that IR on a tree-walking
+interpreter and a bytecode virtual machine.
 
-This directory holds the in-repo technical documentation for the FRISCcc
-compiler, organized to mirror the book. Each subdirectory corresponds to a
-chapter or appendix; for the full-length treatment of any topic — with the
-formal development, proofs, and figures — read the corresponding chapter of the
-book.
+This is reference documentation aimed at engineers reading, building, or
+extending the codebase — each page describes a real component and is grounded in
+the source under the corresponding module. For the project overview and a
+one-minute quickstart, see the repository [`README.md`](../README.md).
 
-## How the documentation maps to the book
+## Map
 
-| Directory | Topic | Read in the book |
-|-----------|-------|------------------|
-| `01_introduction/` | Introduction and system overview | Ch. 1 — *The shape of a compiler* |
-| `02_compiler_theory/` | System architecture and module topology | Ch. 2 — *A tour of the machine* |
-| `03_lexer/` | Lexical analysis (ε-NFA → DFA, maximal munch) | Ch. 3 — *Words* |
-| `04_parser/` | Syntax analysis (LR(1)) | Ch. 4 — *Grammar* |
-| `05_semantic_analysis/` | Symbol tables, typing, semantic legality | Ch. 5 — *Meaning* |
-| `06_ir/` | The typed intermediate representation | Ch. 6 — *A language in the middle* |
-| `07_optimizations/` | Optimization theory and practice | Ch. 7 — *Making it smaller* |
-| `08_codegen_frisc/` | FRISC code generation | Ch. 8–10 — *Down to the metal* |
-| `09_runtime/` | Runtime model and helper algorithms | Ch. 9 — *The runtime* |
-| `10_simulator/` | Simulator architecture and integration | Ch. 10 — *Running it* |
-| `11_real_world_programs/` | Example suites and validation workflows | Ch. 13 — *Case studies* |
-| `12_performance/` | Performance analysis | Ch. 14 — *Performance* |
-| `13_future_work/` | Future work and research directions | Ch. 15 — *Where to take it next* |
-| `appendix/` | Glossary, notation, config and ISA references | Appendices A–L |
+### Getting oriented
+- [Overview](overview.md) — what the compiler is and how the phases connect.
+- [Architecture](architecture.md) — module topology, dependencies, and data flow.
+- [Build & run](build-and-run.md) — prerequisites, building, and running.
 
-(The book also adds Part IV — an IR tree-walking interpreter (Ch. 11) and a
-bytecode virtual machine (Ch. 12) — both implemented in this compiler under
-`cli/`.)
+### Pipeline (phase by phase)
+- [Lexer](pipeline/lexer.md) — ε-NFA → DFA, maximal-munch tokenization.
+- [Parser](pipeline/parser.md) — LR(1) table construction and parsing, AST.
+- [Semantic analysis](pipeline/semantics.md) — symbol tables, type system, legality.
+- [Intermediate representation](pipeline/ir.md) — the typed IR and lowering.
+- [Optimization](pipeline/optimization.md) — the IR-to-IR fixpoint pass pipeline.
+- [Code generation](pipeline/codegen.md) — typed IR → FRISC assembly.
+- [Runtime & ABI](pipeline/runtime-abi.md) — calling convention, frames, helpers.
+- [Interpreter & bytecode VM](pipeline/interpreter-vm.md) — the two IR execution back ends.
 
-## Appendix files
+### Reference
+- [IR grammar](reference/ir-grammar.md) — the canonical IR grammar.
+- [FRISC ISA](reference/frisc-isa.md) — the instruction subset the compiler targets.
+- [Simulator](reference/simulator.md) — how generated assembly is executed.
+- [CLI](reference/cli.md) — complete command-line reference.
+- [Glossary](reference/glossary.md) — terms used across the docs.
+- [Notation & conventions](reference/notation.md) — symbols and conventions.
 
-| File | Title |
-|------|-------|
-| `01_glossary.md` | Glossary |
-| `02_notation_and_conventions.md` | Notation and conventions |
-| `03_book_generation_workflow.md` | The book and how it was produced |
-| `04_config_lexer_definition.md` | Lexer definition reference |
-| `05_config_parser_definition.md` | Parser definition reference |
-| `06_config_semantics_definition.md` | Semantics definition reference |
-| `07_config_ir_definition.md` | IR definition reference |
-| `08_frisc_theory_reference.md` | FRISC architecture reference |
-| `09_simulator_theory_reference.md` | FRISC simulator reference |
+## The accompanying book
 
-## Conventions used throughout
+These docs are a practical companion to the full-length book, which develops the
+same compiler from first principles with complete formal treatment, proofs, and
+figures:
 
-- Terminology is kept consistent across chapters (`typed IR`, `slot`, `frame`,
-  `FRISC helper`, `semantic equivalence`).
-- Formal definitions come before implementation excerpts.
-- All IR and FRISC listings are reproduced from actual compiler output unless
-  explicitly marked as simplified.
-- Croatian nonterminal names from the grammar are always paired with English
-  translations.
+> **Building a C-Subset Compiler for the FRISC Architecture: From Formal Languages to Executable Code**
+> Dr. Karlo Knežević · Zenodo, 2026 · ISBN 978-953-47198-0-0
+> DOI [10.5281/zenodo.20511074](https://doi.org/10.5281/zenodo.20511074) · 📄 [Local PDF](book/Building-a-C-Subset-Compiler-for-the-FRISC-Architecture.pdf)
+
+The documentation here is deliberately technical and self-contained; reach for
+the book when you want the underlying theory and the long-form narrative.

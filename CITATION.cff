@@ -37,12 +37,9 @@ preferred-citation:
   publisher:
     name: "Self-published by the author"
   isbn: "978-953-47198-0-0"
-  doi: "10.5281/zenodo.20511073"
-  url: "https://doi.org/10.5281/zenodo.20511073"
+  doi: "10.5281/zenodo.20511074"
+  url: "https://doi.org/10.5281/zenodo.20511074"
 identifiers:
   - type: doi
-    value: "10.5281/zenodo.20511073"
-    description: "Concept DOI (all versions) of the accompanying book"
-  - type: doi
     value: "10.5281/zenodo.20511074"
-    description: "Version DOI (v1) of the accompanying book"
+    description: "DOI of the accompanying book (Zenodo)"

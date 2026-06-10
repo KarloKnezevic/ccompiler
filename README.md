@@ -8,7 +8,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-1B3A6B.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-21%2B-C7253E.svg)](#prerequisites)
-[![Book DOI](https://img.shields.io/badge/Book-10.5281%2Fzenodo.20511073-2E8B57.svg)](https://doi.org/10.5281/zenodo.20511073)
+[![Book DOI](https://img.shields.io/badge/Book-10.5281%2Fzenodo.20511074-2E8B57.svg)](https://doi.org/10.5281/zenodo.20511074)
 [![Release](https://img.shields.io/badge/release-v1.0.0-1B3A6B.svg)](https://github.com/KarloKnezevic/ccompiler/releases)
 
 </div>
@@ -35,8 +35,8 @@ This compiler is the running example dissected, line by line, throughout the boo
 
 > **Building a C-Subset Compiler for the FRISC Architecture: From Formal Languages to Executable Code**
 > Dr. Karlo Knežević · Self-published, Zagreb, 2026
-> **ISBN** 978-953-47198-0-0 · **DOI** [10.5281/zenodo.20511073](https://doi.org/10.5281/zenodo.20511073)
-> 📕 Read it here: [doi.org/10.5281/zenodo.20511073](https://doi.org/10.5281/zenodo.20511073) · 📄 [Local PDF](docs/book/Building-a-C-Subset-Compiler-for-the-FRISC-Architecture.pdf)
+> **ISBN** 978-953-47198-0-0 · **DOI** [10.5281/zenodo.20511074](https://doi.org/10.5281/zenodo.20511074)
+> 📕 Read it here: [doi.org/10.5281/zenodo.20511074](https://doi.org/10.5281/zenodo.20511074) · 📄 [Local PDF](docs/book/Building-a-C-Subset-Compiler-for-the-FRISC-Architecture.pdf)
 
 The book is a narrative monograph: it builds this exact compiler from first
 principles — automata and formal languages, LR(1) parsing, type systems, a
@@ -235,7 +235,7 @@ its FRISC assembly, so you can diff against a known-good result.
   book chapter by chapter (lexer, parser, semantics, IR, optimization, codegen,
   runtime, simulator, performance).
 - [`docs/book/`](docs/book/) — the full book PDF.
-- The book itself, [doi.org/10.5281/zenodo.20511073](https://doi.org/10.5281/zenodo.20511073),
+- The book itself, [doi.org/10.5281/zenodo.20511074](https://doi.org/10.5281/zenodo.20511074),
   is the complete, authoritative narrative.
 
 ---
@@ -247,10 +247,10 @@ If FRISCcc or its book helped your work, please cite the book (a
 
 > Knežević, K. (2026). *Building a C-Subset Compiler for the FRISC Architecture:
 > From Formal Languages to Executable Code.* Zenodo.
-> https://doi.org/10.5281/zenodo.20511073 — ISBN 978-953-47198-0-0.
+> https://doi.org/10.5281/zenodo.20511074 — ISBN 978-953-47198-0-0.
 
-The concept DOI `10.5281/zenodo.20511073` always resolves to the latest version;
-the v1 release is `10.5281/zenodo.20511074`.
+The work is archived on Zenodo under DOI `10.5281/zenodo.20511074`
+(ISBN 978-953-47198-0-0).
 
 ---
 
