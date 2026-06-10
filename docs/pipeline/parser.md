@@ -8,18 +8,18 @@ The parser transforms the flat token stream produced by the lexer into a parse t
 
 ```mermaid
 flowchart LR
-    A["compiler-bin/tokens.txt\n(lexer output)"] --> B["TokenReader\n(io/TokenReader.java)"]
+    A["compiler-bin/tokens.txt<br/>(lexer output)"] --> B["TokenReader<br/>(io/TokenReader.java)"]
     B --> C["List&lt;Token&gt;"]
-    C --> D["LRParser\n(lr/LRParser.java)"]
-    E["config/parser_definition.txt"] --> F["GrammarParser\n(grammar/GrammarParser.java)"]
-    F --> G["Grammar\n(grammar/Grammar.java)"]
-    G --> H["FirstSetComputer\n(grammar/FirstSetComputer.java)"]
-    H --> I["LRTableBuilder\n(lr/LRTableBuilder.java)"]
-    I --> J["LRTableCache\n(table/LRTableCache.java)"]
-    J --> K["LRTable\n(table/LRTable.java)"]
+    C --> D["LRParser<br/>(lr/LRParser.java)"]
+    E["config/parser_definition.txt"] --> F["GrammarParser<br/>(grammar/GrammarParser.java)"]
+    F --> G["Grammar<br/>(grammar/Grammar.java)"]
+    G --> H["FirstSetComputer<br/>(grammar/FirstSetComputer.java)"]
+    H --> I["LRTableBuilder<br/>(lr/LRTableBuilder.java)"]
+    I --> J["LRTableCache<br/>(table/LRTableCache.java)"]
+    J --> K["LRTable<br/>(table/LRTable.java)"]
     K --> D
-    D --> L["ParseTree\n(tree/ParseTree.java)"]
-    L --> M["compiler-bin/generativno_stablo.txt\ncompiler-bin/sintaksno_stablo.txt"]
+    D --> L["ParseTree<br/>(tree/ParseTree.java)"]
+    L --> M["compiler-bin/generativno_stablo.txt<br/>compiler-bin/sintaksno_stablo.txt"]
 ```
 
 The entry point is `Parser.parse(ParserConfig.Config)` in `compiler-parser/src/main/java/hr/fer/ppj/parser/Parser.java`. Downstream phases (semantic analysis and IR lowering) consume the `ParseTree` object directly via `Parser.parseTokens(List<Token>)`.

@@ -420,24 +420,24 @@ Identifiers must begin with a letter. Underscores are permitted after the first 
 
 ```mermaid
 graph TD
-    P["Program\n(.program … .endprogram)"]
-    P --> GD["GlobalDecl\n(.globals)"]
-    P --> TD2["TypeDef\n(.type struct)"]
-    P --> FD["FuncDef\n(.func … .endfunc)"]
+    P["Program<br/>(.program … .endprogram)"]
+    P --> GD["GlobalDecl<br/>(.globals)"]
+    P --> TD2["TypeDef<br/>(.type struct)"]
+    P --> FD["FuncDef<br/>(.func … .endfunc)"]
 
-    GD --> GV["GlobalVar\nglobal name : Type [= Const]"]
+    GD --> GV["GlobalVar<br/>global name : Type [= Const]"]
 
-    TD2 --> SF["StructField\nname : Type @ offset"]
+    TD2 --> SF["StructField<br/>name : Type @ offset"]
 
-    FD --> FR["FrameDecl\n.frame locals=N bytes align=A"]
-    FD --> SL["SlotsDecl\n.slots"]
-    FD --> BK["BlocksDecl\n.blocks"]
+    FD --> FR["FrameDecl<br/>.frame locals=N bytes align=A"]
+    FD --> SL["SlotsDecl<br/>.slots"]
+    FD --> BK["BlocksDecl<br/>.blocks"]
 
-    SL --> SE["SlotEntry\nparam|local|spill name @ offset : Type"]
+    SL --> SE["SlotEntry<br/>param|local|spill name @ offset : Type"]
 
-    BK --> BL["Block\nLabel:"]
-    BL --> IN["Instr (0…*)\nassign | store | void call"]
-    BL --> TR["Terminator (exactly 1)\nbr | jmp | ret"]
+    BK --> BL["Block<br/>Label:"]
+    BL --> IN["Instr (0…*)<br/>assign | store | void call"]
+    BL --> TR["Terminator (exactly 1)<br/>br | jmp | ret"]
 ```
 
 ---

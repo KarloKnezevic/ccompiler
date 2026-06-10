@@ -77,20 +77,19 @@ Key properties:
 
 ```mermaid
 flowchart TD
-    A([Start: IrProgram]) --> B[Validate input]
-    B --> C{level == O0?}
+    A([Start: IrProgram]) --> B["Validate input"]
+    B --> C{"level == O0?"}
     C -- Yes --> D([Return unchanged])
-    C -- No --> E[iteration = 0\nchangedInIteration = false]
-    E --> F[Apply next pass\nresult = pass.run]
-    F --> G[current = result.program\nchangedInIteration |= result.changed]
-    G --> H{More passes\nin list?}
+    C -- No --> E["iteration = 0<br/>changedInIteration = false"]
+    E --> F["Apply next pass<br/>result = pass.run"]
+    F --> G["current = result.program<br/>accumulate result.changed"]
+    G --> H{"More passes in list?"}
     H -- Yes --> F
-    H -- No --> I{changedInIteration\nOR iteration < maxIterations?}
-    I -- No change --> J[Validate output]
-    J --> K([Return optimized])
-    I -- Changed AND\nmore iterations left --> L[iteration++\nreset changedInIteration]
+    H -- No --> I{"changed this iteration AND iterations remain?"}
+    I -- Yes --> L["iteration++<br/>reset changedInIteration"]
     L --> F
-    I -- Max iterations\nreached --> J
+    I -- No --> J["Validate output"]
+    J --> K([Return optimized])
 ```
 
 ### `IrPass` contract

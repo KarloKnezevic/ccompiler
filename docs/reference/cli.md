@@ -41,12 +41,12 @@ The pipeline always runs every stage from LEX up to the highest-numbered request
 
 ```mermaid
 flowchart LR
-    LEX["LEX\ntokens.txt"] --> PARSE["PARSE\nast.txt"]
-    PARSE --> SEM["SEM\nsemantic_tree.txt"]
-    SEM --> IR["IR\nintermediate.ir"]
-    IR --> OPT["OPT\n(rewrites intermediate.ir)"]
-    OPT --> FRISC["FRISC\na.out"]
-    FRISC --> RUN["RUN\n(simulator stdout)"]
+    LEX["LEX<br/>tokens.txt"] --> PARSE["PARSE<br/>ast.txt"]
+    PARSE --> SEM["SEM<br/>semantic_tree.txt"]
+    SEM --> IR["IR<br/>intermediate.ir"]
+    IR --> OPT["OPT<br/>(rewrites intermediate.ir)"]
+    OPT --> FRISC["FRISC<br/>a.out"]
+    FRISC --> RUN["RUN<br/>(simulator stdout)"]
 
     style OPT fill:#f0f4ff,stroke:#1B3A6B
     style RUN fill:#f0f4ff,stroke:#1B3A6B

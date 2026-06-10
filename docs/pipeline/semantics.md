@@ -20,16 +20,16 @@ The IR lowering stage (`compiler-ir`) consumes only programs that pass all seman
 
 ```mermaid
 flowchart TD
-    A["ParseTree\n(compiler-parser output)"] --> B["ParseTreeConverter\n.convert(parseTree)"]
-    B --> C["NonTerminalNode root\n(mutable semantic tree)"]
-    C --> D["SemanticChecker\n.check(root)"]
-    D --> E["visitNonTerminal(root)\nhandler dispatch loop"]
-    E --> F["DeclarationRules\n(functions, variables, structs,\nparameters, initializers)"]
-    E --> G["StatementRules\n(blocks, if, while, for,\nbreak, continue, return)"]
-    E --> H["ExpressionRules\n(primary, postfix, unary, binary)"]
-    D --> I["GlobalConstraintVerifier\n.verify(functions)"]
-    I --> J["main function check\nundefined function check"]
-    D --> K["SemanticAnalysisResult\n(SymbolTable, NonTerminalNode)"]
+    A["ParseTree<br/>(compiler-parser output)"] --> B["ParseTreeConverter<br/>.convert(parseTree)"]
+    B --> C["NonTerminalNode root<br/>(mutable semantic tree)"]
+    C --> D["SemanticChecker<br/>.check(root)"]
+    D --> E["visitNonTerminal(root)<br/>handler dispatch loop"]
+    E --> F["DeclarationRules<br/>(functions, variables, structs,<br/>parameters, initializers)"]
+    E --> G["StatementRules<br/>(blocks, if, while, for,<br/>break, continue, return)"]
+    E --> H["ExpressionRules<br/>(primary, postfix, unary, binary)"]
+    D --> I["GlobalConstraintVerifier<br/>.verify(functions)"]
+    I --> J["main function check<br/>undefined function check"]
+    D --> K["SemanticAnalysisResult<br/>(SymbolTable, NonTerminalNode)"]
 ```
 
 ---

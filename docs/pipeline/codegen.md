@@ -12,17 +12,17 @@ and writes the result to `compiler-bin/a.out` (or a caller-specified path).
 
 ```mermaid
 flowchart LR
-    IR["Typed IR text\n(optimized)"]
-    PARSE["IrTextParser\n→ IrProgramModel"]
-    SCRATCH["PointerScratchCollector\nPointerScratch"]
-    PARAM["ParamLayoutBuilder\nParamLayout map"]
-    PROG["ProgramEmitter\n(entry + struct layouts)"]
-    FUNC["FunctionEmitter\n(per function)"]
-    GLOB["GlobalsEmitter\n(data section)"]
-    HELP["HelperEmitter\n(runtime routines)"]
-    EMIT["FriscEmitter\n(line buffer)"]
+    IR["Typed IR text<br/>(optimized)"]
+    PARSE["IrTextParser<br/>→ IrProgramModel"]
+    SCRATCH["PointerScratchCollector<br/>PointerScratch"]
+    PARAM["ParamLayoutBuilder<br/>ParamLayout map"]
+    PROG["ProgramEmitter<br/>(entry + struct layouts)"]
+    FUNC["FunctionEmitter<br/>(per function)"]
+    GLOB["GlobalsEmitter<br/>(data section)"]
+    HELP["HelperEmitter<br/>(runtime routines)"]
+    EMIT["FriscEmitter<br/>(line buffer)"]
     PEEP["FriscPeepholeOptimizer"]
-    OUT["a.out\n(FRISC assembly)"]
+    OUT["a.out<br/>(FRISC assembly)"]
 
     IR --> PARSE --> SCRATCH
     PARSE --> PARAM

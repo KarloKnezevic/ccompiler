@@ -12,18 +12,18 @@ flowchart TD
 
     subgraph Interpreter ["Tree-walking interpreter (run-ir)"]
         direction TB
-        ITP["IrTextParser\nparse IR text → IrProgramModel"]
-        ITW["IrInterpreter\nwalk IR object graph directly\n— borrows JVM call stack for recursion\n— per-frame Map&lt;Integer,Integer&gt; temps"]
-        ITR["IrExecutionResult\n(returnValue, steps, trace)"]
+        ITP["IrTextParser<br/>parse IR text → IrProgramModel"]
+        ITW["IrInterpreter<br/>walk IR object graph directly<br/>— borrows JVM call stack for recursion<br/>— per-frame Map&lt;Integer,Integer&gt; temps"]
+        ITR["IrExecutionResult<br/>(returnValue, steps, trace)"]
         ITP --> ITW --> ITR
     end
 
     subgraph VM ["Bytecode VM (run-vm)"]
         direction TB
-        VTP["IrTextParser\nparse IR text → IrProgramModel"]
-        LWR["IrToBytecodeCompiler\nlower IrProgramModel → Bytecode.Program\n(flat byte stream per function,\nnumeric jump offsets, pre-computed\nglobal images, bounds-check flags baked in)"]
-        BVMR["BytecodeVm\nswitch-dispatched loop\n— own int[] operand stack (64 Ki slots)\n— explicit ArrayDeque&lt;CallFrame&gt; call stack\n— per-frame int[] temps register file"]
-        VTR["VmExecutionResult\n(returnValue, dispatched, trace)"]
+        VTP["IrTextParser<br/>parse IR text → IrProgramModel"]
+        LWR["IrToBytecodeCompiler<br/>lower IrProgramModel → Bytecode.Program<br/>(flat byte stream per function,<br/>numeric jump offsets, pre-computed<br/>global images, bounds-check flags baked in)"]
+        BVMR["BytecodeVm<br/>switch-dispatched loop<br/>— own int[] operand stack (64 Ki slots)<br/>— explicit ArrayDeque&lt;CallFrame&gt; call stack<br/>— per-frame int[] temps register file"]
+        VTR["VmExecutionResult<br/>(returnValue, dispatched, trace)"]
         VTP --> LWR --> BVMR --> VTR
     end
 
@@ -145,12 +145,12 @@ stateDiagram-v2
 
     FetchOpcode : Fetch opcode byte at frame.pc++
     Dispatch : Switch on Opcode
-    MutateStack : Arithmetic / memory / cast / compare:\npop operands, push result
-    MutateTemps : LOAD_TEMP / STORE_TEMP:\nread or write frame.temps[idx]
-    CallEnter : CALL / CALL_VOID:\npop args, push new CallFrame
-    CallReturn : RET / RET_VOID:\npop frame; push return value if CALL
-    Branch : JMP / BR:\nset frame.pc to target offset
-    Watchdog : dispatched > dispatchLimit?\nthrow IllegalStateException
+    MutateStack : Arithmetic / memory / cast / compare — pop operands, push result
+    MutateTemps : LOAD_TEMP / STORE_TEMP — read or write frame temps
+    CallEnter : CALL / CALL_VOID — pop args, push new CallFrame
+    CallReturn : RET / RET_VOID — pop frame; push return value if CALL
+    Branch : JMP / BR — set frame.pc to target offset
+    Watchdog : dispatched exceeds dispatchLimit? — throw IllegalStateException
 
     FetchOpcode --> Dispatch
     Dispatch --> MutateStack

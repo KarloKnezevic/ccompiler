@@ -9,14 +9,14 @@ The FRISCcc IR is a typed, three-address, basic-block-structured intermediate re
 ```mermaid
 flowchart LR
     SRC["C source"] --> LEX["Lexer"]
-    LEX --> PARSE["Parser\n(ParseTree)"]
-    PARSE --> SEM["Semantic Analysis\n(SemanticAnalyzer)"]
-    SEM -->|"SymbolTable +\nNonTerminalNode"| GEN["IR Generation\n(ProgramGenerator)"]
-    GEN --> VER["IR Verification\n(IrVerifier)"]
-    VER -->|"IrProgram"| OPT["Optimizer\n(compiler-opt)"]
-    VER -->|"IrProgram"| INTERP["IR Interpreter\n(IrInterpreter)"]
-    VER -->|"IrProgram"| VM["Bytecode VM\n(IrToBytecodeCompiler)"]
-    VER -->|"IrProgram"| CG["FRISC Codegen\n(compiler-codegen-frisc)"]
+    LEX --> PARSE["Parser<br/>(ParseTree)"]
+    PARSE --> SEM["Semantic Analysis<br/>(SemanticAnalyzer)"]
+    SEM -->|"SymbolTable +<br/>NonTerminalNode"| GEN["IR Generation<br/>(ProgramGenerator)"]
+    GEN --> VER["IR Verification<br/>(IrVerifier)"]
+    VER -->|"IrProgram"| OPT["Optimizer<br/>(compiler-opt)"]
+    VER -->|"IrProgram"| INTERP["IR Interpreter<br/>(IrInterpreter)"]
+    VER -->|"IrProgram"| VM["Bytecode VM<br/>(IrToBytecodeCompiler)"]
+    VER -->|"IrProgram"| CG["FRISC Codegen<br/>(compiler-codegen-frisc)"]
 ```
 
 The public entry point is `IrPipeline` (`hr.fer.ppj.ir.IrPipeline`). Its two primary static methods are:

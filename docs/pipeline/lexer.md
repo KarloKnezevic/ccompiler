@@ -211,10 +211,10 @@ At startup, `LexerGenerator.generate(Reader)` reads `lexer_definition.txt` and p
 
 ```mermaid
 flowchart LR
-    A["config/lexer_definition.txt"] -->|LexerSpecParser.parse| B["Macros\nStates\nTokens\nRules"]
-    B -->|LexerGenerator.expandMacros| C["Expanded patterns\n(no macro refs)"]
-    C -->|RegexParser.parse\nThompson's construction| D["Per-rule ε-NFAs\nmerged per state"]
-    D -->|NFAToDFAConverter.convert\nsubset construction| E["Per-state DFAs\nLexerGeneratorResult"]
+    A["config/lexer_definition.txt"] -->|LexerSpecParser.parse| B["Macros<br/>States<br/>Tokens<br/>Rules"]
+    B -->|LexerGenerator.expandMacros| C["Expanded patterns<br/>(no macro refs)"]
+    C -->|RegexParser.parse<br/>Thompson's construction| D["Per-rule ε-NFAs<br/>merged per state"]
+    D -->|NFAToDFAConverter.convert<br/>subset construction| E["Per-state DFAs<br/>LexerGeneratorResult"]
     E -->|Lexer.tokenize| F["List&lt;Token&gt;"]
 ```
 
@@ -462,14 +462,14 @@ The `Lexer` instance is not thread-safe (the symbol table and `LexerState` are m
 ```mermaid
 flowchart TD
     subgraph "Generation (startup)"
-        A["lexer_definition.txt"] --> B["LexerSpecParser\n(macros, states, tokens, rules)"]
-        B --> C["LexerGenerator\n(macro expansion)"]
-        C --> D["RegexParser\n(Thompson's construction → ε-NFA)"]
-        D --> E["NFAToDFAConverter\n(subset construction → DFA)"]
-        E --> F["LexerGeneratorResult\nMap&lt;state, DFA&gt;"]
+        A["lexer_definition.txt"] --> B["LexerSpecParser<br/>(macros, states, tokens, rules)"]
+        B --> C["LexerGenerator<br/>(macro expansion)"]
+        C --> D["RegexParser<br/>(Thompson's construction → ε-NFA)"]
+        D --> E["NFAToDFAConverter<br/>(subset construction → DFA)"]
+        E --> F["LexerGeneratorResult<br/>Map&lt;state, DFA&gt;"]
     end
     subgraph "Runtime (per source file)"
-        G["C source text"] --> H["Lexer.tokenize\n(maximal munch)"]
+        G["C source text"] --> H["Lexer.tokenize<br/>(maximal munch)"]
         F --> H
         H --> I["List&lt;Token&gt;"]
     end

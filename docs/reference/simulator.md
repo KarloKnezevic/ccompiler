@@ -20,20 +20,20 @@ sequenceDiagram
     participant CG as FriscCodeGenerator
     participant FS as compiler-bin/a.out
     participant FR as FriscRunner (Java)
-    participant Node as node -e &lt;script&gt;
+    participant Node as node (inline script)
     participant Sim as friscjs simulator
     participant Out as program output (R6)
 
-    CLI->>CG: --all --run <source.c>
+    CLI->>CG: --all --run source.c
     CG->>FS: write FRISC assembly
     CLI->>FR: FriscRunner.run(a.out)
-    FR->>Node: ProcessBuilder: node -e STEP_RUNNER_SCRIPT <lib> <a.out> 1000 200000000
+    FR->>Node: ProcessBuilder: node -e STEP_RUNNER_SCRIPT lib a.out 1000 200000000
     Node->>Sim: require(friscjs lib)
     Node->>Sim: asm.parse(source)
     Sim-->>Node: binary memory image
     Node->>Sim: new Simulator(); MEM._size = 1000*1024
     Node->>Sim: MEM.loadBinaryString(image)
-    loop while !halted && steps < 200 000 000
+    loop until HALT or step limit (200,000,000)
         Node->>Sim: CPU.performCycle()
     end
     Sim-->>Node: CPU.onStop() on HALT
