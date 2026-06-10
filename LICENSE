@@ -19,14 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Note on scope: This MIT license covers the FRISCcc compiler source code and
-its documentation in this repository. The accompanying book, "Building a
-C-Subset Compiler for the FRISC Architecture: From Formal Languages to
-Executable Code" (DOI 10.5281/zenodo.20511073, ISBN 978-953-47198-0-0), is a
-separate work, © 2026 Karlo Knežević, and is licensed under its own terms
-(Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International).
-The bundled FRISC simulator under node_modules/friscjs is the property of its
-respective authors and is distributed under its own license.
