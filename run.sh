@@ -25,6 +25,10 @@
 #   run-ir <file.ir>      Execute IR directly with interpreter
 #   --trace-ir            (with run-ir) Print interpreter execution trace
 #   --ir-step-limit <n>   (with run-ir) Override interpreter step watchdog
+#   run-vm <file.ir>      Lower IR to bytecode and run it on the bytecode VM
+#   --trace-vm            (with run-vm) Print per-dispatch bytecode trace
+#   --dump-bytecode       (with run-vm) Disassemble the bytecode instead of running
+#   --vm-dispatch-limit <n> (with run-vm) Override VM dispatch watchdog
 #   --run-ir-all-real-world [interpreter flags]
 #                         Execute interpreter for all IR files in examples/real_world
 #
@@ -39,6 +43,8 @@
 #   ./run.sh --all --run program.c
 #   ./run.sh run-ir examples/real_world/real_bfs_shortest_path/program.ir
 #   ./run.sh run-ir --ir-step-limit 500000 examples/real_world/real_bfs_shortest_path/program.ir
+#   ./run.sh run-vm examples/real_world/real_prime_sieve/program.ir
+#   ./run.sh run-vm --dump-bytecode examples/real_world/real_prime_sieve/program.ir
 #   ./run.sh --run-ir-all-real-world --ir-step-limit 500000
 #   ./run.sh --help
 #
@@ -105,6 +111,10 @@ ${BOLD}Flags:${NC}
     run-ir <file.ir>      Execute IR directly with interpreter
     --trace-ir            (with run-ir) Print interpreter execution trace
     --ir-step-limit <n>   (with run-ir) Override interpreter step watchdog
+    run-vm <file.ir>      Lower IR to bytecode and run it on the bytecode VM
+    --trace-vm            (with run-vm) Print per-dispatch bytecode trace
+    --dump-bytecode       (with run-vm) Disassemble the bytecode instead of running
+    --vm-dispatch-limit <n> (with run-vm) Override VM dispatch watchdog
     --run-ir-all-real-world [interpreter flags]
                           Execute interpreter for all IR files in examples/real_world
 
@@ -119,6 +129,8 @@ ${BOLD}Examples:${NC}
     ./run.sh --all --run program.c
     ./run.sh run-ir examples/real_world/real_bfs_shortest_path/program.ir
     ./run.sh run-ir --ir-step-limit 500000 examples/real_world/real_bfs_shortest_path/program.ir
+    ./run.sh run-vm examples/real_world/real_prime_sieve/program.ir
+    ./run.sh run-vm --dump-bytecode examples/real_world/real_prime_sieve/program.ir
     ./run.sh --run-ir-all-real-world --ir-step-limit 500000
     ./run.sh --help
 

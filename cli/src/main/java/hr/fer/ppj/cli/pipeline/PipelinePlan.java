@@ -13,7 +13,8 @@ import java.util.Objects;
 public record PipelinePlan(
     List<PipelineStage> stages,
     OptimizationLevel optimizationLevel,
-    boolean dumpIr) {
+    boolean dumpIr,
+    boolean verifyEach) {
 
   public PipelinePlan {
     Objects.requireNonNull(stages, "stages must not be null");
@@ -53,6 +54,7 @@ public record PipelinePlan(
       planStages.add(PipelineStage.RUN);
     }
 
-    return new PipelinePlan(List.copyOf(planStages), options.optimizationLevel(), options.dumpIr());
+    return new PipelinePlan(
+        List.copyOf(planStages), options.optimizationLevel(), options.dumpIr(), options.verifyEach());
   }
 }

@@ -20,7 +20,13 @@ public record CliOptions(
     int irStepLimit,
     boolean irTrace,
     OptimizationLevel optimizationLevel,
-    boolean dumpIr
+    boolean dumpIr,
+    boolean runVmCommand,
+    Path vmFile,
+    long vmDispatchLimit,
+    boolean vmTrace,
+    boolean vmDisassemble,
+    boolean verifyEach
 ) {
 
   public CliOptions {
@@ -32,6 +38,12 @@ public record CliOptions(
     }
     if (irStepLimit <= 0) {
       throw new IllegalArgumentException("irStepLimit must be positive");
+    }
+    if (runVmCommand && vmFile == null) {
+      throw new IllegalArgumentException("vmFile must be set when runVmCommand is true");
+    }
+    if (vmDispatchLimit <= 0) {
+      throw new IllegalArgumentException("vmDispatchLimit must be positive");
     }
   }
 

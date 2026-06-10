@@ -285,8 +285,11 @@ public final class PipelineRunner {
   private StageArtifacts runOptimization(PipelineContext context, PipelinePlan plan) throws StageFailure {
     try {
       String preOptimizationIr = context.irText();
-      OptimizationOptions options =
+      OptimizationOptions base =
           plan.optimizationLevel() == OptimizationLevel.O1 ? OptimizationOptions.O1 : OptimizationOptions.O0;
+      OptimizationOptions options = plan.verifyEach()
+          ? new OptimizationOptions(base.level(), base.maxIterations(), true)
+          : base;
 
       IrProgram optimizedProgram = irOptimizer.optimize(context.irProgram(), options);
       String optimizedIr = IrPipeline.print(optimizedProgram);

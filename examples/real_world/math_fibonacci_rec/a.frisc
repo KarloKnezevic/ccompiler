@@ -1,0 +1,148 @@
+; ===========================================================================
+; PPJ Compiler - Generated FRISC Assembly Code
+; Source: fib_rec.c
+; Generated: 2026-05-30 22:29:11
+; ===========================================================================
+; ===========================================================================
+; Program entry point and initialization
+; ===========================================================================
+        MOVE 40000, R7          ; Initialize stack pointer (SP)
+        CALL F_MAIN             ; Call main
+        HALT                    ; Program end
+; ===========================================================================
+; Function Definitions
+; ===========================================================================
+F_FIB                           ; Function: fib
+        PUSH R5                 ; Save old FP
+        MOVE R7, R5             ; Set FP
+        SUB R7, 3C, R7          ; Allocate locals/temps
+        MOVE 1, R1              ; Zero local words
+        MOVE R5, R0             ; Local zero base
+        SUB R0, 4, R0           ; Local zero ptr
+        MOVE 0, R2              ; Zero
+L_ZERO_2
+        STORE R2, (R0)          ; Clear
+        ADD R0, 4, R0
+        SUB R1, 1, R1
+        JP_NE L_ZERO_2
+L_FIB_L0
+        MOVE R5, R0
+        ADD R0, 8, R0           ; Param address
+        STORE R0, (R5-8)        ; Store temp t0
+        LOAD R0, (R5-8)         ; Load temp t0
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-0C)       ; Store temp t1
+        LOAD R0, (R5-0C)        ; Load temp t1
+        PUSH R0                 ; Save left
+        MOVE 2, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        CMP R0, R1
+        JP_SLT L_CMP_TRUE_3
+        MOVE 0, R0              ; False
+        JP L_CMP_END_4
+L_CMP_TRUE_3
+        MOVE 1, R0              ; True
+L_CMP_END_4
+        STORE R0, (R5-10)       ; Store temp t2
+        LOAD R0, (R5-10)        ; Load temp t2
+        CMP R0, 0               ; Branch on condition
+        JP_NE L_FIB_L1
+        JP L_FIB_L2
+L_FIB_L1
+        MOVE R5, R0
+        ADD R0, 8, R0           ; Param address
+        STORE R0, (R5-14)       ; Store temp t3
+        LOAD R0, (R5-14)        ; Load temp t3
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-18)       ; Store temp t4
+        LOAD R0, (R5-18)        ; Load temp t4
+        MOVE R0, R6             ; Set return value
+        JP L_EXIT_F_FIB_1
+L_FIB_L2
+        MOVE R5, R0
+        ADD R0, 8, R0           ; Param address
+        STORE R0, (R5-1C)       ; Store temp t5
+        LOAD R0, (R5-1C)        ; Load temp t5
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-20)       ; Store temp t6
+        LOAD R0, (R5-20)        ; Load temp t6
+        PUSH R0                 ; Save left
+        MOVE 1, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        SUB R0, R1, R0
+        STORE R0, (R5-24)       ; Store temp t7
+        LOAD R0, (R5-24)        ; Load temp t7
+        STORE R0, (R5-3C)       ; Save arg
+        SUB R7, 4, R7           ; Allocate args
+        LOAD R0, (R5-3C)        ; Load arg
+        STORE R0, (R7)          ; Store arg
+        CALL F_FIB              ; Call fib
+        ADD R7, 4, R7           ; Clean args
+        MOVE R6, R0             ; Return value
+        STORE R0, (R5-28)       ; Store temp t8
+        LOAD R0, (R5-1C)        ; Load temp t5
+        LOAD R0, (R0)           ; Load word
+        STORE R0, (R5-2C)       ; Store temp t9
+        LOAD R0, (R5-2C)        ; Load temp t9
+        PUSH R0                 ; Save left
+        MOVE 2, R0
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        SUB R0, R1, R0
+        STORE R0, (R5-30)       ; Store temp t10
+        LOAD R0, (R5-30)        ; Load temp t10
+        STORE R0, (R5-3C)       ; Save arg
+        SUB R7, 4, R7           ; Allocate args
+        LOAD R0, (R5-3C)        ; Load arg
+        STORE R0, (R7)          ; Store arg
+        CALL F_FIB              ; Call fib
+        ADD R7, 4, R7           ; Clean args
+        MOVE R6, R0             ; Return value
+        STORE R0, (R5-34)       ; Store temp t11
+        LOAD R0, (R5-28)        ; Load temp t8
+        PUSH R0                 ; Save left
+        LOAD R0, (R5-34)        ; Load temp t11
+        MOVE R0, R1             ; Right
+        POP R0                  ; Left
+        ADD R0, R1, R0
+        STORE R0, (R5-38)       ; Store temp t12
+        LOAD R0, (R5-38)        ; Load temp t12
+        MOVE R0, R6             ; Set return value
+L_EXIT_F_FIB_1                  ; Function epilogue
+        ADD R7, 3C, R7          ; Deallocate locals/temps
+        POP R5                  ; Restore FP
+        RET                     ; Return
+F_MAIN                          ; Function: main
+        PUSH R5                 ; Save old FP
+        MOVE R7, R5             ; Set FP
+        SUB R7, 0C, R7          ; Allocate locals/temps
+        MOVE 1, R1              ; Zero local words
+        MOVE R5, R0             ; Local zero base
+        SUB R0, 4, R0           ; Local zero ptr
+        MOVE 0, R2              ; Zero
+L_ZERO_6
+        STORE R2, (R0)          ; Clear
+        ADD R0, 4, R0
+        SUB R1, 1, R1
+        JP_NE L_ZERO_6
+L_MAIN_L0
+        MOVE 14, R0
+        STORE R0, (R5-0C)       ; Save arg
+        SUB R7, 4, R7           ; Allocate args
+        LOAD R0, (R5-0C)        ; Load arg
+        STORE R0, (R7)          ; Store arg
+        CALL F_FIB              ; Call fib
+        ADD R7, 4, R7           ; Clean args
+        MOVE R6, R0             ; Return value
+        STORE R0, (R5-8)        ; Store temp t0
+        LOAD R0, (R5-8)         ; Load temp t0
+        MOVE R0, R6             ; Set return value
+L_EXIT_F_MAIN_5                 ; Function epilogue
+        ADD R7, 0C, R7          ; Deallocate locals/temps
+        POP R5                  ; Restore FP
+        RET                     ; Return
+; ===========================================================================
+; Global Variables
+; ===========================================================================

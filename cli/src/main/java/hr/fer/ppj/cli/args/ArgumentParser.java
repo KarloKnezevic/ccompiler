@@ -2,6 +2,7 @@ package hr.fer.ppj.cli.args;
 
 import hr.fer.ppj.cli.pipeline.PipelineStage;
 import hr.fer.ppj.cli.ir.IrInterpreterOptions;
+import hr.fer.ppj.cli.vm.VmExecutionOptions;
 import hr.fer.ppj.opt.api.OptimizationLevel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,6 +30,9 @@ public final class ArgumentParser {
     if (args.length > 0 && ("run-ir".equals(args[0]) || "--run-ir".equals(args[0]))) {
       return parseRunIrCommand(args);
     }
+    if (args.length > 0 && ("run-vm".equals(args[0]) || "--run-vm".equals(args[0]))) {
+      return parseRunVmCommand(args);
+    }
 
     EnumSet<PipelineStage> stages = EnumSet.noneOf(PipelineStage.class);
     Path outputDir = Paths.get("compiler-bin");
@@ -36,6 +40,7 @@ public final class ArgumentParser {
     boolean help = false;
     boolean runAll = false;
     boolean dumpIr = false;
+    boolean verifyEach = false;
     OptimizationLevel optimizationLevel = OptimizationLevel.O0;
 
     for (int i = 0; i < args.length; i++) {
@@ -56,6 +61,7 @@ public final class ArgumentParser {
         case "--O0" -> optimizationLevel = OptimizationLevel.O0;
         case "--O1" -> optimizationLevel = OptimizationLevel.O1;
         case "--dump-ir" -> dumpIr = true;
+        case "--verify-each" -> verifyEach = true;
         case "--bin" -> {
           if (i + 1 >= args.length) {
             return new ParseResult(null, "--bin requires a directory argument");
@@ -85,7 +91,13 @@ public final class ArgumentParser {
         IrInterpreterOptions.DEFAULT_STEP_LIMIT,
         false,
         optimizationLevel,
-        dumpIr);
+        dumpIr,
+        false,
+        null,
+        VmExecutionOptions.DEFAULT_DISPATCH_LIMIT,
+        false,
+        false,
+        verifyEach);
 
     if (help) {
       return new ParseResult(options, null);
@@ -155,6 +167,77 @@ public final class ArgumentParser {
         stepLimit,
         trace,
         OptimizationLevel.O0,
+        false,
+        false,
+        null,
+        VmExecutionOptions.DEFAULT_DISPATCH_LIMIT,
+        false,
+        false,
+        false);
+    return new ParseResult(options, null);
+  }
+
+  private ParseResult parseRunVmCommand(String[] args) {
+    Path vmFile = null;
+    boolean trace = false;
+    boolean disassemble = false;
+    long dispatchLimit = VmExecutionOptions.DEFAULT_DISPATCH_LIMIT;
+
+    for (int i = 1; i < args.length; i++) {
+      String arg = args[i];
+      if (arg == null || arg.isBlank()) {
+        continue;
+      }
+      switch (arg) {
+        case "--trace-vm" -> trace = true;
+        case "--dump-bytecode" -> disassemble = true;
+        case "--vm-dispatch-limit" -> {
+          if (i + 1 >= args.length) {
+            return new ParseResult(null, "--vm-dispatch-limit requires a number");
+          }
+          String rawLimit = args[++i];
+          try {
+            dispatchLimit = Long.parseLong(rawLimit);
+          } catch (NumberFormatException ex) {
+            return new ParseResult(null, "Invalid --vm-dispatch-limit value: " + rawLimit);
+          }
+          if (dispatchLimit <= 0) {
+            return new ParseResult(null, "--vm-dispatch-limit must be positive");
+          }
+        }
+        default -> {
+          if (arg.startsWith("-")) {
+            return new ParseResult(null, "Unknown option for run-vm: " + arg.toLowerCase(Locale.ROOT));
+          }
+          if (vmFile != null) {
+            return new ParseResult(null, "Multiple IR files provided: " + vmFile + ", " + arg);
+          }
+          vmFile = Paths.get(arg);
+        }
+      }
+    }
+
+    if (vmFile == null) {
+      return new ParseResult(null, "run-vm requires a path to an .ir file");
+    }
+
+    CliOptions options = new CliOptions(
+        null,
+        Paths.get("compiler-bin"),
+        EnumSet.noneOf(PipelineStage.class),
+        false,
+        false,
+        false,
+        null,
+        IrInterpreterOptions.DEFAULT_STEP_LIMIT,
+        false,
+        OptimizationLevel.O0,
+        false,
+        true,
+        vmFile,
+        dispatchLimit,
+        trace,
+        disassemble,
         false);
     return new ParseResult(options, null);
   }

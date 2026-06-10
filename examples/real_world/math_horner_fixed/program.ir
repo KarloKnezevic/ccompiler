@@ -1,0 +1,61 @@
+; Intermediate Representation (typed canonical IR)
+; Source: horner_fixed.c
+; Generated: 2026-05-30 22:29:14
+
+.program
+
+.globals
+  global coeff:array<float,4> = { #1.5:float, #-2.0:float, #0.5:float, #3.0:float } : array<float,4>
+
+.func main():float
+  .frame locals=12 bytes align=4
+  .slots
+    local x@0:float
+    local result@4:float
+    local i@8:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol local:x
+    store t0, #1.5:float : float
+
+    t1 = addr_of_symbol global:coeff
+    t2 = addr_index t1, #0:int32, 4
+    t3 = load t2 : float
+    t4 = addr_of_symbol local:result
+    store t4, t3 : float
+    t5 = addr_of_symbol local:i
+    store t5, #1:int32 : int32
+    jmp L1
+  L1:
+    t6 = addr_of_symbol local:i
+    t7 = load t6 : int32
+    t8 = cmp_lt t7, #4:int32 : bool
+    br t8, L2, L4
+  L2:
+    t9 = addr_of_symbol local:result
+    t10 = load t9 : float
+    t11 = addr_of_symbol local:x
+    t12 = load t11 : float
+    t13 = mul t10, t12 : float
+
+    t14 = addr_of_symbol global:coeff
+    t15 = addr_of_symbol local:i
+    t16 = load t15 : int32
+    t17 = addr_index t14, t16, 4
+    t18 = load t17 : float
+    t19 = add t13, t18 : float
+    store t9, t19 : float
+    jmp L3
+  L3:
+    t20 = addr_of_symbol local:i
+    t21 = load t20 : int32
+    t22 = add t21, #1:int32 : int32
+    store t20, t22 : int32
+    jmp L1
+  L4:
+    t23 = addr_of_symbol local:result
+    t24 = load t23 : float
+    ret t24
+.endfunc
+
+.endprogram

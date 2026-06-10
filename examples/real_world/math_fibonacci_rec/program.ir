@@ -1,0 +1,43 @@
+; Intermediate Representation (typed canonical IR)
+; Source: fib_rec.c
+; Generated: 2026-05-30 22:29:11
+
+.program
+
+.func fib(n:int32):int32
+  .frame locals=0 bytes align=4
+  .slots
+    param n@0:int32
+  .blocks
+  L0:
+    t0 = addr_of_symbol param:n
+    t1 = load t0 : int32
+    t2 = cmp_lt t1, #2:int32 : bool
+    br t2, L1, L2
+  L1:
+    t3 = addr_of_symbol param:n
+    t4 = load t3 : int32
+    ret t4
+  L2:
+    t5 = addr_of_symbol param:n
+    t6 = load t5 : int32
+    t7 = sub t6, #1:int32 : int32
+
+    t8 = call func:fib(t7) : int32
+    t9 = load t5 : int32
+    t10 = sub t9, #2:int32 : int32
+    t11 = call func:fib(t10) : int32
+    t12 = add t8, t11 : int32
+    ret t12
+.endfunc
+
+.func main():int32
+  .frame locals=0 bytes align=4
+  .slots
+  .blocks
+  L0:
+    t0 = call func:fib(#20:int32) : int32
+    ret t0
+.endfunc
+
+.endprogram

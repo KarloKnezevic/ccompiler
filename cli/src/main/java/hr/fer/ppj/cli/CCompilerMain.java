@@ -5,6 +5,9 @@ import hr.fer.ppj.cli.args.CliOptions;
 import hr.fer.ppj.cli.ir.IrCommandRunner;
 import hr.fer.ppj.cli.ir.IrExecutionResult;
 import hr.fer.ppj.cli.ir.IrInterpreterOptions;
+import hr.fer.ppj.cli.vm.VmCommandRunner;
+import hr.fer.ppj.cli.vm.VmExecutionOptions;
+import hr.fer.ppj.cli.vm.VmExecutionResult;
 import hr.fer.ppj.cli.pipeline.PipelinePlan;
 import hr.fer.ppj.cli.pipeline.PipelineRunner;
 import hr.fer.ppj.cli.reporting.CliLoggingConfigurer;
@@ -46,6 +49,14 @@ public final class CCompilerMain {
       return;
     }
 
+    if (options.runVmCommand()) {
+      boolean success = runVmCommand(options, reporter);
+      if (!success) {
+        System.exit(1);
+      }
+      return;
+    }
+
     PipelinePlan plan = PipelinePlan.from(options);
     PipelineRunner runner = new PipelineRunner(reporter);
 
@@ -64,6 +75,25 @@ public final class CCompilerMain {
       return true;
     } catch (Exception ex) {
       reporter.printIrExecutionFailure(options.irFile(), ex.getMessage());
+      return false;
+    }
+  }
+
+  private static boolean runVmCommand(CliOptions options, ConsoleReporter reporter) {
+    VmCommandRunner runner = new VmCommandRunner();
+    try {
+      if (options.vmDisassemble()) {
+        reporter.printBytecodeDisassembly(options.vmFile(), runner.disassemble(options.vmFile()));
+        return true;
+      }
+      VmExecutionOptions vmOptions =
+          new VmExecutionOptions(options.vmDispatchLimit(), options.vmTrace());
+      VmExecutionResult result = runner.run(options.vmFile(), vmOptions);
+      reporter.printVmExecutionResult(
+          options.vmFile(), result.returnValue(), result.dispatched(), result.trace());
+      return true;
+    } catch (Exception ex) {
+      reporter.printVmExecutionFailure(options.vmFile(), ex.getMessage());
       return false;
     }
   }

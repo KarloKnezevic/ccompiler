@@ -109,6 +109,34 @@ public final class ConsoleReporter {
     err.println("Cause: " + message);
   }
 
+  public void printVmExecutionResult(Path irFile, int returnValue, long dispatched, String traceOutput) {
+    out.println("Bytecode VM");
+    out.println("IR file: " + irFile.toAbsolutePath().normalize());
+    out.println("Return value: " + returnValue);
+    out.println("Dispatched instructions: " + dispatched);
+    if (traceOutput != null && !traceOutput.isBlank()) {
+      out.println();
+      out.println("Execution trace:");
+      out.print(traceOutput);
+      if (!traceOutput.endsWith(System.lineSeparator())) {
+        out.println();
+      }
+    }
+  }
+
+  public void printVmExecutionFailure(Path irFile, String message) {
+    err.println("Bytecode VM FAILED");
+    err.println("IR file: " + irFile.toAbsolutePath().normalize());
+    err.println("Cause: " + message);
+  }
+
+  public void printBytecodeDisassembly(Path irFile, String disassembly) {
+    out.print(disassembly);
+    if (!disassembly.endsWith(System.lineSeparator())) {
+      out.println();
+    }
+  }
+
   private String formatDuration(Duration duration) {
     if (duration == null) {
       return "n/a";
